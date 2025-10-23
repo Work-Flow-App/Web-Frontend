@@ -1,47 +1,45 @@
 import React from 'react';
-import { Button as MuiButton, Box } from '@mui/material';
 import type { ButtonProps } from './Button.types';
-import type { SxProps, Theme } from '@mui/material/styles';
-import { getButtonStyles, iconStyles } from './Button.styles';
+import { StyledButton, ButtonLoader } from './Button.styles';
 
 /**
  * Reusable Button component based on Floow design system
- * Follows Figma specifications with Manrope font and precise sizing
+ * Supports multiple colors, variants, sizes, and loading states
  */
 export const Button: React.FC<ButtonProps> = ({
   children,
-  variant = 'primary',
+  variant = 'contained',
+  color = 'primary',
   size = 'medium',
   startIcon,
   endIcon,
   fullWidth = false,
   disabled = false,
+  loading = false,
   onClick,
   type = 'button',
   className,
   sx,
 }) => {
-  const buttonStyles = getButtonStyles(variant, size, fullWidth);
-
-  // Merge custom sx with button styles
-  const mergedSx: SxProps<Theme> = sx
-    ? (Array.isArray(sx) ? [buttonStyles, ...sx] : [buttonStyles, sx])
-    : buttonStyles;
-
   return (
-    <MuiButton
+    <StyledButton
       type={type}
-      disabled={disabled}
+      buttonColor={color}
+      buttonVariant={variant}
+      buttonSize={size}
+      disabled={disabled || loading}
       onClick={onClick}
       className={className}
-      sx={mergedSx}
+      sx={sx}
+      fullWidth={fullWidth}
       disableRipple
       disableElevation
+      startIcon={startIcon}
+      endIcon={endIcon}
     >
-      {startIcon && <Box sx={iconStyles}>{startIcon}</Box>}
       {children}
-      {endIcon && <Box sx={iconStyles}>{endIcon}</Box>}
-    </MuiButton>
+      {!disabled && loading && <ButtonLoader />}
+    </StyledButton>
   );
 };
 

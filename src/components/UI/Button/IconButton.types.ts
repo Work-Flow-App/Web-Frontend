@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-export type ButtonVariant = 'contained' | 'outlined' | 'text';
-export type ButtonColor = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error';
-export type ButtonSize = 'small' | 'medium' | 'large';
+export type IconButtonVariant = 'contained' | 'outlined' | 'text';
+export type IconButtonColor = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error';
+export type IconButtonSize = 'small' | 'medium' | 'large';
 
-export interface ButtonProps {
+export interface IconButtonProps {
   /**
-   * Button content
+   * Icon to display
    */
   children: ReactNode;
 
@@ -15,35 +15,19 @@ export interface ButtonProps {
    * Button variant style
    * @default 'contained'
    */
-  variant?: ButtonVariant;
+  variant?: IconButtonVariant;
 
   /**
    * Button color
    * @default 'primary'
    */
-  color?: ButtonColor;
+  color?: IconButtonColor;
 
   /**
    * Button size
    * @default 'medium'
    */
-  size?: ButtonSize;
-
-  /**
-   * Icon to display before the button text
-   */
-  startIcon?: ReactNode;
-
-  /**
-   * Icon to display after the button text
-   */
-  endIcon?: ReactNode;
-
-  /**
-   * If true, the button will take up the full width of its container
-   * @default false
-   */
-  fullWidth?: boolean;
+  size?: IconButtonSize;
 
   /**
    * If true, the button will be disabled
@@ -77,4 +61,9 @@ export interface ButtonProps {
    * Custom styles using MUI sx prop
    */
   sx?: SxProps<Theme>;
+
+  /**
+   * Aria label for accessibility
+   */
+  'aria-label'?: string;
 }

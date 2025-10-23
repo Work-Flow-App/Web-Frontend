@@ -1,15 +1,15 @@
 import { styled } from '@mui/material/styles';
-import { Button as MuiButton, LinearProgress as MuiLinearProgress } from '@mui/material';
-import { rem, em, Bold } from '../Typography/utility';
-import type { ButtonColor, ButtonVariant, ButtonSize } from './Button.types';
+import { IconButton as MuiIconButton, CircularProgress } from '@mui/material';
+import { rem } from '../Typography/utility';
+import type { IconButtonColor, IconButtonVariant, IconButtonSize } from './IconButton.types';
 
-interface StyledButtonProps {
-  buttonColor: ButtonColor;
-  buttonVariant: ButtonVariant;
-  buttonSize: ButtonSize;
+interface StyledIconButtonProps {
+  buttonColor: IconButtonColor;
+  buttonVariant: IconButtonVariant;
+  buttonSize: IconButtonSize;
 }
 
-export const StyledButton = styled(MuiButton)<StyledButtonProps>(
+export const StyledIconButton = styled(MuiIconButton)<StyledIconButtonProps>(
   ({ theme, buttonColor, buttonVariant, buttonSize }) => {
     const { palette, shadows } = theme;
 
@@ -60,49 +60,42 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
       switch (buttonSize) {
         case 'small':
           return {
-            height: rem(36),
-            padding: `${rem(8)} ${rem(16)}`,
-            fontSize: rem(12),
-            borderRadius: rem(8),
-            gap: rem(8),
-            minWidth: 'auto',
+            width: rem(32),
+            height: rem(32),
+            padding: rem(4),
+            '& svg': {
+              width: rem(20),
+              height: rem(20),
+            },
           };
         case 'large':
           return {
-            height: rem(51),
-            padding: `${rem(12)} ${rem(24)}`,
-            fontSize: rem(20), // From Figma
-            lineHeight: rem(27), // From Figma
-            borderRadius: rem(8),
-            gap: rem(10),
-            minWidth: rem(451), // 28.1875rem from Figma
-            fontWeight: 700, // Bold from Figma, overrides base _800
-            letterSpacing: em(0.005), // From Figma
+            width: rem(48),
+            height: rem(48),
+            padding: rem(8),
+            '& svg': {
+              width: rem(28),
+              height: rem(28),
+            },
           };
         case 'medium':
         default:
           return {
-            height: rem(51),
-            padding: `${rem(12)} ${rem(24)}`,
-            fontSize: rem(14),
-            borderRadius: rem(8),
-            gap: rem(10),
-            minWidth: 'auto',
+            width: rem(40),
+            height: rem(40),
+            padding: rem(6),
+            '& svg': {
+              width: rem(24),
+              height: rem(24),
+            },
           };
       }
     };
 
     return {
       ...getSizeStyles(),
-      display: 'flex',
-      flexDirection: 'row' as const,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: 'auto',
-      fontWeight: Bold._800,
-      textTransform: 'none' as const,
+      borderRadius: rem(8),
       boxShadow: shadows[0],
-      letterSpacing: em(0.08),
       transition: 'all 0.2s ease-in-out',
       position: 'relative',
 
@@ -141,11 +134,9 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
       ...(buttonVariant === 'text' && {
         backgroundColor: 'transparent',
         color: color,
-        fontSize: '90%',
-        fontWeight: theme.typography.fontWeightRegular,
         '&:hover': {
-          backgroundColor: 'transparent',
-          color: hoverColor,
+          backgroundColor: `${color}14`, // 8% opacity
+          color: color,
         },
         '&.Mui-disabled': {
           color: palette.text.disabled,
@@ -155,19 +146,11 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
   }
 );
 
-export const ButtonLoader = styled(MuiLinearProgress)(({ theme }) => {
-  const { palette, spacing } = theme;
+export const IconButtonLoader = styled(CircularProgress)(({ theme }) => {
+  const { palette } = theme;
 
   return {
     position: 'absolute',
-    width: '100%',
-    bottom: 0,
-    left: 0,
-    borderBottomLeftRadius: spacing(0.5),
-    borderBottomRightRadius: spacing(0.5),
-    height: rem(2),
-    '& .MuiLinearProgress-bar': {
-      backgroundColor: palette.primary.contrastText,
-    },
+    color: palette.primary.contrastText,
   };
 });

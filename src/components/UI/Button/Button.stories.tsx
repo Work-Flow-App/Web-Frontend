@@ -28,13 +28,22 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'outlined', 'text'],
+      options: ['contained', 'outlined', 'text'],
       description: 'Visual style variant of the button',
+    },
+    color: {
+      control: 'select',
+      options: ['primary', 'secondary', 'tertiary', 'success', 'warning', 'error'],
+      description: 'Color scheme of the button',
     },
     size: {
       control: 'select',
       options: ['small', 'medium', 'large'],
       description: 'Size of the button',
+    },
+    loading: {
+      control: 'boolean',
+      description: 'If true, shows loading state',
     },
     fullWidth: {
       control: 'boolean',
@@ -54,129 +63,185 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Primary button (Log in - from Figma)
+// Color variants
 export const Primary: Story = {
   args: {
-    children: 'Log in',
-    variant: 'primary',
+    children: 'Primary Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
   },
 };
 
-// Secondary button (Cancel - from Figma)
 export const Secondary: Story = {
   args: {
-    children: 'Cancel',
-    variant: 'secondary',
+    children: 'Secondary Button',
+    variant: 'contained',
+    color: 'secondary',
     size: 'large',
   },
 };
 
-// Outlined button (Create an account - from Figma)
+export const Tertiary: Story = {
+  args: {
+    children: 'Tertiary Button',
+    variant: 'contained',
+    color: 'tertiary',
+    size: 'large',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    children: 'Success Button',
+    variant: 'contained',
+    color: 'success',
+    size: 'large',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    children: 'Warning Button',
+    variant: 'contained',
+    color: 'warning',
+    size: 'large',
+  },
+};
+
+export const Error: Story = {
+  args: {
+    children: 'Error Button',
+    variant: 'contained',
+    color: 'error',
+    size: 'large',
+  },
+};
+
+// Variant examples
 export const Outlined: Story = {
   args: {
-    children: 'Create an account',
+    children: 'Outlined Button',
     variant: 'outlined',
+    color: 'primary',
     size: 'large',
   },
 };
 
-// Text button
 export const Text: Story = {
   args: {
-    children: 'Cancel',
+    children: 'Text Button',
     variant: 'text',
+    color: 'primary',
     size: 'medium',
   },
 };
 
-// Button with icon (Add Member - from Figma)
+// Button with icon
 export const WithIcon: Story = {
   args: {
     children: 'Add Member',
-    variant: 'primary',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
     startIcon: <UserAddIcon />,
   },
 };
 
-// Small size
+// Size variants
 export const Small: Story = {
   args: {
-    children: 'Button',
-    variant: 'primary',
+    children: 'Small Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'small',
   },
 };
 
-// Medium size
 export const Medium: Story = {
   args: {
-    children: 'Button',
-    variant: 'primary',
+    children: 'Medium Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'medium',
   },
 };
 
-// Large size
 export const Large: Story = {
   args: {
-    children: 'Button',
-    variant: 'primary',
+    children: 'Large Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
   },
 };
 
-// Disabled state
+// State variants
+export const Loading: Story = {
+  args: {
+    children: 'Loading Button',
+    variant: 'contained',
+    color: 'primary',
+    size: 'large',
+    loading: true,
+  },
+};
+
 export const Disabled: Story = {
   args: {
-    children: 'Disabled',
-    variant: 'primary',
+    children: 'Disabled Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
     disabled: true,
   },
 };
 
-// Full width
+// Full width - Matches Figma spec (451px = 28.1875rem)
 export const FullWidth: Story = {
   args: {
-    children: 'Log in',
-    variant: 'primary',
+    children: 'Full Width Button',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
     fullWidth: true,
   },
   decorators: [
     (Story) => (
-      <Box sx={{ width: '29.125rem' }}>
+      <Box sx={{ width: '28.1875rem' }}>
         <Story />
       </Box>
     ),
   ],
 };
 
-// All variants showcase
-export const AllVariants: Story = {
+// All color variants showcase
+export const AllColors: Story = {
   args: {
     children: 'Button',
-    variant: 'primary',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
   },
   render: () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', width: '29.125rem' }}>
-      <Button variant="primary" size="large" fullWidth>
-        Log in
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', width: '28.1875rem' }}>
+      <Button variant="contained" color="primary" size="large" fullWidth>
+        Primary
       </Button>
-      <Button variant="secondary" size="large" fullWidth>
-        Cancel
+      <Button variant="contained" color="secondary" size="large" fullWidth>
+        Secondary
       </Button>
-      <Button variant="outlined" size="large" fullWidth>
-        Create an account
+      <Button variant="contained" color="tertiary" size="large" fullWidth>
+        Tertiary
       </Button>
-      <Button variant="text" size="medium">
-        Cancel
+      <Button variant="contained" color="success" size="large" fullWidth>
+        Success
       </Button>
-      <Button variant="primary" size="large" fullWidth startIcon={<UserAddIcon />}>
-        Add Member
+      <Button variant="contained" color="warning" size="large" fullWidth>
+        Warning
+      </Button>
+      <Button variant="contained" color="error" size="large" fullWidth>
+        Error
       </Button>
     </Box>
   ),
@@ -186,18 +251,19 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   args: {
     children: 'Button',
-    variant: 'primary',
+    variant: 'contained',
+    color: 'primary',
     size: 'medium',
   },
   render: () => (
     <Box sx={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-      <Button variant="primary" size="small">
+      <Button variant="contained" color="primary" size="small">
         Small
       </Button>
-      <Button variant="primary" size="medium">
+      <Button variant="contained" color="primary" size="medium">
         Medium
       </Button>
-      <Button variant="primary" size="large">
+      <Button variant="contained" color="primary" size="large">
         Large
       </Button>
     </Box>
@@ -208,7 +274,8 @@ export const AllSizes: Story = {
 export const Interactive: Story = {
   args: {
     children: 'Click me',
-    variant: 'primary',
+    variant: 'contained',
+    color: 'primary',
     size: 'large',
     onClick: () => alert('Button clicked!'),
   },

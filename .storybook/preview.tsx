@@ -1,4 +1,8 @@
 import type { Preview } from '@storybook/react-vite'
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import React from 'react';
+import Theme from '../src/theme/theme';
 
 const preview: Preview = {
   parameters: {
@@ -16,6 +20,14 @@ const preview: Preview = {
       test: 'todo'
     }
   },
+  decorators: [
+    (Story) => (
+      <ThemeProvider theme={Theme}>
+        <CssBaseline />
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
 };
 
 export default preview;
