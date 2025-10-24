@@ -45,45 +45,45 @@ function App() {
           </Typography>
 
           {/* Primary Button - Log in */}
-          <Button variant="primary" size="large" fullWidth>
+          <Button variant="contained" color="primary" size="large" fullWidth>
             Log in
           </Button>
 
           {/* Secondary Button - Cancel */}
-          <Button variant="secondary" size="large" fullWidth>
+          <Button variant="contained" color="secondary" size="large" fullWidth>
             Cancel
           </Button>
 
           {/* Outlined Button - Create an account */}
-          <Button variant="outlined" size="large" fullWidth>
+          <Button variant="outlined" color="primary" size="large" fullWidth>
             Create an account
           </Button>
 
           {/* Primary with Icon - Add Member */}
-          <Button variant="primary" size="large" fullWidth startIcon={<UserAddIcon />}>
+          <Button variant="contained" color="primary" size="large" fullWidth startIcon={<UserAddIcon />}>
             Add Member
           </Button>
 
           {/* Text Button */}
-          <Button variant="text" size="medium">
+          <Button variant="text" color="primary" size="medium">
             Cancel
           </Button>
 
           {/* Different sizes */}
           <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center', mt: 2 }}>
-            <Button variant="primary" size="small">
+            <Button variant="contained" color="primary" size="small">
               Small
             </Button>
-            <Button variant="primary" size="medium">
+            <Button variant="contained" color="primary" size="medium">
               Medium
             </Button>
-            <Button variant="primary" size="large">
+            <Button variant="contained" color="primary" size="large">
               Large
             </Button>
           </Box>
 
           {/* Disabled state */}
-          <Button variant="primary" size="large" fullWidth disabled>
+          <Button variant="contained" color="primary" size="large" fullWidth disabled>
             Disabled
           </Button>
         </Box>
