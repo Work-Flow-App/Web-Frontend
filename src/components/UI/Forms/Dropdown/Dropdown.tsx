@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, memo, useCallback } from 'react';
+import React, { useEffect, useState, useRef, memo, useCallback, useMemo } from 'react';
 import { TextField, CircularProgress, FormHelperText, InputLabel } from '@mui/material';
 import type { DropdownProps, DropdownOption } from './Dropdown.types';
 import * as S from './Dropdown.styles';
@@ -14,7 +14,7 @@ const addScrollbarClasses = (selector: string) => {
 };
 
 // Debounce hook implementation
-const useDebouncedCallback = <T extends (...args: any[]) => void>(
+const useDebouncedCallback = <T extends (...args: never[]) => void>(
   callback: T,
   delay: number
 ): ((...args: Parameters<T>) => void) => {
@@ -95,10 +95,13 @@ export const BaseDropdown = memo((props: DropdownProps) => {
 
   const fieldValue = useWatch({ name, control });
   const dependencyValueRaw = methods.watch?.(dependency || `${name}-dependency`);
-  const dependencyValue =
-    dependencyValueRaw && !dependencyValueRaw?.value
-      ? { label: dependencyValueRaw, value: dependencyValueRaw }
-      : dependencyValueRaw;
+  const dependencyValue = useMemo(
+    () =>
+      dependencyValueRaw && !dependencyValueRaw?.value
+        ? { label: dependencyValueRaw, value: dependencyValueRaw }
+        : dependencyValueRaw,
+    [dependencyValueRaw]
+  );
 
   // Local Variables
   const isValueFetchableOnPress = apiHook && isAsync;
@@ -129,7 +132,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     if (!apiHook) {
       setLoading(!!isPreFetchLoading);
     }
-  }, [isPreFetchLoading]);
+  }, [isPreFetchLoading, apiHook]);
 
   useEffect(() => {
     if (!apiHook) {
@@ -272,7 +275,6 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setLoading(false);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dependency, dynamicOptionCallback, apiHook, isAsync, preFetchedOptions, setFetchedOption, getLiveData, getQueryParams, addNewConfig, dependencyValue, name]);
 
   const handleOnKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -283,10 +285,14 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setLoading(true);
         if (dependency) {
           const qParam = getQueryParams?.(dependencyValue, inputFieldValue);
-          qParam && apiHook?.callApi(qParam);
+          if (qParam && apiHook) {
+            apiHook.callApi(qParam);
+          }
         } else {
           const qParam = getQueryParams?.(inputFieldValue);
-          qParam && apiHook?.callApi(qParam);
+          if (qParam && apiHook) {
+            apiHook.callApi(qParam);
+          }
         }
       } else {
         setOptions([]);
@@ -389,7 +395,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
             />
           )}
           PopperComponent={(props) => <S.CustomPopper {...props} className={`${props.className} custom-popper-class`} />}
-          renderOption={(props, option, state: any) => {
+          renderOption={(props, option, state) => {
             const dropdownOption = option as DropdownOption;
             return (
               <li {...props} key={`${name}-${dropdownOption.value}-${state?.index}`}>
