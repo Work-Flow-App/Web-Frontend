@@ -30,4 +30,9 @@ export interface FeatureCardProps {
    * @default 'rgba(255, 255, 255, 0.25)'
    */
   borderColor?: string;
+
+  /**
+   * Optional className for custom styling
+   */
+  className?: string;
 }

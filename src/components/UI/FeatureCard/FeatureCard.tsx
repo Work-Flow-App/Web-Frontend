@@ -2,7 +2,7 @@ import React from 'react';
 import * as S from './FeatureCard.styled';
 import type { FeatureCardProps } from './FeatureCard.types';
 
-function FeatureCard({ title, description, icon, onClick, background, borderColor }: FeatureCardProps): React.ReactElement {
+function FeatureCard({ title, description, icon, onClick, background, borderColor, className }: FeatureCardProps): React.ReactElement {
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -12,6 +12,7 @@ function FeatureCard({ title, description, icon, onClick, background, borderColo
   return (
     <S.CardWrapper
       onClick={handleClick}
+      className={className}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
       background={background}
       borderColor={borderColor}
