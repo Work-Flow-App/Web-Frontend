@@ -101,6 +101,12 @@ export const HeaderSection = styled(Box)({
   '@media (min-width: 1921px)': {
     gap: rem(16),
   },
+  '@media (max-width: 1536px)': {
+    gap: rem(10),
+  },
+  '@media (max-width: 1366px)': {
+    gap: rem(8),
+  },
 });
 
 export const Title = styled(Typography)(({ theme }) => ({
@@ -173,6 +179,18 @@ export const DividerContainer = styled(Box)({
   gap: rem(16),
   width: '100%',
   margin: `${rem(8)} 0`,
+  '@media (min-width: 1921px)': {
+    gap: rem(18),
+    margin: `${rem(10)} 0`,
+  },
+  '@media (max-width: 1536px)': {
+    gap: rem(14),
+    margin: `${rem(6)} 0`,
+  },
+  '@media (max-width: 1366px)': {
+    gap: rem(12),
+    margin: `${rem(4)} 0`,
+  },
 });
 
 export const DividerLine = styled(Box)(({ theme }) => ({
@@ -182,13 +200,22 @@ export const DividerLine = styled(Box)(({ theme }) => ({
 }));
 
 export const DividerText = styled(Typography)(({ theme }) => ({
-  fontSize: rem(14),
+  fontSize: rem(12),
   fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.grey[500],
+  '@media (min-width: 1921px)': {
+    fontSize: rem(14),
+  },
+  '@media (max-width: 1536px)': {
+    fontSize: rem(11),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(10),
+  },
 }));
 
 export const SignInLink = styled(Box)(({ theme }) => ({
-  fontSize: rem(16),
+  fontSize: rem(14),
   fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.grey[700],
   textAlign: 'center',
@@ -199,6 +226,15 @@ export const SignInLink = styled(Box)(({ theme }) => ({
     '&:hover': {
       textDecoration: 'underline',
     },
+  },
+  '@media (min-width: 1921px)': {
+    fontSize: rem(16),
+  },
+  '@media (max-width: 1536px)': {
+    fontSize: rem(13),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(12),
   },
 }));
 
@@ -364,11 +400,11 @@ export const FeaturesGrid = styled(Box)({
 });
 
 export const FooterText = styled(Typography)(({ theme }) => ({
-  fontSize: rem(12),
+  fontSize: rem(11),
   fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.grey[500],
   textAlign: 'center',
-  marginTop: rem(24),
+  marginTop: rem(16),
   '& a': {
     color: '#FB2C36',
     textDecoration: 'none',
@@ -376,6 +412,18 @@ export const FooterText = styled(Typography)(({ theme }) => ({
     '&:hover': {
       textDecoration: 'underline',
     },
+  },
+  '@media (min-width: 1921px)': {
+    fontSize: rem(12),
+    marginTop: rem(24),
+  },
+  '@media (max-width: 1536px)': {
+    fontSize: rem(10),
+    marginTop: rem(12),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(9),
+    marginTop: rem(10),
   },
 }));
 
@@ -385,12 +433,12 @@ export const GoogleButton = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   gap: rem(12),
   width: '100%',
-  height: rem(51),
-  padding: `${rem(12)} ${rem(16)}`,
+  height: rem(46),
+  padding: `${rem(11)} ${rem(14)}`,
   backgroundColor: theme.palette.common.white,
   border: `${rem(1)} solid ${theme.palette.grey[300]}`,
   borderRadius: theme.shape.borderRadius,
-  fontSize: rem(16),
+  fontSize: rem(14),
   fontWeight: theme.typography.fontWeightMedium,
   color: theme.palette.grey[900],
   cursor: 'pointer',
@@ -400,7 +448,37 @@ export const GoogleButton = styled(Box)(({ theme }) => ({
     borderColor: theme.palette.grey[400],
   },
   '& svg': {
-    width: rem(20),
-    height: rem(20),
+    width: rem(18),
+    height: rem(18),
+  },
+  '@media (min-width: 1921px)': {
+    height: rem(51),
+    padding: `${rem(12)} ${rem(16)}`,
+    fontSize: rem(16),
+    gap: rem(14),
+    '& svg': {
+      width: rem(20),
+      height: rem(20),
+    },
+  },
+  '@media (max-width: 1536px)': {
+    height: rem(42),
+    padding: `${rem(10)} ${rem(12)}`,
+    fontSize: rem(13),
+    gap: rem(10),
+    '& svg': {
+      width: rem(16),
+      height: rem(16),
+    },
+  },
+  '@media (max-width: 1366px)': {
+    height: rem(38),
+    padding: `${rem(9)} ${rem(10)}`,
+    fontSize: rem(12),
+    gap: rem(8),
+    '& svg': {
+      width: rem(14),
+      height: rem(14),
+    },
   },
 }));

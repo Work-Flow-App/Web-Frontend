@@ -21,31 +21,28 @@ export const InputWrapper = styled(Box)<InputWrapperProps>(({ fullWidth }) => ({
 }));
 
 export const InputLabel = styled(Typography)(() => ({
-  fontSize: rem(16),
+  fontSize: rem(14),
   fontWeight: 700,
   color: '#525252',
-  lineHeight: rem(24),
+  lineHeight: rem(20),
   letterSpacing: '0.005em',
   fontFamily: 'Manrope',
   fontStyle: 'normal',
+  '@media (min-width: 1921px)': {
+    fontSize: rem(16),
+    lineHeight: rem(24),
+  },
+  '@media (max-width: 1536px)': {
+    fontSize: rem(13),
+    lineHeight: rem(19),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(12),
+    lineHeight: rem(18),
+  },
 }));
 
 export const InputContainer = styled(Box)<{ hasError?: boolean; inputSize?: 'small' | 'medium' | 'large' }>(({ theme, hasError, inputSize }) => {
-  const sizeStyles = {
-    small: {
-      height: '40px',
-      padding: '8px 12px',
-    },
-    medium: {
-      height: '48px',
-      padding: '12px 16px',
-    },
-    large: {
-      height: '56px',
-      padding: '14px 16px',
-    },
-  };
-
   const size = inputSize || 'medium';
 
   return {
@@ -53,11 +50,24 @@ export const InputContainer = styled(Box)<{ hasError?: boolean; inputSize?: 'sma
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    ...sizeStyles[size],
+    height: rem(42),
+    padding: `${rem(10)} ${rem(14)}`,
     backgroundColor: theme.palette.common.white,
     border: `1px solid ${hasError ? theme.palette.error.main : theme.palette.grey[300]}`,
     borderRadius: theme.shape.borderRadius,
     transition: 'all 0.2s ease-in-out',
+    '@media (min-width: 1921px)': {
+      height: size === 'small' ? rem(40) : size === 'large' ? rem(56) : rem(48),
+      padding: size === 'small' ? `${rem(8)} ${rem(12)}` : size === 'large' ? `${rem(14)} ${rem(16)}` : `${rem(12)} ${rem(16)}`,
+    },
+    '@media (max-width: 1536px)': {
+      height: rem(40),
+      padding: `${rem(9)} ${rem(12)}`,
+    },
+    '@media (max-width: 1366px)': {
+      height: rem(38),
+      padding: `${rem(8)} ${rem(10)}`,
+    },
     '&:focus-within': {
       borderColor: hasError ? theme.palette.error.main : theme.palette.primary.main,
       boxShadow: hasError
@@ -75,10 +85,19 @@ export const StyledInput = styled('input')<StyledInputProps>(({ theme }) => ({
   border: 'none',
   outline: 'none',
   backgroundColor: 'transparent',
-  fontSize: rem(16),
+  fontSize: rem(14),
   fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.grey[900],
   fontFamily: theme.typography.fontFamily,
+  '@media (min-width: 1921px)': {
+    fontSize: rem(16),
+  },
+  '@media (max-width: 1536px)': {
+    fontSize: rem(13),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(12),
+  },
   '&::placeholder': {
     color: theme.palette.grey[400],
   },

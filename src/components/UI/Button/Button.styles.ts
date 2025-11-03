@@ -106,6 +106,62 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
       transition: 'all 0.2s ease-in-out',
       position: 'relative',
 
+      // Responsive styles for large size button
+      ...(buttonSize === 'large' && {
+        '@media (max-width: 1536px)': {
+          height: rem(46),
+          padding: `${rem(11)} ${rem(22)}`,
+          fontSize: rem(18),
+          lineHeight: rem(24),
+          minWidth: rem(400),
+        },
+        '@media (max-width: 1366px)': {
+          height: rem(42),
+          padding: `${rem(10)} ${rem(20)}`,
+          fontSize: rem(16),
+          lineHeight: rem(22),
+          minWidth: rem(350),
+        },
+      }),
+
+      // Responsive styles for medium size button
+      ...(buttonSize === 'medium' && {
+        '@media (min-width: 1921px)': {
+          height: rem(54),
+          padding: `${rem(13)} ${rem(26)}`,
+          fontSize: rem(15),
+        },
+        '@media (max-width: 1536px)': {
+          height: rem(46),
+          padding: `${rem(11)} ${rem(22)}`,
+          fontSize: rem(13),
+        },
+        '@media (max-width: 1366px)': {
+          height: rem(42),
+          padding: `${rem(10)} ${rem(20)}`,
+          fontSize: rem(12),
+        },
+      }),
+
+      // Responsive styles for small size button
+      ...(buttonSize === 'small' && {
+        '@media (min-width: 1921px)': {
+          height: rem(40),
+          padding: `${rem(9)} ${rem(18)}`,
+          fontSize: rem(13),
+        },
+        '@media (max-width: 1536px)': {
+          height: rem(32),
+          padding: `${rem(7)} ${rem(14)}`,
+          fontSize: rem(11),
+        },
+        '@media (max-width: 1366px)': {
+          height: rem(30),
+          padding: `${rem(6)} ${rem(12)}`,
+          fontSize: rem(10),
+        },
+      }),
+
       // Contained variant
       ...(buttonVariant === 'contained' && {
         backgroundColor: color,
