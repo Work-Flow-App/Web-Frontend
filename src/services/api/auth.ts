@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import type { ApiResponse } from './client';
-import type { UserRole, AuthTokens } from '../../types/auth';
+import type { UserRole, AuthTokens, User } from '../../types/auth';
 
 /**
  * Authentication API Service
@@ -22,7 +22,7 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
-export interface AuthResponse extends AuthTokens {}
+export type AuthResponse = AuthTokens;
 
 export const authService = {
   /**
@@ -88,8 +88,8 @@ export const authService = {
   /**
    * Get current user profile
    */
-  async getCurrentUser(): Promise<ApiResponse<any>> {
-    return await apiClient.get<any>('/api/v1/auth/me');
+  async getCurrentUser(): Promise<ApiResponse<User>> {
+    return await apiClient.get<User>('/api/v1/auth/me');
   },
 
   /**
