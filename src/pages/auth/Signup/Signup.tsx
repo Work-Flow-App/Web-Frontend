@@ -84,8 +84,11 @@ export const Signup: React.FC = () => {
 
       console.log('Signup successful:', response);
 
-      // Redirect to dashboard or home page after successful signup
-      navigate('/dashboard');
+      // Clear tokens after signup - user needs to login
+      authService.logout();
+
+      // Redirect to login page after successful signup
+      navigate('/login');
     } catch (error: unknown) {
       console.error('Signup failed:', error);
       let errorMessage = 'Failed to create account. Please try again.';

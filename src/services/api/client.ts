@@ -21,7 +21,9 @@ class ApiClient {
   private timeout: number;
 
   constructor() {
-    this.baseUrl = env.apiBaseUrl;
+    // In development, use the Vite proxy to avoid CORS issues
+    // In production, use the actual API URL
+    this.baseUrl = env.isDev ? '' : env.apiBaseUrl;
     this.timeout = env.apiTimeout;
   }
 
@@ -36,9 +38,9 @@ class ApiClient {
    * Get default headers for requests
    */
   private getHeaders(customHeaders?: HeadersInit): HeadersInit {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...customHeaders,
+      ...(customHeaders as Record<string, string>),
     };
 
     const token = this.getAuthToken();
@@ -94,6 +96,8 @@ class ApiClient {
         method: 'GET',
         headers: this.getHeaders(options?.headers),
         signal: controller.signal,
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 
@@ -116,6 +120,8 @@ class ApiClient {
         headers: this.getHeaders(options?.headers),
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 
@@ -138,6 +144,8 @@ class ApiClient {
         headers: this.getHeaders(options?.headers),
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 
@@ -160,6 +168,8 @@ class ApiClient {
         headers: this.getHeaders(options?.headers),
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 
@@ -181,6 +191,8 @@ class ApiClient {
         method: 'DELETE',
         headers: this.getHeaders(options?.headers),
         signal: controller.signal,
+        credentials: 'include',
+        mode: 'cors',
         ...options,
       });
 

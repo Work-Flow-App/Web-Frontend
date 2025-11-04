@@ -17,7 +17,6 @@ export default defineConfig({
         target: 'https://api.dev.workfloow.app',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
