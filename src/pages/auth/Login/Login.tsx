@@ -68,7 +68,7 @@ export const Login: React.FC = () => {
 
     try {
       const response = await authService.login({
-        email: data.email,
+        userName: data.userName,
         password: data.password,
       });
 
@@ -176,18 +176,14 @@ export const Login: React.FC = () => {
             )}
 
             <Input
-              label="Email Address"
-              type="email"
-              placeholder="username@email.com"
+              label="Username"
+              type="text"
+              placeholder="Enter your username"
               fullWidth
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
-                },
+              {...register('userName', {
+                required: 'Username is required',
               })}
-              error={errors.email}
+              error={errors.userName}
             />
 
             <Input

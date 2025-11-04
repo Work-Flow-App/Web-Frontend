@@ -14,8 +14,12 @@ export interface SignupRequest {
 }
 
 export interface LoginRequest {
-  email: string;
+  userName: string;
   password: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
 }
 
 export interface AuthResponse extends AuthTokens {}
@@ -43,6 +47,23 @@ export const authService = {
     const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
 
     // Store auth tokens
+    if (response.data.accessToken) {
+      apiClient.setAuthToken(response.data.accessToken);
+      localStorage.setItem('refresh_token', response.data.refreshToken);
+    }
+
+    return response;
+  },
+
+  /**
+   * Refresh access token using refresh token
+   */
+  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthResponse>> {
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh', {
+      refreshToken,
+    });
+
+    // Update stored tokens
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
       localStorage.setItem('refresh_token', response.data.refreshToken);
