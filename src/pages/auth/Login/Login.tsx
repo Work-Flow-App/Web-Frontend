@@ -1,34 +1,32 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
-import { RadioGroup } from '../../../components/UI/Forms/Radio';
 import { FeatureCard } from '../../../components/UI/FeatureCard';
 import { authService } from '../../../services/api';
-import { UserRole } from '../../../types/auth';
 import {
-  SignupContainer,
+  LoginContainer,
   LeftSection,
   FormContainer,
   HeaderSection,
   Title,
   Subtitle,
   FormWrapper,
+  ForgotPasswordLink,
   DividerContainer,
   DividerLine,
   DividerText,
-  SignInLink,
+  SignUpLink,
   RightSection,
   RightContent,
   BrandSection,
   Tagline,
   FeaturesGrid,
-  // FooterText,
   // GoogleButton,
-} from './Signup.styles';
-import type { SignupFormData } from './Signup.types';
+} from './Login.styles';
+import type { LoginFormData } from './Login.types';
 
 // const GoogleIcon = () => (
 //   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -51,18 +49,12 @@ import type { SignupFormData } from './Signup.types';
 //   </svg>
 // );
 
-export const Signup: React.FC = () => {
+export const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
-    watch,
-  } = useForm<SignupFormData>({
-    defaultValues: {
-      role: UserRole.WORKER,
-    },
-  });
+  } = useForm<LoginFormData>();
 
   const navigate = useNavigate();
   const [activeCardIndex, setActiveCardIndex] = useState(1); // Start with middle card active
@@ -70,25 +62,23 @@ export const Signup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const onSubmit = async (data: SignupFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setApiError(null);
 
     try {
-      const response = await authService.signup({
-        username: data.username,
+      const response = await authService.login({
         email: data.email,
         password: data.password,
-        role: data.role,
       });
 
-      console.log('Signup successful:', response);
+      console.log('Login successful:', response);
 
-      // Redirect to dashboard or home page after successful signup
+      // Redirect to dashboard after successful login
       navigate('/dashboard');
     } catch (error: unknown) {
-      console.error('Signup failed:', error);
-      let errorMessage = 'Failed to create account. Please try again.';
+      console.error('Login failed:', error);
+      let errorMessage = 'Failed to sign in. Please try again.';
 
       if (error && typeof error === 'object' && 'message' in error) {
         errorMessage = (error as { message: string }).message;
@@ -102,21 +92,27 @@ export const Signup: React.FC = () => {
     }
   };
 
-  // const handleGoogleSignup = () => {
-  //   console.log('Google signup clicked');
+  // const handleGoogleLogin = () => {
+  //   console.log('Google login clicked');
   //   // Handle Google OAuth here
   // };
 
+  const handleForgotPassword = () => {
+    console.log('Forgot password clicked');
+    // Navigate to forgot password page
+    navigate('/forgot-password');
+  };
+
   const features = [
     {
-      title: 'Address Book',
+      title: 'Contacts Manager',
       description:
         'Keep all your important connections organized and accessible in one place. With Floow, you can create detailed profiles, link contacts to tasks or projects, and never lose track of who\'s involved.',
     },
     {
       title: 'Job Tracking',
       description:
-        'Keep all your jobs organized and visible in one place, with Floow. No more scattered notes or missed deadlines, everything you need stays right where you can see it.',
+        'Keep all your jobs organized and visible in one place, With Floow. No more scattered notes or missed deadlines, everything you need stays right where you can see it.',
     },
     {
       title: 'Collaboration',
@@ -155,12 +151,12 @@ export const Signup: React.FC = () => {
   };
 
   return (
-    <SignupContainer>
+    <LoginContainer>
       <LeftSection>
         <FormContainer>
           <HeaderSection>
             <FloowLogo variant="light" showText={true} />
-            <Title>Get Started!</Title>
+            <Title>Welcome Back!</Title>
             <Subtitle>
               Enter your valid email address and password to access your account.
             </Subtitle>
@@ -180,21 +176,6 @@ export const Signup: React.FC = () => {
             )}
 
             <Input
-              label="Username"
-              type="text"
-              placeholder="Enter your username"
-              fullWidth
-              {...register('username', {
-                required: 'Username is required',
-                minLength: {
-                  value: 3,
-                  message: 'Username must be at least 3 characters',
-                },
-              })}
-              error={errors.username}
-            />
-
-            <Input
               label="Email Address"
               type="email"
               placeholder="username@email.com"
@@ -210,60 +191,19 @@ export const Signup: React.FC = () => {
             />
 
             <Input
-              label="Create Password"
+              label="Password"
               type="password"
               placeholder="Enter your password"
               fullWidth
               {...register('password', {
                 required: 'Password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters',
-                },
               })}
               error={errors.password}
             />
 
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Re-enter your password"
-              fullWidth
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) =>
-                  value === watch('password') || 'Passwords do not match',
-              })}
-              error={errors.confirmPassword}
-            />
-
-            <Controller
-              name="role"
-              control={control}
-              rules={{ required: 'Please select a role' }}
-              render={({ field }) => (
-                <RadioGroup
-                  name="role"
-                  label="I am a"
-                  options={[
-                    {
-                      label: 'Company',
-                      value: UserRole.COMPANY,
-                      description: 'Register as a company to post jobs and hire workers',
-                    },
-                    {
-                      label: 'Worker',
-                      value: UserRole.WORKER,
-                      description: 'Register as a worker to find and apply for jobs',
-                    },
-                  ]}
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.role}
-                  orientation="vertical"
-                />
-              )}
-            />
+            <ForgotPasswordLink onClick={handleForgotPassword}>
+              Forgot Password?
+            </ForgotPasswordLink>
 
             <Button
               type="submit"
@@ -273,7 +213,7 @@ export const Signup: React.FC = () => {
               fullWidth
               disabled={isLoading}
             >
-              {isLoading ? 'Creating account...' : 'Sign up'}
+              {isLoading ? 'Signing in...' : 'Log in'}
             </Button>
 
             <DividerContainer>
@@ -282,14 +222,14 @@ export const Signup: React.FC = () => {
               <DividerLine />
             </DividerContainer>
 
-            {/* <GoogleButton onClick={handleGoogleSignup}>
+            {/* <GoogleButton onClick={handleGoogleLogin}>
               <GoogleIcon />
-              Sign up with Google
+              Sign in with Google
             </GoogleButton> */}
 
-            <SignInLink>
-              Already have an account, <a href="/login">Sign in</a>
-            </SignInLink>
+            <SignUpLink>
+              <a href="/signup">Create an account</a>
+            </SignUpLink>
           </FormWrapper>
 
           {/* <FooterText>
@@ -319,6 +259,6 @@ export const Signup: React.FC = () => {
           </FeaturesGrid>
         </RightContent>
       </RightSection>
-    </SignupContainer>
+    </LoginContainer>
   );
 };
