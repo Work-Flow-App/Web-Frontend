@@ -1,0 +1,70 @@
+version: 0.2
+
+# AWS CodeBuild specification for React + Vite project
+# This builds the static site and prepares it for deployment to S3/CloudFront
+
+env:
+  variables:
+    NODE_VERSION: "20"
+    # Override these in CodeBuild project settings or parameter store
+    # VITE_API_BASE_URL: "https://api.workfloow.app"
+    # VITE_API_TIMEOUT: "30000"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "Installing dependencies..."
+      - node --version
+      - npm --version
+      - npm ci --legacy-peer-deps
+      - echo "Dependencies installed successfully"
+
+  pre_build:
+    commands:
+      - echo "Running pre-build checks..."
+      - echo "Build started on `date`"
+      - echo "Current environment variables:"
+      - echo "VITE_API_BASE_URL=$VITE_API_BASE_URL"
+      - echo "Running linter..."
+      - npm run lint
+      - echo "Linting completed"
+
+  build:
+    commands:
+      - echo "Building the application..."
+      - npm run build
+      - echo "Build completed successfully"
+      - ls -la dist/
+
+  post_build:
+    commands:
+      - echo "Build finished on `date`"
+      - echo "Checking build output..."
+      - |
+        if [ -d "dist" ]; then
+          echo "Build artifacts found in dist/"
+          ls -lah dist/
+        else
+          echo "ERROR: dist/ directory not found!"
+          exit 1
+        fi
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: dist
+  name: workfloww-build-$(date +%Y%m%d-%H%M%S)
+
+cache:
+  paths:
+    - 'node_modules/**/*'
+    - '.npm/**/*'
+
+reports:
+  # Optional: Add test reports if you add test commands
+  # test-results:
+  #   files:
+  #     - 'coverage/junit.xml'
+  #   file-format: 'JUNITXML'
