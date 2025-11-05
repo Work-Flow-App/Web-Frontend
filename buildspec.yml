@@ -61,10 +61,3 @@ cache:
   paths:
     - 'node_modules/**/*'
     - '.npm/**/*'
-
-reports:
-  # Optional: Add test reports if you add test commands
-  # test-results:
-  #   files:
-  #     - 'coverage/junit.xml'
-  #   file-format: 'JUNITXML'
