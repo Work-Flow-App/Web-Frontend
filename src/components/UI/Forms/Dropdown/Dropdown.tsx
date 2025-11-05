@@ -109,7 +109,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   // Side Effects
   useEffect(() => {
     if (apiHook && !isAsync && setFetchedOption && !getLiveData && !dependency) {
-      let qParam = null;
+      let qParam: Record<string, unknown> | undefined;
       setLoading(true);
 
       if (getQueryParams) {
@@ -161,7 +161,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     }
     if (apiHook && !isAsync && dependency && prevParentCache?.value !== dependencyValue?.value && setFetchedOption) {
       if (dependencyValue?.value) {
-        let qParam = null;
+        let qParam: Record<string, unknown> | undefined;
         setLoading(true);
 
         if (getQueryParams) {
@@ -200,7 +200,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
 
   useEffect(() => {
     if (apiHook && isAsync && setFetchedOption && !apiHook.isLoading && apiHook.isSuccess) {
-      if (!Array.isArray(apiHook?.data) && !Array.isArray(apiHook?.data?.list)) {
+      if (!Array.isArray(apiHook?.data) && !Array.isArray((apiHook?.data as { list?: unknown[] })?.list)) {
         setOptions([]);
       } else {
         setOptions([...setFetchedOption(apiHook?.data, name)]);
@@ -239,7 +239,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setOptions([...(preFetchedOptions as DropdownOption[])]);
       }
     } else if (apiHook && !isAsync && setFetchedOption && getLiveData) {
-      let qParam = null;
+      let qParam: Record<string, unknown> | undefined;
       setLoading(true);
 
       if (getQueryParams) {
@@ -255,7 +255,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setLoading(false);
       });
     } else if (apiHook && isAsync && setFetchedOption) {
-      let qParam = null;
+      let qParam: Record<string, unknown> | undefined;
       setLoading(true);
 
       if (getQueryParams && addNewConfig) {
@@ -314,8 +314,10 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   const handleChange = useCallback((_event: React.SyntheticEvent, data: unknown) => {
     const dropdownData = data as DropdownOption | null;
     field.onChange(dropdownData);
-    onChange?.(dropdownData, dependentFields);
-    onValueChange?.(dropdownData, dependentFields, name);
+    if (dropdownData?.value !== undefined && dropdownData?.value !== null) {
+      onChange?.(dropdownData.value, dependentFields);
+      onValueChange?.(dropdownData.value, dependentFields, name);
+    }
     parentRef?.current?.focus();
   }, [field, onChange, onValueChange, dependentFields, name]);
 

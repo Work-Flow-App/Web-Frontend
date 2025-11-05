@@ -2,10 +2,12 @@
  * Authentication types and enums
  */
 
-export enum UserRole {
-  COMPANY = 'COMPANY',
-  WORKER = 'WORKER',
-}
+export const UserRole = {
+  COMPANY: 'COMPANY',
+  WORKER: 'WORKER',
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 export interface User {
   id: string;
