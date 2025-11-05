@@ -1,5 +1,3 @@
-import type { InputHTMLAttributes } from 'react';
-
 export interface RadioOption {
   label: string;
   value: string;

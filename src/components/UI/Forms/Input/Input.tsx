@@ -19,7 +19,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       size = 'medium',
       startIcon,
       endIcon,
-      variant = 'outlined',
       disabled,
       ...props
     },

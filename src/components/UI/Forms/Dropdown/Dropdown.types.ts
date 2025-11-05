@@ -67,7 +67,7 @@ export interface IAddNewConfig {
   /**
    * Additional modal data
    */
-  modalData?: Record<string, any>;
+  modalData?: Record<string, unknown>;
 
   /**
    * Callback when add new is clicked
@@ -82,19 +82,19 @@ export interface IAddNewConfig {
   /**
    * Additional callbacks
    */
-  callBacks?: Record<string, any>;
+  callBacks?: Record<string, (...args: unknown[]) => void>;
 }
 
-export interface IApiHook<T = any> {
+export interface IApiHook<T = unknown> {
   /**
    * Call API method
    */
-  callApi: (params?: any) => void;
+  callApi: (params?: Record<string, unknown>) => void;
 
   /**
    * Call async API method
    */
-  callAsyncApi: (params?: any) => Promise<{ data?: T }>;
+  callAsyncApi: (params?: Record<string, unknown>) => Promise<{ data?: T }>;
 
   /**
    * Loading state
@@ -170,13 +170,13 @@ export interface DropdownProps {
   /**
    * The query param callback if required to send with the apiHook
    */
-  getQueryParams?: (dependencyValue?: any, keyword?: string) => any;
+  getQueryParams?: (dependencyValue?: unknown, keyword?: string) => Record<string, unknown>;
 
   /**
    * Callback to map the returned response from the backend into DropdownOption array
    * Required if apiHook is provided
    */
-  setFetchedOption?: (data: any, name?: string) => DropdownOption[];
+  setFetchedOption?: (data: unknown, name?: string) => DropdownOption[];
 
   /**
    * Whether the prefetched data is loading or not
@@ -248,17 +248,17 @@ export interface DropdownProps {
   /**
    * Callback to dynamically update the options based on other input values
    */
-  dynamicOptionCallback?: (itemValue: any) => DropdownOption[];
+  dynamicOptionCallback?: (itemValue: unknown) => DropdownOption[];
 
   /**
    * To be able to access the selected value from the parent component
    */
-  onValueChange?: (value: any, dependentFields?: string[], name?: string) => void;
+  onValueChange?: (value: string | number, dependentFields?: string[], name?: string) => void;
 
   /**
    * Callback for Change event
    */
-  onChange?: (value: any, dependentFields?: string[]) => void;
+  onChange?: (value: string | number, dependentFields?: string[]) => void;
 
   /**
    * The name of the parent field
@@ -281,12 +281,12 @@ export interface DropdownProps {
   /**
    * Default value for the dropdown
    */
-  defaultValue?: any;
+  defaultValue?: string | number;
 
   /**
    * Current value of the dropdown
    */
-  value?: any;
+  value?: string | number;
 
   /**
    * Whether to hide the error message or not

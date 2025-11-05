@@ -201,7 +201,7 @@ export const ErrorState: Story = {
             size="small"
             label="Country"
             placeHolder="Select a country"
-            error={showError ? ({ message: 'Please select a valid country' } as any) : undefined}
+            error={showError ? ({ message: 'Please select a valid country', type: 'required' }) : undefined}
           />
         </FormProvider>
       );
@@ -270,9 +270,10 @@ export const DependentDropdowns: Story = {
     const DependentExample = () => {
       const methods = useForm();
 
-      const getDynamicCities = (countryValue: any) => {
-        if (!countryValue?.value) return [];
-        return cityOptionsByCountry[countryValue.value] || [];
+      const getDynamicCities = (countryValue: unknown) => {
+        if (!countryValue || typeof countryValue !== 'object' || !('value' in countryValue)) return [];
+        const country = countryValue as { value: string; label: string };
+        return cityOptionsByCountry[country.value] || [];
       };
 
       return (
@@ -392,7 +393,7 @@ export const CompleteFormExample: Story = {
     const FormExample = () => {
       const methods = useForm();
 
-      const onSubmit = (data: any) => {
+      const onSubmit = (data: Record<string, unknown>) => {
         console.log('Form submitted:', data);
         alert(JSON.stringify(data, null, 2));
       };
@@ -475,8 +476,9 @@ export const WithCallbacks: Story = {
       const methods = useForm();
       const [lastSelected, setLastSelected] = useState<string>('');
 
-      const handleValueChange = (value: any) => {
-        setLastSelected(value?.label || 'None');
+      const handleValueChange = (value: string | number) => {
+        const selectedOption = countryOptions.find(opt => opt.value === value);
+        setLastSelected(selectedOption?.label || 'None');
       };
 
       return (
