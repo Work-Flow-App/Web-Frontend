@@ -8,6 +8,7 @@ import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { FeatureCard } from '../../../components/UI/FeatureCard';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { authService } from '../../../services/api';
+import { getRoleFromToken } from '../../../utils/jwt';
 import {
   LoginContainer,
   LeftSection,
@@ -77,12 +78,12 @@ export const Login: React.FC = () => {
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      const response = await authService.login({
+      const loginResponse = await authService.login({
         userName: data.userName,
         password: data.password,
       });
 
-      console.log('Login successful:', response);
+      console.log('Login successful');
 
       // Show success message
       setSnackbar({
@@ -91,18 +92,40 @@ export const Login: React.FC = () => {
         variant: 'success',
       });
 
-      // Redirect to dashboard after 1 second
+      // Extract role from JWT token
+      const accessToken = loginResponse.data.accessToken;
+      let userRole: string | null = null;
+
+      if (accessToken) {
+        userRole = getRoleFromToken(accessToken);
+        if (userRole) {
+          localStorage.setItem('user_role', userRole);
+        }
+      }
+
+      // Redirect based on user role after 1 second
       setTimeout(() => {
-        navigate('/dashboard');
+        // Handle both ROLE_COMPANY and COMPANY formats from backend
+        if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
+          navigate('/company');
+        } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
+          navigate('/worker');
+        } else {
+          // Default redirect to company page
+          navigate('/company');
+        }
       }, 1000);
     } catch (error: unknown) {
       console.error('Login failed:', error);
       let errorMessage = 'Failed to sign in. Please try again.';
 
-      if (error && typeof error === 'object' && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+      // Extract error message from API error response
+      if (error && typeof error === 'object') {
+        if ('message' in error && typeof error.message === 'string') {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
       }
 
       setSnackbar({

@@ -130,7 +130,8 @@ class ApiClient {
    */
   private async handleResponse<T>(
     response: Response,
-    retryRequest: () => Promise<ApiResponse<T>>
+    retryRequest: () => Promise<ApiResponse<T>>,
+    endpoint: string
   ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type');
     const isJson = contentType?.includes('application/json');
@@ -150,7 +151,12 @@ class ApiClient {
       }
 
       // Handle 401 Unauthorized - attempt token refresh
-      if (response.status === 401) {
+      // BUT skip token refresh for auth endpoints (login, signup, refresh)
+      const isAuthEndpoint = endpoint.includes('/auth/login') ||
+                            endpoint.includes('/auth/signup') ||
+                            endpoint.includes('/auth/refresh');
+
+      if (response.status === 401 && !isAuthEndpoint) {
         return this.handle401Error(error, retryRequest);
       }
 
@@ -229,7 +235,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest);
+        return await this.handleResponse<T>(response, makeRequest, endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -257,7 +263,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest);
+        return await this.handleResponse<T>(response, makeRequest, endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -285,7 +291,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest);
+        return await this.handleResponse<T>(response, makeRequest, endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -313,7 +319,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest);
+        return await this.handleResponse<T>(response, makeRequest, endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -340,7 +346,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest);
+        return await this.handleResponse<T>(response, makeRequest, endpoint);
       } finally {
         clearTimeout(timeoutId);
       }

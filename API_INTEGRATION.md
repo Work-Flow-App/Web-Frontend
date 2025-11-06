@@ -96,12 +96,23 @@ const response = await apiClient.delete('/api/v1/jobs/123');
 - `POST /api/v1/auth/signup` - Sign up new user
 - `POST /api/v1/auth/login` - Login existing user
 - `POST /api/v1/auth/logout` - Logout user
-- `GET /api/v1/auth/me` - Get current user
+- `POST /api/v1/auth/refresh` - Refresh access token
+
+**Note:** User role is extracted from the JWT token payload, not from a separate endpoint.
 
 ## User Roles
 
+The backend uses two different role formats:
+
+### Signup/Registration (without prefix)
 - `COMPANY` - For companies posting jobs
 - `WORKER` - For workers finding jobs
+
+### JWT Token (with ROLE_ prefix)
+- `ROLE_COMPANY` - Company role in JWT token
+- `ROLE_WORKER` - Worker role in JWT token
+
+**Note:** When signing up, use `"COMPANY"` or `"WORKER"`. The JWT token will contain `"ROLE_COMPANY"` or `"ROLE_WORKER"`.
 
 ## Token Management
 

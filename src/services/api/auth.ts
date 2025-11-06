@@ -87,6 +87,8 @@ export const authService = {
 
   /**
    * Get current user profile
+   * NOTE: This endpoint is not currently available in the backend.
+   * Use getRoleFromToken() from utils/jwt.ts to extract role from JWT token instead.
    */
   async getCurrentUser(): Promise<ApiResponse<User>> {
     return await apiClient.get<User>('/api/v1/auth/me');

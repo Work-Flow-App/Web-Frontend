@@ -94,6 +94,9 @@ export const Signup: React.FC = () => {
 
       console.log('Signup successful:', response);
 
+      // Store user role temporarily for the login flow
+      localStorage.setItem('pending_user_role', data.role);
+
       // Clear tokens after signup - user needs to login
       authService.logout();
 
@@ -112,10 +115,13 @@ export const Signup: React.FC = () => {
       console.error('Signup failed:', error);
       let errorMessage = 'Failed to create account. Please try again.';
 
-      if (error && typeof error === 'object' && 'message' in error) {
-        errorMessage = (error as { message: string }).message;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+      // Extract error message from API error response
+      if (error && typeof error === 'object') {
+        if ('message' in error && typeof error.message === 'string') {
+          errorMessage = error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
       }
 
       setSnackbar({
