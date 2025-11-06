@@ -10,7 +10,7 @@ interface StyledButtonProps {
 }
 
 export const StyledButton = styled(MuiButton)<StyledButtonProps>(
-  ({ theme, buttonColor, buttonVariant, buttonSize }) => {
+  ({ theme, buttonColor, buttonVariant, buttonSize, fullWidth }) => {
     const { palette, shadows } = theme;
 
     // Get color based on buttonColor prop
@@ -65,7 +65,7 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
             fontSize: rem(12),
             borderRadius: rem(8),
             gap: rem(8),
-            minWidth: 'auto',
+            minWidth: fullWidth ? 'unset' : 'auto',
           };
         case 'large':
           return {
@@ -75,7 +75,7 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
             lineHeight: rem(27), // From Figma
             borderRadius: rem(8),
             gap: rem(10),
-            minWidth: rem(451), // 28.1875rem from Figma
+            minWidth: fullWidth ? 'unset' : rem(451), // 28.1875rem from Figma
             fontWeight: 700, // Bold from Figma, overrides base _800
             letterSpacing: em(0.005), // From Figma
           };
@@ -87,7 +87,7 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
             fontSize: rem(14),
             borderRadius: rem(8),
             gap: rem(10),
-            minWidth: 'auto',
+            minWidth: fullWidth ? 'unset' : 'auto',
           };
       }
     };
@@ -98,7 +98,7 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
       flexDirection: 'row' as const,
       justifyContent: 'center',
       alignItems: 'center',
-      width: 'auto',
+      width: fullWidth ? '100%' : 'auto',
       fontWeight: Bold._800,
       textTransform: 'none' as const,
       boxShadow: shadows[0],
@@ -113,14 +113,14 @@ export const StyledButton = styled(MuiButton)<StyledButtonProps>(
           padding: `${rem(11)} ${rem(22)}`,
           fontSize: rem(18),
           lineHeight: rem(24),
-          minWidth: rem(400),
+          minWidth: fullWidth ? 'unset' : rem(400),
         },
         '@media (max-width: 1366px)': {
           height: rem(42),
           padding: `${rem(10)} ${rem(20)}`,
           fontSize: rem(16),
           lineHeight: rem(22),
-          minWidth: rem(350),
+          minWidth: fullWidth ? 'unset' : rem(350),
         },
       }),
 
