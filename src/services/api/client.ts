@@ -29,6 +29,16 @@ class ApiClient {
     request: () => Promise<any>;
   }> = [];
 
+  /**
+   * Public authentication endpoints that don't require authorization
+   * Add new public auth endpoints here to ensure they work properly
+   */
+  private readonly PUBLIC_AUTH_ENDPOINTS = [
+    '/auth/login',
+    '/auth/signup',
+    '/auth/refresh',
+  ];
+
   constructor() {
     // In development, use the Vite proxy to avoid CORS issues
     // In production, use the actual API URL
@@ -51,6 +61,16 @@ class ApiClient {
   }
 
   /**
+   * Check if endpoint is a public auth endpoint
+   */
+  private isPublicAuthEndpoint(endpoint?: string): boolean {
+    if (!endpoint) return false;
+    return this.PUBLIC_AUTH_ENDPOINTS.some(publicEndpoint =>
+      endpoint.includes(publicEndpoint)
+    );
+  }
+
+  /**
    * Get default headers for requests
    */
   private getHeaders(customHeaders?: HeadersInit, endpoint?: string): HeadersInit {
@@ -60,14 +80,8 @@ class ApiClient {
     };
 
     // Don't send Authorization header for public auth endpoints
-    const isPublicAuthEndpoint = endpoint && (
-      endpoint.includes('/auth/login') ||
-      endpoint.includes('/auth/signup') ||
-      endpoint.includes('/auth/refresh')
-    );
-
     const token = this.getAuthToken();
-    if (token && !isPublicAuthEndpoint) {
+    if (token && !this.isPublicAuthEndpoint(endpoint)) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -159,11 +173,7 @@ class ApiClient {
 
       // Handle 401 Unauthorized - attempt token refresh
       // BUT skip token refresh for auth endpoints (login, signup, refresh)
-      const isAuthEndpoint = endpoint.includes('/auth/login') ||
-                            endpoint.includes('/auth/signup') ||
-                            endpoint.includes('/auth/refresh');
-
-      if (response.status === 401 && !isAuthEndpoint) {
+      if (response.status === 401 && !this.isPublicAuthEndpoint(endpoint)) {
         return this.handle401Error(error, retryRequest);
       }
 
