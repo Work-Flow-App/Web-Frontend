@@ -53,14 +53,21 @@ class ApiClient {
   /**
    * Get default headers for requests
    */
-  private getHeaders(customHeaders?: HeadersInit): HeadersInit {
+  private getHeaders(customHeaders?: HeadersInit, endpoint?: string): HeadersInit {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(customHeaders as Record<string, string>),
     };
 
+    // Don't send Authorization header for public auth endpoints
+    const isPublicAuthEndpoint = endpoint && (
+      endpoint.includes('/auth/login') ||
+      endpoint.includes('/auth/signup') ||
+      endpoint.includes('/auth/refresh')
+    );
+
     const token = this.getAuthToken();
-    if (token) {
+    if (token && !isPublicAuthEndpoint) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -228,7 +235,7 @@ class ApiClient {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'GET',
-          headers: this.getHeaders(options?.headers),
+          headers: this.getHeaders(options?.headers, endpoint),
           signal: controller.signal,
           credentials: 'include',
           mode: 'cors',
@@ -255,7 +262,7 @@ class ApiClient {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'POST',
-          headers: this.getHeaders(options?.headers),
+          headers: this.getHeaders(options?.headers, endpoint),
           body: body ? JSON.stringify(body) : undefined,
           signal: controller.signal,
           credentials: 'include',
@@ -283,7 +290,7 @@ class ApiClient {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'PUT',
-          headers: this.getHeaders(options?.headers),
+          headers: this.getHeaders(options?.headers, endpoint),
           body: body ? JSON.stringify(body) : undefined,
           signal: controller.signal,
           credentials: 'include',
@@ -311,7 +318,7 @@ class ApiClient {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'PATCH',
-          headers: this.getHeaders(options?.headers),
+          headers: this.getHeaders(options?.headers, endpoint),
           body: body ? JSON.stringify(body) : undefined,
           signal: controller.signal,
           credentials: 'include',
@@ -339,7 +346,7 @@ class ApiClient {
       try {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: 'DELETE',
-          headers: this.getHeaders(options?.headers),
+          headers: this.getHeaders(options?.headers, endpoint),
           signal: controller.signal,
           credentials: 'include',
           mode: 'cors',
