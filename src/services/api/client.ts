@@ -19,6 +19,15 @@ export interface ApiError {
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
+  private isRefreshing: boolean = false;
+  private failedRequestsQueue: Array<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolve: (value: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    reject: (reason?: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    request: () => Promise<any>;
+  }> = [];
 
   constructor() {
     // In development, use the Vite proxy to avoid CORS issues
@@ -32,6 +41,13 @@ class ApiClient {
    */
   private getAuthToken(): string | null {
     return localStorage.getItem('auth_token');
+  }
+
+  /**
+   * Get refresh token from storage
+   */
+  private getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 
   /**
@@ -52,9 +68,70 @@ class ApiClient {
   }
 
   /**
-   * Handle API response
+   * Refresh the access token using the refresh token
    */
-  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  private async refreshAccessToken(): Promise<boolean> {
+    const refreshToken = this.getRefreshToken();
+
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
+        mode: 'cors',
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+
+      if (data.accessToken) {
+        this.setAuthToken(data.accessToken);
+        if (data.refreshToken) {
+          localStorage.setItem('refresh_token', data.refreshToken);
+        }
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Process queued requests after token refresh
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private processQueue(error: any = null): void {
+    this.failedRequestsQueue.forEach(({ resolve, reject, request }) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(request());
+      }
+    });
+
+    this.failedRequestsQueue = [];
+  }
+
+  /**
+   * Handle API response with automatic token refresh on 401
+   */
+  private async handleResponse<T>(
+    response: Response,
+    retryRequest: () => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type');
     const isJson = contentType?.includes('application/json');
 
@@ -72,6 +149,11 @@ class ApiClient {
         error.message = response.statusText;
       }
 
+      // Handle 401 Unauthorized - attempt token refresh
+      if (response.status === 401) {
+        return this.handle401Error(error, retryRequest);
+      }
+
       throw error;
     }
 
@@ -85,121 +167,186 @@ class ApiClient {
   }
 
   /**
+   * Handle 401 error by refreshing token and retrying request
+   */
+  private async handle401Error<T>(
+    error: ApiError,
+    retryRequest: () => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>> {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+
+      try {
+        const refreshed = await this.refreshAccessToken();
+
+        if (refreshed) {
+          // Token refreshed successfully, retry all queued requests
+          this.processQueue();
+          return retryRequest();
+        } else {
+          // Refresh failed, clear tokens and redirect to login
+          this.clearAuthToken();
+          localStorage.removeItem('refresh_token');
+          this.processQueue(error);
+
+          // Redirect to login page
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+
+          throw error;
+        }
+      } finally {
+        this.isRefreshing = false;
+      }
+    }
+
+    // If already refreshing, queue this request
+    return new Promise((resolve, reject) => {
+      this.failedRequestsQueue.push({
+        resolve,
+        reject,
+        request: retryRequest,
+      });
+    });
+  }
+
+  /**
    * Make a GET request
    */
   async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const makeRequest = async (): Promise<ApiResponse<T>> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'GET',
-        headers: this.getHeaders(options?.headers),
-        signal: controller.signal,
-        credentials: 'include',
-        mode: 'cors',
-        ...options,
-      });
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'GET',
+          headers: this.getHeaders(options?.headers),
+          signal: controller.signal,
+          credentials: 'include',
+          mode: 'cors',
+          ...options,
+        });
 
-      return await this.handleResponse<T>(response);
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        return await this.handleResponse<T>(response, makeRequest);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    return makeRequest();
   }
 
   /**
    * Make a POST request
    */
   async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const makeRequest = async (): Promise<ApiResponse<T>> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers: this.getHeaders(options?.headers),
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-        credentials: 'include',
-        mode: 'cors',
-        ...options,
-      });
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'POST',
+          headers: this.getHeaders(options?.headers),
+          body: body ? JSON.stringify(body) : undefined,
+          signal: controller.signal,
+          credentials: 'include',
+          mode: 'cors',
+          ...options,
+        });
 
-      return await this.handleResponse<T>(response);
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        return await this.handleResponse<T>(response, makeRequest);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    return makeRequest();
   }
 
   /**
    * Make a PUT request
    */
   async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const makeRequest = async (): Promise<ApiResponse<T>> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'PUT',
-        headers: this.getHeaders(options?.headers),
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-        credentials: 'include',
-        mode: 'cors',
-        ...options,
-      });
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'PUT',
+          headers: this.getHeaders(options?.headers),
+          body: body ? JSON.stringify(body) : undefined,
+          signal: controller.signal,
+          credentials: 'include',
+          mode: 'cors',
+          ...options,
+        });
 
-      return await this.handleResponse<T>(response);
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        return await this.handleResponse<T>(response, makeRequest);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    return makeRequest();
   }
 
   /**
    * Make a PATCH request
    */
   async patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const makeRequest = async (): Promise<ApiResponse<T>> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'PATCH',
-        headers: this.getHeaders(options?.headers),
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
-        credentials: 'include',
-        mode: 'cors',
-        ...options,
-      });
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'PATCH',
+          headers: this.getHeaders(options?.headers),
+          body: body ? JSON.stringify(body) : undefined,
+          signal: controller.signal,
+          credentials: 'include',
+          mode: 'cors',
+          ...options,
+        });
 
-      return await this.handleResponse<T>(response);
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        return await this.handleResponse<T>(response, makeRequest);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    return makeRequest();
   }
 
   /**
    * Make a DELETE request
    */
   async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const makeRequest = async (): Promise<ApiResponse<T>> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-    try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        method: 'DELETE',
-        headers: this.getHeaders(options?.headers),
-        signal: controller.signal,
-        credentials: 'include',
-        mode: 'cors',
-        ...options,
-      });
+      try {
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+          method: 'DELETE',
+          headers: this.getHeaders(options?.headers),
+          signal: controller.signal,
+          credentials: 'include',
+          mode: 'cors',
+          ...options,
+        });
 
-      return await this.handleResponse<T>(response);
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        return await this.handleResponse<T>(response, makeRequest);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    return makeRequest();
   }
 
   /**

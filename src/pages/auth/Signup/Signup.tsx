@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
+import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { RadioGroup } from '../../../components/UI/Forms/Radio';
 import { FeatureCard } from '../../../components/UI/FeatureCard';
+import { Snackbar } from '../../../components/UI/Snackbar';
 import { authService } from '../../../services/api';
 import { UserRole } from '../../../types/auth';
 import {
@@ -68,11 +70,19 @@ export const Signup: React.FC = () => {
   const [activeCardIndex, setActiveCardIndex] = useState(1); // Start with middle card active
   const scrollTimeout = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    variant: 'success' | 'error' | 'warning' | 'info';
+  }>({
+    open: false,
+    message: '',
+    variant: 'success',
+  });
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    setApiError(null);
+    setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
       const response = await authService.signup({
@@ -87,8 +97,17 @@ export const Signup: React.FC = () => {
       // Clear tokens after signup - user needs to login
       authService.logout();
 
-      // Redirect to login page after successful signup
-      navigate('/login');
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: 'Account created successfully! Redirecting to login...',
+        variant: 'success',
+      });
+
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (error: unknown) {
       console.error('Signup failed:', error);
       let errorMessage = 'Failed to create account. Please try again.';
@@ -99,7 +118,11 @@ export const Signup: React.FC = () => {
         errorMessage = error.message;
       }
 
-      setApiError(errorMessage);
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        variant: 'error',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -170,18 +193,6 @@ export const Signup: React.FC = () => {
           </HeaderSection>
 
           <FormWrapper onSubmit={handleSubmit(onSubmit)}>
-            {apiError && (
-              <div style={{
-                padding: '12px',
-                backgroundColor: '#fee',
-                color: '#c33',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}>
-                {apiError}
-              </div>
-            )}
-
             <Input
               label="Username"
               type="text"
@@ -212,9 +223,8 @@ export const Signup: React.FC = () => {
               error={errors.email}
             />
 
-            <Input
+            <PasswordInput
               label="Create Password"
-              type="password"
               placeholder="Enter your password"
               fullWidth
               {...register('password', {
@@ -227,9 +237,8 @@ export const Signup: React.FC = () => {
               error={errors.password}
             />
 
-            <Input
+            <PasswordInput
               label="Confirm Password"
-              type="password"
               placeholder="Re-enter your password"
               fullWidth
               {...register('confirmPassword', {
@@ -322,6 +331,13 @@ export const Signup: React.FC = () => {
           </FeaturesGrid>
         </RightContent>
       </RightSection>
+
+      <Snackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        variant={snackbar.variant}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </SignupContainer>
   );
 };
