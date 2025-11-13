@@ -60,6 +60,7 @@ export interface HeaderNavProps {
    */
   onSearchClick?: () => void;
 
+  
   /**
    * Callback when settings icon is clicked
    */

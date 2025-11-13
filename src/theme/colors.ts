@@ -10,12 +10,14 @@ export const floowColors = {
   // Grey Scale
   grey: {
     50: '#FAFAFA',
+    75: '#F0F0F0',  // Light background variant for hover states
     100: '#F5F5F5',
     200: '#E5E5E5',
     300: '#D4D4D4',
     400: '#A1A1A1',
     500: '#737373',
     600: '#525252',
+    650: '#3d4956',  // Medium-dark grey for dividers/separators
     700: '#404040',
     800: '#262626',
     900: '#171717',
@@ -26,6 +28,7 @@ export const floowColors = {
     primary: '#121212',
     secondary: '#171717',
     tertiary: '#262626',
+    slate: '#1b232d',  // Secondary dark shade for active/hover states
   },
 
   // Gradient Colors
