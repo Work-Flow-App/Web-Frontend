@@ -72,6 +72,40 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
 }));
 
 /**
+ * Left content section (mobile sidebar toggle)
+ */
+export const LeftSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  gap: rem(12),
+  flexShrink: 0,
+  marginRight: 'auto',
+
+  [theme.breakpoints.down('sm')]: {
+    marginRight: 'auto',
+  },
+}));
+
+/**
+ * Center content section (mobile logo and text)
+ */
+export const CenterSection = styled(Box)(({ theme }) => ({
+  display: 'none',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: rem(8),
+  flexShrink: 0,
+  position: 'absolute',
+  left: '50%',
+  transform: 'translateX(-50%)',
+
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+  },
+}));
+
+/**
  * Right content section (notification, user profile, actions, etc.)
  */
 export const RightSection = styled(Box)(({ theme }) => ({

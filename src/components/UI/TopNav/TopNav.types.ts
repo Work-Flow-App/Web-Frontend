@@ -11,6 +11,11 @@ export interface TopNavProps {
   rightContent?: ReactNode;
 
   /**
+   * Callback to toggle sidebar (mobile only)
+   */
+  onToggleSidebar?: () => void;
+
+  /**
    * Custom className
    */
   className?: string;

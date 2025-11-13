@@ -15,20 +15,28 @@ import type { SidebarItem } from '../../components/UI/Sidebar';
 import { floowColors } from '../../theme/colors';
 import { rem } from '../../components/UI/Typography/utility';
 
-const PageWrapper = styled(Box)({
+const PageWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   minHeight: '100vh',
   width: '100%',
-});
 
-const RightSection = styled(Box)({
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+  },
+}));
+
+const PageRightSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
   height: '100vh',
   overflow: 'hidden',
-});
+
+  [theme.breakpoints.down('sm')]: {
+    height: 'auto',
+  },
+}));
 
 const MainContent = styled(Box)(({ theme }) => ({
   flex: 1,
@@ -226,10 +234,11 @@ export const CompanyPage: React.FC = () => {
       />
 
       {/* Right Section: TopNav + MainContent */}
-      <RightSection>
+      <PageRightSection>
         {/* Top Navigation */}
         <TopNav
           rightContent={<RightActions />}
+          onToggleSidebar={handleToggleSidebar}
         />
 
         {/* Main Content Area */}
@@ -249,7 +258,7 @@ export const CompanyPage: React.FC = () => {
             </MessageSecondary>
           </ContentBox>
         </MainContent>
-      </RightSection>
+      </PageRightSection>
     </PageWrapper>
   );
 };

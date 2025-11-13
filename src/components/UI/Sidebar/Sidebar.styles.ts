@@ -35,8 +35,20 @@ export const SidebarWrapper = styled(Box)<SidebarWrapperProps>(({ theme, isColla
   },
 
   [theme.breakpoints.down('sm')]: {
-    width: isCollapsed ? rem(60) : rem(160),
-    padding: rem(10),
+    // Mobile drawer overlay
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: rem(250),
+    height: '100vh',
+    padding: rem(16),
+    zIndex: 1200,
+    display: 'flex',
+    transform: isCollapsed ? 'translateX(-100%)' : 'translateX(0)',
+    transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    willChange: 'transform, visibility',
+    visibility: isCollapsed ? 'hidden' : 'visible',
   },
 }));
 
@@ -108,6 +120,32 @@ export const IconWrapper = styled(Box)(() => ({
     width: '100%',
     height: '100%',
     fill: 'currentColor',
+  },
+}));
+
+interface SidebarBackdropProps {
+  isVisible?: boolean;
+}
+
+/**
+ * Mobile sidebar backdrop/overlay
+ */
+export const SidebarBackdrop = styled(Box)<SidebarBackdropProps>(({ theme, isVisible }) => ({
+  display: 'none',
+
+  [theme.breakpoints.down('sm')]: {
+    display: isVisible ? 'block' : 'none',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1100,
+    transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    opacity: isVisible ? 1 : 0,
+    pointerEvents: isVisible ? 'auto' : 'none',
+    willChange: 'opacity',
   },
 }));
 
