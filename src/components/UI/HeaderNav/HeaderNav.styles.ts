@@ -263,14 +263,16 @@ export const UserInfo = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
+  justifyContent: 'center',
   padding: '0px',
   width: '126px',
-  height: '42px',
+  height: '44px',
   flexShrink: 0,
   flexGrow: 0,
 
   [theme.breakpoints.down('md')]: {
     width: 'auto',
+    height: '40px',
   },
 
   [theme.breakpoints.down('sm')]: {
