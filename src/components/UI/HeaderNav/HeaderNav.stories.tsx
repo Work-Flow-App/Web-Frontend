@@ -2,6 +2,24 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { HeaderNav } from './HeaderNav';
 import { Box } from '@mui/material';
 import { useState } from 'react';
+import { NotificationDropdown } from '../NotificationList';
+import { CalendarExceededIcon, ChecklistIcon, DocumentIcon } from '../NotificationList/icons';
+import { NotificationIcon, SearchIcon, SettingsIcon, LogoutIcon } from './icons';
+import {
+  IconButtonStyled,
+  ControlsSection,
+  UserProfileSection,
+  UserAvatar,
+  UserInfo,
+  UserName,
+  SubscriptionName,
+  LogoutButton,
+  HeaderNavWrapper,
+  HeaderNavContainer,
+  LogoSection,
+} from './HeaderNav.styles';
+import { TabMenu } from '../Tab';
+import { FloowLogo } from '../FloowLogo/FloowLogo';
 
 // Navigation icons
 const DashboardIcon = () => (
@@ -314,6 +332,135 @@ export const ResponsivePreview: Story = {
         />
         <Box sx={{ padding: '20px', color: '#fff' }}>
           <p>Resize the browser window to see the responsive behavior</p>
+        </Box>
+      </Box>
+    );
+  },
+};
+
+// With Notification Dropdown - Interactive example showing notification list
+export const WithNotificationDropdown: Story = {
+  args: {
+    tabs,
+    activeTab: 'dashboard',
+    onTabChange: () => {},
+    user: {
+      name: 'Alex Halls',
+      subscriptionName: 'Premium Plan',
+      avatar: 'https://i.pravatar.cc/150?img=12',
+    },
+  },
+  render: (args) => {
+    const [activeTab, setActiveTab] = useState(args.activeTab);
+
+    const sampleNotifications = [
+      {
+        id: '1',
+        title: 'Due date exceeded, action required',
+        jobId: 'J-0001',
+        user: 'Esther Howard',
+        icon: <CalendarExceededIcon />,
+        isRead: false,
+      },
+      {
+        id: '2',
+        title: 'Job completed successfully',
+        jobId: 'J-0002',
+        user: 'Wade Warren',
+        icon: <ChecklistIcon />,
+        isRead: false,
+      },
+      {
+        id: '3',
+        title: 'Workflow needs your approval',
+        jobId: 'J-0003',
+        user: 'Robert Fox',
+        icon: <DocumentIcon />,
+        isRead: true,
+      },
+      {
+        id: '4',
+        title: 'New task assigned to you',
+        jobId: 'J-0004',
+        user: 'Jane Cooper',
+        icon: <DocumentIcon />,
+        isRead: false,
+      },
+    ];
+
+    const getInitials = (name: string) => {
+      const parts = name.split(' ');
+      if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    };
+
+    return (
+      <Box sx={{ background: '#0A0A0A', minHeight: '100vh', padding: '20px' }}>
+        <HeaderNavWrapper>
+          <HeaderNavContainer>
+            {/* Logo Section */}
+            <LogoSection>
+              <FloowLogo variant="white" showText={true} />
+            </LogoSection>
+
+            {/* Tab Menu Section */}
+            <TabMenu tabs={tabs} activeTab={activeTab} onChange={setActiveTab} size="medium" />
+
+            {/* Controls Section */}
+            <ControlsSection>
+              {/* Notification Dropdown - Click to see notifications */}
+              <NotificationDropdown
+                trigger={
+                  <IconButtonStyled role="button" aria-label="Notifications">
+                    <NotificationIcon />
+                  </IconButtonStyled>
+                }
+                notifications={sampleNotifications}
+                position="bottom-right"
+                title="Notifications"
+                showClearAll={true}
+                onClearAll={() => console.log('Clear all notifications')}
+                onMailClick={(id: string) => console.log('Mail clicked:', id)}
+                onViewClick={(notif: any) => console.log('View notification:', notif)}
+              />
+
+              {/* Search Icon */}
+              <IconButtonStyled onClick={() => console.log('Search')} role="button" aria-label="Search">
+                <SearchIcon />
+              </IconButtonStyled>
+
+              {/* Settings Icon */}
+              <IconButtonStyled onClick={() => console.log('Settings')} role="button" aria-label="Settings">
+                <SettingsIcon />
+              </IconButtonStyled>
+
+              {/* User Profile */}
+              <UserProfileSection onClick={() => console.log('Profile')} role="button" aria-label="User profile">
+                <UserAvatar src={args.user.avatar} alt={args.user.name}>
+                  {!args.user.avatar && getInitials(args.user.name)}
+                </UserAvatar>
+                <UserInfo>
+                  <UserName>{args.user.name}</UserName>
+                  {args.user.subscriptionName && <SubscriptionName>{args.user.subscriptionName}</SubscriptionName>}
+                </UserInfo>
+              </UserProfileSection>
+
+              {/* Logout Icon */}
+              <LogoutButton onClick={() => console.log('Logout')} role="button" aria-label="Logout">
+                <LogoutIcon />
+              </LogoutButton>
+            </ControlsSection>
+          </HeaderNavContainer>
+        </HeaderNavWrapper>
+
+        <Box sx={{ padding: '40px 0', color: '#fff', fontSize: '1.2rem' }}>
+          <p><strong>Click the notification icon</strong> to see the NotificationList dropdown!</p>
+          <p style={{ marginTop: '20px', color: '#888' }}>
+            The dropdown shows notifications with user profiles, mail buttons, and view buttons.
+            Click outside or press ESC to close it.
+          </p>
         </Box>
       </Box>
     );
