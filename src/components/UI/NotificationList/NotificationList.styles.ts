@@ -246,36 +246,22 @@ export const MailButton = styled(Box)(() => ({
   },
 }));
 
-// View button - Right button with black background
-export const ViewButton = styled(Box)(() => ({
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: `${rem(8)} ${rem(24)}`,
-  gap: rem(10),
+// View button wrapper - Right button to match MailButton dimensions
+export const ViewButtonWrapper = styled(Box)(() => ({
   width: rem(153),
   height: rem(32),
-  background: floowColors.black,
-  borderRadius: rem(6),
   flex: 'none',
   order: 1,
   flexGrow: 1,
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
 
-  fontSize: rem(14),
-  fontWeight: 600,
-  fontFamily: 'Manrope, sans-serif',
-  color: floowColors.white,
-  textAlign: 'center',
-
-  '&:hover': {
-    background: floowColors.grey[800],
-  },
-
-  '&:active': {
-    transform: 'scale(0.98)',
+  '& > button': {
+    width: '100%',
+    height: '100%',
+    minHeight: rem(32),
+    padding: rem(8),
+    fontSize: rem(14),
+    fontWeight: 500,
+    textTransform: 'none',
   },
 }));
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
@@ -6,8 +6,8 @@ import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { RadioGroup } from '../../../components/UI/Forms/Radio';
-import { FeatureCard } from '../../../components/UI/FeatureCard';
 import { Snackbar } from '../../../components/UI/Snackbar';
+import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
 import { UserRole } from '../../../types/auth';
 import {
@@ -22,11 +22,6 @@ import {
   DividerLine,
   DividerText,
   SignInLink,
-  RightSection,
-  RightContent,
-  BrandSection,
-  Tagline,
-  FeaturesGrid,
   // FooterText,
   // GoogleButton,
 } from './Signup.styles';
@@ -67,8 +62,6 @@ export const Signup: React.FC = () => {
   });
 
   const navigate = useNavigate();
-  const [activeCardIndex, setActiveCardIndex] = useState(1); // Start with middle card active
-  const scrollTimeout = useRef<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -138,53 +131,6 @@ export const Signup: React.FC = () => {
   //   console.log('Google signup clicked');
   //   // Handle Google OAuth here
   // };
-
-  const features = [
-    {
-      title: 'Address Book',
-      description:
-        'Keep all your important connections organized and accessible in one place. With Floow, you can create detailed profiles, link contacts to tasks or projects, and never lose track of who\'s involved.',
-    },
-    {
-      title: 'Job Tracking',
-      description:
-        'Keep all your jobs organized and visible in one place, with Floow. No more scattered notes or missed deadlines, everything you need stays right where you can see it.',
-    },
-    {
-      title: 'Collaboration',
-      description:
-        'Work seamlessly with your team, assign tasks, share updates, and track responsibilities in a transparent way. Floow ensures everyone stays aligned, communication flows smoothly, and projects move forward without confusion.',
-    },
-  ];
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-
-    // Clear existing timeout
-    if (scrollTimeout.current) {
-      clearTimeout(scrollTimeout.current);
-    }
-
-    // Debounce the scroll to prevent too rapid changes
-    scrollTimeout.current = setTimeout(() => {
-      if (e.deltaY > 0) {
-        // Scroll down - move to next card
-        setActiveCardIndex((prev) => (prev + 1) % features.length);
-      } else {
-        // Scroll up - move to previous card
-        setActiveCardIndex((prev) => (prev - 1 + features.length) % features.length);
-      }
-    }, 100);
-  }, [features.length]);
-
-  // Get the order of cards based on active index
-  const getCardOrder = (index: number) => {
-    const diff = (index - activeCardIndex + features.length) % features.length;
-
-    if (diff === 0) return 'center'; // Active card
-    if (diff === 1 || diff === -2) return 'right'; // Right card
-    return 'left'; // Left card
-  };
 
   return (
     <SignupContainer>
@@ -316,27 +262,7 @@ export const Signup: React.FC = () => {
         </FormContainer>
       </LeftSection>
 
-      <RightSection>
-        <RightContent>
-          <BrandSection>
-            <FloowLogo variant="white" showText={true} />
-            <Tagline>
-              Turn chaos into clarity with smarter task management. Stay organized, stay ahead!
-            </Tagline>
-          </BrandSection>
-
-          <FeaturesGrid onWheel={handleWheel}>
-            {features.map((feature, index) => (
-              <FeatureCard
-                key={index}
-                title={feature.title}
-                description={feature.description}
-                className={`card-${getCardOrder(index)}`}
-              />
-            ))}
-          </FeaturesGrid>
-        </RightContent>
-      </RightSection>
+      <AuthRightSection />
 
       <Snackbar
         open={snackbar.open}

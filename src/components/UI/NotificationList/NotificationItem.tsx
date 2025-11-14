@@ -1,6 +1,7 @@
 import React from 'react';
 import type { NotificationItemProps } from './NotificationList.types';
 import { MailIcon } from './icons';
+import { Button } from '../Button';
 import {
   NotificationItemContainer,
   NotificationContent,
@@ -14,7 +15,7 @@ import {
   UserProfileName,
   NotificationActions,
   MailButton,
-  ViewButton,
+  ViewButtonWrapper,
   NotificationDivider,
 } from './NotificationList.styles';
 
@@ -106,9 +107,16 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
               <MailIcon />
             )}
           </MailButton>
-          <ViewButton onClick={handleViewClick} role="button">
-            View
-          </ViewButton>
+          <ViewButtonWrapper>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={handleViewClick}
+            >
+              View
+            </Button>
+          </ViewButtonWrapper>
         </NotificationActions>
       </NotificationItemContainer>
       <NotificationDivider />
