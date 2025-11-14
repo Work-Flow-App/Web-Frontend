@@ -12,6 +12,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { TopNav } from '../../components/UI/TopNav';
 import { Sidebar } from '../../components/UI/Sidebar';
 import type { SidebarItem } from '../../components/UI/Sidebar';
+import { SearchInput } from '../../components/UI/SearchInput';
 import { floowColors } from '../../theme/colors';
 import { rem } from '../../components/UI/Typography/utility';
 
@@ -207,6 +208,7 @@ const RightActions = () => (
 export const CompanyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
@@ -237,6 +239,20 @@ export const CompanyPage: React.FC = () => {
       <PageRightSection>
         {/* Top Navigation */}
         <TopNav
+          searchContent={
+            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+              <SearchInput
+                variant="dark"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onSearch={(query) => {
+                  console.log('Search:', query);
+                }}
+                aria-label="Search"
+              />
+            </Box>
+          }
           rightContent={<RightActions />}
           onToggleSidebar={handleToggleSidebar}
         />

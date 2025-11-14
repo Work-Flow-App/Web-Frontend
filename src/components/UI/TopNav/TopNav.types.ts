@@ -6,6 +6,11 @@ import type { SxProps, Theme } from '@mui/material';
  */
 export interface TopNavProps {
   /**
+   * Search input content (displayed before rightContent)
+   */
+  searchContent?: ReactNode;
+
+  /**
    * Right-side content/actions (notification, user profile, settings, etc.)
    */
   rightContent?: ReactNode;

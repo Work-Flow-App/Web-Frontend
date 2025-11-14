@@ -12,7 +12,6 @@ export const TopNavOuterWrapper = styled(Box)(({ theme }) => ({
   padding: 0,
   gap: rem(10),
   width: '100%',
-  maxWidth: rem(1920),
   boxSizing: 'border-box',
   background: floowColors.grey[100],
   flexShrink: 0,
@@ -38,7 +37,7 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
   padding: `${rem(10)} ${rem(20)}`,
   gap: rem(12),
   width: '100%',
-  height: rem(64),
+  height: rem(48),
   background: floowColors.dark.slate,
   borderRadius: 0,
   borderBottom: `${rem(1)} solid ${floowColors.grey[200]}`,
@@ -49,13 +48,13 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('xl')]: {
     padding: `${rem(10)} ${rem(16)}`,
     gap: rem(10),
-    height: rem(60),
+    height: rem(48),
   },
 
   [theme.breakpoints.down('lg')]: {
     padding: `${rem(8)} ${rem(12)}`,
     gap: rem(8),
-    height: rem(56),
+    height: rem(48),
   },
 
   [theme.breakpoints.down('md')]: {
@@ -104,6 +103,15 @@ export const CenterSection = styled(Box)(({ theme }) => ({
     display: 'flex',
   },
 }));
+
+/**
+ * Search content section wrapper
+ */
+export const SearchSection = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  marginRight: 'auto',
+});
 
 /**
  * Right content section (notification, user profile, actions, etc.)

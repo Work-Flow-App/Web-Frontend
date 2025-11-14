@@ -1,7 +1,7 @@
 import React from 'react';
 import { IconButton, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection } from './TopNav.styles';
+import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection } from './TopNav.styles';
 import type { TopNavProps } from './TopNav.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { floowColors } from '../../../theme/colors';
@@ -26,6 +26,7 @@ import { rem } from '../Typography/utility';
  * ```
  */
 export const TopNav: React.FC<TopNavProps> = ({
+  searchContent,
   rightContent,
   onToggleSidebar,
   className,
@@ -74,12 +75,15 @@ export const TopNav: React.FC<TopNavProps> = ({
           </Box>
         </CenterSection>
 
-        {/* Right Content Section - Notifications, User Profile, Actions */}
-        {rightContent && (
-          <RightSection role="region" aria-label="User actions">
-            {rightContent}
-          </RightSection>
-        )}
+        {/* Right Content Section - Search Input + Notifications, User Profile, Actions */}
+        <RightSection role="region" aria-label="User actions">
+          {searchContent && (
+            <SearchSection>
+              {searchContent}
+            </SearchSection>
+          )}
+          {rightContent}
+        </RightSection>
       </TopNavWrapper>
     </TopNavOuterWrapper>
   );
