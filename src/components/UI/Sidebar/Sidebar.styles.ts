@@ -60,10 +60,10 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   justifyContent: 'flex-start',
   alignItems: 'center',
-  padding: `${rem(12)} ${rem(16)}`,
+  padding: `${rem(8)} ${rem(12)}`,
   gap: rem(12),
   width: '100%',
-  minHeight: rem(44),
+  minHeight: rem(40),
   backgroundColor: 'transparent',
   borderRadius: rem(8),
   cursor: 'pointer',
@@ -81,20 +81,20 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   },
 
   '&.active': {
-    backgroundColor: floowColors.dark.slate,
-    color: floowColors.white,
+    backgroundColor: floowColors.grey[200],
+    color: floowColors.dark.slate,
     fontWeight: 600,
   },
 
   [theme.breakpoints.down('lg')]: {
-    padding: `${rem(11)} ${rem(14)}`,
-    minHeight: rem(42),
+    padding: `${rem(7)} ${rem(11)}`,
+    minHeight: rem(38),
     fontSize: rem(13),
   },
 
   [theme.breakpoints.down('md')]: {
-    padding: `${rem(10)} ${rem(12)}`,
-    minHeight: rem(40),
+    padding: `${rem(6)} ${rem(10)}`,
+    minHeight: rem(36),
   },
 
   [theme.breakpoints.down('sm')]: {
@@ -155,11 +155,12 @@ export const SidebarBackdrop = styled(Box)<SidebarBackdropProps>(({ theme, isVis
 export const SidebarLogoSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-start',
+  justifyContent: 'center',
   gap: rem(12),
   paddingBottom: rem(16),
   borderBottom: `${rem(1)} solid ${floowColors.grey[200]}`,
   boxSizing: 'border-box',
+  width: '100%',
 
   '& img': {
     width: rem(32),

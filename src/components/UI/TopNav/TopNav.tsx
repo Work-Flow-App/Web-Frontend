@@ -40,16 +40,15 @@ export const TopNav: React.FC<TopNavProps> = ({
       aria-label="Top navigation"
     >
       <TopNavWrapper>
-        {/* Left Section - Mobile Sidebar Toggle */}
+        {/* Left Section - Sidebar Toggle (Mobile & Desktop) */}
         <LeftSection>
           <IconButton
             onClick={onToggleSidebar}
             sx={{
               color: floowColors.grey[300],
-              display: { xs: 'flex', sm: 'none' },
             }}
             aria-label="Toggle sidebar menu"
-            title="Open sidebar"
+            title="Toggle sidebar"
           >
             <MenuIcon />
           </IconButton>

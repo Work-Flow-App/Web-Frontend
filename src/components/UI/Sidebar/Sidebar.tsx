@@ -1,7 +1,5 @@
 import React from 'react';
 import { Box, IconButton } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import CloseIcon from '@mui/icons-material/Close';
 import { SidebarWrapper, SidebarItemButton, IconWrapper, SidebarLogoSection, SidebarBackdrop } from './Sidebar.styles';
 import type { SidebarProps } from './Sidebar.types';
@@ -57,29 +55,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       />
 
       <SidebarWrapper isCollapsed={isCollapsed} className={className} sx={sx}>
-      {/* Logo Section with Toggle Button - Desktop */}
+      {/* Logo Section - Desktop (without toggle button) */}
       {!isCollapsed && (
-        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', width: '100%', gap: rem(8) }}>
+        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <SidebarLogoSection sx={{ flex: 1, margin: 0, padding: 0, border: 'none' }}>
             <FloowLogo variant="light" showText={true} />
           </SidebarLogoSection>
-          <IconButton
-            onClick={onToggleCollapse}
-            sx={{
-              padding: rem(4),
-              minWidth: rem(40),
-              minHeight: rem(40),
-              flexShrink: 0,
-              marginTop: rem(-8),
-              color: floowColors.dark.slate,
-              '&:hover': {
-                backgroundColor: floowColors.grey[75],
-              },
-            }}
-            title="Collapse Sidebar"
-          >
-            <ChevronLeftIcon />
-          </IconButton>
         </Box>
       )}
 
@@ -110,24 +91,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </Box>
       )}
 
-      {/* Collapsed Toggle Button */}
+      {/* Collapsed State - Show Logo Only */}
       {isCollapsed && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <IconButton
-            onClick={onToggleCollapse}
-            sx={{
-              padding: rem(4),
-              minWidth: rem(40),
-              minHeight: rem(40),
-              color: floowColors.dark.slate,
-              '&:hover': {
-                backgroundColor: floowColors.grey[75],
-              },
-            }}
-            title="Expand Sidebar"
-          >
-            <MenuIcon />
-          </IconButton>
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: rem(16) }}>
+          <SidebarLogoSection sx={{ margin: 0, padding: 0, border: 'none' }}>
+            <FloowLogo variant="light" showText={false} />
+          </SidebarLogoSection>
         </Box>
       )}
 
