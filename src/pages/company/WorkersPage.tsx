@@ -1,30 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Avatar, Chip } from '@mui/material';
+import { Box, Avatar, Chip, CircularProgress, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
+import AddIcon from '@mui/icons-material/Add';
 import { Table } from '../../components/UI/Table';
 import type { Column, RowAction, RowData } from '../../components/UI/Table';
+import { workerService } from '../../services/api/workers';
+import type { WorkerResponse } from '../../services/api/workers';
 import { floowColors } from '../../theme/colors';
 import { rem } from '../../components/UI/Typography/utility';
+import { Typography } from '@mui/material';
+import { AddWorkerDialog } from '../../components/Dialogs/AddWorkerDialog';
 
 /**
- * Worker data type
+ * Worker data type extending generated WorkerResponse
  */
-interface Worker extends RowData {
+interface Worker extends WorkerResponse, RowData {
   id: number;
-  name: string;
-  initials: string;
-  telephone: string;
-  mobile: string;
-  email: string;
-  username: string;
-  loginLocked: boolean;
-  archived: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 /**
@@ -32,6 +25,24 @@ interface Worker extends RowData {
  */
 const PageHeader = styled(Box)({
   marginBottom: rem(32),
+});
+
+/**
+ * Header container with title and button
+ */
+const HeaderContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  marginBottom: rem(32),
+  gap: rem(16),
+});
+
+/**
+ * Header left section (title and subtitle)
+ */
+const HeaderLeft = styled(Box)({
+  flex: 1,
 });
 
 /**
@@ -54,101 +65,36 @@ const PageSubtitle = styled('p')({
   margin: 0,
 });
 
-import { Typography } from '@mui/material';
+/**
+ * Loading container
+ */
+const LoadingContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: rem(300),
+});
 
 /**
- * Sample worker data
+ * Error message container
  */
-const sampleWorkers: Worker[] = [
-  {
-    id: 1,
-    name: 'John Doe',
-    initials: 'JD',
-    telephone: '+1-555-1234',
-    mobile: '+1-555-5678',
-    email: 'john.doe@example.com',
-    username: 'johndoe',
-    loginLocked: false,
-    archived: false,
-    createdAt: '2025-01-15T10:30:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    initials: 'JS',
-    telephone: '+1-555-2345',
-    mobile: '+1-555-6789',
-    email: 'jane.smith@example.com',
-    username: 'janesmith',
-    loginLocked: false,
-    archived: false,
-    createdAt: '2025-02-20T14:15:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-  {
-    id: 3,
-    name: 'Michael Johnson',
-    initials: 'MJ',
-    telephone: '+1-555-3456',
-    mobile: '+1-555-7890',
-    email: 'michael.johnson@example.com',
-    username: 'mjohnson',
-    loginLocked: true,
-    archived: false,
-    createdAt: '2025-03-10T09:45:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-  {
-    id: 4,
-    name: 'Emily Brown',
-    initials: 'EB',
-    telephone: '+1-555-4567',
-    mobile: '+1-555-8901',
-    email: 'emily.brown@example.com',
-    username: 'ebrown',
-    loginLocked: false,
-    archived: true,
-    createdAt: '2025-04-05T11:20:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-  {
-    id: 5,
-    name: 'Robert Wilson',
-    initials: 'RW',
-    telephone: '+1-555-5678',
-    mobile: '+1-555-9012',
-    email: 'robert.wilson@example.com',
-    username: 'rwilson',
-    loginLocked: false,
-    archived: false,
-    createdAt: '2025-05-12T13:50:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-  {
-    id: 6,
-    name: 'Sarah Davis',
-    initials: 'SD',
-    telephone: '+1-555-6789',
-    mobile: '+1-555-0123',
-    email: 'sarah.davis@example.com',
-    username: 'sdavis',
-    loginLocked: false,
-    archived: false,
-    createdAt: '2025-06-18T15:25:00.000Z',
-    updatedAt: '2025-11-14T23:28:03.674Z',
-  },
-];
+const ErrorContainer = styled(Box)({
+  padding: rem(16),
+  backgroundColor: 'rgba(251, 44, 54, 0.1)',
+  color: floowColors.error.main,
+  borderRadius: rem(8),
+  marginBottom: rem(16),
+});
 
 /**
  * Workers Page
  *
  * Displays a table of workers with management capabilities.
  * Features:
+ * - Fetch workers from API
  * - Sortable columns
- * - Row selection with checkboxes
  * - Pagination
- * - Row actions (Edit, Delete, Lock/Unlock)
+ * - Row actions (Edit, Delete)
  * - Custom cell renderers
  *
  * This page renders within the Layout component and maintains
@@ -160,22 +106,71 @@ const sampleWorkers: Worker[] = [
  * ```
  */
 export const WorkersPage: React.FC = () => {
-  const [workers] = useState<Worker[]>(sampleWorkers);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [addWorkerDialogOpen, setAddWorkerDialogOpen] = useState(false);
+
+  /**
+   * Fetch workers on component mount
+   */
+  useEffect(() => {
+    const fetchWorkers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await workerService.getAllWorkers();
+        setWorkers((data as Worker[]) || []);
+      } catch (err) {
+        console.error('Error fetching workers:', err);
+        setError('Failed to load workers. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorkers();
+  }, []);
+
+  /**
+   * Handle add worker button click
+   */
+  const handleAddWorker = () => {
+    setAddWorkerDialogOpen(true);
+  };
+
+  /**
+   * Handle worker added from dialog
+   */
+  const handleWorkerAdded = (newWorker: Worker) => {
+    // Add new worker to the list
+    setWorkers((prevWorkers) => [newWorker, ...prevWorkers]);
+  };
 
   /**
    * Handle edit worker
    */
   const handleEditWorker = (worker: Worker) => {
     console.log('Edit worker:', worker);
-    // TODO: Implement edit functionality
+    // TODO: Implement edit modal/dialog
   };
 
   /**
    * Handle delete worker
    */
-  const handleDeleteWorker = (worker: Worker) => {
-    console.log('Delete worker:', worker);
-    // TODO: Implement delete functionality
+  const handleDeleteWorker = async (worker: Worker) => {
+    if (!confirm(`Are you sure you want to delete ${worker.name}?`)) {
+      return;
+    }
+
+    try {
+      await workerService.deleteWorker(worker.id);
+      // Remove from state
+      setWorkers(workers.filter(w => w.id !== worker.id));
+    } catch (err) {
+      console.error('Error deleting worker:', err);
+      setError('Failed to delete worker. Please try again.');
+    }
   };
 
   /**
@@ -204,9 +199,20 @@ export const WorkersPage: React.FC = () => {
               flexShrink: 0,
             }}
           >
-            {row.initials}
+            {(value as string)?.substring(0, 2).toUpperCase() || row.initials}
           </Avatar>
-          <Box sx={{ fontWeight: 500, color: floowColors.black, fontSize: rem(13), whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value as string}</Box>
+          <Box
+            sx={{
+              fontWeight: 500,
+              color: floowColors.black,
+              fontSize: rem(13),
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {value as string}
+          </Box>
         </Box>
       ),
     },
@@ -232,7 +238,6 @@ export const WorkersPage: React.FC = () => {
       align: 'center',
       render: (value) => (
         <Chip
-          icon={value ? <LockIcon /> : <LockOpenIcon />}
           label={value ? 'Yes' : 'No'}
           size="small"
           sx={{
@@ -295,12 +300,55 @@ export const WorkersPage: React.FC = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <Box sx={{ padding: rem(32) }}>
+        <PageHeader>
+          <PageTitle>Workers</PageTitle>
+          <PageSubtitle>Manage and view all workers in your organization</PageSubtitle>
+        </PageHeader>
+        <LoadingContainer>
+          <CircularProgress />
+        </LoadingContainer>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ padding: rem(32) }}>
-      <PageHeader>
-        <PageTitle>Workers</PageTitle>
-        <PageSubtitle>Manage and view all workers in your organization</PageSubtitle>
-      </PageHeader>
+      <HeaderContainer>
+        <HeaderLeft>
+          <PageTitle>Workers</PageTitle>
+          <PageSubtitle>Manage and view all workers in your organization</PageSubtitle>
+        </HeaderLeft>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddWorker}
+          sx={{
+            backgroundColor: floowColors.black,
+            color: floowColors.white,
+            textTransform: 'none',
+            fontSize: rem(14),
+            fontWeight: 600,
+            padding: `${rem(8)} ${rem(16)}`,
+            minHeight: rem(40),
+            borderRadius: rem(6),
+            whiteSpace: 'nowrap',
+            '&:hover': {
+              backgroundColor: floowColors.grey[900],
+            },
+          }}
+        >
+          Add Worker
+        </Button>
+      </HeaderContainer>
+
+      {error && (
+        <ErrorContainer>
+          {error}
+        </ErrorContainer>
+      )}
 
       <Table
         data={workers}
@@ -313,7 +361,13 @@ export const WorkersPage: React.FC = () => {
         onRowClick={(row) => {
           console.log('Clicked worker:', row);
         }}
-        emptyMessage="No workers found"
+        emptyMessage={workers.length === 0 ? 'No workers found' : undefined}
+      />
+
+      <AddWorkerDialog
+        open={addWorkerDialogOpen}
+        onClose={() => setAddWorkerDialogOpen(false)}
+        onWorkerAdded={handleWorkerAdded}
       />
     </Box>
   );
