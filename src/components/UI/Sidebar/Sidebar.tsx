@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Box, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SidebarWrapper, SidebarItemButton, IconWrapper, SidebarLogoSection, SidebarBackdrop } from './Sidebar.styles';
@@ -40,6 +41,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
   className,
   sx,
 }) => {
+  const location = useLocation();
+
+  /**
+   * Determine if a sidebar item is active based on:
+   * 1. activeItemId prop (for controlled behavior)
+   * 2. Current route pathname (for automatic detection)
+   */
+  const isItemActive = (item: typeof items[0]): boolean => {
+    if (activeItemId) {
+      return activeItemId === item.id;
+    }
+    // Auto-detect active item based on current route
+    if (item.href) {
+      // Exact match for the href
+      return location.pathname === item.href;
+    }
+    return false;
+  };
+
   // Handle menu item click
   const handleItemClick = (itemId: string) => {
     onItemClick?.(itemId);
@@ -101,24 +121,61 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Navigation Items */}
-      {items.map((item) => (
-        <SidebarItemButton
-          key={item.id}
-          className={activeItemId === item.id ? 'active' : ''}
-          onClick={() => {
-            handleItemClick(item.id);
-            item.onClick?.();
-          }}
-          role="menuitem"
-          aria-label={item.label}
-          aria-current={activeItemId === item.id ? 'page' : undefined}
-          title={isCollapsed ? item.label : undefined}
-          tabIndex={0}
-        >
-          {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-          {!isCollapsed && <span>{item.label}</span>}
-        </SidebarItemButton>
-      ))}
+      {items.map((item) => {
+        const active = isItemActive(item);
+
+        // If item has href, render as Link; otherwise render as button
+        if (item.href) {
+          return (
+            <Link
+              key={item.id}
+              to={item.href}
+              onClick={() => {
+                handleItemClick(item.id);
+                item.onClick?.();
+              }}
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                display: 'block',
+                width: '100%',
+              }}
+            >
+              <SidebarItemButton
+                className={active ? 'active' : ''}
+                role="menuitem"
+                aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
+                title={isCollapsed ? item.label : undefined}
+                tabIndex={0}
+              >
+                {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                {!isCollapsed && <span>{item.label}</span>}
+              </SidebarItemButton>
+            </Link>
+          );
+        }
+
+        // Fallback for items without href
+        return (
+          <SidebarItemButton
+            key={item.id}
+            className={active ? 'active' : ''}
+            onClick={() => {
+              handleItemClick(item.id);
+              item.onClick?.();
+            }}
+            role="menuitem"
+            aria-label={item.label}
+            aria-current={active ? 'page' : undefined}
+            title={isCollapsed ? item.label : undefined}
+            tabIndex={0}
+          >
+            {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+            {!isCollapsed && <span>{item.label}</span>}
+          </SidebarItemButton>
+        );
+      })}
       </SidebarWrapper>
     </>
   );

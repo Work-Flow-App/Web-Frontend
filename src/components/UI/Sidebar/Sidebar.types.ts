@@ -21,6 +21,12 @@ export interface SidebarItem {
   icon?: ReactNode;
 
   /**
+   * Optional URL for React Router Link navigation
+   * If provided, clicking the item will navigate to this route
+   */
+  href?: string;
+
+  /**
    * Callback when item is clicked
    */
   onClick?: () => void;

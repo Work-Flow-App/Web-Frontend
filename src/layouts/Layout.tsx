@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import { Box, Avatar, Typography } from '@mui/material';
+import { Box, Avatar } from '@mui/material';
+import { TopNav } from '../components/UI/TopNav';
+import { Sidebar } from '../components/UI/Sidebar';
+import type { SidebarItem } from '../components/UI/Sidebar';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -9,13 +13,13 @@ import WorkIcon from '@mui/icons-material/Work';
 import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
-import { TopNav } from '../../components/UI/TopNav';
-import { Sidebar } from '../../components/UI/Sidebar';
-import type { SidebarItem } from '../../components/UI/Sidebar';
-import { SearchInput } from '../../components/UI/SearchInput';
-import { floowColors } from '../../theme/colors';
-import { rem } from '../../components/UI/Typography/utility';
+import { SearchInput } from '../components/UI/SearchInput';
+import { floowColors } from '../theme/colors';
+import { rem } from '../components/UI/Typography/utility';
 
+/**
+ * Main page wrapper with sidebar and right section
+ */
 const PageWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
@@ -27,6 +31,9 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
+/**
+ * Right section containing TopNav and content area
+ */
 const PageRightSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -39,66 +46,21 @@ const PageRightSection = styled(Box)(({ theme }) => ({
   },
 }));
 
+/**
+ * Main content area that scrolls independently
+ */
 const MainContent = styled(Box)(({ theme }) => ({
   flex: 1,
-  padding: rem(32),
   overflow: 'auto',
   background: floowColors.grey[50],
 
-  [theme.breakpoints.down('md')]: {
-    padding: rem(20),
-  },
-
   [theme.breakpoints.down('sm')]: {
-    padding: rem(16),
+    overflow: 'visible',
   },
 }));
 
-const ContentBox = styled(Box)({
-  background: floowColors.white,
-  borderRadius: rem(16),
-  padding: rem(32),
-  boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.1)`,
-  textAlign: 'center',
-  maxWidth: '600px',
-});
-
-const LogoWrapper = styled(Box)({
-  marginBottom: rem(24),
-  display: 'flex',
-  justifyContent: 'center',
-});
-
-const Title = styled(Typography)({
-  fontSize: rem(32),
-  fontWeight: 700,
-  color: floowColors.black,
-  marginBottom: rem(16),
-});
-
-const Subtitle = styled(Typography)({
-  fontSize: rem(20),
-  fontWeight: 600,
-  color: floowColors.grey[600],
-  marginBottom: rem(24),
-});
-
-const Message = styled(Typography)({
-  fontSize: rem(16),
-  color: floowColors.grey[600],
-  lineHeight: 1.6,
-  marginBottom: rem(16),
-});
-
-const MessageSecondary = styled(Typography)({
-  fontSize: rem(14),
-  color: floowColors.grey[500],
-  lineHeight: 1.6,
-  marginBottom: rem(16),
-});
-
 /**
- * Styled component for the right actions container
+ * Right actions container for TopNav
  */
 const RightActionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -115,7 +77,7 @@ const RightActionsContainer = styled(Box)(({ theme }) => ({
 }));
 
 /**
- * Styled component for action buttons
+ * Action button styling
  */
 const ActionButton = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
@@ -135,7 +97,7 @@ const ActionButton = styled(Box)(({ theme }) => ({
 }));
 
 /**
- * Styled component for the divider
+ * Divider between action buttons
  */
 const ActionDivider = styled(Box)({
   width: rem(1),
@@ -144,14 +106,14 @@ const ActionDivider = styled(Box)({
 });
 
 /**
- * Styled component for the user avatar
+ * User avatar styling
  */
 const UserAvatar = styled(Avatar)(({ theme }) => ({
-  width: rem(36),
-  height: rem(36),
+  width: rem(32),
+  height: rem(32),
   background: floowColors.white,
   cursor: 'pointer',
-  fontSize: rem(14),
+  fontSize: rem(12),
   color: floowColors.dark.slate,
   fontWeight: 600,
   transition: 'opacity 0.2s ease',
@@ -161,19 +123,14 @@ const UserAvatar = styled(Avatar)(({ theme }) => ({
   },
 
   [theme.breakpoints.down('sm')]: {
-    width: rem(32),
-    height: rem(32),
-    fontSize: rem(12),
+    width: rem(28),
+    height: rem(28),
+    fontSize: rem(11),
   },
 }));
 
 /**
- * RightActions Component
- *
- * Displays user-related actions in the top navigation:
- * - Notifications
- * - Settings
- * - User profile avatar
+ * Right actions component
  */
 const RightActions = () => (
   <RightActionsContainer>
@@ -205,19 +162,45 @@ const RightActions = () => (
   </RightActionsContainer>
 );
 
-export const CompanyPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+/**
+ * Layout Component
+ *
+ * Persistent layout wrapper that contains:
+ * - Sidebar navigation (persists across route changes)
+ * - TopNav with search and actions (persists across route changes)
+ * - Outlet for page content (changes based on route)
+ *
+ * This component uses React Router's Outlet to render child pages
+ * without reloading the sidebar or topnav.
+ *
+ * @example
+ * ```tsx
+ * // In App.tsx
+ * <Routes>
+ *   <Route element={<Layout />}>
+ *     <Route path="/company" element={<DashboardPage />} />
+ *     <Route path="/company/workers" element={<WorkersPage />} />
+ *     <Route path="/company/jobs" element={<JobsPage />} />
+ *   </Route>
+ * </Routes>
+ * ```
+ */
+export const Layout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  /**
+   * Sidebar items with their icons
+   * Links are handled in Sidebar component using React Router Link
+   */
   const sidebarItems: SidebarItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-    { id: 'workers', label: 'Workers', icon: <PeopleIcon /> },
-    { id: 'jobs', label: 'Jobs', icon: <WorkIcon /> },
-    { id: 'clients', label: 'Clients', icon: <BusinessIcon /> },
-    { id: 'equipments', label: 'Equipments', icon: <BuildIcon /> },
-    { id: 'customers', label: 'Customers', icon: <PersonIcon /> },
-    { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
+    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
+    { id: 'workers', label: 'Workers', icon: <PeopleIcon />, href: '/company/workers' },
+    { id: 'jobs', label: 'Jobs', icon: <WorkIcon />, href: '/company/jobs' },
+    { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
+    { id: 'equipments', label: 'Equipments', icon: <BuildIcon />, href: '/company/equipments' },
+    { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
+    { id: 'settings', label: 'Settings', icon: <SettingsIcon />, href: '/company/settings' },
   ];
 
   const handleToggleSidebar = () => {
@@ -226,24 +209,22 @@ export const CompanyPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      {/* Sidebar */}
+      {/* Persistent Sidebar */}
       <Sidebar
         items={sidebarItems}
-        activeItemId={activeTab}
-        onItemClick={setActiveTab}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
       />
 
       {/* Right Section: TopNav + MainContent */}
       <PageRightSection>
-        {/* Top Navigation */}
+        {/* Persistent TopNav */}
         <TopNav
           searchContent={
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
               <SearchInput
                 variant="dark"
-                placeholder="Search"
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onSearch={(query) => {
@@ -257,24 +238,13 @@ export const CompanyPage: React.FC = () => {
           onToggleSidebar={handleToggleSidebar}
         />
 
-        {/* Main Content Area */}
+        {/* Dynamic Content Area - Changes based on route */}
         <MainContent>
-          <ContentBox>
-            <LogoWrapper>
-              <Box sx={{ fontSize: rem(48) }}>🏢</Box>
-            </LogoWrapper>
-            <Title>Company Dashboard</Title>
-            <Subtitle>Welcome to {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</Subtitle>
-            <Message>
-              We're working hard to bring you an amazing experience.
-              The {activeTab} section is currently under construction and will be available soon.
-            </Message>
-            <MessageSecondary>
-              Thank you for your patience!
-            </MessageSecondary>
-          </ContentBox>
+          <Outlet />
         </MainContent>
       </PageRightSection>
     </PageWrapper>
   );
 };
+
+export default Layout;
