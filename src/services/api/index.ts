@@ -9,5 +9,8 @@ export type { ApiResponse, ApiError } from './client';
 export { authService } from './auth';
 export type { SignupRequest, LoginRequest, AuthResponse } from './auth';
 
+export { workerService } from './workers';
+export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse } from './workers';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';
