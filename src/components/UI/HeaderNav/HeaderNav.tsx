@@ -15,7 +15,7 @@ import {
 import { TabMenu } from '../Tab';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { NotificationIcon, SearchIcon, SettingsIcon, LogoutIcon } from './icons';
-import type { HeaderNavProps } from './HeaderNav.types';
+import type { IHeaderNav } from './IHeaderNav';
 
 /**
  * HeaderNav Component
@@ -48,7 +48,7 @@ import type { HeaderNavProps } from './HeaderNav.types';
  * />
  * ```
  */
-export const HeaderNav: React.FC<HeaderNavProps> = ({
+export const HeaderNav: React.FC<IHeaderNav> = ({
   tabs,
   activeTab,
   onTabChange,

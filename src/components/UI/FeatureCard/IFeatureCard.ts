@@ -1,4 +1,4 @@
-export interface FeatureCardProps {
+export interface IFeatureCard {
   /**
    * The title of the feature card
    */

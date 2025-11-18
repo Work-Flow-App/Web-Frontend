@@ -1,125 +1,130 @@
-import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { InputBase, Box, FormControl, styled, InputAdornment } from '@mui/material';
 import { rem } from '../../Typography/utility';
 
-interface InputWrapperProps {
-  fullWidth?: boolean;
+export interface IStyledInputProp {
+  variants?: string[];
 }
 
-interface StyledInputProps {
-  hasError?: boolean;
-  hasStartIcon?: boolean;
-  hasEndIcon?: boolean;
-  inputSize?: 'small' | 'medium' | 'large';
-}
-
-export const InputWrapper = styled(Box)<InputWrapperProps>(({ fullWidth }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-  width: fullWidth ? '100%' : 'auto',
+export const StyledFormControl = styled(FormControl)(({ theme: {} }) => ({
+  width: '100%',
+  rowGap: rem(6),
+  outline: 'none',
 }));
 
-export const InputLabel = styled(Typography)(() => ({
-  fontSize: rem(14),
-  fontWeight: 700,
-  color: '#525252',
-  lineHeight: rem(20),
-  letterSpacing: '0.005em',
-  fontFamily: 'Manrope',
-  fontStyle: 'normal',
-  '@media (min-width: 1921px)': {
-    fontSize: rem(16),
-    lineHeight: rem(24),
+export const StyledInput = styled(InputBase, {
+  shouldForwardProp: (prop) => prop !== 'variants',
+})<IStyledInputProp>(({ theme: { spacing, palette, typography, shape }, variants }) => ({
+  width: '100%',
+  height: rem(48),
+  border: '1px solid',
+  borderColor: `${palette.border?.main || palette.grey[300]}`,
+  borderRadius: shape.borderRadius,
+  padding: spacing(1.5, 2),
+  fontSize: typography.subtitle2.fontSize,
+  backgroundColor: variants?.length && variants?.length > 1 ? variants[1] : palette.colors.white,
+  '&:hover': {
+    borderColor: palette.border?.dark || palette.grey[400],
   },
-  '@media (max-width: 1536px)': {
-    fontSize: rem(13),
-    lineHeight: rem(19),
+  '&.withRequiredBorder': {
+    borderColor: `${palette.warning.main}`,
   },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(12),
-    lineHeight: rem(18),
+  '&.hasValue': {
+    borderColor: `${variants?.length ? variants[0] : palette.colors.grey_300}`,
   },
-}));
-
-export const InputContainer = styled(Box)<{ hasError?: boolean; inputSize?: 'small' | 'medium' | 'large' }>(({ theme, hasError, inputSize }) => {
-  const size = inputSize || 'medium';
-
-  return {
-    position: 'relative',
+  '&.withValue': {
+    svg: {
+      fill: palette.colors.grey_500,
+    },
+  },
+  '&.Mui-focused': {
+    borderColor: palette.colors.grey_300,
+    '&:hover': {
+      borderColor: palette.colors.grey_300,
+    },
+    svg: {
+      fill: palette.warning.main,
+    },
+    ' .MuiInputAdornment-positionEnd': {
+      button: {
+        svg: {
+          fill: palette.warning.main,
+        },
+      },
+    },
+  },
+  '&.Mui-readOnly': {
+    borderColor: variants?.length ? variants[0] : palette.colors.grey_200,
+    '&:hover': {
+      borderColor: variants?.length ? variants[0] : palette.colors.grey_200,
+    },
+  },
+  '&.Mui-error': {
+    borderColor: `${palette.error.main}`,
+    backgroundColor: `${palette.error.bgLight}`,
+    '&:hover': {
+      borderColor: `${palette.error.dark}`,
+    },
+    input: {
+      color: palette.error.main,
+    },
+  },
+  '&.Mui-disabled': {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    height: rem(42),
-    padding: `${rem(10)} ${rem(14)}`,
-    backgroundColor: theme.palette.common.white,
-    border: `1px solid ${hasError ? theme.palette.error.main : theme.palette.grey[300]}`,
-    borderRadius: theme.shape.borderRadius,
-    transition: 'all 0.2s ease-in-out',
-    '@media (min-width: 1921px)': {
-      height: size === 'small' ? rem(40) : size === 'large' ? rem(56) : rem(48),
-      padding: size === 'small' ? `${rem(8)} ${rem(12)}` : size === 'large' ? `${rem(14)} ${rem(16)}` : `${rem(12)} ${rem(16)}`,
-    },
-    '@media (max-width: 1536px)': {
-      height: rem(40),
-      padding: `${rem(9)} ${rem(12)}`,
-    },
-    '@media (max-width: 1366px)': {
-      height: rem(38),
-      padding: `${rem(8)} ${rem(10)}`,
-    },
-    '&:focus-within': {
-      borderColor: hasError ? theme.palette.error.main : theme.palette.primary.main,
-      boxShadow: hasError
-        ? `0 0 0 3px ${theme.palette.error.main}20`
-        : `0 0 0 3px ${theme.palette.primary.main}20`,
-    },
-    '&:hover': {
-      borderColor: hasError ? theme.palette.error.main : theme.palette.grey[400],
-    },
-  };
-});
 
-export const StyledInput = styled('input')<StyledInputProps>(({ theme }) => ({
-  flex: 1,
-  border: 'none',
-  outline: 'none',
-  backgroundColor: 'transparent',
-  fontSize: rem(14),
-  fontWeight: theme.typography.fontWeightRegular,
-  color: theme.palette.grey[900],
-  fontFamily: theme.typography.fontFamily,
-  '@media (min-width: 1921px)': {
-    fontSize: rem(16),
+    backgroundColor: palette.background.disabled,
+    color: palette.colors.grey_300,
+
+    '&:hover': {
+      borderColor: palette.border?.main || palette.grey[300],
+    },
   },
-  '@media (max-width: 1536px)': {
-    fontSize: rem(13),
+  input: {
+    color: palette.colors.grey_900,
+    fontSize: rem(14),
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: rem(20),
+    '&[readonly]': {
+      color: palette.colors.grey_300,
+    },
   },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(12),
-  },
-  '&::placeholder': {
-    color: theme.palette.grey[400],
-  },
-  '&:disabled': {
-    color: theme.palette.grey[500],
-    cursor: 'not-allowed',
+  ' .MuiInputAdornment-positionEnd': {
+    button: {
+      svg: {
+        fill: palette.colors.grey_500,
+      },
+    },
   },
 }));
 
-export const IconWrapper = styled(Box)(({ theme }) => ({
+export const AdornmentWrapper = styled(InputAdornment)(({ theme: { spacing } }) => ({
+  paddingRight: spacing(1),
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  color: theme.palette.grey[500],
-  '& svg': {
-    fontSize: '20px',
+  svg: {
+    fill: 'black',
   },
+  position: 'relative',
+  top: rem(4),
 }));
 
-export const HelperText = styled(Typography)<{ hasError?: boolean }>(({ theme, hasError }) => ({
+export const ErrorWrapper = styled(Box)(({ theme }) => ({
+  textAlign: 'left',
   fontSize: rem(12),
-  fontWeight: theme.typography.fontWeightRegular,
-  color: hasError ? theme.palette.error.main : theme.palette.grey[600],
-  lineHeight: rem(16),
+  color: theme.palette.error.main,
+  marginTop: rem(4),
+}));
+
+export const InputWrapper = styled(Box)(({ theme: {} }) => ({
+  position: 'relative',
+}));
+
+export const InputLabel = styled('label')(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: 700,
+  color: theme.palette.colors.grey_600,
+  lineHeight: rem(20),
+  marginBottom: rem(6),
+  display: 'block',
 }));

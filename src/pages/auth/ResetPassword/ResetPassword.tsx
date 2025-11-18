@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
+import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { useSchema } from '../../../utils/validation';
-import { ForgotPasswordFormSchema } from './ForgotPasswordSchema';
+import { ResetPasswordFormSchema } from './ResetPasswordSchema';
 import {
-  ForgotPasswordContainer,
+  ResetPasswordContainer,
   LeftSection,
   FormContainer,
   HeaderSection,
@@ -18,16 +19,19 @@ import {
   Subtitle,
   FormWrapper,
   BackToLoginLink,
-} from './ForgotPassword.styles';
-import type { ForgotPasswordFormData } from './IForgotPassword';
+} from './ResetPassword.styles';
+import type { ResetPasswordFormData } from './IResetPassword';
 
-export const ForgotPassword: React.FC = () => {
+export const ResetPassword: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const emailFromParams = searchParams.get('email') || '';
+
   const { fieldRules, defaultValues, placeHolders, fieldLabels } =
-    useSchema(ForgotPasswordFormSchema);
+    useSchema(ResetPasswordFormSchema);
 
-  const methods = useForm<ForgotPasswordFormData>({
+  const methods = useForm<ResetPasswordFormData>({
     resolver: yupResolver(fieldRules),
-    defaultValues,
+    defaultValues: emailFromParams ? { ...defaultValues, email: emailFromParams } : defaultValues,
   });
 
   const {
@@ -47,20 +51,31 @@ export const ForgotPassword: React.FC = () => {
     variant: 'success',
   });
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      // TODO: Integrate with actual forgot password API
+      // TODO: Integrate with actual reset password API
+      // API payload structure:
+      // {
+      //   "email": data.email,
+      //   "code": data.code,
+      //   "newPassword": data.newPassword
+      // }
+
       // For now, simulating API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log('Password reset email sent to:', data.email);
+      console.log('Password reset payload:', {
+        email: data.email,
+        code: data.code,
+        newPassword: data.newPassword,
+      });
 
       setSnackbar({
         open: true,
-        message: 'Password reset link has been sent to your email!',
+        message: 'Password has been reset successfully! Redirecting to login...',
         variant: 'success',
       });
 
@@ -70,7 +85,7 @@ export const ForgotPassword: React.FC = () => {
       }, 2000);
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
-      let errorMessage = 'Failed to send reset email. Please try again.';
+      let errorMessage = 'Failed to reset password. Please try again.';
 
       if (error && typeof error === 'object') {
         if ('message' in error && typeof error.message === 'string') {
@@ -96,14 +111,14 @@ export const ForgotPassword: React.FC = () => {
 
   return (
     <FormProvider {...methods}>
-      <ForgotPasswordContainer>
+      <ResetPasswordContainer>
         <LeftSection>
           <FormContainer>
             <HeaderSection>
               <FloowLogo variant="light" showText={true} />
-              <Title>Forgot Password?</Title>
+              <Title>Reset Password</Title>
               <Subtitle>
-                No worries! Enter your email address and we'll send you a link to reset your password.
+                Enter the verification code sent to your email and create a new password.
               </Subtitle>
             </HeaderSection>
 
@@ -117,6 +132,31 @@ export const ForgotPassword: React.FC = () => {
                 error={errors.email}
               />
 
+              <Input
+                name="code"
+                label={fieldLabels.code}
+                type="text"
+                placeholder={placeHolders.code}
+                fullWidth
+                error={errors.code}
+              />
+
+              <PasswordInput
+                name="newPassword"
+                label={fieldLabels.newPassword}
+                placeholder={placeHolders.newPassword}
+                fullWidth
+                error={errors.newPassword}
+              />
+
+              <PasswordInput
+                name="confirmPassword"
+                label={fieldLabels.confirmPassword}
+                placeholder={placeHolders.confirmPassword}
+                fullWidth
+                error={errors.confirmPassword}
+              />
+
               <Button
                 type="submit"
                 variant="contained"
@@ -125,7 +165,7 @@ export const ForgotPassword: React.FC = () => {
                 fullWidth
                 disabled={isLoading}
               >
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
+                {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>
 
               <BackToLoginLink onClick={handleBackToLogin}>
@@ -143,7 +183,7 @@ export const ForgotPassword: React.FC = () => {
           variant={snackbar.variant}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
         />
-      </ForgotPasswordContainer>
+      </ResetPasswordContainer>
     </FormProvider>
   );
 };

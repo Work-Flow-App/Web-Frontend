@@ -9,7 +9,7 @@ import {
   Tagline,
   FeaturesGrid,
 } from './AuthRightSection.styles';
-import type { AuthRightSectionProps } from './AuthRightSection.types';
+import type { AuthRightSectionProps } from './IAuthRightSection';
 
 export const AuthRightSection: React.FC<AuthRightSectionProps> = ({
   features = DEFAULT_AUTH_FEATURES,

@@ -1,8 +1,8 @@
 import React from 'react';
 import * as S from './FeatureCard.styled';
-import type { FeatureCardProps } from './FeatureCard.types';
+import type { IFeatureCard } from './IFeatureCard';
 
-function FeatureCard({ title, description, icon, onClick, background, borderColor, className }: FeatureCardProps): React.ReactElement {
+function FeatureCard({ title, description, icon, onClick, background, borderColor, className }: IFeatureCard): React.ReactElement {
   const handleClick = () => {
     if (onClick) {
       onClick();

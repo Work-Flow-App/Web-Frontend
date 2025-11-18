@@ -5,14 +5,14 @@ export type TabVariant = 'default' | 'active';
 
 export type TabSize = 'small' | 'medium' | 'large';
 
-export interface TabItem {
+export interface ITabItem {
   id: string;
   label: string;
   icon?: ReactNode;
   disabled?: boolean;
 }
 
-export interface TabProps {
+export interface ITab {
   /**
    * Tab label text
    */
@@ -55,11 +55,11 @@ export interface TabProps {
   sx?: SxProps<Theme>;
 }
 
-export interface TabMenuProps {
+export interface ITabMenu {
   /**
    * Array of tab items
    */
-  tabs: TabItem[];
+  tabs: ITabItem[];
 
   /**
    * Currently active tab id

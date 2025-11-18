@@ -1,11 +1,11 @@
 export type SnackbarVariant = 'success' | 'error' | 'warning' | 'info';
 
-export interface SnackbarPosition {
+export interface ISnackbarPosition {
   vertical: 'top' | 'bottom';
   horizontal: 'left' | 'center' | 'right';
 }
 
-export interface SnackbarProps {
+export interface ISnackbar {
   /**
    * Whether the snackbar is open
    */
@@ -26,7 +26,7 @@ export interface SnackbarProps {
    * Position of the snackbar
    * @default { vertical: 'bottom', horizontal: 'right' }
    */
-  anchorOrigin?: SnackbarPosition;
+  anchorOrigin?: ISnackbarPosition;
 
   /**
    * Auto hide duration in milliseconds

@@ -1,4 +1,4 @@
-export interface PricingFeature {
+export interface IPricingFeature {
   /**
    * The text of the feature
    */
@@ -10,7 +10,7 @@ export interface PricingFeature {
   included?: boolean;
 }
 
-export interface PricingCardProps {
+export interface IPricingCard {
   /**
    * The plan name/title
    */
@@ -50,7 +50,7 @@ export interface PricingCardProps {
   /**
    * List of features included in the plan
    */
-  features?: PricingFeature[];
+  features?: IPricingFeature[];
 
   /**
    * Optional icon to display at the top

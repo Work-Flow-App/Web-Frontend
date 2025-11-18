@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { NotificationList } from './NotificationList';
-import type { Notification } from './NotificationList.types';
+import type { INotification } from './INotificationList';
 import { CalendarExceededIcon, ChecklistIcon, DocumentIcon } from './icons';
 
 const meta: Meta<typeof NotificationList> = {
@@ -16,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof NotificationList>;
 
 // Sample notifications data
-const sampleNotifications: Notification[] = [
+const sampleNotifications: INotification[] = [
   {
     id: '1',
     title: 'Due date exceeded, action required',

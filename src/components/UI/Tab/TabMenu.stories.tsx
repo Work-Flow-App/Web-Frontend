@@ -92,6 +92,12 @@ type Story = StoryObj<typeof meta>;
 
 // Default TabMenu
 export const Default: Story = {
+  args: {
+    tabs,
+    activeTab: 'jobs',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('jobs');
     return <TabMenu tabs={tabs} activeTab={activeTab} onChange={setActiveTab} size="medium" />;
@@ -100,6 +106,12 @@ export const Default: Story = {
 
 // TabMenu without icons
 export const WithoutIcons: Story = {
+  args: {
+    tabs: tabsWithoutIcons,
+    activeTab: 'dashboard',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     return (
@@ -110,6 +122,12 @@ export const WithoutIcons: Story = {
 
 // TabMenu with disabled tab
 export const WithDisabledTab: Story = {
+  args: {
+    tabs: tabsWithDisabled,
+    activeTab: 'jobs',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('jobs');
     return (
@@ -120,6 +138,12 @@ export const WithDisabledTab: Story = {
 
 // Small size
 export const SmallSize: Story = {
+  args: {
+    tabs,
+    activeTab: 'dashboard',
+    onChange: () => {},
+    size: 'small',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     return <TabMenu tabs={tabs} activeTab={activeTab} onChange={setActiveTab} size="small" />;
@@ -128,6 +152,12 @@ export const SmallSize: Story = {
 
 // Medium size (default)
 export const MediumSize: Story = {
+  args: {
+    tabs,
+    activeTab: 'jobs',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('jobs');
     return <TabMenu tabs={tabs} activeTab={activeTab} onChange={setActiveTab} size="medium" />;
@@ -136,6 +166,12 @@ export const MediumSize: Story = {
 
 // Large size
 export const LargeSize: Story = {
+  args: {
+    tabs,
+    activeTab: 'workers',
+    onChange: () => {},
+    size: 'large',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('workers');
     return <TabMenu tabs={tabs} activeTab={activeTab} onChange={setActiveTab} size="large" />;
@@ -144,6 +180,12 @@ export const LargeSize: Story = {
 
 // All sizes comparison
 export const AllSizes: Story = {
+  args: {
+    tabs,
+    activeTab: 'jobs',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [smallActive, setSmallActive] = useState('jobs');
     const [mediumActive, setMediumActive] = useState('jobs');
@@ -170,6 +212,15 @@ export const AllSizes: Story = {
 
 // Two tabs only
 export const TwoTabs: Story = {
+  args: {
+    tabs: [
+      { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+      { id: 'jobs', label: 'Jobs', icon: <JobsIcon /> },
+    ],
+    activeTab: 'dashboard',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const twoTabs = [
@@ -182,6 +233,19 @@ export const TwoTabs: Story = {
 
 // Many tabs (demonstrating scrolling on mobile)
 export const ManyTabs: Story = {
+  args: {
+    tabs: [
+      { id: 'tab1', label: 'Tab 1' },
+      { id: 'tab2', label: 'Tab 2' },
+      { id: 'tab3', label: 'Tab 3' },
+      { id: 'tab4', label: 'Tab 4' },
+      { id: 'tab5', label: 'Tab 5' },
+      { id: 'tab6', label: 'Tab 6' },
+    ],
+    activeTab: 'tab3',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('tab3');
     const manyTabs = [
@@ -198,6 +262,12 @@ export const ManyTabs: Story = {
 
 // Interactive with content
 export const WithContent: Story = {
+  args: {
+    tabs,
+    activeTab: 'dashboard',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -240,6 +310,12 @@ export const WithContent: Story = {
 
 // Dark background showcase (matching design)
 export const DesignShowcase: Story = {
+  args: {
+    tabs,
+    activeTab: 'jobs',
+    onChange: () => {},
+    size: 'medium',
+  },
   render: () => {
     const [activeTab, setActiveTab] = useState('jobs');
     return (
