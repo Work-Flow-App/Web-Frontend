@@ -31,10 +31,10 @@ export const authService = {
   async signup(data: SignupRequest): Promise<ApiResponse<AuthResponse>> {
     const response = await apiClient.post<AuthResponse>('/api/v1/auth/signup', data);
 
-    // Store auth tokens
+    // Store auth tokens in memory
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
-      localStorage.setItem('refresh_token', response.data.refreshToken);
+      apiClient.setRefreshToken(response.data.refreshToken);
     }
 
     return response;
@@ -46,10 +46,10 @@ export const authService = {
   async login(data: LoginRequest): Promise<ApiResponse<AuthResponse>> {
     const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
 
-    // Store auth tokens
+    // Store auth tokens in memory
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
-      localStorage.setItem('refresh_token', response.data.refreshToken);
+      apiClient.setRefreshToken(response.data.refreshToken);
     }
 
     return response;
@@ -63,10 +63,10 @@ export const authService = {
       refreshToken,
     });
 
-    // Update stored tokens
+    // Update stored tokens in memory
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
-      localStorage.setItem('refresh_token', response.data.refreshToken);
+      apiClient.setRefreshToken(response.data.refreshToken);
     }
 
     return response;
@@ -79,9 +79,9 @@ export const authService = {
     try {
       await apiClient.post('/api/v1/auth/logout');
     } finally {
-      // Clear tokens even if request fails
+      // Clear tokens from memory even if request fails
       apiClient.clearAuthToken();
-      localStorage.removeItem('refresh_token');
+      apiClient.clearRefreshToken();
     }
   },
 
@@ -98,21 +98,21 @@ export const authService = {
    * Verify if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
+    return !!apiClient.getStoredAccessToken();
   },
 
   /**
    * Get stored access token
    */
   getAccessToken(): string | null {
-    return localStorage.getItem('auth_token');
+    return apiClient.getStoredAccessToken();
   },
 
   /**
    * Get stored refresh token
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    return apiClient.getStoredRefreshToken();
   },
 };
 
