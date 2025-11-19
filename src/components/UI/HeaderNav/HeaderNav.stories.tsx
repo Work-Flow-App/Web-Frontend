@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { HeaderNav } from './HeaderNav';
 import { Box } from '@mui/material';
 import { useState } from 'react';
-import { NotificationDropdown } from '../NotificationList';
-import { CalendarExceededIcon, ChecklistIcon, DocumentIcon } from '../NotificationList/icons';
+import { NotificationDropdown, CalendarExceededIcon, ChecklistIcon, DocumentIcon } from '../NotificationList';
 import { NotificationIcon, SearchIcon, SettingsIcon, LogoutIcon } from './icons';
 import {
   IconButtonStyled,

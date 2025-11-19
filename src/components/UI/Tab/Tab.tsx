@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyledTab } from './Tab.styles';
-import type { TabProps } from './Tab.types';
+import type { ITab as TabProps } from './ITab';
 
 /**
  * Tab Component

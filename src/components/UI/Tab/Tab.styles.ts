@@ -1,6 +1,6 @@
 import { styled, Box } from '@mui/material';
 import { floowColors } from '../../../theme/colors';
-import type { TabSize } from './Tab.types';
+import type { TabSize } from './ITab';
 
 interface StyledTabProps {
   active?: boolean;

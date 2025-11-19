@@ -7,3 +7,4 @@ export type {
   INotificationItem
 } from './INotificationList';
 export type { NotificationDropdownProps } from './NotificationDropdown';
+export { CalendarExceededIcon, ChecklistIcon, DocumentIcon, MailIcon } from './icons';
