@@ -66,7 +66,7 @@ export const ForgotPassword: React.FC = () => {
 
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        navigate('/login');
+        navigate('/reset-password');
       }, 2000);
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
