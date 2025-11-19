@@ -32,11 +32,13 @@ export const ResetPassword: React.FC = () => {
   const methods = useForm<ResetPasswordFormData>({
     resolver: yupResolver(fieldRules),
     defaultValues: emailFromParams ? { ...defaultValues, email: emailFromParams } : defaultValues,
+    mode: 'onChange',
   });
 
   const {
     handleSubmit,
     formState: { errors },
+    trigger,
   } = methods;
 
   const navigate = useNavigate();
@@ -147,6 +149,10 @@ export const ResetPassword: React.FC = () => {
                 placeholder={placeHolders.newPassword}
                 fullWidth
                 error={errors.newPassword}
+                onChange={() => {
+                  // Trigger validation on confirmPassword when newPassword changes
+                  trigger('confirmPassword');
+                }}
               />
 
               <PasswordInput

@@ -21,14 +21,15 @@ const checkUserEmail = (value?: string) => {
 const checkUserName = (value: string, { createError }: any) => {
   if (value) {
     const emailValidateRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const usernameRegex = /^[a-zA-Z0-9._-]+$/; // Allow alphanumeric, dots, underscores, and hyphens
 
-    const isValid = value.match(emailValidateRegex) || value.match(/^[0-9]+$/);
+    const isValid = value.match(emailValidateRegex) || value.match(usernameRegex);
 
     if (isValid) {
       return true;
     }
     return createError({
-      message: `Invalid Email or Employee ID.`,
+      message: `Invalid Email or Username.`,
     });
   }
   return false;
@@ -356,13 +357,13 @@ export const InputValidationRules = {
   Age: number().positive().integer(),
   Website: string().url().nullable(),
   Date: date().default(() => new Date()),
-  UserNameRequired: string().required('Employee ID or Email is required.').test(checkUserName),
+  UserNameRequired: string().required('Username or Email is required.').test(checkUserName),
   EmailListRequired: string().required('Required!').test(checkEmailList),
   PasswordRequired: string().required('Password is required.').test(checkPassword),
   NewPasswordRequired: string().required('Required').test(checkPassword),
   RetypePasswordMatched: string()
     .required(`Required`)
-    .oneOf([ref('newPassword')], "Password didn't matched."),
+    .oneOf([ref('newPassword'), ref('password')], "Password didn't matched."),
   FileRequired: mixed().test('fileFormat', 'Invalid file format, only accept images.', (value: any) => {
     return value && value.length;
   }),

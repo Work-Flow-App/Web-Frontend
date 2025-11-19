@@ -1,4 +1,5 @@
-import React, { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo } from 'react';
+import type React from 'react';
 import { InputAdornment, Tooltip } from '@mui/material';
 import { useController, useFormContext, useWatch } from 'react-hook-form';
 import type { InputProps } from './Input.types';
@@ -31,7 +32,7 @@ const EndAdornment = ({ icon }: { icon?: string; disabled?: boolean }) => {
   return null;
 };
 
-const BaseTextInput = (props: InputProps): JSX.Element => {
+const BaseTextInput = (props: InputProps) => {
   const {
     styles,
     name,
@@ -82,7 +83,10 @@ const BaseTextInput = (props: InputProps): JSX.Element => {
   const dataSourceValue = useWatch({ name: dataSource || `${name}-dataSource` });
 
   useEffect(() => {
-    if (restProps.type !== HIDDEN_TYPE || shouldNotSkipHiddenTypeReset) {
+    // Skip reset for password visibility toggle (password <-> text type changes)
+    const isPasswordTypeToggle = restProps.type === 'password' || restProps.type === 'text';
+
+    if ((restProps.type !== HIDDEN_TYPE || shouldNotSkipHiddenTypeReset) && !isPasswordTypeToggle) {
       resetField(name, { defaultValue });
     }
   }, [defaultValue, name, resetField, restProps.type, shouldNotSkipHiddenTypeReset]);
@@ -119,7 +123,7 @@ const BaseTextInput = (props: InputProps): JSX.Element => {
     }
   }, [decimalLimit, field.value, name, setValue]);
 
-  const handleOnChange = (e: any) => {
+  const handleOnChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const inputValue = e.target.value;
     const splitValues = inputValue.split('.');
 
@@ -137,14 +141,14 @@ const BaseTextInput = (props: InputProps): JSX.Element => {
       const decimalValues = hasDecimalValues ? splitValues[1]?.length : 0;
       if (inputValue && decimalValues > decimalLimit) return;
     }
-    onChange?.(e, dependentFields);
     field.onChange(e);
     if (shouldValidateOnChange) {
       trigger(name);
     }
+    onChange?.(e, dependentFields);
   };
 
-  const handleOnBlur = (e: any) => {
+  const handleOnBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     updateHasValue();
     onBlur?.(e, dependentFields);
     field.onBlur();
@@ -200,7 +204,7 @@ const BaseTextInput = (props: InputProps): JSX.Element => {
   return renderInputField();
 };
 
-export const Input = memo((props: InputProps): JSX.Element => {
+export const Input = memo((props: InputProps) => {
   const { label, error, hideErrorMessage, fullWidth } = props;
 
   return (

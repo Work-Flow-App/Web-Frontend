@@ -29,7 +29,7 @@ export const PasswordInput: React.FC<IPasswordInput> = ({ showToggle = true, ...
     </InputAdornment>
   ) : undefined;
 
-  return <Input type={showPassword ? 'text' : 'password'} endAdornment={endAdornment} {...props} />;
+  return <Input {...props} type={showPassword ? 'text' : 'password'} endAdornment={endAdornment} />;
 };
 
 PasswordInput.displayName = 'PasswordInput';

@@ -58,12 +58,14 @@ export const Signup: React.FC = () => {
   const methods = useForm<SignupFormData>({
     resolver: yupResolver(fieldRules),
     defaultValues,
+    mode: 'onChange',
   });
 
   const {
     handleSubmit,
     control,
     formState: { errors },
+    trigger,
   } = methods;
 
   const navigate = useNavigate();
@@ -175,6 +177,10 @@ export const Signup: React.FC = () => {
                 placeholder={placeHolders.password}
                 fullWidth
                 error={errors.password}
+                onChange={() => {
+                  // Trigger validation on confirmPassword when password changes
+                  trigger('confirmPassword');
+                }}
               />
 
               <PasswordInput
