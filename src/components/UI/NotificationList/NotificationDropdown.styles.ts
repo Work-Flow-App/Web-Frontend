@@ -1,14 +1,16 @@
 import { styled, Box } from '@mui/material';
-import { rem } from '../Typography/utility';
 
 export const DropdownContainer = styled(Box)(() => ({
   position: 'relative',
   display: 'inline-block',
 }));
 
-export const DropdownContent = styled(Box)<{ open?: boolean; position?: string }>(
+type DropdownPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+
+export const DropdownContent = styled(Box)<{ open?: boolean; position?: DropdownPosition }>(
   ({ open, position = 'bottom-right' }) => {
-    const positions = {
+    const dropdownPosition = position as DropdownPosition;
+    const positions: Record<DropdownPosition, { top?: string; bottom?: string; left?: number; right?: number }> = {
       'bottom-right': {
         top: 'calc(100% + 8px)',
         right: 0,
@@ -34,7 +36,7 @@ export const DropdownContent = styled(Box)<{ open?: boolean; position?: string }
       visibility: open ? 'visible' : 'hidden',
       transform: open ? 'translateY(0)' : 'translateY(-10px)',
       transition: 'opacity 0.2s ease, transform 0.2s ease, visibility 0.2s',
-      ...positions[position as keyof typeof positions],
+      ...positions[dropdownPosition],
     };
   }
 );

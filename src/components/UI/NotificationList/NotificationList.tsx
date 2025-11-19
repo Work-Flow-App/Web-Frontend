@@ -1,5 +1,5 @@
 import React from 'react';
-import type { NotificationListProps } from './NotificationList.types';
+import type { INotificationList } from './INotificationList';
 import { NotificationItem } from './NotificationItem';
 import {
   NotificationListContainer,
@@ -9,7 +9,7 @@ import {
   NotificationItems,
 } from './NotificationList.styles';
 
-export const NotificationList: React.FC<NotificationListProps> = ({
+export const NotificationList: React.FC<INotificationList> = ({
   notifications,
   title = 'Notifications',
   showClearAll = true,

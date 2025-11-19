@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
 
-export interface Notification {
+export interface INotification {
   id: string;
   title: string;
   subtitle?: string;
@@ -13,11 +13,11 @@ export interface Notification {
   timestamp?: Date;
 }
 
-export interface NotificationListProps {
+export interface INotificationList {
   /**
    * Array of notifications
    */
-  notifications: Notification[];
+  notifications: INotification[];
 
   /**
    * Title of the notification list
@@ -39,7 +39,7 @@ export interface NotificationListProps {
   /**
    * Callback when a notification is clicked
    */
-  onNotificationClick?: (notification: Notification) => void;
+  onNotificationClick?: (notification: INotification) => void;
 
   /**
    * Callback when mail button is clicked
@@ -49,7 +49,7 @@ export interface NotificationListProps {
   /**
    * Callback when view button is clicked
    */
-  onViewClick?: (notification: Notification) => void;
+  onViewClick?: (notification: INotification) => void;
 
   /**
    * Custom className
@@ -62,8 +62,8 @@ export interface NotificationListProps {
   sx?: SxProps<Theme>;
 }
 
-export interface NotificationItemProps {
-  notification: Notification;
+export interface INotificationItem {
+  notification: INotification;
   onMailClick?: (notificationId: string) => void;
-  onViewClick?: (notification: Notification) => void;
+  onViewClick?: (notification: INotification) => void;
 }

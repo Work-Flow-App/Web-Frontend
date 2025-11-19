@@ -1,5 +1,5 @@
 import React from 'react';
-import type { NotificationItemProps } from './NotificationList.types';
+import type { INotificationItem } from './INotificationList';
 import { MailIcon } from './icons';
 import { Button } from '../Button';
 import {
@@ -19,7 +19,7 @@ import {
   NotificationDivider,
 } from './NotificationList.styles';
 
-export const NotificationItem: React.FC<NotificationItemProps> = ({
+export const NotificationItem: React.FC<INotificationItem> = ({
   notification,
   onMailClick,
   onViewClick,

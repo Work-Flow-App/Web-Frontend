@@ -1,29 +1,22 @@
-import { useState, forwardRef } from 'react';
+import React, { useState } from 'react';
+import { InputAdornment } from '@mui/material';
 import { Input } from '../Input/Input';
-import type { InputProps } from '../Input/Input.types';
 import { VisibilityIcon, VisibilityOffIcon, IconButton } from './PasswordInput.styles.tsx';
+import type { IPasswordInput } from './IPasswordInput';
 
-export interface PasswordInputProps extends Omit<InputProps, 'type' | 'endIcon'> {
-  /**
-   * Show password toggle button
-   * @default true
-   */
-  showToggle?: boolean;
-}
+export const PasswordInput: React.FC<IPasswordInput> = ({ showToggle = true, ...props }) => {
+  const [showPassword, setShowPassword] = useState(false);
 
-export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ showToggle = true, ...props }, ref) => {
-    const [showPassword, setShowPassword] = useState(false);
+  const handleTogglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
-    const handleTogglePassword = () => {
-      setShowPassword((prev) => !prev);
-    };
+  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
-    const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-    };
-
-    const endIcon = showToggle ? (
+  const endAdornment = showToggle ? (
+    <InputAdornment position="end">
       <IconButton
         type="button"
         onClick={handleTogglePassword}
@@ -33,17 +26,10 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       >
         {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
       </IconButton>
-    ) : undefined;
+    </InputAdornment>
+  ) : undefined;
 
-    return (
-      <Input
-        ref={ref}
-        type={showPassword ? 'text' : 'password'}
-        endIcon={endIcon}
-        {...props}
-      />
-    );
-  }
-);
+  return <Input {...props} type={showPassword ? 'text' : 'password'} endAdornment={endAdornment} />;
+};
 
 PasswordInput.displayName = 'PasswordInput';

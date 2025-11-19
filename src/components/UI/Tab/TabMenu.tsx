@@ -1,7 +1,7 @@
 import React from 'react';
 import { TabMenuContainer } from './Tab.styles';
 import { Tab } from './Tab';
-import type { TabMenuProps } from './Tab.types';
+import type { ITabMenu as TabMenuProps } from './ITab';
 
 /**
  * TabMenu Component

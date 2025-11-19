@@ -1,2 +1,2 @@
 export { HeaderNav } from './HeaderNav';
-export * from './HeaderNav.types';
+export * from './IHeaderNav';

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NotificationList } from './NotificationList';
-import type { NotificationListProps } from './NotificationList.types';
+import type { INotificationList } from './INotificationList';
 import { DropdownContainer, DropdownContent, Backdrop } from './NotificationDropdown.styles';
 
-export interface NotificationDropdownProps extends NotificationListProps {
+export interface NotificationDropdownProps extends INotificationList {
   /**
    * The trigger element (e.g., notification icon button)
    */
@@ -96,12 +96,13 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
-  const triggerWithClick = React.cloneElement(trigger, {
+  const triggerWithClick = React.cloneElement(trigger as React.ReactElement<any>, {
     onClick: (event: React.MouseEvent) => {
       handleTriggerClick(event);
       // Call original onClick if it exists
-      if (trigger.props.onClick) {
-        trigger.props.onClick(event);
+      const originalOnClick = (trigger as React.ReactElement<any>).props?.onClick;
+      if (originalOnClick) {
+        originalOnClick(event);
       }
     },
   });

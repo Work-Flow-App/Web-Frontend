@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { Tab } from './Tab';
 import { Box } from '@mui/material';
 
@@ -142,6 +143,9 @@ export const Large: Story = {
 
 // All sizes showcase
 export const AllSizes: Story = {
+  args: {
+    label: 'Tab',
+  },
   render: () => (
     <Box sx={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
       <Tab label="Small" icon={<DashboardIcon />} active={false} size="small" />
@@ -153,6 +157,9 @@ export const AllSizes: Story = {
 
 // State comparison
 export const StateComparison: Story = {
+  args: {
+    label: 'Tab',
+  },
   render: () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
       <Box sx={{ display: 'flex', gap: '1rem' }}>
@@ -166,6 +173,9 @@ export const StateComparison: Story = {
 
 // Interactive example
 export const Interactive: Story = {
+  args: {
+    label: 'Click me',
+  },
   render: () => {
     const [active, setActive] = React.useState(false);
     return (

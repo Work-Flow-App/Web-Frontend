@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
@@ -10,6 +11,8 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
 import { UserRole } from '../../../types/auth';
+import { useSchema } from '../../../utils/validation';
+import { SignupFormSchema } from './SignupSchema';
 import {
   SignupContainer,
   LeftSection,
@@ -25,7 +28,7 @@ import {
   // FooterText,
   // GoogleButton,
 } from './Signup.styles';
-import type { SignupFormData } from './Signup.types';
+import type { SignupFormData } from './ISignup';
 
 // const GoogleIcon = () => (
 //   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -49,17 +52,21 @@ import type { SignupFormData } from './Signup.types';
 // );
 
 export const Signup: React.FC = () => {
+  const { fieldRules, defaultValues, placeHolders, fieldLabels } =
+    useSchema(SignupFormSchema);
+
+  const methods = useForm<SignupFormData>({
+    resolver: yupResolver(fieldRules),
+    defaultValues,
+    mode: 'onChange',
+  });
+
   const {
-    register,
     handleSubmit,
     control,
     formState: { errors },
-    watch,
-  } = useForm<SignupFormData>({
-    defaultValues: {
-      role: UserRole.WORKER,
-    },
-  });
+    trigger,
+  } = methods;
 
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -133,143 +140,126 @@ export const Signup: React.FC = () => {
   // };
 
   return (
-    <SignupContainer>
-      <LeftSection>
-        <FormContainer>
-          <HeaderSection>
-            <FloowLogo variant="light" showText={true} />
-            <Title>Get Started!</Title>
-            <Subtitle>
-              Enter your valid email address and password to access your account.
-            </Subtitle>
-          </HeaderSection>
+    <FormProvider {...methods}>
+      <SignupContainer>
+        <LeftSection>
+          <FormContainer>
+            <HeaderSection>
+              <FloowLogo variant="light" showText={true} />
+              <Title>Get Started!</Title>
+              <Subtitle>
+                Enter your valid email address and password to access your account.
+              </Subtitle>
+            </HeaderSection>
 
-          <FormWrapper onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              label="Username"
-              type="text"
-              placeholder="Enter your username"
-              fullWidth
-              {...register('username', {
-                required: 'Username is required',
-                minLength: {
-                  value: 3,
-                  message: 'Username must be at least 3 characters',
-                },
-              })}
-              error={errors.username}
-            />
+            <FormWrapper onSubmit={handleSubmit(onSubmit)}>
+              <Input
+                name="username"
+                label={fieldLabels.username}
+                type="text"
+                placeholder={placeHolders.username}
+                fullWidth
+                error={errors.username}
+              />
 
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="username@email.com"
-              fullWidth
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
-                },
-              })}
-              error={errors.email}
-            />
+              <Input
+                name="email"
+                label={fieldLabels.email}
+                type="email"
+                placeholder={placeHolders.email}
+                fullWidth
+                error={errors.email}
+              />
 
-            <PasswordInput
-              label="Create Password"
-              placeholder="Enter your password"
-              fullWidth
-              {...register('password', {
-                required: 'Password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters',
-                },
-              })}
-              error={errors.password}
-            />
+              <PasswordInput
+                name="password"
+                label={fieldLabels.password}
+                placeholder={placeHolders.password}
+                fullWidth
+                error={errors.password}
+                onChange={() => {
+                  // Trigger validation on confirmPassword when password changes
+                  trigger('confirmPassword');
+                }}
+              />
 
-            <PasswordInput
-              label="Confirm Password"
-              placeholder="Re-enter your password"
-              fullWidth
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) =>
-                  value === watch('password') || 'Passwords do not match',
-              })}
-              error={errors.confirmPassword}
-            />
+              <PasswordInput
+                name="confirmPassword"
+                label={fieldLabels.confirmPassword}
+                placeholder={placeHolders.confirmPassword}
+                fullWidth
+                error={errors.confirmPassword}
+              />
 
-            <Controller
-              name="role"
-              control={control}
-              rules={{ required: 'Please select a role' }}
-              render={({ field }) => (
-                <RadioGroup
-                  name="role"
-                  label="I am a"
-                  options={[
-                    {
-                      label: 'Company',
-                      value: UserRole.COMPANY,
-                      description: 'Register as a company to post jobs and hire workers',
-                    },
-                    {
-                      label: 'Worker',
-                      value: UserRole.WORKER,
-                      description: 'Register as a worker to find and apply for jobs',
-                    },
-                  ]}
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.role}
-                  orientation="vertical"
-                />
-              )}
-            />
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <RadioGroup
+                    name="role"
+                    label={fieldLabels.role}
+                    options={[
+                      {
+                        label: 'Company',
+                        value: UserRole.COMPANY,
+                        description: 'Register as a company to post jobs and hire workers',
+                      },
+                      {
+                        label: 'Worker',
+                        value: UserRole.WORKER,
+                        description: 'Register as a worker to find and apply for jobs',
+                      },
+                    ]}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.role}
+                    orientation="vertical"
+                  />
+                )}
+              />
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              disabled={isLoading}
-            >
-              {isLoading ? 'Creating account...' : 'Sign up'}
-            </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                disabled={isLoading}
+              >
+                {isLoading ? 'Creating account...' : 'Sign up'}
+              </Button>
 
-            <DividerContainer>
-              <DividerLine />
-              <DividerText>Or</DividerText>
-              <DividerLine />
-            </DividerContainer>
+              <DividerContainer>
+                <DividerLine />
+                <DividerText>Or</DividerText>
+                <DividerLine />
+              </DividerContainer>
 
-            {/* <GoogleButton onClick={handleGoogleSignup}>
-              <GoogleIcon />
-              Sign up with Google
-            </GoogleButton> */}
+              {/* <GoogleButton onClick={handleGoogleSignup}>
+                <GoogleIcon />
+                Sign up with Google
+              </GoogleButton> */}
 
-            <SignInLink>
-              Already have an account, <a href="/login">Sign in</a>
-            </SignInLink>
-          </FormWrapper>
+              <SignInLink>
+                Already have an account, <a href="/login">Sign in</a>
+              </SignInLink>
+            </FormWrapper>
 
-          {/* <FooterText>
-            Design and developed by <a href="#">Jetnetix Solutions</a>
-          </FooterText> */}
-        </FormContainer>
-      </LeftSection>
+            {/* <FooterText>
+              Design and developed by <a href="#">Jetnetix Solutions</a>
+            </FooterText> */}
+          </FormContainer>
+        </LeftSection>
 
-      <AuthRightSection />
+        <AuthRightSection />
 
-      <Snackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        variant={snackbar.variant}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      />
-    </SignupContainer>
+        <Snackbar
+          open={snackbar.open}
+          message={snackbar.message}
+          variant={snackbar.variant}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        />
+      </SignupContainer>
+    </FormProvider>
   );
 };

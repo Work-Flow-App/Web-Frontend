@@ -2,8 +2,9 @@ export { NotificationList } from './NotificationList';
 export { NotificationItem } from './NotificationItem';
 export { NotificationDropdown } from './NotificationDropdown';
 export type {
-  Notification,
-  NotificationListProps,
-  NotificationItemProps
-} from './NotificationList.types';
+  INotification,
+  INotificationList,
+  INotificationItem
+} from './INotificationList';
 export type { NotificationDropdownProps } from './NotificationDropdown';
+export { CalendarExceededIcon, ChecklistIcon, DocumentIcon, MailIcon } from './icons';

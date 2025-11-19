@@ -29,6 +29,10 @@ class ApiClient {
     request: () => Promise<any>;
   }> = [];
 
+  // In-memory token storage 
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+
   /**
    * Public authentication endpoints that don't require authorization
    * Add new public auth endpoints here to ensure they work properly
@@ -47,17 +51,17 @@ class ApiClient {
   }
 
   /**
-   * Get authorization token from storage
+   * Get authorization token from memory
    */
   private getAuthToken(): string | null {
-    return localStorage.getItem('auth_token');
+    return this.accessToken;
   }
 
   /**
-   * Get refresh token from storage
+   * Get refresh token from memory
    */
   private getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    return this.refreshToken;
   }
 
   /**
@@ -118,7 +122,7 @@ class ApiClient {
       if (data.accessToken) {
         this.setAuthToken(data.accessToken);
         if (data.refreshToken) {
-          localStorage.setItem('refresh_token', data.refreshToken);
+          this.setRefreshToken(data.refreshToken);
         }
         return true;
       }
@@ -209,7 +213,7 @@ class ApiClient {
         } else {
           // Refresh failed, clear tokens and redirect to login
           this.clearAuthToken();
-          localStorage.removeItem('refresh_token');
+          this.clearRefreshToken();
           this.processQueue(error);
 
           // Redirect to login page
@@ -373,17 +377,45 @@ class ApiClient {
   }
 
   /**
-   * Set authentication token
+   * Set authentication token in memory
    */
   setAuthToken(token: string): void {
-    localStorage.setItem('auth_token', token);
+    this.accessToken = token;
   }
 
   /**
-   * Clear authentication token
+   * Set refresh token in memory
+   */
+  setRefreshToken(token: string): void {
+    this.refreshToken = token;
+  }
+
+  /**
+   * Clear authentication token from memory
    */
   clearAuthToken(): void {
-    localStorage.removeItem('auth_token');
+    this.accessToken = null;
+  }
+
+  /**
+   * Clear refresh token from memory
+   */
+  clearRefreshToken(): void {
+    this.refreshToken = null;
+  }
+
+  /**
+   * Get stored access token (public method for auth service)
+   */
+  getStoredAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  /**
+   * Get stored refresh token (public method for auth service)
+   */
+  getStoredRefreshToken(): string | null {
+    return this.refreshToken;
   }
 }
 

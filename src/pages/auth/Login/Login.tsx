@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
@@ -9,6 +10,8 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
 import { getRoleFromToken } from '../../../utils/jwt';
+import { useSchema } from '../../../utils/validation';
+import { LoginFormSchema } from './LoginSchema';
 import {
   LoginContainer,
   LeftSection,
@@ -24,7 +27,7 @@ import {
   SignUpLink,
   // GoogleButton,
 } from './Login.styles';
-import type { LoginFormData } from './Login.types';
+import type { LoginFormData } from './ILogin';
 
 // const GoogleIcon = () => (
 //   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -48,11 +51,18 @@ import type { LoginFormData } from './Login.types';
 // );
 
 export const Login: React.FC = () => {
+  const { fieldRules, defaultValues, placeHolders, fieldLabels } =
+    useSchema(LoginFormSchema);
+
+  const methods = useForm<LoginFormData>({
+    resolver: yupResolver(fieldRules),
+    defaultValues,
+  });
+
   const {
-    register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>();
+  } = methods;
 
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -143,84 +153,82 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <LoginContainer>
-      <LeftSection>
-        <FormContainer>
-          <HeaderSection>
-            <FloowLogo variant="light" showText={true} />
-            <Title>Welcome Back!</Title>
-            <Subtitle>
-              Enter your valid email address and password to access your account.
-            </Subtitle>
-          </HeaderSection>
+    <FormProvider {...methods}>
+      <LoginContainer>
+        <LeftSection>
+          <FormContainer>
+            <HeaderSection>
+              <FloowLogo variant="light" showText={true} />
+              <Title>Welcome Back!</Title>
+              <Subtitle>
+                Enter your valid email address and password to access your account.
+              </Subtitle>
+            </HeaderSection>
 
-          <FormWrapper onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              label="Username"
-              type="text"
-              placeholder="Enter your username"
-              fullWidth
-              {...register('userName', {
-                required: 'Username is required',
-              })}
-              error={errors.userName}
-            />
+            <FormWrapper onSubmit={handleSubmit(onSubmit)}>
+              <Input
+                name="userName"
+                label={fieldLabels.userName}
+                type="text"
+                placeholder={placeHolders.userName}
+                fullWidth
+                error={errors.userName}
+              />
 
-            <PasswordInput
-              label="Password"
-              placeholder="Enter your password"
-              fullWidth
-              {...register('password', {
-                required: 'Password is required',
-              })}
-              error={errors.password}
-            />
+              <PasswordInput
+                label={fieldLabels.password}
+                placeholder={placeHolders.password}
+                fullWidth
+                name="password"
+                error={errors.password}
+              />
 
-            <ForgotPasswordLink onClick={handleForgotPassword}>
-              Forgot Password?
-            </ForgotPasswordLink>
+              <ForgotPasswordLink onClick={handleForgotPassword}>
+                Forgot Password?
+              </ForgotPasswordLink>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              disabled={isLoading}
-            >
-              {isLoading ? 'Signing in...' : 'Log in'}
-            </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Log in'}
+              </Button>
 
-            <DividerContainer>
-              <DividerLine />
-              <DividerText>Or</DividerText>
-              <DividerLine />
-            </DividerContainer>
+              <DividerContainer>
+                <DividerLine />
+                <DividerText>Or</DividerText>
+                <DividerLine />
+              </DividerContainer>
 
-            {/* <GoogleButton onClick={handleGoogleLogin}>
-              <GoogleIcon />
-              Sign in with Google
-            </GoogleButton> */}
+              {/* <GoogleButton onClick={handleGoogleLogin}>
+                <GoogleIcon />
+                Sign in with Google
+              </GoogleButton> */}
 
-            <SignUpLink>
-              <a href="/signup">Create an account</a>
-            </SignUpLink>
-          </FormWrapper>
+              <SignUpLink>
+                <a href="/signup">Create an account</a>
+              </SignUpLink>
+            </FormWrapper>
 
-          {/* <FooterText>
-            Design and developed by <a href="#">Jetnetix Solutions</a>
-          </FooterText> */}
-        </FormContainer>
-      </LeftSection>
+            {/* <FooterText>
+              Design and developed by <a href="#">Jetnetix Solutions</a>
+            </FooterText> */}
+          </FormContainer>
+        </LeftSection>
 
-      <AuthRightSection />
+        <AuthRightSection />
 
-      <Snackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        variant={snackbar.variant}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      />
-    </LoginContainer>
+        <Snackbar
+          open={snackbar.open}
+          message={snackbar.message}
+          variant={snackbar.variant}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        />
+      </LoginContainer>
+    </FormProvider>
   );
 };

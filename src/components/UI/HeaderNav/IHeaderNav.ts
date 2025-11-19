@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
-import type { TabItem } from '../Tab/Tab.types';
+import type { ITabItem } from '../Tab/ITab';
 
-export interface UserProfile {
+export interface IUserProfile {
   name: string;
   subscriptionName?: string;
   avatar?: string;
 }
 
-export interface HeaderNavProps {
+export interface IHeaderNav {
   /**
    * Array of navigation tabs
    */
-  tabs: TabItem[];
+  tabs: ITabItem[];
 
   /**
    * Currently active tab id
@@ -27,7 +27,7 @@ export interface HeaderNavProps {
   /**
    * User profile information
    */
-  user: UserProfile;
+  user: IUserProfile;
 
   /**
    * Show logo (uses FloowLogo by default)
