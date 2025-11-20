@@ -12,6 +12,7 @@ import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
 import { UserRole } from '../../../types/auth';
 import { useSchema } from '../../../utils/validation';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import { SignupFormSchema } from './SignupSchema';
 import {
   SignupContainer,
@@ -113,16 +114,7 @@ export const Signup: React.FC = () => {
       }, 2000);
     } catch (error: unknown) {
       console.error('Signup failed:', error);
-      let errorMessage = 'Failed to create account. Please try again.';
-
-      // Extract error message from API error response
-      if (error && typeof error === 'object') {
-        if ('message' in error && typeof error.message === 'string') {
-          errorMessage = error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-      }
+      const errorMessage = extractErrorMessage(error, 'Failed to create account. Please try again.');
 
       setSnackbar({
         open: true,

@@ -10,6 +10,7 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
 import { getRoleFromToken } from '../../../utils/jwt';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import { useSchema } from '../../../utils/validation';
 import { LoginFormSchema } from './LoginSchema';
 import {
@@ -120,16 +121,7 @@ export const Login: React.FC = () => {
       }, 1000);
     } catch (error: unknown) {
       console.error('Login failed:', error);
-      let errorMessage = 'Failed to sign in. Please try again.';
-
-      // Extract error message from API error response
-      if (error && typeof error === 'object') {
-        if ('message' in error && typeof error.message === 'string') {
-          errorMessage = error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-      }
+      const errorMessage = extractErrorMessage(error, 'Failed to sign in. Please try again.');
 
       setSnackbar({
         open: true,
