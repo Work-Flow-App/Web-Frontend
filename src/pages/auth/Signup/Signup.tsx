@@ -99,7 +99,7 @@ export const Signup: React.FC = () => {
       localStorage.setItem('pending_user_role', data.role);
 
       // Clear tokens after signup - user needs to login
-      authService.logout();
+      await authService.logout();
 
       // Show success message
       setSnackbar({

@@ -88,10 +88,30 @@ export const authService = {
 
   /**
    * Sign out the current user
+   * Sends refresh token to backend to invalidate it
    */
   async logout(): Promise<void> {
+    const refreshToken = apiClient.getStoredRefreshToken();
+
     try {
-      await apiClient.post('/api/v1/auth/logout');
+      // Only call API if we have a refresh token
+      if (refreshToken) {
+        await apiClient.post('/api/v1/auth/logout', { refreshToken });
+      }
+    } finally {
+      // Clear tokens from memory even if request fails
+      apiClient.clearAuthToken();
+      apiClient.clearRefreshToken();
+    }
+  },
+
+  /**
+   * Sign out the current user from all devices
+   * Invalidates all refresh tokens for the user
+   */
+  async logoutFromAllDevices(): Promise<void> {
+    try {
+      await apiClient.post('/api/v1/auth/logout-all');
     } finally {
       // Clear tokens from memory even if request fails
       apiClient.clearAuthToken();
