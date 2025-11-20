@@ -10,6 +10,8 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { useSchema } from '../../../utils/validation';
 import { ResetPasswordFormSchema } from './ResetPasswordSchema';
+import { authService } from '../../../services/api/auth';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import {
   ResetPasswordContainer,
   LeftSection,
@@ -58,26 +60,14 @@ export const ResetPassword: React.FC = () => {
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      // TODO: Integrate with actual reset password API
-      // API payload structure:
-      // {
-      //   "email": data.email,
-      //   "code": data.code,
-      //   "newPassword": data.newPassword
-      // }
-
-      // For now, simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log('Password reset payload:', {
+      const response = await authService.resetPassword({
         email: data.email,
         code: data.code,
         newPassword: data.newPassword,
       });
-
       setSnackbar({
         open: true,
-        message: 'Password has been reset successfully! Redirecting to login...',
+        message: response.data.message || 'Password has been reset successfully! Redirecting to login...',
         variant: 'success',
       });
 
@@ -87,15 +77,7 @@ export const ResetPassword: React.FC = () => {
       }, 2000);
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
-      let errorMessage = 'Failed to reset password. Please try again.';
-
-      if (error && typeof error === 'object') {
-        if ('message' in error && typeof error.message === 'string') {
-          errorMessage = error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-      }
+      const errorMessage = extractErrorMessage(error, 'Failed to reset password. Please try again.');
 
       setSnackbar({
         open: true,
@@ -170,6 +152,7 @@ export const ResetPassword: React.FC = () => {
                 size="large"
                 fullWidth
                 disabled={isLoading}
+                loading={true}
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>

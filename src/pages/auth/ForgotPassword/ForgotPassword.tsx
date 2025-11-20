@@ -9,6 +9,8 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { useSchema } from '../../../utils/validation';
 import { ForgotPasswordFormSchema } from './ForgotPasswordSchema';
+import { authService } from '../../../services/api/auth';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import {
   ForgotPasswordContainer,
   LeftSection,
@@ -52,33 +54,21 @@ export const ForgotPassword: React.FC = () => {
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      // TODO: Integrate with actual forgot password API
-      // For now, simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log('Password reset email sent to:', data.email);
+      const response = await authService.forgotPassword({ email: data.email });
 
       setSnackbar({
         open: true,
-        message: 'Password reset link has been sent to your email!',
+        message: response.data.message || 'Password reset link has been sent to your email!',
         variant: 'success',
       });
 
-      // Redirect to login after 2 seconds
+      // Redirect to reset password page with email after 2 seconds
       setTimeout(() => {
-        navigate('/login');
+        navigate(`/reset-password?email=${encodeURIComponent(data.email)}`);
       }, 2000);
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
-      let errorMessage = 'Failed to send reset email. Please try again.';
-
-      if (error && typeof error === 'object') {
-        if ('message' in error && typeof error.message === 'string') {
-          errorMessage = error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-      }
+      const errorMessage = extractErrorMessage(error, 'Failed to send reset email. Please try again.');
 
       setSnackbar({
         open: true,
@@ -122,10 +112,11 @@ export const ForgotPassword: React.FC = () => {
                 variant="contained"
                 color="primary"
                 size="large"
+                loading={true}
                 fullWidth
                 disabled={isLoading}
               >
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
+                {isLoading ? 'Sending...' : 'Send OTP'}
               </Button>
 
               <BackToLoginLink onClick={handleBackToLogin}>

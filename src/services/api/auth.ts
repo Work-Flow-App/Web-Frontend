@@ -22,6 +22,20 @@ export interface RefreshTokenRequest {
   refreshToken: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+export interface PasswordResetResponse {
+  message?: string;
+}
+
 export type AuthResponse = AuthTokens;
 
 export const authService = {
@@ -113,6 +127,22 @@ export const authService = {
    */
   getRefreshToken(): string | null {
     return apiClient.getStoredRefreshToken();
+  },
+
+  /**
+   * Request password reset email
+   * Sends a reset code to the user's email
+   */
+  async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<PasswordResetResponse>> {
+    return await apiClient.post<PasswordResetResponse>('/api/v1/auth/forgot-password', data);
+  },
+
+  /**
+   * Reset password with code from email
+   * After successful reset, user must login again to get tokens
+   */
+  async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<PasswordResetResponse>> {
+    return await apiClient.post<PasswordResetResponse>('/api/v1/auth/reset-password', data);
   },
 };
 
