@@ -112,7 +112,6 @@ export const ForgotPassword: React.FC = () => {
                 variant="contained"
                 color="primary"
                 size="large"
-                loading={true}
                 fullWidth
                 disabled={isLoading}
               >

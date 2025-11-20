@@ -152,7 +152,6 @@ export const ResetPassword: React.FC = () => {
                 size="large"
                 fullWidth
                 disabled={isLoading}
-                loading={true}
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>
