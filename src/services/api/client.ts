@@ -17,7 +17,6 @@ export interface ApiError {
 }
 
 class ApiClient {
-  private baseUrl: string;
   private timeout: number;
   private isRefreshing: boolean = false;
   private failedRequestsQueue: Array<{
@@ -29,7 +28,7 @@ class ApiClient {
     request: () => Promise<any>;
   }> = [];
 
-  // In-memory token storage 
+  // In-memory token storage
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
 
@@ -44,10 +43,15 @@ class ApiClient {
   ];
 
   constructor() {
-    // In development, use the Vite proxy to avoid CORS issues
-    // In production, use the actual API URL
-    this.baseUrl = env.isDev ? '' : env.apiBaseUrl;
     this.timeout = env.apiTimeout;
+  }
+
+  /**
+   * Get the base URL dynamically from env configuration
+   * This allows switching between environments via AppConfiguration
+   */
+  private get baseUrl(): string {
+    return env.apiBaseUrl;
   }
 
   /**

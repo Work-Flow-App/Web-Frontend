@@ -5,11 +5,13 @@ import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { AppConfiguration } from './components/AppConfiguration'
 import './App.css'
 
 function App() {
   return (
     <Router>
+      <AppConfiguration />
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
