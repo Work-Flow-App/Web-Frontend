@@ -14,7 +14,6 @@ import {
   LoadingOverlay,
 } from '../../Table.styles';
 import { MoreOptionsIcon } from '../../icons';
-import { Box } from '@mui/material';
 
 /**
  * DataTableBody component for rendering table data rows
@@ -38,7 +37,6 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   emptyMessage = 'No data available',
   enableStickyLeft = false,
   enableStickyRight = false,
-  className,
 }) => {
   const theme = useTheme();
   const { filteredRows, selectedRows, toggleRowSelection } = useDataRow();
@@ -75,7 +73,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   }
 
   return (
-    <Box position="relative" className={className}>
+    <>
       {loading && (
         <LoadingOverlay>
           <CircularProgress size={40} />
@@ -117,6 +115,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     left: selectable ? '48px' : 0,
                     zIndex: 10,
                     backgroundColor: theme.palette.colors.white,
+                    boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
                       backgroundColor: theme.palette.colors.grey_50,
@@ -145,12 +144,16 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               {/* Sticky Right Section: Actions */}
               {showActions && (
                 <ActionsCell
-                  style={enableStickyRight ? {
+                  sx={enableStickyRight ? {
                     position: 'sticky',
                     right: 0,
                     zIndex: 2,
-                    background: theme.palette.colors.white,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                    backgroundColor: theme.palette.colors.white,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                    transition: 'background-color 0.2s ease',
+                    'tr:hover &': {
+                      backgroundColor: theme.palette.colors.grey_50,
+                    },
                   } : undefined}
                 >
                   {renderActions ? (
@@ -185,7 +188,19 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               ))}
 
               {showActions && (
-                <ActionsCell>
+                <ActionsCell
+                  sx={enableStickyRight ? {
+                    position: 'sticky',
+                    right: 0,
+                    zIndex: 2,
+                    backgroundColor: theme.palette.colors.white,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                    transition: 'background-color 0.2s ease',
+                    'tr:hover &': {
+                      backgroundColor: theme.palette.colors.grey_50,
+                    },
+                  } : undefined}
+                >
                   {renderActions ? (
                     renderActions(row)
                   ) : (
@@ -199,7 +214,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
           )}
         </StyledTableRow>
       ))}
-    </Box>
+    </>
   );
 };
 

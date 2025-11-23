@@ -412,7 +412,7 @@ export const ManyColumnsWithStickyFirst: Story = {
     selectable: true,
     showActions: true,
     showPagination: true,
-     enableStickyLeft: true,
+    enableStickyLeft: true,
     rowsPerPage: 5,
     onActionClick: (row) => console.log('Action clicked:', row),
   },

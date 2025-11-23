@@ -6,6 +6,7 @@ export const ColumnHeaderRow = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   background: theme.palette.colors.grey_50,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  minWidth: 'max-content',
 }));
 
 export const ColumnSearchRow = styled(Box)(({ theme }) => ({
@@ -13,13 +14,16 @@ export const ColumnSearchRow = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   background: theme.palette.colors.white,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  minWidth: 'max-content',
 }));
 
 export const HeaderCellWrapper = styled(Box)<{ width?: string }>(({ width }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: width || 'auto',
-  minWidth: 0,
+  minWidth: width || 'auto',
+  maxWidth: width || 'none',
+  flex: width ? `0 0 ${width}` : '0 0 auto',
 }));
 
 export const ColumnSearchInput = styled(TextField)(({ theme }) => ({
@@ -48,34 +52,11 @@ export const ColumnSearchInput = styled(TextField)(({ theme }) => ({
   },
 }));
 
-export const SearchCellWrapper = styled(Box)<{ width?: string }>(({ theme, width }) => ({
+export const SearchCellWrapper = styled(Box)<{ width?: string }>(({ width }) => ({
   padding: '0.375rem 1.25rem',
   width: width || 'auto',
-  minWidth: 0,
-
-  // First column sticky - positioned after checkbox
-  '&:first-of-type': {
-    position: 'sticky',
-    left: '5.5rem', // 88px - after checkbox width
-    zIndex: 2,
-    background: theme.palette.colors.white,
-  },
-
-  // Second column sticky - positioned after checkbox + first column
-  '&:nth-of-type(2)': {
-    position: 'sticky',
-    left: 'calc(5.5rem + 200px + 2.5rem)', // checkbox (88px) + first column width (200px) + first column padding (40px = 2.5rem)
-    zIndex: 2,
-    background: theme.palette.colors.white,
-
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      bottom: 0,
-      width: '1px',
-      background: theme.palette.colors.grey_100,
-    },
-  },
+  minWidth: width || 'auto',
+  maxWidth: width || 'none',
+  boxSizing: 'border-box',
+  flex: width ? `0 0 ${width}` : '0 0 auto',
 }));

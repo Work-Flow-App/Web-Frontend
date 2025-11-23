@@ -131,12 +131,12 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
             {/* Sticky Right Section: Actions */}
             {showActions && (
               <ActionsCell
-                style={enableStickyRight ? {
+                sx={enableStickyRight ? {
                   position: 'sticky',
                   right: 0,
                   zIndex: 3,
                   background: theme.palette.colors.grey_50,
-                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
                 } : undefined}
               >
                 Actions
@@ -171,7 +171,19 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
               </HeaderCellWrapper>
             ))}
 
-            {showActions && <ActionsCell>Actions</ActionsCell>}
+            {showActions && (
+              <ActionsCell
+                sx={enableStickyRight ? {
+                  position: 'sticky',
+                  right: 0,
+                  zIndex: 3,
+                  background: theme.palette.colors.grey_50,
+                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                } : undefined}
+              >
+                Actions
+              </ActionsCell>
+            )}
           </>
         )}
       </ColumnHeaderRow>
@@ -199,7 +211,8 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                     position: 'sticky',
                     left: selectable ? '48px' : 0,
                     zIndex: 3,
-                    background: theme.palette.colors.grey_50,
+                    background: theme.palette.colors.white,
+                    boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
                   }}
                 >
                   <ColumnSearchInput
@@ -228,12 +241,12 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
               {/* Sticky Right Section: Actions Search Cell */}
               {showActions && (
                 <ActionsCell
-                  style={enableStickyRight ? {
+                  sx={enableStickyRight ? {
                     position: 'sticky',
                     right: 0,
                     zIndex: 3,
-                    background: theme.palette.colors.grey_50,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                    background: theme.palette.colors.white,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
                   } : undefined}
                 />
               )}
@@ -254,7 +267,17 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 </SearchCellWrapper>
               ))}
 
-              {showActions && <ActionsCell />}
+              {showActions && (
+                <ActionsCell
+                  sx={enableStickyRight ? {
+                    position: 'sticky',
+                    right: 0,
+                    zIndex: 3,
+                    background: theme.palette.colors.white,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                  } : undefined}
+                />
+              )}
             </>
           )}
         </ColumnSearchRow>

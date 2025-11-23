@@ -18,6 +18,7 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   boxShadow: 'none',
   border: 'none',
   overflow: 'auto',
+  position: 'relative',
 
   '&::-webkit-scrollbar': {
     width: '0.5rem',
@@ -39,24 +40,30 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 }));
 
 export const StyledTable = styled(Table)(({ theme }) => ({
-  width: '100%',
+  width: 'max-content',
+  minWidth: '100%',
   borderCollapse: 'collapse',
   background: theme.palette.colors.white,
+  position: 'relative',
 }));
 
 export const StyledTableHead = styled(TableHead)(({ theme }) => ({
   background: theme.palette.colors.grey_50,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  display: 'block',
 }));
 
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
   background: theme.palette.colors.white,
+  display: 'block',
 }));
 
 export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
   transition: 'background 0.2s ease',
   background: theme.palette.colors.white,
+  display: 'flex',
+  minWidth: 'max-content',
 
   '&:last-child': {
     borderBottom: 'none',
@@ -76,6 +83,8 @@ export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
     color: theme.palette.colors.grey_600,
     textAlign: align || 'left',
     width: width || 'auto',
+    minWidth: width || 'auto',
+    maxWidth: width || 'none',
     whiteSpace: 'nowrap',
     borderBottom: 'none',
     cursor: sortable ? 'pointer' : 'default',
