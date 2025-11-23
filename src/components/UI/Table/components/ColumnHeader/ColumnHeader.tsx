@@ -98,8 +98,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   left: selectable ? '48px' : 0,
                   zIndex: 5,
                   background: theme.palette.colors.grey_50,
+                  boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
                   '&:hover': {
-                    background: firstColumn.sortable ? theme.palette.colors.grey_100 : theme.palette.colors.grey_50,
+                    background: theme.palette.colors.grey_50,
                   }
                 }}
               >
