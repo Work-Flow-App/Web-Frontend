@@ -74,6 +74,7 @@ export interface IStyledTableCellProps {
   width?: string;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
+  hasCheckbox?: boolean;
 }
 
 export interface IStyledCheckboxProps {

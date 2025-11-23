@@ -83,6 +83,23 @@ export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
     '&:hover': {
       background: sortable ? theme.palette.colors.grey_100 : 'transparent',
     },
+
+    '&:first-of-type': {
+      position: 'sticky',
+      left: 0,
+      zIndex: 3,
+      background: theme.palette.colors.grey_50,
+
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '1px',
+        background: theme.palette.colors.grey_100,
+      },
+    },
   })
 );
 
@@ -235,7 +252,7 @@ export const EmptyState = styled(Box)(({ theme }) => ({
   textAlign: 'center',
 }));
 
-export const LoadingOverlay = styled(Box)(({ theme }) => ({
+export const LoadingOverlay = styled(Box)(() => ({
   position: 'absolute',
   top: 0,
   left: 0,

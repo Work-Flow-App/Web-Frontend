@@ -1,18 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
 import Table from './Table';
-import Pagination from './Pagination';
-import type { ITableColumn, ITableRow, ISortConfig } from './ITable';
+import type { ITableColumn, ITableRow } from './ITable';
 import { StatusPill, AvatarCell, Avatar, MemberInfo, MemberName, MemberEmail, DateText, DateMain, DateSub } from './Table.styles';
 
 const meta: Meta<typeof Table> = {
   title: 'UI/Table',
   component: Table,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
     docs: {
       description: {
-        component: 'A comprehensive table component with sorting, selection, pagination, and custom rendering capabilities.',
+        component: 'A comprehensive table component with context-based architecture, supporting global search, column search, sorting, selection, and pagination.',
       },
     },
   },
@@ -155,6 +153,45 @@ const sampleData: MemberRow[] = [
     role: 'Worker',
     status: 'deactivated',
   },
+  {
+    id: 10,
+    addedOn: '8/15/19',
+    addedTime: '09:22 am',
+    member: {
+      name: 'Sophia Anderson',
+      email: 'sophia.anderson@example.com',
+      initials: 'SA',
+    },
+    jobAssignments: 30,
+    role: 'Manager',
+    status: 'pending',
+  },
+  {
+    id: 11,
+    addedOn: '2/3/20',
+    addedTime: '11:45 am',
+    member: {
+      name: 'Lucas Brown',
+      email: 'lucas.brown@example.com',
+      initials: 'LB',
+    },
+    jobAssignments: 19,
+    role: 'Worker',
+    status: 'active',
+  },
+  {
+    id: 12,
+    addedOn: '11/28/18',
+    addedTime: '03:18 pm',
+    member: {
+      name: 'Isabella White',
+      email: 'isabella.white@example.com',
+      initials: 'IW',
+    },
+    jobAssignments: 29,
+    role: 'Manager',
+    status: 'active',
+  },
 ];
 
 const columns: ITableColumn<MemberRow>[] = [
@@ -208,164 +245,174 @@ const columns: ITableColumn<MemberRow>[] = [
   },
 ];
 
-// Interactive story with all features
-export const Interactive: Story = {
-  render: () => {
-    const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
-    const [sortConfig, setSortConfig] = useState<ISortConfig>({
-      columnId: '',
-      direction: null,
-    });
-    const [currentPage, setCurrentPage] = useState(1);
+const manyColumns: ITableColumn<MemberRow>[] = [
+  ...columns,
+  {
+    id: 'department',
+    label: 'Department',
+    sortable: true,
+    width: '200px',
+    render: () => 'Engineering',
+  },
+  {
+    id: 'location',
+    label: 'Location',
+    sortable: true,
+    width: '200px',
+    render: () => 'New York',
+  },
+  {
+    id: 'startDate',
+    label: 'Start Date',
+    sortable: true,
+    width: '200px',
+    render: () => '2023-01-15',
+  },
+  {
+    id: 'salary',
+    label: 'Salary',
+    sortable: true,
+    width: '200px',
+    render: () => '$85,000',
+  },
+  {
+    id: 'manager',
+    label: 'Manager',
+    sortable: true,
+    width: '200px',
+    render: () => 'John Smith',
+  },
+];
 
-    return (
-      <div style={{ width: '100%', padding: '2rem' }}>
-        <Table
-          columns={columns}
-          data={sampleData}
-          selectable
-          selectedRows={selectedRows}
-          onSelectionChange={setSelectedRows}
-          sortable
-          sortConfig={sortConfig}
-          onSortChange={setSortConfig}
-          showActions
-          onActionClick={(row) => console.log('Action clicked:', row)}
-        />
-        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={10}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </div>
-    );
+// Full-featured table with all new capabilities
+export const FullFeatured: Story = {
+  args: {
+    title: 'Team Members',
+    columns: columns,
+    data: sampleData,
+    selectable: true,
+    showActions: true,
+    showColumnSearch: true,
+    showPagination: true,
+    rowsPerPage: 5,
+    maxPageButtons: 5,
+    showPrevNext: true,
+    onActionClick: (row) => console.log('Action clicked:', row),
   },
 };
 
-// Basic table without additional features
+// Basic table without extra features
 export const Basic: Story = {
   args: {
     columns: columns,
     data: sampleData.slice(0, 5),
+    showPagination: false,
+  },
+};
+
+// Table with column-level search
+export const WithColumnSearch: Story = {
+  args: {
+    title: 'Team Members',
+    columns: columns,
+    data: sampleData,
+    showColumnSearch: true,
+    rowsPerPage: 5,
   },
 };
 
 // Table with selection
 export const WithSelection: Story = {
-  render: () => {
-    const [selectedRows, setSelectedRows] = useState<(string | number)[]>([1, 3]);
-
-    return (
-      <Table
-        columns={columns}
-        data={sampleData.slice(0, 5)}
-        selectable
-        selectedRows={selectedRows}
-        onSelectionChange={setSelectedRows}
-      />
-    );
+  args: {
+    title: 'Team Members',
+    columns: columns,
+    data: sampleData.slice(0, 5),
+    selectable: true,
+    showPagination: false,
   },
 };
 
-// Table with sorting
-export const WithSorting: Story = {
-  render: () => {
-    const [sortConfig, setSortConfig] = useState<ISortConfig>({
-      columnId: 'member',
-      direction: 'asc',
-    });
-
-    return (
-      <Table
-        columns={columns}
-        data={sampleData.slice(0, 5)}
-        sortable
-        sortConfig={sortConfig}
-        onSortChange={setSortConfig}
-      />
-    );
-  },
-};
-
-// Table with actions menu
+// Table with actions
 export const WithActions: Story = {
   args: {
+    title: 'Team Members',
     columns: columns,
     data: sampleData.slice(0, 5),
     showActions: true,
+    showPagination: false,
     onActionClick: (row) => console.log('Action clicked:', row),
+  },
+};
+
+// Table with pagination
+export const WithPagination: Story = {
+  args: {
+    title: 'Team Members',
+    columns: columns,
+    data: sampleData,
+    showPagination: true,
+    rowsPerPage: 5,
+    maxPageButtons: 5,
+    showPrevNext: true,
   },
 };
 
 // Loading state
 export const Loading: Story = {
   args: {
+    title: 'Team Members',
     columns: columns,
     data: sampleData.slice(0, 5),
     loading: true,
+    showPagination: false,
   },
 };
 
 // Empty state
 export const Empty: Story = {
   args: {
+    title: 'Team Members',
     columns: columns,
     data: [],
     emptyMessage: 'No team members found',
+    showPagination: false,
   },
 };
 
-// Pagination only
-export const PaginationOnly: Story = {
-  render: () => {
-    const [currentPage, setCurrentPage] = useState(1);
-
-    return (
-      <div style={{ padding: '2rem' }}>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={10}
-          onPageChange={setCurrentPage}
-        />
-      </div>
-    );
+// Table with sticky columns (for large datasets)
+export const WithStickyColumns: Story = {
+  args: {
+    title: 'Team Members',
+    columns: columns,
+    data: sampleData,
+    selectable: true,
+    showActions: true,
+    enableStickyLeft: true,
+    enableStickyRight: true,
+    showPagination: true,
+    rowsPerPage: 5,
   },
 };
 
-// Pagination with many pages
-export const PaginationManyPages: Story = {
-  render: () => {
-    const [currentPage, setCurrentPage] = useState(5);
-
-    return (
-      <div style={{ padding: '2rem' }}>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={100}
-          onPageChange={setCurrentPage}
-        />
-      </div>
-    );
-  },
-};
-
-// Compact table (fewer columns)
+// Compact table
 export const Compact: Story = {
   args: {
     columns: columns.slice(0, 3),
     data: sampleData.slice(0, 3),
+    showPagination: false,
   },
 };
 
-// Full-featured responsive table
-export const FullFeatured: Story = {
+// Table with many columns to test sticky first column
+export const ManyColumnsWithStickyFirst: Story = {
   args: {
-    columns: columns,
+    title: 'Team Members - Many Columns',
+    columns: manyColumns,
     data: sampleData,
     selectable: true,
-    sortable: true,
     showActions: true,
+    showPagination: true,
+    rowsPerPage: 5,
+    onActionClick: (row) => console.log('Action clicked:', row),
   },
 };

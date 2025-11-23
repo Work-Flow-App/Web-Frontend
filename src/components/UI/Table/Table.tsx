@@ -1,29 +1,21 @@
-import React, { useState, useCallback } from 'react';
-import { CircularProgress } from '@mui/material';
+import React from 'react';
 import type { ITable, ITableRow } from './ITable';
+import { DataTableContextProvider } from './context';
+import { TitleHeader } from './components/TitleHeader';
+import { ColumnHeader } from './components/ColumnHeader';
+import { DataTableBody } from './components/DataTableBody';
+import { Footer } from './components/Footer';
+import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody } from './Table.styles';
 import {
-  TableWrapper,
-  StyledTableContainer,
-  StyledTable,
-  StyledTableHead,
-  StyledTableBody,
-  StyledTableRow,
-  StyledHeaderCell,
-  StyledTableCell,
-  HeaderContent,
-  CheckboxCell,
-  ActionsCell,
-  CustomCheckbox,
-  ActionButton,
-  EmptyState,
-  LoadingOverlay,
-} from './Table.styles';
-import SortIcon from './icons/SortIcon';
-import MoreOptionsIcon from './icons/MoreOptionsIcon';
-import Pagination from './Pagination';
+  ParentContainer,
+  LeftContainer,
+  CenterContainer,
+  RightContainer,
+} from './components/global/LayoutComponents';
 
 /**
- * Table component for displaying tabular data with sorting, selection, and pagination
+ * Enhanced Table component with context-based architecture
+ * Supports column search, sorting, selection, and pagination
  *
  * @component
  * @example
@@ -40,225 +32,173 @@ import Pagination from './Pagination';
  * ];
  *
  * <Table
+ *   title="Team Members"
  *   columns={columns}
  *   data={data}
  *   selectable
  *   sortable
  *   showActions
+ *   showColumnSearch
  * />
  * ```
  */
-const Table = <T extends ITableRow = ITableRow>({
-  columns,
-  data,
+
+export interface IEnhancedTable<T = ITableRow> extends Omit<ITable<T>, 'sortConfig' | 'onSortChange'> {
+  /** Table title */
+  title?: string;
+  /** Enable column-level search */
+  showColumnSearch?: boolean;
+  /** Custom actions in title header */
+  titleActions?: React.ReactNode;
+  /** Enable pagination */
+  showPagination?: boolean;
+  /** Rows per page */
+  rowsPerPage?: number;
+  /** Maximum page buttons */
+  maxPageButtons?: number;
+  /** Show previous/next buttons */
+  showPrevNext?: boolean;
+  /** Show first/last buttons */
+  showFirstLast?: boolean;
+  /** Enable sticky left columns (for checkboxes/IDs) */
+  enableStickyLeft?: boolean;
+  /** Enable sticky right columns (for actions) */
+  enableStickyRight?: boolean;
+}
+
+const TableInner = <T extends ITableRow = ITableRow>({
+  title,
+  showColumnSearch = false,
+  titleActions,
   selectable = false,
-  selectedRows = [],
-  onSelectionChange,
-  sortable = false,
-  sortConfig,
-  onSortChange,
   showActions = false,
   renderActions,
   onActionClick,
   loading = false,
   emptyMessage = 'No data available',
+  showPagination = true,
+  maxPageButtons = 5,
+  showPrevNext = true,
+  showFirstLast = false,
+  enableStickyLeft = false,
+  enableStickyRight = false,
   width = '100%',
   className,
-}: ITable<T>) => {
-  const [internalSelectedRows, setInternalSelectedRows] = useState<
-    (string | number)[]
-  >(selectedRows);
-
-  const isControlled = onSelectionChange !== undefined;
-  const currentSelectedRows = isControlled ? selectedRows : internalSelectedRows;
-
-  const handleRowSelect = useCallback(
-    (rowId: string | number) => {
-      const newSelection = currentSelectedRows.includes(rowId)
-        ? currentSelectedRows.filter((id) => id !== rowId)
-        : [...currentSelectedRows, rowId];
-
-      if (isControlled) {
-        onSelectionChange?.(newSelection);
-      } else {
-        setInternalSelectedRows(newSelection);
-      }
-    },
-    [currentSelectedRows, isControlled, onSelectionChange]
-  );
-
-  const handleSelectAll = useCallback(() => {
-    const allSelected = currentSelectedRows.length === data.length && data.length > 0;
-    const newSelection = allSelected ? [] : data.map((row) => row.id);
-
-    if (isControlled) {
-      onSelectionChange?.(newSelection);
-    } else {
-      setInternalSelectedRows(newSelection);
-    }
-  }, [currentSelectedRows.length, data, isControlled, onSelectionChange]);
-
-  const handleSort = useCallback(
-    (columnId: string) => {
-      if (!sortable || !onSortChange) return;
-
-      const currentDirection = sortConfig?.columnId === columnId ? sortConfig.direction : null;
-      let newDirection: 'asc' | 'desc' | null = 'asc';
-
-      if (currentDirection === 'asc') {
-        newDirection = 'desc';
-      } else if (currentDirection === 'desc') {
-        newDirection = null;
-      }
-
-      onSortChange({
-        columnId: newDirection ? columnId : '',
-        direction: newDirection,
-      });
-    },
-    [sortable, sortConfig, onSortChange]
-  );
-
-  const isAllSelected =
-    data.length > 0 && currentSelectedRows.length === data.length;
-  const isIndeterminate =
-    currentSelectedRows.length > 0 && currentSelectedRows.length < data.length;
-
+}: Omit<IEnhancedTable<T>, 'columns' | 'data'>) => {
   return (
     <TableWrapper width={width} className={className}>
+      {/* Title Header */}
+      <TitleHeader
+        title={title}
+        actions={titleActions}
+      />
+
       <StyledTableContainer>
         <StyledTable>
+          {/* Column Headers */}
           <StyledTableHead>
-            <StyledTableRow>
-              {selectable && (
-                <CheckboxCell>
-                  <CustomCheckbox
-                    checked={isAllSelected}
-                    indeterminate={isIndeterminate}
-                    onClick={handleSelectAll}
-                    role="checkbox"
-                    aria-checked={isAllSelected ? 'true' : isIndeterminate ? 'mixed' : 'false'}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleSelectAll();
-                      }
-                    }}
+            {enableStickyLeft || enableStickyRight ? (
+              <ParentContainer>
+                {enableStickyLeft && selectable && (
+                  <LeftContainer>
+                    <ColumnHeader selectable={selectable} showColumnSearch={showColumnSearch} />
+                  </LeftContainer>
+                )}
+                <CenterContainer>
+                  <ColumnHeader
+                    selectable={!enableStickyLeft && selectable}
+                    showColumnSearch={showColumnSearch}
+                    showActions={!enableStickyRight && showActions}
                   />
-                </CheckboxCell>
-              )}
-
-              {columns.map((column) => (
-                <StyledHeaderCell
-                  key={column.id}
-                  width={column.width}
-                  align={column.align}
-                  sortable={sortable && column.sortable}
-                  onClick={() =>
-                    sortable && column.sortable && handleSort(column.id)
-                  }
-                >
-                  <HeaderContent>
-                    {column.label}
-                    {sortable && column.sortable && (
-                      <SortIcon
-                        color={
-                          sortConfig?.columnId === column.id
-                            ? '#525252'
-                            : '#A1A1A1'
-                        }
-                      />
-                    )}
-                  </HeaderContent>
-                </StyledHeaderCell>
-              ))}
-
-              {showActions && <ActionsCell />}
-            </StyledTableRow>
+                </CenterContainer>
+                {enableStickyRight && showActions && (
+                  <RightContainer>
+                    <ColumnHeader showActions={showActions} showColumnSearch={showColumnSearch} />
+                  </RightContainer>
+                )}
+              </ParentContainer>
+            ) : (
+              <ColumnHeader
+                selectable={selectable}
+                showColumnSearch={showColumnSearch}
+                showActions={showActions}
+              />
+            )}
           </StyledTableHead>
 
+          {/* Data Rows */}
           <StyledTableBody>
-            {data.length === 0 ? (
-              <StyledTableRow>
-                <StyledTableCell
-                  colSpan={
-                    columns.length + (selectable ? 1 : 0) + (showActions ? 1 : 0)
-                  }
-                >
-                  <EmptyState>{emptyMessage}</EmptyState>
-                </StyledTableCell>
-              </StyledTableRow>
+            {enableStickyLeft || enableStickyRight ? (
+              <ParentContainer>
+                {enableStickyLeft && selectable && (
+                  <LeftContainer>
+                    <DataTableBody selectable={selectable} loading={loading} emptyMessage={emptyMessage} />
+                  </LeftContainer>
+                )}
+                <CenterContainer>
+                  <DataTableBody
+                    selectable={!enableStickyLeft && selectable}
+                    showActions={!enableStickyRight && showActions}
+                    renderActions={renderActions}
+                    onActionClick={onActionClick}
+                    loading={loading}
+                    emptyMessage={emptyMessage}
+                  />
+                </CenterContainer>
+                {enableStickyRight && showActions && (
+                  <RightContainer>
+                    <DataTableBody
+                      showActions={showActions}
+                      renderActions={renderActions}
+                      onActionClick={onActionClick}
+                      loading={loading}
+                      emptyMessage={emptyMessage}
+                    />
+                  </RightContainer>
+                )}
+              </ParentContainer>
             ) : (
-              data.map((row) => (
-                <StyledTableRow key={row.id}>
-                  {selectable && (
-                    <CheckboxCell>
-                      <CustomCheckbox
-                        checked={currentSelectedRows.includes(row.id)}
-                        onClick={() => handleRowSelect(row.id)}
-                        role="checkbox"
-                        aria-checked={currentSelectedRows.includes(row.id)}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleRowSelect(row.id);
-                          }
-                        }}
-                      />
-                    </CheckboxCell>
-                  )}
-
-                  {columns.map((column) => (
-                    <StyledTableCell
-                      key={`${row.id}-${column.id}`}
-                      width={column.width}
-                      align={column.align}
-                    >
-                      {column.render
-                        ? column.render(row)
-                        : column.accessor
-                        ? String(row[column.accessor] ?? '')
-                        : ''}
-                    </StyledTableCell>
-                  ))}
-
-                  {showActions && (
-                    <ActionsCell>
-                      {renderActions ? (
-                        renderActions(row)
-                      ) : (
-                        <ActionButton
-                          onClick={(e) => onActionClick?.(row, e)}
-                          role="button"
-                          tabIndex={0}
-                          aria-label="More actions"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              onActionClick?.(row, e as any);
-                            }
-                          }}
-                        >
-                          <MoreOptionsIcon />
-                        </ActionButton>
-                      )}
-                    </ActionsCell>
-                  )}
-                </StyledTableRow>
-              ))
+              <DataTableBody
+                selectable={selectable}
+                showActions={showActions}
+                renderActions={renderActions}
+                onActionClick={onActionClick}
+                loading={loading}
+                emptyMessage={emptyMessage}
+              />
             )}
           </StyledTableBody>
         </StyledTable>
-
-        {loading && (
-          <LoadingOverlay>
-            <CircularProgress size={40} sx={{ color: '#00A63E' }} />
-          </LoadingOverlay>
-        )}
       </StyledTableContainer>
+
+      {/* Footer with Pagination */}
+      <Footer
+        showPagination={showPagination}
+        maxPageButtons={maxPageButtons}
+        showPrevNext={showPrevNext}
+        showFirstLast={showFirstLast}
+      />
     </TableWrapper>
+  );
+};
+
+/**
+ * Main Table component wrapper with context provider
+ */
+const Table = <T extends ITableRow = ITableRow>({
+  columns,
+  data,
+  rowsPerPage = 10,
+  ...props
+}: IEnhancedTable<T>) => {
+  return (
+    <DataTableContextProvider<T>
+      initialData={data}
+      initialColumns={columns}
+      initialRowsPerPage={rowsPerPage}
+    >
+      <TableInner<T> {...props} />
+    </DataTableContextProvider>
   );
 };
 
