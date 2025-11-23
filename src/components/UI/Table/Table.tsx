@@ -6,12 +6,6 @@ import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
 import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody } from './Table.styles';
-import {
-  ParentContainer,
-  LeftContainer,
-  CenterContainer,
-  RightContainer,
-} from './components/global/LayoutComponents';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -97,76 +91,27 @@ const TableInner = <T extends ITableRow = ITableRow>({
         <StyledTable>
           {/* Column Headers */}
           <StyledTableHead>
-            {enableStickyLeft || enableStickyRight ? (
-              <ParentContainer>
-                {enableStickyLeft && selectable && (
-                  <LeftContainer>
-                    <ColumnHeader selectable={selectable} showColumnSearch={showColumnSearch} />
-                  </LeftContainer>
-                )}
-                <CenterContainer>
-                  <ColumnHeader
-                    selectable={!enableStickyLeft && selectable}
-                    showColumnSearch={showColumnSearch}
-                    showActions={!enableStickyRight && showActions}
-                  />
-                </CenterContainer>
-                {enableStickyRight && showActions && (
-                  <RightContainer>
-                    <ColumnHeader showActions={showActions} showColumnSearch={showColumnSearch} />
-                  </RightContainer>
-                )}
-              </ParentContainer>
-            ) : (
-              <ColumnHeader
-                selectable={selectable}
-                showColumnSearch={showColumnSearch}
-                showActions={showActions}
-              />
-            )}
+            <ColumnHeader
+              selectable={selectable}
+              showColumnSearch={showColumnSearch}
+              showActions={showActions}
+              enableStickyLeft={enableStickyLeft}
+              enableStickyRight={enableStickyRight}
+            />
           </StyledTableHead>
 
           {/* Data Rows */}
           <StyledTableBody>
-            {enableStickyLeft || enableStickyRight ? (
-              <ParentContainer>
-                {enableStickyLeft && selectable && (
-                  <LeftContainer>
-                    <DataTableBody selectable={selectable} loading={loading} emptyMessage={emptyMessage} />
-                  </LeftContainer>
-                )}
-                <CenterContainer>
-                  <DataTableBody
-                    selectable={!enableStickyLeft && selectable}
-                    showActions={!enableStickyRight && showActions}
-                    renderActions={renderActions}
-                    onActionClick={onActionClick}
-                    loading={loading}
-                    emptyMessage={emptyMessage}
-                  />
-                </CenterContainer>
-                {enableStickyRight && showActions && (
-                  <RightContainer>
-                    <DataTableBody
-                      showActions={showActions}
-                      renderActions={renderActions}
-                      onActionClick={onActionClick}
-                      loading={loading}
-                      emptyMessage={emptyMessage}
-                    />
-                  </RightContainer>
-                )}
-              </ParentContainer>
-            ) : (
-              <DataTableBody
-                selectable={selectable}
-                showActions={showActions}
-                renderActions={renderActions}
-                onActionClick={onActionClick}
-                loading={loading}
-                emptyMessage={emptyMessage}
-              />
-            )}
+            <DataTableBody
+              selectable={selectable}
+              showActions={showActions}
+              renderActions={renderActions}
+              onActionClick={onActionClick}
+              loading={loading}
+              emptyMessage={emptyMessage}
+              enableStickyLeft={enableStickyLeft}
+              enableStickyRight={enableStickyRight}
+            />
           </StyledTableBody>
         </StyledTable>
       </StyledTableContainer>

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { CircularProgress } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import type { IDataTableBody } from './IDataTableBody';
 import { useDataRow, useDataColumn, usePagination } from '../../context';
 import {
@@ -35,8 +36,11 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   onActionClick,
   loading = false,
   emptyMessage = 'No data available',
+  enableStickyLeft = false,
+  enableStickyRight = false,
   className,
 }) => {
+  const theme = useTheme();
   const { filteredRows, selectedRows, toggleRowSelection } = useDataRow();
   const { columns } = useDataColumn();
   const { currentPage, rowsPerPage } = usePagination();
@@ -61,6 +65,10 @@ const DataTableBody: React.FC<IDataTableBody> = ({
     }
   };
 
+  // Split columns for sticky left: first column goes to sticky left, rest to center
+  const firstColumn = columns.length > 0 ? columns[0] : null;
+  const remainingColumns = columns.length > 1 ? columns.slice(1) : [];
+
   // Show empty state
   if (!loading && paginatedRows.length === 0) {
     return <EmptyState>{emptyMessage}</EmptyState>;
@@ -76,35 +84,118 @@ const DataTableBody: React.FC<IDataTableBody> = ({
 
       {paginatedRows.map((row) => (
         <StyledTableRow key={row.id}>
-          {selectable && (
-            <CheckboxCell>
-              <CustomCheckbox
-                checked={selectedRows.includes(row.id)}
-                onClick={() => handleRowClick(row.id)}
-              />
-            </CheckboxCell>
-          )}
-
-          {columns.map((column) => (
-            <StyledTableCell key={column.id} width={column.width} align={column.align}>
-              {column.render
-                ? column.render(row)
-                : column.accessor
-                  ? String(row[column.accessor] ?? '')
-                  : ''}
-            </StyledTableCell>
-          ))}
-
-          {showActions && (
-            <ActionsCell>
-              {renderActions ? (
-                renderActions(row)
-              ) : (
-                <ActionButton onClick={(e) => handleActionClick(row, e)}>
-                  <MoreOptionsIcon />
-                </ActionButton>
+          {enableStickyLeft ? (
+            <>
+              {/* Sticky Left Section: Checkbox */}
+              {selectable && (
+                <CheckboxCell
+                  sx={{
+                    position: 'sticky',
+                    left: 0,
+                    zIndex: 10,
+                    backgroundColor: theme.palette.colors.white,
+                    transition: 'background-color 0.2s ease',
+                    'tr:hover &': {
+                      backgroundColor: theme.palette.colors.grey_50,
+                    },
+                  }}
+                >
+                  <CustomCheckbox
+                    checked={selectedRows.includes(row.id)}
+                    onClick={() => handleRowClick(row.id)}
+                  />
+                </CheckboxCell>
               )}
-            </ActionsCell>
+
+              {/* Sticky Left Section: First Column */}
+              {firstColumn && (
+                <StyledTableCell
+                  width={firstColumn.width}
+                  align={firstColumn.align}
+                  sx={{
+                    position: 'sticky',
+                    left: selectable ? '48px' : 0,
+                    zIndex: 10,
+                    backgroundColor: theme.palette.colors.white,
+                    transition: 'background-color 0.2s ease',
+                    'tr:hover &': {
+                      backgroundColor: theme.palette.colors.grey_50,
+                    },
+                  }}
+                >
+                  {firstColumn.render
+                    ? firstColumn.render(row)
+                    : firstColumn.accessor
+                      ? String(row[firstColumn.accessor] ?? '')
+                      : ''}
+                </StyledTableCell>
+              )}
+
+              {/* Center Section: Remaining Columns */}
+              {remainingColumns.map((column) => (
+                <StyledTableCell key={column.id} width={column.width} align={column.align}>
+                  {column.render
+                    ? column.render(row)
+                    : column.accessor
+                      ? String(row[column.accessor] ?? '')
+                      : ''}
+                </StyledTableCell>
+              ))}
+
+              {/* Sticky Right Section: Actions */}
+              {showActions && (
+                <ActionsCell
+                  style={enableStickyRight ? {
+                    position: 'sticky',
+                    right: 0,
+                    zIndex: 2,
+                    background: theme.palette.colors.white,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                  } : undefined}
+                >
+                  {renderActions ? (
+                    renderActions(row)
+                  ) : (
+                    <ActionButton onClick={(e) => handleActionClick(row, e)}>
+                      <MoreOptionsIcon />
+                    </ActionButton>
+                  )}
+                </ActionsCell>
+              )}
+            </>
+          ) : (
+            <>
+              {selectable && (
+                <CheckboxCell>
+                  <CustomCheckbox
+                    checked={selectedRows.includes(row.id)}
+                    onClick={() => handleRowClick(row.id)}
+                  />
+                </CheckboxCell>
+              )}
+
+              {columns.map((column) => (
+                <StyledTableCell key={column.id} width={column.width} align={column.align}>
+                  {column.render
+                    ? column.render(row)
+                    : column.accessor
+                      ? String(row[column.accessor] ?? '')
+                      : ''}
+                </StyledTableCell>
+              ))}
+
+              {showActions && (
+                <ActionsCell>
+                  {renderActions ? (
+                    renderActions(row)
+                  ) : (
+                    <ActionButton onClick={(e) => handleActionClick(row, e)}>
+                      <MoreOptionsIcon />
+                    </ActionButton>
+                  )}
+                </ActionsCell>
+              )}
+            </>
           )}
         </StyledTableRow>
       ))}

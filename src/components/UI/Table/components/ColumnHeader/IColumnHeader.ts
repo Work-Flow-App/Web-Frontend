@@ -7,4 +7,8 @@ export interface IColumnHeader {
   showActions?: boolean;
   /** Custom className for styling */
   className?: string;
+  /** Enable sticky left columns (for checkboxes and first column) */
+  enableStickyLeft?: boolean;
+  /** Enable sticky right columns (for actions) */
+  enableStickyRight?: boolean;
 }

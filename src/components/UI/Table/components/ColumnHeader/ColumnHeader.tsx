@@ -1,6 +1,7 @@
 import React from 'react';
 import type { IColumnHeader } from './IColumnHeader';
 import { useDataRow, useDataColumn } from '../../context';
+import { useTheme } from '@mui/material/styles';
 import {
   StyledHeaderCell,
   HeaderContent,
@@ -34,8 +35,11 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
   selectable = false,
   showColumnSearch = false,
   showActions = false,
+  enableStickyLeft = false,
+  enableStickyRight = false,
   className,
 }) => {
+  const theme = useTheme();
   const { isAllSelected, isIndeterminate, toggleAllRows, sortConfig, setSortConfig } = useDataRow();
   const { columns, columnSearchQueries, setColumnSearchQuery } = useDataColumn();
 
@@ -56,63 +60,202 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
     setColumnSearchQuery(columnId, value);
   };
 
+  // Split columns for sticky left: first column goes to sticky left, rest to center
+  const firstColumn = columns.length > 0 ? columns[0] : null;
+  const remainingColumns = columns.length > 1 ? columns.slice(1) : [];
+
   return (
     <>
       {/* Column Headers Row */}
       <ColumnHeaderRow className={className}>
-        {selectable && (
-          <CheckboxCell>
-            <CustomCheckbox
-              checked={isAllSelected}
-              indeterminate={isIndeterminate}
-              onClick={toggleAllRows}
-            />
-          </CheckboxCell>
+        {enableStickyLeft ? (
+          <>
+            {/* Sticky Left Section: Checkbox */}
+            {selectable && (
+              <CheckboxCell style={{
+                position: 'sticky',
+                left: 0,
+                zIndex: 5,
+                background: theme.palette.colors.grey_50,
+              }}>
+                <CustomCheckbox
+                  checked={isAllSelected}
+                  indeterminate={isIndeterminate}
+                  onClick={toggleAllRows}
+                />
+              </CheckboxCell>
+            )}
+
+            {/* Sticky Left Section: First Column */}
+            {firstColumn && (
+              <StyledHeaderCell
+                width={firstColumn.width}
+                align={firstColumn.align}
+                sortable={firstColumn.sortable}
+                onClick={() => firstColumn.sortable && handleSort(firstColumn.id)}
+                sx={{
+                  position: 'sticky',
+                  left: selectable ? '48px' : 0,
+                  zIndex: 5,
+                  background: theme.palette.colors.grey_50,
+                  '&:hover': {
+                    background: firstColumn.sortable ? theme.palette.colors.grey_100 : theme.palette.colors.grey_50,
+                  }
+                }}
+              >
+                <HeaderContent>
+                  {firstColumn.label}
+                  {firstColumn.sortable && <SortIcon />}
+                </HeaderContent>
+              </StyledHeaderCell>
+            )}
+
+            {/* Center Section: Remaining Columns */}
+            {remainingColumns.map((column) => (
+              <HeaderCellWrapper key={column.id} width={column.width}>
+                <StyledHeaderCell
+                  width={column.width}
+                  align={column.align}
+                  sortable={column.sortable}
+                  onClick={() => column.sortable && handleSort(column.id)}
+                >
+                  <HeaderContent>
+                    {column.label}
+                    {column.sortable && <SortIcon />}
+                  </HeaderContent>
+                </StyledHeaderCell>
+              </HeaderCellWrapper>
+            ))}
+
+            {/* Sticky Right Section: Actions */}
+            {showActions && (
+              <ActionsCell
+                style={enableStickyRight ? {
+                  position: 'sticky',
+                  right: 0,
+                  zIndex: 3,
+                  background: theme.palette.colors.grey_50,
+                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                } : undefined}
+              >
+                Actions
+              </ActionsCell>
+            )}
+          </>
+        ) : (
+          <>
+            {selectable && (
+              <CheckboxCell>
+                <CustomCheckbox
+                  checked={isAllSelected}
+                  indeterminate={isIndeterminate}
+                  onClick={toggleAllRows}
+                />
+              </CheckboxCell>
+            )}
+
+            {columns.map((column) => (
+              <HeaderCellWrapper key={column.id} width={column.width}>
+                <StyledHeaderCell
+                  width={column.width}
+                  align={column.align}
+                  sortable={column.sortable}
+                  onClick={() => column.sortable && handleSort(column.id)}
+                >
+                  <HeaderContent>
+                    {column.label}
+                    {column.sortable && <SortIcon />}
+                  </HeaderContent>
+                </StyledHeaderCell>
+              </HeaderCellWrapper>
+            ))}
+
+            {showActions && <ActionsCell>Actions</ActionsCell>}
+          </>
         )}
-
-        {columns.map((column) => (
-          <HeaderCellWrapper key={column.id} width={column.width}>
-            <StyledHeaderCell
-              width={column.width}
-              align={column.align}
-              sortable={column.sortable}
-              onClick={() => column.sortable && handleSort(column.id)}
-            >
-              <HeaderContent>
-                {column.label}
-                {column.sortable && (
-                  <SortIcon
-                    direction={
-                      sortConfig?.columnId === column.id ? sortConfig.direction || undefined : undefined
-                    }
-                  />
-                )}
-              </HeaderContent>
-            </StyledHeaderCell>
-          </HeaderCellWrapper>
-        ))}
-
-        {showActions && <ActionsCell>Actions</ActionsCell>}
       </ColumnHeaderRow>
 
       {/* Column Search Row */}
       {showColumnSearch && (
         <ColumnSearchRow>
-          {selectable && <CheckboxCell />}
+          {enableStickyLeft ? (
+            <>
+              {/* Sticky Left Section: Checkbox */}
+              {selectable && (
+                <CheckboxCell style={{
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 3,
+                  background: theme.palette.colors.grey_50,
+                }} />
+              )}
 
-          {columns.map((column) => (
-            <SearchCellWrapper key={`search-${column.id}`} width={column.width}>
-              <ColumnSearchInput
-                size="small"
-                placeholder={`Search ${column.label.toLowerCase()}...`}
-                value={columnSearchQueries[column.id] || ''}
-                onChange={(e) => handleColumnSearchChange(column.id, e.target.value)}
-                variant="outlined"
-              />
-            </SearchCellWrapper>
-          ))}
+              {/* Sticky Left Section: First Column Search */}
+              {firstColumn && (
+                <SearchCellWrapper
+                  width={firstColumn.width}
+                  style={{
+                    position: 'sticky',
+                    left: selectable ? '48px' : 0,
+                    zIndex: 3,
+                    background: theme.palette.colors.grey_50,
+                  }}
+                >
+                  <ColumnSearchInput
+                    size="small"
+                    placeholder={`Search ${firstColumn.label.toLowerCase()}...`}
+                    value={columnSearchQueries[firstColumn.id] || ''}
+                    onChange={(e) => handleColumnSearchChange(firstColumn.id, e.target.value)}
+                    variant="outlined"
+                  />
+                </SearchCellWrapper>
+              )}
 
-          {showActions && <ActionsCell />}
+              {/* Center Section: Remaining Column Searches */}
+              {remainingColumns.map((column) => (
+                <SearchCellWrapper key={`search-${column.id}`} width={column.width}>
+                  <ColumnSearchInput
+                    size="small"
+                    placeholder={`Search ${column.label.toLowerCase()}...`}
+                    value={columnSearchQueries[column.id] || ''}
+                    onChange={(e) => handleColumnSearchChange(column.id, e.target.value)}
+                    variant="outlined"
+                  />
+                </SearchCellWrapper>
+              ))}
+
+              {/* Sticky Right Section: Actions Search Cell */}
+              {showActions && (
+                <ActionsCell
+                  style={enableStickyRight ? {
+                    position: 'sticky',
+                    right: 0,
+                    zIndex: 3,
+                    background: theme.palette.colors.grey_50,
+                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`
+                  } : undefined}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {selectable && <CheckboxCell />}
+
+              {columns.map((column) => (
+                <SearchCellWrapper key={`search-${column.id}`} width={column.width}>
+                  <ColumnSearchInput
+                    size="small"
+                    placeholder={`Search ${column.label.toLowerCase()}...`}
+                    value={columnSearchQueries[column.id] || ''}
+                    onChange={(e) => handleColumnSearchChange(column.id, e.target.value)}
+                    variant="outlined"
+                  />
+                </SearchCellWrapper>
+              ))}
+
+              {showActions && <ActionsCell />}
+            </>
+          )}
         </ColumnSearchRow>
       )}
     </>

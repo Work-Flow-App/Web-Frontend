@@ -56,6 +56,7 @@ export const StyledTableBody = styled(TableBody)(({ theme }) => ({
 export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
   transition: 'background 0.2s ease',
+  background: theme.palette.colors.white,
 
   '&:last-child': {
     borderBottom: 'none',
@@ -79,6 +80,7 @@ export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
     borderBottom: 'none',
     cursor: sortable ? 'pointer' : 'default',
     userSelect: 'none',
+    boxSizing: 'border-box',
 
     '&:hover': {
       background: sortable ? theme.palette.colors.grey_100 : 'transparent',
@@ -113,6 +115,7 @@ export const StyledTableCell = styled(TableCell)<IStyledTableCellProps>(
     textAlign: align || 'left',
     width: width || 'auto',
     borderBottom: 'none',
+    boxSizing: 'border-box',
   })
 );
 
@@ -127,7 +130,10 @@ export const HeaderContent = styled(Box)(() => ({
 export const CheckboxCell = styled(TableCell)(() => ({
   padding: '0.625rem 1.25rem', // 10px 20px
   width: '3rem', // 48px
+  minWidth: '3rem',
+  maxWidth: '3rem',
   borderBottom: 'none',
+  boxSizing: 'border-box',
 }));
 
 export const ActionsCell = styled(TableCell)(() => ({
