@@ -9,8 +9,18 @@ interface StyledDropdownProps {
 
 export const AutocompleteWrapper = styled(Box)({
   display: 'flex',
-  alignItems: 'center',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
   gap: rem(8),
+  position: 'relative',
+  width: '100%',
+});
+
+export const AutocompleteInnerWrapper = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: rem(4),
   position: 'relative',
   width: '100%',
 });

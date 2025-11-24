@@ -1,7 +1,8 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { FloowLogo } from '../../components/UI/FloowLogo';
+import { useGlobalModalOuterContext, AddMemberScreen, ModalSizes } from '../../components/UI/GlobalModal';
 
 const PageContainer = styled(Box)({
   display: 'flex',
@@ -56,6 +57,24 @@ const IconWrapper = styled(Box)({
 });
 
 export const CompanyPage: React.FC = () => {
+  const { setGlobalModalOuterProps } = useGlobalModalOuterContext();
+
+  const handleOpenModal = () => {
+    setGlobalModalOuterProps({
+      isOpen: true,
+      children: (
+        <AddMemberScreen
+          onInvite={async (data) => {
+            console.log('Member invited:', data);
+            alert(`Invitation sent to ${data.email} with role ${data.role}`);
+          }}
+        />
+      ),
+      fieldName: 'addMember',
+      size: ModalSizes.SMALL,
+    });
+  };
+
   return (
     <PageContainer>
       <ContentBox>
@@ -69,6 +88,14 @@ export const CompanyPage: React.FC = () => {
           We're working hard to bring you an amazing experience.
           This page is currently under construction and will be available soon.
         </Message>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenModal}
+          style={{ marginTop: '1rem', marginBottom: '1rem' }}
+        >
+          Test Add Member Modal
+        </Button>
         <Message style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
           Thank you for your patience!
         </Message>

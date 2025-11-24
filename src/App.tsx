@@ -6,23 +6,27 @@ import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
 import { AppConfiguration } from './components/AppConfiguration'
+import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import './App.css'
 
 function App() {
   return (
-    <Router>
-      <AppConfiguration />
-      <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signin" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/company" element={<CompanyPage />} />
-        <Route path="/worker" element={<WorkerPage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
+    <GlobalModalOuterContextProvider>
+      <Router>
+        <AppConfiguration />
+        <Routes>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signin" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/company" element={<CompanyPage />} />
+          <Route path="/worker" element={<WorkerPage />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <GlobalModal />
+      </Router>
+    </GlobalModalOuterContextProvider>
   )
 }
 
