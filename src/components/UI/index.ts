@@ -13,3 +13,6 @@ export type { PricingCardProps, PricingFeature } from './PricingCard';
 
 export { Search } from './Search';
 export type { SearchProps } from './Search';
+
+export { PageWrapper, PageWrapperProvider, usePageWrapperContext, useSnackbar } from './PageWrapper';
+export type { PageWrapperProps, PageAction, PageWrapperContextValue, SnackbarVariant } from './PageWrapper';
