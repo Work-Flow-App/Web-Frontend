@@ -28,9 +28,9 @@ class ApiClient {
     request: () => Promise<any>;
   }> = [];
 
-  // In-memory token storage
-  private accessToken: string | null = null;
-  private refreshToken: string | null = null;
+  // Token storage keys for sessionStorage
+  private readonly ACCESS_TOKEN_KEY = 'app_access_token';
+  private readonly REFRESH_TOKEN_KEY = 'app_refresh_token';
 
   /**
    * Public authentication endpoints that don't require authorization
@@ -44,6 +44,37 @@ class ApiClient {
 
   constructor() {
     this.timeout = env.apiTimeout;
+    // Try to restore session on initialization
+    this.restoreSession();
+  }
+
+  /**
+   * Attempt to restore session using refresh token
+   * Called on application initialization
+   */
+  private async restoreSession(): Promise<void> {
+    // If we already have an access token, no need to refresh
+    if (this.getAuthToken()) {
+      console.log('✅ Access token found in session');
+      return;
+    }
+
+    // If we have a refresh token, try to get a new access token
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken) {
+      try {
+        console.log('🔄 Restoring session with refresh token...');
+        await this.refreshAccessToken();
+        console.log('✅ Session restored successfully');
+      } catch (error) {
+        console.error('❌ Failed to restore session:', error);
+        // Clear invalid tokens
+        this.clearAuthToken();
+        this.clearRefreshToken();
+      }
+    } else {
+      console.log('ℹ️ No tokens found - user needs to log in');
+    }
   }
 
   /**
@@ -55,17 +86,25 @@ class ApiClient {
   }
 
   /**
-   * Get authorization token from memory
+   * Get authorization token from sessionStorage
    */
   private getAuthToken(): string | null {
-    return this.accessToken;
+    try {
+      return sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
+    } catch {
+      return null;
+    }
   }
 
   /**
-   * Get refresh token from memory
+   * Get refresh token from sessionStorage
    */
   private getRefreshToken(): string | null {
-    return this.refreshToken;
+    try {
+      return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -381,45 +420,61 @@ class ApiClient {
   }
 
   /**
-   * Set authentication token in memory
+   * Set authentication token in sessionStorage
    */
   setAuthToken(token: string): void {
-    this.accessToken = token;
+    try {
+      sessionStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+    } catch (error) {
+      console.error('Failed to store access token:', error);
+    }
   }
 
   /**
-   * Set refresh token in memory
+   * Set refresh token in sessionStorage
    */
   setRefreshToken(token: string): void {
-    this.refreshToken = token;
+    try {
+      sessionStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    } catch (error) {
+      console.error('Failed to store refresh token:', error);
+    }
   }
 
   /**
-   * Clear authentication token from memory
+   * Clear authentication token from sessionStorage
    */
   clearAuthToken(): void {
-    this.accessToken = null;
+    try {
+      sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    } catch (error) {
+      console.error('Failed to clear access token:', error);
+    }
   }
 
   /**
-   * Clear refresh token from memory
+   * Clear refresh token from sessionStorage
    */
   clearRefreshToken(): void {
-    this.refreshToken = null;
+    try {
+      sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    } catch (error) {
+      console.error('Failed to clear refresh token:', error);
+    }
   }
 
   /**
    * Get stored access token (public method for auth service)
    */
   getStoredAccessToken(): string | null {
-    return this.accessToken;
+    return this.getAuthToken();
   }
 
   /**
    * Get stored refresh token (public method for auth service)
    */
   getStoredRefreshToken(): string | null {
-    return this.refreshToken;
+    return this.getRefreshToken();
   }
 }
 

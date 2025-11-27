@@ -28,7 +28,7 @@ function App() {
             {/* Protected routes - With Layout (Sidebar + TopNav) */}
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
-              <Route path="/worker" element={<WorkerPage />} />
+              <Route path="/company/workers" element={<WorkerPage />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />
