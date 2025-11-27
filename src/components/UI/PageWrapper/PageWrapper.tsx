@@ -4,8 +4,6 @@ import { Box } from '@mui/material';
 import { Button } from '../Button';
 import { Search } from '../Search';
 import { Dropdown } from '../Forms/Dropdown';
-import { Snackbar } from '../Snackbar';
-import { SnackbarProvider, useSnackbar } from './context/SnackbarContext';
 import type { PageWrapperProps } from './PageWrapper.types';
 import * as S from './PageWrapper.styles';
 
@@ -47,8 +45,6 @@ const PageWrapperContent = memo(
         pageDropdown: dropdownValue || '',
       },
     });
-
-    const { snackbarState, hideSnackbar } = useSnackbar();
 
     const handleDropdownChange = (value: string | number) => {
       onDropdownChange?.(value);
@@ -110,13 +106,6 @@ const PageWrapperContent = memo(
           </S.PageHeader>
 
           <S.PageContent>{children}</S.PageContent>
-
-          <Snackbar
-            open={snackbarState.open}
-            message={snackbarState.message}
-            variant={snackbarState.variant}
-            onClose={hideSnackbar}
-          />
         </S.PageContainer>
       </FormProvider>
     );
@@ -126,11 +115,7 @@ const PageWrapperContent = memo(
 PageWrapperContent.displayName = 'PageWrapperContent';
 
 export const PageWrapper = memo((props: PageWrapperProps) => {
-  return (
-    <SnackbarProvider>
-      <PageWrapperContent {...props} />
-    </SnackbarProvider>
-  );
+  return <PageWrapperContent {...props} />;
 });
 
 PageWrapper.displayName = 'PageWrapper';

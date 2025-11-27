@@ -7,26 +7,29 @@ import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
+import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
 import './App.css'
 
 function App() {
   return (
-    <GlobalModalOuterContextProvider>
-      <Router>
-        <AppConfiguration />
-        <Routes>
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signin" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/company" element={<CompanyPage />} />
-          <Route path="/worker" element={<WorkerPage />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-        </Routes>
-        <GlobalModal />
-      </Router>
-    </GlobalModalOuterContextProvider>
+    <GlobalSnackbarProvider>
+      <GlobalModalOuterContextProvider>
+        <Router>
+          <AppConfiguration />
+          <Routes>
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signin" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/company" element={<CompanyPage />} />
+            <Route path="/worker" element={<WorkerPage />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+          <GlobalModal />
+        </Router>
+      </GlobalModalOuterContextProvider>
+    </GlobalSnackbarProvider>
   )
 }
 
