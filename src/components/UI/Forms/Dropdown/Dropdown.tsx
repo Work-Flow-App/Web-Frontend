@@ -196,7 +196,8 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     if (!fieldValue && readOnlyBox && setValue) {
       setValue(readOnlyBox.name, '');
     }
-  }, [fieldValue, readOnlyBox, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldValue, readOnlyBox?.name]);
 
   useEffect(() => {
     if (apiHook && isAsync && setFetchedOption && !apiHook.isLoading && apiHook.isSuccess) {
@@ -223,7 +224,8 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     if (readOnlyBox?.value && setValue) {
       setValue(readOnlyBox.name, readOnlyBox.value);
     }
-  }, [readOnlyBox?.value, readOnlyBox?.name, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnlyBox?.value, readOnlyBox?.name]);
 
   useEffect(() => {
     addScrollbarClasses('.MuiAutocomplete-listbox');
@@ -366,7 +368,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           {label}
         </InputLabel>
       )}
-      <S.AutocompleteWrapper ref={parentRef} tabIndex={-1} className="myDropdown" sx={sx}>
+      <S.AutocompleteInnerWrapper ref={parentRef} tabIndex={-1} className="myDropdown" sx={sx}>
         <S.MuiAutocomplete
           disablePortal={disablePortal}
           id={id}
@@ -416,7 +418,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         {!hideErrorMessage && errorMessage && (
           <FormHelperText error={hasError}>{errorMessage}</FormHelperText>
         )}
-      </S.AutocompleteWrapper>
+      </S.AutocompleteInnerWrapper>
     </S.AutocompleteWrapper>
   );
 });
