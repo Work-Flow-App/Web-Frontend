@@ -5,6 +5,7 @@ import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
@@ -17,13 +18,19 @@ function App() {
         <Router>
           <AppConfiguration />
           <Routes>
+            {/* Public routes - No layout */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/company" element={<CompanyPage />} />
-            <Route path="/worker" element={<WorkerPage />} />
+
+            {/* Protected routes - With Layout (Sidebar + TopNav) */}
+            <Route element={<Layout />}>
+              <Route path="/company" element={<CompanyPage />} />
+              <Route path="/worker" element={<WorkerPage />} />
+            </Route>
+
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
           <GlobalModal />

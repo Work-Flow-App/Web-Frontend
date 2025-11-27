@@ -16,3 +16,9 @@ export type { SearchProps } from './Search';
 
 export { PageWrapper, PageWrapperProvider, usePageWrapperContext, useSnackbar } from './PageWrapper';
 export type { PageWrapperProps, PageAction, PageWrapperContextValue, SnackbarVariant } from './PageWrapper';
+
+export { Sidebar } from './Sidebar';
+export type { SidebarProps, SidebarItem } from './Sidebar';
+
+export { TopNav } from './TopNav';
+export type { TopNavProps } from './TopNav';
