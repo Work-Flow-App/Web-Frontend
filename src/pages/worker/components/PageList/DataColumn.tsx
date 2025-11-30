@@ -20,13 +20,13 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
     label: 'Added on',
     accessor: 'addedOn',
     sortable: true,
-    width: '120px',
+    width: 'auto',
   },
   {
     id: 'name',
     label: 'Member',
     sortable: true,
-    width: '200px',
+    width: 'auto',
     render: (row) => (
       <MemberInfo>
         <MemberName>{row.name}</MemberName>
@@ -39,21 +39,20 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
     label: 'Job Assignments',
     accessor: 'jobAssignments',
     sortable: true,
-    align: 'center',
-    width: '150px',
+    width: 'auto',
   },
   {
     id: 'role',
     label: 'Role',
     accessor: 'role',
     sortable: true,
-    width: '120px',
+    width: 'auto',
   },
   {
     id: 'status',
     label: 'Status',
     sortable: true,
-    width: '120px',
+    width: 'auto',
     render: (row) => <StatusPill status={row.status}>{row.status}</StatusPill>,
   },
 ];

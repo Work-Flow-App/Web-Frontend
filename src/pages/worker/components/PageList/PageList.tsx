@@ -48,8 +48,11 @@ export const PageList: React.FC = () => {
       setLoading(true);
       const response = await workerApi.getAllWorkers();
 
+      // Get the workers array from response
+      const workersData = Array.isArray(response.data) ? response.data : [];
+
       // Transform API response to table format
-      const transformedData: WorkerTableRow[] = response.data.map((worker: WorkerResponse) => ({
+      const transformedData: WorkerTableRow[] = workersData.map((worker: WorkerResponse) => ({
         id: worker.id || 0,
         name: worker.name || '',
         email: worker.email || '',
@@ -273,15 +276,13 @@ export const PageList: React.FC = () => {
         columns={columns}
         data={workers}
         selectable
-        showColumnSearch
         showActions
         renderActions={renderActions}
         loading={loading}
         emptyMessage="No workers found. Add your first worker to get started."
         rowsPerPage={10}
         showPagination
-        enableStickyLeft
-        enableStickyRight
+        enableStickyLeft={true}
       />
     </PageWrapper>
   );

@@ -2,28 +2,22 @@ import { styled } from '@mui/material/styles';
 import { Box, TextField } from '@mui/material';
 
 export const ColumnHeaderRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'row',
+  display: 'table-row',
   background: theme.palette.colors.grey_50,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
-  minWidth: 'max-content',
+  width: '100%',
 }));
 
 export const ColumnSearchRow = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'row',
+  display: 'table-row',
   background: theme.palette.colors.white,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
-  minWidth: 'max-content',
+  width: '100%',
 }));
 
 export const HeaderCellWrapper = styled(Box)<{ width?: string }>(({ width }) => ({
-  display: 'flex',
-  flexDirection: 'column',
+  display: 'table-cell',
   width: width || 'auto',
-  minWidth: width || 'auto',
-  maxWidth: width || 'none',
-  flex: width ? `0 0 ${width}` : '0 0 auto',
 }));
 
 export const ColumnSearchInput = styled(TextField)(({ theme }) => ({
@@ -53,10 +47,8 @@ export const ColumnSearchInput = styled(TextField)(({ theme }) => ({
 }));
 
 export const SearchCellWrapper = styled(Box)<{ width?: string }>(({ width }) => ({
+  display: 'table-cell',
   padding: '0.375rem 1.25rem',
   width: width || 'auto',
-  minWidth: width || 'auto',
-  maxWidth: width || 'none',
   boxSizing: 'border-box',
-  flex: width ? `0 0 ${width}` : '0 0 auto',
 }));

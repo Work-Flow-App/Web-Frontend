@@ -67,9 +67,18 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   const firstColumn = columns.length > 0 ? columns[0] : null;
   const remainingColumns = columns.length > 1 ? columns.slice(1) : [];
 
+  // Calculate total columns for colspan
+  const totalColumns = columns.length + (selectable ? 1 : 0) + (showActions ? 1 : 0);
+
   // Show empty state
   if (!loading && paginatedRows.length === 0) {
-    return <EmptyState>{emptyMessage}</EmptyState>;
+    return (
+      <StyledTableRow>
+        <StyledTableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '3rem 1.25rem' }}>
+          <EmptyState>{emptyMessage}</EmptyState>
+        </StyledTableCell>
+      </StyledTableRow>
+    );
   }
 
   return (
