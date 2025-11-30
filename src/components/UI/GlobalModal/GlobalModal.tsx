@@ -114,16 +114,21 @@ export const GlobalModal = () => {
 
   if (!globalModalOuterProps.isOpen) return <></>;
 
-  return (
-    <>
-      <S.ModalOverlay />
-      <GlobalModalInnerContextProvider>
-        <S.ModalContainerWrapper size={globalModalOuterProps.size}>
-          <Suspense fallback={<PageLoader />}>
-            <BaseGlobalModal>{globalModalOuterProps.children}</BaseGlobalModal>
-          </Suspense>
-        </S.ModalContainerWrapper>
-      </GlobalModalInnerContextProvider>
-    </>
-  );
+  try {
+    return (
+      <>
+        <S.ModalOverlay />
+        <GlobalModalInnerContextProvider>
+          <S.ModalContainerWrapper size={globalModalOuterProps.size}>
+            <Suspense fallback={<PageLoader />}>
+              <BaseGlobalModal>{globalModalOuterProps.children}</BaseGlobalModal>
+            </Suspense>
+          </S.ModalContainerWrapper>
+        </GlobalModalInnerContextProvider>
+      </>
+    );
+  } catch (error) {
+    console.error('Error rendering GlobalModal:', error);
+    return <></>;
+  }
 };

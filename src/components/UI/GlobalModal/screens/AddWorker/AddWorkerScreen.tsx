@@ -15,8 +15,7 @@ export const AddWorkerScreen = (props: AddWorkerScreenProps) => {
   const { placeHolders, fieldLabels } = useSchema(AddWorkerFormSchema);
 
   // Global Modal Inner Context
-  const { updateModalTitle, updateGlobalModalInnerConfig, setSkipResetModal } =
-    useGlobalModalInnerContext();
+  const { updateModalTitle, updateGlobalModalInnerConfig } = useGlobalModalInnerContext();
 
   useEffect(() => {
     // Set modal configuration
@@ -27,9 +26,6 @@ export const AddWorkerScreen = (props: AddWorkerScreenProps) => {
       cancelButtonText: 'Cancel',
       confirmButtonOnly: false,
     });
-
-    // Set skip reset to false so modal auto-closes on success
-    setSkipResetModal?.(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

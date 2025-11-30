@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type {
   IGlobalModalInnerContentState,
@@ -44,12 +44,12 @@ export const GlobalModalInnerContextProvider = ({ children }: IGlobalModalInnerC
   const [innerModalData, setInnerModalData] = useState<any>({});
   const [skipResetModal, setSkipResetModal] = useState<boolean>(false);
 
-  const updateOnClose = (callBack: () => void) => setOnClose(() => callBack);
-  const updateOnConfirm = (callBack: () => void) => setOnConfirm(() => callBack);
+  const updateOnClose = useCallback((callBack: () => void) => setOnClose(() => callBack), []);
+  const updateOnConfirm = useCallback((callBack: () => void) => setOnConfirm(() => callBack), []);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     updateActiveScreen(0);
-  };
+  }, []);
 
   return (
     <GlobalModalInnerContext.Provider

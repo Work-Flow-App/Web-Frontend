@@ -31,10 +31,6 @@ export const PageList: React.FC = () => {
           basePath: env.apiBaseUrl,
           accessToken: () => {
             const token = apiClient.getStoredAccessToken();
-            console.log('🔑 Token for API call:', token ? 'EXISTS' : 'MISSING');
-            if (token) {
-              console.log('   Token preview:', token.substring(0, 30) + '...');
-            }
             return token || '';
           },
         })
@@ -97,6 +93,9 @@ export const PageList: React.FC = () => {
         <AddWorkerScreen
           onInvite={async (data: AddWorkerFormData) => {
             try {
+              console.log('Creating worker with data:', data);
+              console.log('Current access token:', apiClient.getStoredAccessToken() ? 'EXISTS' : 'MISSING');
+
               const response = await workerApi.createWorker({
                 name: data.name,
                 initials: data.initials,
@@ -107,6 +106,7 @@ export const PageList: React.FC = () => {
                 password: data.password,
               });
 
+              console.log('Worker created successfully:', response.data);
               showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Worker added successfully');
               resetGlobalModalOuterProps();
               fetchWorkers();
