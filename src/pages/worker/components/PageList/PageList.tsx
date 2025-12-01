@@ -37,10 +37,12 @@ export const PageList: React.FC = () => {
   const fetchWorkers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await workerApi.getAllWorkers();
+
+      // Use apiClient directly instead of generated Axios client
+      const apiResponse = await apiClient.get<WorkerResponse[]>('/api/v1/workers');
 
       // Get the workers array from response
-      const workersData = Array.isArray(response.data) ? response.data : [];
+      const workersData = Array.isArray(apiResponse.data) ? apiResponse.data : [];
 
       // Transform API response to table format
       const transformedData: WorkerTableRow[] = workersData.map((worker: WorkerResponse) => ({
@@ -48,11 +50,10 @@ export const PageList: React.FC = () => {
         name: worker.name || '',
         email: worker.email || '',
         username: worker.username || '',
-        telephone: worker.telephone || '-',
-        mobile: worker.mobile || '-',
+        telephone: worker.telephone || '',
+        mobile: worker.mobile || '',
         initials: worker.initials || '',
-        status: worker.archived ? 'deactivated' : worker.loginLocked ? 'pending' : 'active',
-        addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '-',
+        addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '',
       }));
 
       setWorkers(transformedData);
@@ -64,7 +65,7 @@ export const PageList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [workerApi, showError]);
+  }, [showError]);
 
   // Load workers on mount
   useEffect(() => {
@@ -173,7 +174,7 @@ export const PageList: React.FC = () => {
         loading={loading}
         emptyMessage="No workers found. Add your first worker to get started."
         rowsPerPage={10}
-        showPagination
+        showPagination={true}
         enableStickyLeft={true}
       />
     </PageWrapper>

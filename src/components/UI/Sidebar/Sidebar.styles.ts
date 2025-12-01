@@ -9,7 +9,9 @@ interface SidebarWrapperProps {
 /**
  * Main sidebar container
  */
-export const SidebarWrapper = styled(Box)<SidebarWrapperProps>(({ theme, isCollapsed }) => ({
+export const SidebarWrapper = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isCollapsed',
+})<SidebarWrapperProps>(({ theme, isCollapsed }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
@@ -130,7 +132,9 @@ interface SidebarBackdropProps {
 /**
  * Mobile sidebar backdrop/overlay
  */
-export const SidebarBackdrop = styled(Box)<SidebarBackdropProps>(({ theme, isVisible }) => ({
+export const SidebarBackdrop = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isVisible',
+})<SidebarBackdropProps>(({ theme, isVisible }) => ({
   display: 'none',
 
   [theme.breakpoints.down('sm')]: {

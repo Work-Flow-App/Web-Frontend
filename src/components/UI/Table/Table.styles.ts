@@ -74,7 +74,9 @@ export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
+export const StyledHeaderCell = styled(TableCell, {
+  shouldForwardProp: (prop) => prop !== 'sortable',
+})<IStyledTableCellProps>(
   ({ theme, width, align, sortable }) => ({
     display: 'table-cell',
     padding: '0.625rem 1.25rem', // 10px 20px
@@ -162,7 +164,9 @@ export const ActionsCell = styled(TableCell)(({ theme }) => ({
   verticalAlign: 'middle',
 }));
 
-export const CustomCheckbox = styled(Box)<IStyledCheckboxProps>(
+export const CustomCheckbox = styled(Box, {
+  shouldForwardProp: (prop) => !['checked', 'indeterminate'].includes(prop as string),
+})<IStyledCheckboxProps>(
   ({ theme, checked, indeterminate }) => ({
     width: '1.25rem', // 20px
     height: '1.25rem', // 20px

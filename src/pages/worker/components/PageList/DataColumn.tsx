@@ -1,5 +1,5 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
-import { StatusPill, MemberInfo, MemberName, MemberEmail } from '../../../../components/UI/Table/Table.styles';
+import { MemberInfo, MemberName, MemberEmail } from '../../../../components/UI/Table/Table.styles';
 
 export interface WorkerTableRow {
   id: number;
@@ -9,7 +9,6 @@ export interface WorkerTableRow {
   telephone: string;
   mobile: string;
   initials: string;
-  status: 'active' | 'deactivated' | 'pending';
   addedOn: string;
 }
 
@@ -24,6 +23,7 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
   {
     id: 'name',
     label: 'Member',
+    accessor: 'name',
     sortable: true,
     width: 'auto',
     render: (row) => (
@@ -48,10 +48,10 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
     width: 'auto',
   },
   {
-    id: 'status',
-    label: 'Status',
+    id: 'initials',
+    label: 'Initials',
+    accessor: 'initials',
     sortable: true,
     width: 'auto',
-    render: (row) => <StatusPill status={row.status}>{row.status}</StatusPill>,
   },
 ];
