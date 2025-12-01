@@ -6,4 +6,7 @@ export interface SearchProps {
   disabled?: boolean;
   width?: string | number;
   className?: string;
+  styles?: {
+    input?: React.CSSProperties;
+  };
 }

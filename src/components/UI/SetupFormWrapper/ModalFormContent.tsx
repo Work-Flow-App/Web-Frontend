@@ -20,13 +20,14 @@ export const ModalFormContent = <TFormData extends FieldValues>(
     handleFormSubmit,
   } = props;
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, formState } = methods;
 
   // Get modal context
   const {
     updateOnConfirm,
     updateOnClose,
     setSkipResetModal,
+    updateGlobalModalInnerConfig,
   } = useGlobalModalInnerContext();
 
   // Use ref to store the latest submit handler
@@ -58,6 +59,13 @@ export const ModalFormContent = <TFormData extends FieldValues>(
     // No cleanup function - modal reset is handled by the modal buttons
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update modal button disabled state based on form validation
+  useEffect(() => {
+    updateGlobalModalInnerConfig({
+      isConfirmDisabled: !formState.isValid,
+    });
+  }, [formState.isValid, updateGlobalModalInnerConfig]);
 
   return (
     <FormProvider {...methods}>

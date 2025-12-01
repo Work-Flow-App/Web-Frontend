@@ -14,6 +14,7 @@ import {
   LoadingOverlay,
 } from '../../Table.styles';
 import { MoreOptionsIcon } from '../../icons';
+import { ActionsMenu } from '../ActionsMenu';
 
 /**
  * DataTableBody component for rendering table data rows
@@ -31,6 +32,7 @@ import { MoreOptionsIcon } from '../../icons';
 const DataTableBody: React.FC<IDataTableBody> = ({
   selectable = false,
   showActions = false,
+  actions,
   renderActions,
   onActionClick,
   loading = false,
@@ -69,6 +71,19 @@ const DataTableBody: React.FC<IDataTableBody> = ({
 
   // Calculate total columns for colspan
   const totalColumns = columns.length + (selectable ? 1 : 0) + (showActions ? 1 : 0);
+
+  // Show loading state
+  if (loading && paginatedRows.length === 0) {
+    return (
+      <StyledTableRow>
+        <StyledTableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '3rem 1.25rem', position: 'relative' }}>
+          <LoadingOverlay>
+            <CircularProgress size={40} />
+          </LoadingOverlay>
+        </StyledTableCell>
+      </StyledTableRow>
+    );
+  }
 
   // Show empty state
   if (!loading && paginatedRows.length === 0) {
@@ -165,7 +180,9 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     },
                   } : undefined}
                 >
-                  {renderActions ? (
+                  {actions && actions.length > 0 ? (
+                    <ActionsMenu row={row} actions={actions} />
+                  ) : renderActions ? (
                     renderActions(row)
                   ) : (
                     <ActionButton onClick={(e) => handleActionClick(row, e)}>
@@ -210,7 +227,9 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     },
                   } : undefined}
                 >
-                  {renderActions ? (
+                  {actions && actions.length > 0 ? (
+                    <ActionsMenu row={row} actions={actions} />
+                  ) : renderActions ? (
                     renderActions(row)
                   ) : (
                     <ActionButton onClick={(e) => handleActionClick(row, e)}>

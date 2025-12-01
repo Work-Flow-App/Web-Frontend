@@ -107,11 +107,19 @@ export const CenterSection = styled(Box)(({ theme }) => ({
 /**
  * Search content section wrapper
  */
-export const SearchSection = styled(Box)({
+export const SearchSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  marginRight: 'auto',
-});
+  marginLeft: rem(16),
+
+  [theme.breakpoints.down('lg')]: {
+    marginLeft: rem(12),
+  },
+
+  [theme.breakpoints.down('md')]: {
+    marginLeft: rem(8),
+  },
+}));
 
 /**
  * Right content section (notification, user profile, actions, etc.)

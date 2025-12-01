@@ -244,6 +244,12 @@ export const Layout: React.FC = () => {
                   console.log('Search:', query);
                 }}
                 width="300px"
+                styles={{
+                  input: {
+                    height: '36px',
+                    padding: '8px 12px',
+                  },
+                }}
               />
             </Box>
           }

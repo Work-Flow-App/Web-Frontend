@@ -26,6 +26,7 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
       confirmModalButtonText,
       cancelButtonOnly,
       cancelButtonText,
+      isConfirmDisabled,
     },
     modalTitle,
     activeScreen,
@@ -59,9 +60,7 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
 
   const handleCancelButtonClick = () => {
     onClose?.();
-    if (!skipResetModal) {
-      resetModal();
-    }
+    resetModal();
   };
 
   const ModalBodyClassName = 'globalModalBody';
@@ -85,8 +84,8 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
       {!hideFooter && (
         <S.ModalFooterWrapper>
           {confirmButtonOnly ? (
-            <Button variant="contained" color="primary" onClick={handleConfirmButtonClick}>
-              {confirmModalButtonText || 'Invite'}
+            <Button variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
+              {confirmModalButtonText}
             </Button>
           ) : cancelButtonOnly ? (
             <Button variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
@@ -97,8 +96,8 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
               <Button variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
                 {cancelButtonText || 'Cancel'}
               </Button>
-              <Button variant="contained" color="primary" onClick={handleConfirmButtonClick}>
-                {confirmModalButtonText || 'Invite'}
+              <Button variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
+                {confirmModalButtonText}
               </Button>
             </>
           )}

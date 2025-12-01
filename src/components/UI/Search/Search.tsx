@@ -32,6 +32,7 @@ export const Search = memo(
     disabled = false,
     width,
     className,
+    styles,
   }: SearchProps) => {
     const [isFocused, setIsFocused] = useState(false);
 
@@ -75,6 +76,7 @@ export const Search = memo(
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            styles={styles}
           />
         </S.SearchContainer>
       </FormProvider>

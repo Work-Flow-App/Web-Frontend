@@ -128,3 +128,8 @@ export const InputLabel = styled('label')(({ theme }) => ({
   marginBottom: rem(6),
   display: 'block',
 }));
+
+export const RequiredIndicator = styled('span')(({ theme }) => ({
+  color: theme.palette.error.main,
+  marginLeft: rem(2),
+}));

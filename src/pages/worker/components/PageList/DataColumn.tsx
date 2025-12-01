@@ -8,8 +8,7 @@ export interface WorkerTableRow {
   username: string;
   telephone: string;
   mobile: string;
-  role: string;
-  jobAssignments: number;
+  initials: string;
   status: 'active' | 'deactivated' | 'pending';
   addedOn: string;
 }
@@ -35,16 +34,16 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
     ),
   },
   {
-    id: 'jobAssignments',
-    label: 'Job Assignments',
-    accessor: 'jobAssignments',
+    id: 'telephone',
+    label: 'Telephone',
+    accessor: 'telephone',
     sortable: true,
     width: 'auto',
   },
   {
-    id: 'role',
-    label: 'Role',
-    accessor: 'role',
+    id: 'mobile',
+    label: 'Mobile',
+    accessor: 'mobile',
     sortable: true,
     width: 'auto',
   },

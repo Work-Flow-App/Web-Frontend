@@ -1,6 +1,6 @@
-import { InputValidationRules, type IFields } from '../../../../../utils/validation';
+import { InputValidationRules, type IFields } from '../../../utils/validation';
 
-export const AddWorkerFormSchema: IFields = {
+export const WorkerFormSchema: IFields = {
   name: {
     title: 'name',
     rule: InputValidationRules.StringRequired,
@@ -58,3 +58,13 @@ export const AddWorkerFormSchema: IFields = {
     isRequired: true,
   },
 };
+
+export interface WorkerFormData {
+  name: string;
+  initials?: string;
+  email: string;
+  telephone?: string;
+  mobile?: string;
+  username: string;
+  password: string;
+}

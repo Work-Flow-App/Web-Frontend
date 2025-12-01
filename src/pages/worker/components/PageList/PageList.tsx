@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Menu, MenuItem } from '@mui/material';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
-import { ActionButton } from '../../../../components/UI/Table/Table.styles';
-import { MoreOptionsIcon } from '../../../../components/UI/Table/icons';
+import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
-import { AddWorkerScreen } from '../../../../components/UI/GlobalModal/screens/AddWorker';
-import type { AddWorkerFormData } from '../../../../components/UI/GlobalModal/screens/AddWorker';
+import { SetupForm } from '../SetupForm';
 import { WorkerControllerApi } from '../../../../../workflow-api/api';
 import type { WorkerResponse } from '../../../../../workflow-api/api';
 import { Configuration } from '../../../../../workflow-api/configuration';
@@ -18,8 +15,6 @@ import { columns, type WorkerTableRow } from './DataColumn';
 export const PageList: React.FC = () => {
   const [workers, setWorkers] = useState<WorkerTableRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedWorker, setSelectedWorker] = useState<WorkerTableRow | null>(null);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -55,21 +50,14 @@ export const PageList: React.FC = () => {
         username: worker.username || '',
         telephone: worker.telephone || '-',
         mobile: worker.mobile || '-',
-        role: 'Worker',
-        jobAssignments: 0,
+        initials: worker.initials || '',
         status: worker.archived ? 'deactivated' : worker.loginLocked ? 'pending' : 'active',
         addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '-',
       }));
 
       setWorkers(transformedData);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching workers:', error);
-      console.error('Error details:', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        headers: error?.response?.headers,
-      });
 
       const errorMessage = error instanceof Error ? error.message : 'Failed to load workers';
       showError(errorMessage);
@@ -90,32 +78,11 @@ export const PageList: React.FC = () => {
       size: ModalSizes.MEDIUM,
       fieldName: 'addWorker',
       children: (
-        <AddWorkerScreen
-          onInvite={async (data: AddWorkerFormData) => {
-            try {
-              console.log('Creating worker with data:', data);
-              console.log('Current access token:', apiClient.getStoredAccessToken() ? 'EXISTS' : 'MISSING');
-
-              const response = await workerApi.createWorker({
-                name: data.name,
-                initials: data.initials,
-                email: data.email,
-                telephone: data.telephone,
-                mobile: data.mobile,
-                username: data.username,
-                password: data.password,
-              });
-
-              console.log('Worker created successfully:', response.data);
-              showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Worker added successfully');
-              resetGlobalModalOuterProps();
-              fetchWorkers();
-            } catch (error) {
-              console.error('Error adding worker:', error);
-              const errorMessage = error instanceof Error ? error.message : 'Failed to add worker';
-              showError(errorMessage);
-              throw error;
-            }
+        <SetupForm
+          isModal={true}
+          onSuccess={() => {
+            resetGlobalModalOuterProps();
+            fetchWorkers();
           }}
         />
       ),
@@ -130,32 +97,18 @@ export const PageList: React.FC = () => {
         size: ModalSizes.MEDIUM,
         fieldName: 'editWorker',
         children: (
-          <AddWorkerScreen
-            onInvite={async (data: AddWorkerFormData) => {
-              try {
-                const response = await workerApi.updateWorker(worker.id, {
-                  name: data.name,
-                  initials: data.initials,
-                  email: data.email,
-                  telephone: data.telephone,
-                  mobile: data.mobile,
-                });
-
-                showSuccess(response.data.name ? `${response.data.name} updated successfully` : 'Worker updated successfully');
-                resetGlobalModalOuterProps();
-                fetchWorkers();
-              } catch (error) {
-                console.error('Error updating worker:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to update worker';
-                showError(errorMessage);
-                throw error;
-              }
+          <SetupForm
+            isModal={true}
+            workerId={worker.id}
+            onSuccess={() => {
+              resetGlobalModalOuterProps();
+              fetchWorkers();
             }}
           />
         ),
       });
     },
-    [workerApi, setGlobalModalOuterProps, resetGlobalModalOuterProps, showSuccess, showError, fetchWorkers]
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchWorkers]
   );
 
   // Handle delete worker
@@ -178,83 +131,22 @@ export const PageList: React.FC = () => {
     [workerApi, showSuccess, showError, fetchWorkers]
   );
 
-  // Handle send invitation
-  const handleSendInvitation = useCallback(
-    async (worker: WorkerTableRow) => {
-      try {
-        const response = await workerApi.sendInvitation(worker.id);
-        showSuccess(response.data.message || `Invitation sent to ${worker.email}`);
-      } catch (error) {
-        console.error('Error sending invitation:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
-        showError(errorMessage);
-      }
-    },
-    [workerApi, showSuccess, showError]
-  );
-
-  // Handle menu open
-  const handleMenuOpen = useCallback((worker: WorkerTableRow, event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setSelectedWorker(worker);
-  }, []);
-
-  // Handle menu close
-  const handleMenuClose = useCallback(() => {
-    setAnchorEl(null);
-    setSelectedWorker(null);
-  }, []);
-
-  // Handle menu actions
-  const handleMenuEdit = useCallback(() => {
-    if (selectedWorker) {
-      handleEditWorker(selectedWorker);
-      handleMenuClose();
-    }
-  }, [selectedWorker, handleEditWorker, handleMenuClose]);
-
-  const handleMenuDelete = useCallback(() => {
-    if (selectedWorker) {
-      handleDeleteWorker(selectedWorker);
-      handleMenuClose();
-    }
-  }, [selectedWorker, handleDeleteWorker, handleMenuClose]);
-
-  const handleMenuInvite = useCallback(() => {
-    if (selectedWorker) {
-      handleSendInvitation(selectedWorker);
-      handleMenuClose();
-    }
-  }, [selectedWorker, handleSendInvitation, handleMenuClose]);
-
-  // Render action menu
-  const renderActions = useCallback(
-    (worker: WorkerTableRow) => (
-      <>
-        <ActionButton onClick={(e) => handleMenuOpen(worker, e)}>
-          <MoreOptionsIcon />
-        </ActionButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl) && selectedWorker?.id === worker.id}
-          onClose={handleMenuClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-        >
-          <MenuItem onClick={handleMenuEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleMenuDelete}>Delete</MenuItem>
-          <MenuItem onClick={handleMenuInvite}>Send Invitation</MenuItem>
-        </Menu>
-      </>
-    ),
-    [anchorEl, selectedWorker, handleMenuOpen, handleMenuClose, handleMenuEdit, handleMenuDelete, handleMenuInvite]
+  // Define table actions
+  const tableActions: ITableAction<WorkerTableRow>[] = useMemo(
+    () => [
+      {
+        id: 'edit',
+        label: 'Edit',
+        onClick: handleEditWorker,
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        onClick: handleDeleteWorker,
+        color: 'error' as const,
+      },
+    ],
+    [handleEditWorker, handleDeleteWorker]
   );
 
   return (
@@ -277,7 +169,7 @@ export const PageList: React.FC = () => {
         data={workers}
         selectable
         showActions
-        renderActions={renderActions}
+        actions={tableActions}
         loading={loading}
         emptyMessage="No workers found. Add your first worker to get started."
         rowsPerPage={10}
