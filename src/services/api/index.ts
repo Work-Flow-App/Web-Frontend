@@ -10,7 +10,7 @@ export { authService } from './auth';
 export type { SignupRequest, LoginRequest, AuthResponse } from './auth';
 
 export { workerService } from './worker';
-export type { Worker, CreateWorkerData, UpdateWorkerData, WorkerInvite } from './worker';
+export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse } from './worker';
 
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

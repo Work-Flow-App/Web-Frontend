@@ -1,40 +1,26 @@
 import { apiClient } from './client';
 import type { ApiResponse } from './client';
+import type {
+  SignupRequest as WorkflowSignupRequest,
+  LoginRequest,
+  RefreshTokenRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  PasswordResetResponse,
+} from '../../../workflow-api';
 import type { UserRole, AuthTokens, User } from '../../types/auth';
 
 /**
  * Authentication API Service
  */
 
-export interface SignupRequest {
-  username: string;
-  email: string;
-  password: string;
+// Type alias for compatibility - use the workflowapi SignupRequest but with role type
+export type SignupRequest = Omit<WorkflowSignupRequest, 'role'> & {
   role: UserRole;
-}
+};
 
-export interface LoginRequest {
-  userName: string;
-  password: string;
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  email: string;
-  code: string;
-  newPassword: string;
-}
-
-export interface PasswordResetResponse {
-  message?: string;
-}
+// Re-export other types with original names
+export type { LoginRequest, RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse };
 
 export type AuthResponse = AuthTokens;
 

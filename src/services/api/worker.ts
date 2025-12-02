@@ -1,91 +1,71 @@
+import { WorkerControllerApi, Configuration } from '../../../workflow-api';
+import type {
+  WorkerResponse,
+  WorkerCreateRequest,
+  WorkerUpdateRequest,
+  WorkerInviteResponse,
+} from '../../../workflow-api';
 import { apiClient } from './client';
-import type { ApiResponse } from './client';
+
+export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse };
 
 /**
  * Worker API Service
  * Provides CRUD operations for worker management
  */
 
-export interface Worker {
-  id: number;
-  name: string;
-  initials?: string;
-  telephone?: string;
-  mobile?: string;
-  email?: string;
-  username?: string;
-  loginLocked?: boolean;
-  archived?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CreateWorkerData {
-  name: string;
-  initials?: string;
-  telephone?: string;
-  mobile?: string;
-  email?: string;
-  username: string;
-  password: string;
-}
-
-export interface UpdateWorkerData {
-  name: string;
-  initials?: string;
-  telephone?: string;
-  mobile?: string;
-  email?: string;
-}
-
-export interface WorkerInvite {
-  workerId?: number;
-  workerName?: string;
-  email?: string;
-  message?: string;
+/**
+ * Get a configured WorkerControllerApi instance with the access token
+ */
+function getWorkerApi(): WorkerControllerApi {
+  const accessToken = apiClient.getStoredAccessToken();
+  const config = new Configuration({
+    accessToken: accessToken || undefined,
+  });
+  return new WorkerControllerApi(config);
 }
 
 export const workerService = {
   /**
    * Get all workers
    */
-  async getAllWorkers(): Promise<ApiResponse<Worker[]>> {
-    return await apiClient.get<Worker[]>('/api/v1/workers');
+  async getAllWorkers() {
+    return await getWorkerApi().getAllWorkers();
   },
 
   /**
    * Get worker by ID
    */
-  async getWorkerById(id: number): Promise<ApiResponse<Worker>> {
-    return await apiClient.get<Worker>(`/api/v1/workers/${id}`);
+  async getWorkerById(id: number) {
+    return await getWorkerApi().getWorkerById(id);
   },
 
   /**
    * Create a new worker
    */
-  async createWorker(data: CreateWorkerData): Promise<ApiResponse<Worker>> {
-    return await apiClient.post<Worker>('/api/v1/workers', data);
+  async createWorker(data: WorkerCreateRequest) {
+    return await getWorkerApi().createWorker(data);
   },
 
   /**
    * Update an existing worker
    */
-  async updateWorker(id: number, data: UpdateWorkerData): Promise<ApiResponse<Worker>> {
-    return await apiClient.put<Worker>(`/api/v1/workers/${id}`, data);
+  async updateWorker(id: number, data: WorkerUpdateRequest) {
+    return await getWorkerApi().updateWorker(id, data);
   },
 
   /**
    * Delete a worker
    */
-  async deleteWorker(id: number): Promise<ApiResponse<void>> {
-    return await apiClient.delete<void>(`/api/v1/workers/${id}`);
+  async deleteWorker(id: number) {
+    return await getWorkerApi().deleteWorker(id);
   },
 
   /**
    * Send invitation email to worker
    */
-  async sendInvitation(id: number): Promise<ApiResponse<WorkerInvite>> {
-    return await apiClient.post<WorkerInvite>(`/api/v1/workers/${id}/invite`, {});
+  async sendInvitation(id: number) {
+    return await getWorkerApi().sendInvitation(id);
   },
 };
 
