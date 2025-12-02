@@ -21,6 +21,8 @@ class ApiClient {
   private timeout: number;
   private isRefreshing: boolean = false;
   private tokenRefreshTimer: NodeJS.Timeout | null = null;
+  private sessionRestored: boolean = false;
+  private sessionRestorePromise: Promise<void> | null = null;
   private failedRequestsQueue: Array<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolve: (value: any) => void;
@@ -50,7 +52,28 @@ class ApiClient {
   constructor() {
     this.timeout = env.apiTimeout;
     // Try to restore session on initialization
-    this.restoreSession();
+    this.sessionRestorePromise = this.restoreSession();
+  }
+
+  /**
+   * Wait for session restoration to complete
+   * Use this in your app initialization to ensure tokens are ready
+   */
+  async waitForSessionRestore(): Promise<boolean> {
+    if (this.sessionRestored) {
+      return !!this.getAuthToken();
+    }
+    if (this.sessionRestorePromise) {
+      await this.sessionRestorePromise;
+    }
+    return !!this.getAuthToken();
+  }
+
+  /**
+   * Check if session restoration has completed
+   */
+  isSessionRestored(): boolean {
+    return this.sessionRestored;
   }
 
   /**
@@ -58,26 +81,37 @@ class ApiClient {
    * Called on application initialization
    */
   private async restoreSession(): Promise<void> {
-    if (this.getAuthToken()) {
-      console.log('Access token found in session');
-      this.scheduleTokenRefresh();
-      return;
-    }
-
-    const refreshToken = this.getRefreshToken();
-    if (refreshToken) {
-      try {
-        console.log('Restoring session with refresh token');
-        await this.refreshAccessToken();
-        console.log('Session restored successfully');
+    try {
+      if (this.getAuthToken()) {
+        console.log('Access token found in session');
         this.scheduleTokenRefresh();
-      } catch (error) {
-        console.error('Failed to restore session:', error);
-        this.clearAuthToken();
-        this.clearRefreshToken();
+        this.sessionRestored = true;
+        return;
       }
-    } else {
-      console.log('No tokens found - user needs to log in');
+
+      const refreshToken = this.getRefreshToken();
+      if (refreshToken) {
+        try {
+          console.log('Restoring session with refresh token');
+          const success = await this.refreshAccessToken();
+          if (success) {
+            console.log('Session restored successfully');
+            this.scheduleTokenRefresh();
+          } else {
+            console.warn('Token refresh returned false - will retry on next request');
+            // Don't clear tokens here - let the user retry on next API call
+          }
+        } catch (error) {
+          console.error('Failed to restore session (network error?):', error);
+          // Keep tokens - this might be a temporary network issue
+          // The next API call will trigger another refresh attempt
+        }
+      } else {
+        console.log('No tokens found - user needs to log in');
+      }
+    } finally {
+      this.sessionRestored = true;
+      this.sessionRestorePromise = null;
     }
   }
 
@@ -185,8 +219,17 @@ class ApiClient {
     const refreshToken = this.getRefreshToken();
 
     if (!refreshToken) {
+      console.warn('No refresh token available');
       return false;
     }
+
+    // Prevent concurrent refresh attempts
+    if (this.isRefreshing) {
+      console.log('Token refresh already in progress');
+      return false;
+    }
+
+    this.isRefreshing = true;
 
     try {
       const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
@@ -199,7 +242,21 @@ class ApiClient {
         mode: 'cors',
       });
 
+      // Handle authentication errors (invalid/expired refresh token)
       if (!response.ok) {
+        // Only clear tokens on actual auth failures, not server errors
+        if (response.status === 401 || response.status === 403) {
+          console.error('Refresh token is invalid or expired - clearing session');
+          this.clearAuthToken();
+          this.clearRefreshToken();
+
+          // Redirect to login
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+        } else {
+          console.warn(`Token refresh failed with status ${response.status} - will retry later`);
+        }
         return false;
       }
 
@@ -210,13 +267,18 @@ class ApiClient {
         if (data.refreshToken) {
           this.setRefreshToken(data.refreshToken);
         }
+        console.log('Token refreshed successfully');
         return true;
       }
 
+      console.warn('Token refresh response missing accessToken');
       return false;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      // Network error - keep tokens and let user retry
+      console.error('Token refresh failed (network error):', error);
       return false;
+    } finally {
+      this.isRefreshing = false;
     }
   }
 
@@ -297,16 +359,9 @@ class ApiClient {
           this.processQueue();
           return retryRequest();
         } else {
-          // Refresh failed, clear tokens and redirect to login
-          this.clearAuthToken();
-          this.clearRefreshToken();
+          // Refresh failed - refreshAccessToken() already handled token clearing
+          // if it was an auth error (401/403). For network errors, tokens are kept.
           this.processQueue(error);
-
-          // Redirect to login page
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
-
           throw error;
         }
       } finally {

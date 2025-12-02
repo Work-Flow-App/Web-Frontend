@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { Box, Avatar, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
@@ -15,10 +15,12 @@ import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Search } from '../components/UI/Search';
+import { Loader } from '../components/UI/Loader';
 import { floowColors } from '../theme/colors';
 import { rem } from '../components/UI/Typography/utility';
 import { authService } from '../services/api/auth';
 import { getRoleFromToken } from '../utils/jwt';
+import { useSessionRestore } from '../hooks/useSessionRestore';
 
 /**
  * Main page wrapper with sidebar and right section
@@ -244,6 +246,9 @@ export const Layout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
+  // Wait for session restoration before rendering protected content
+  const { isRestoring, hasSession } = useSessionRestore();
+
   // Get user initials from in-memory token
   const userInitials = useMemo(() => {
     const token = authService.getAccessToken();
@@ -285,6 +290,16 @@ export const Layout: React.FC = () => {
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
+
+  // Show loader while restoring session
+  if (isRestoring) {
+    return <Loader />;
+  }
+
+  // Redirect to login if no session after restoration
+  if (!hasSession) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <PageWrapper>
