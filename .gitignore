@@ -36,3 +36,8 @@ storybook-static
 
 # Ignore nul file
 nul
+
+# Documentation files (markdown)
+# Ignore all markdown files except main README.md
+*.md
+!README.md

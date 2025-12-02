@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import { Box, Avatar } from '@mui/material';
+import { Box, Avatar, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
@@ -13,6 +13,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { Search } from '../components/UI/Search';
 import { floowColors } from '../theme/colors';
 import { rem } from '../components/UI/Typography/utility';
@@ -132,37 +133,88 @@ const UserAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 /**
- * Right actions component
+ * Right actions component with profile menu
  */
-const RightActions = ({ userInitials = 'U' }: { userInitials?: string }) => (
-  <RightActionsContainer>
-    <ActionButton
-      role="button"
-      aria-label="Notifications"
-      tabIndex={0}
-    >
-      <NotificationsIcon />
-    </ActionButton>
+const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string; onLogout: () => void }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
-    <ActionDivider aria-hidden={true} />
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-    <ActionButton
-      role="button"
-      aria-label="Settings"
-      tabIndex={0}
-    >
-      <SettingsIcon />
-    </ActionButton>
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-    <UserAvatar
-      role="button"
-      aria-label="User profile"
-      tabIndex={0}
-    >
-      {userInitials}
-    </UserAvatar>
-  </RightActionsContainer>
-);
+  const handleLogout = () => {
+    handleClose();
+    onLogout();
+  };
+
+  return (
+    <RightActionsContainer>
+      <ActionButton
+        role="button"
+        aria-label="Notifications"
+        tabIndex={0}
+      >
+        <NotificationsIcon />
+      </ActionButton>
+
+      <ActionDivider aria-hidden={true} />
+
+      <ActionButton
+        role="button"
+        aria-label="Settings"
+        tabIndex={0}
+      >
+        <SettingsIcon />
+      </ActionButton>
+
+      <UserAvatar
+        role="button"
+        aria-label="User profile"
+        aria-controls={open ? 'profile-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        tabIndex={0}
+        onClick={handleClick}
+      >
+        {userInitials}
+      </UserAvatar>
+
+      <Menu
+        id="profile-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        sx={{
+          mt: 1.5,
+          '& .MuiPaper-root': {
+            minWidth: 180,
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+          },
+        }}
+      >
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Logout</ListItemText>
+        </MenuItem>
+      </Menu>
+    </RightActionsContainer>
+  );
+};
 
 /**
  * Layout Component
@@ -190,6 +242,7 @@ const RightActions = ({ userInitials = 'U' }: { userInitials?: string }) => (
 export const Layout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   // Get user initials from in-memory token
   const userInitials = useMemo(() => {
@@ -202,6 +255,18 @@ export const Layout: React.FC = () => {
     // Extract initials from role (e.g., ROLE_COMPANY -> CO, ROLE_WORKER -> WO)
     return role.replace('ROLE_', '').substring(0, 2).toUpperCase();
   }, []);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, clear tokens and redirect
+      navigate('/login');
+    }
+  };
 
   /**
    * Sidebar items with their icons
@@ -253,7 +318,7 @@ export const Layout: React.FC = () => {
               />
             </Box>
           }
-          rightContent={<RightActions userInitials={userInitials} />}
+          rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} />}
           onToggleSidebar={handleToggleSidebar}
         />
 

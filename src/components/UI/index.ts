@@ -2,6 +2,9 @@
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 
+export { Loader } from './Loader';
+export type { ILoader } from './Loader';
+
 export { FloowLogo } from './FloowLogo';
 export type { FloowLogoProps, FloowLogoVariant } from './FloowLogo';
 

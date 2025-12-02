@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CircularProgress, Box } from '@mui/material';
 import { WorkerFormSchema, type WorkerFormData } from '../../schema/WorkerFormSchema';
 import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { WorkerFormFields } from '../WorkerFormFields';
+import { Loader } from '../../../../components/UI';
 import { workerService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useNavigate } from 'react-router-dom';
@@ -110,11 +110,7 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
 
   // Show loading state while fetching worker data
   if (workerId && isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <CircularProgress />
-      </Box>
-    );
+    return <Loader />;
   }
 
   return (

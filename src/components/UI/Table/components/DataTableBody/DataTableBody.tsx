@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { IDataTableBody } from './IDataTableBody';
 import { useDataRow, useDataColumn, usePagination } from '../../context';
+import { Loader } from '../../../Loader';
 import {
   StyledTableRow,
   StyledTableCell,
@@ -78,7 +78,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
       <StyledTableRow>
         <StyledTableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '3rem 1.25rem', position: 'relative' }}>
           <LoadingOverlay>
-            <CircularProgress size={40} />
+            <Loader size={40} centered={false} />
           </LoadingOverlay>
         </StyledTableCell>
       </StyledTableRow>
@@ -100,7 +100,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
     <>
       {loading && (
         <LoadingOverlay>
-          <CircularProgress size={40} />
+          <Loader size={40} centered={false} />
         </LoadingOverlay>
       )}
 
