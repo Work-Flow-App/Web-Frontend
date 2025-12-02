@@ -4,12 +4,8 @@ import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
 import { SetupForm } from '../SetupForm';
-import { WorkerControllerApi } from '../../../../../workflow-api/api';
-import type { WorkerResponse } from '../../../../../workflow-api/api';
-import { Configuration } from '../../../../../workflow-api/configuration';
+import { workerService, type Worker } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { apiClient } from '../../../../services/api/client';
-import { env } from '../../../../config/env';
 import { columns, type WorkerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
@@ -18,34 +14,19 @@ export const PageList: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Initialize API client
-  const workerApi = useMemo(
-    () =>
-      new WorkerControllerApi(
-        new Configuration({
-          basePath: env.apiBaseUrl,
-          accessToken: () => {
-            const token = apiClient.getStoredAccessToken();
-            return token || '';
-          },
-        })
-      ),
-    []
-  );
-
   // Fetch workers from API
   const fetchWorkers = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Use apiClient directly instead of generated Axios client
-      const apiResponse = await apiClient.get<WorkerResponse[]>('/api/v1/workers');
+      // Use workerService to fetch workers
+      const response = await workerService.getAllWorkers();
 
       // Get the workers array from response
-      const workersData = Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      const workersData = Array.isArray(response.data) ? response.data : [];
 
       // Transform API response to table format
-      const transformedData: WorkerTableRow[] = workersData.map((worker: WorkerResponse) => ({
+      const transformedData: WorkerTableRow[] = workersData.map((worker: Worker) => ({
         id: worker.id || 0,
         name: worker.name || '',
         email: worker.email || '',
@@ -120,7 +101,7 @@ export const PageList: React.FC = () => {
       }
 
       try {
-        await workerApi.deleteWorker(worker.id);
+        await workerService.deleteWorker(worker.id);
         showSuccess(`${worker.name} deleted successfully`);
         fetchWorkers();
       } catch (error) {
@@ -129,7 +110,7 @@ export const PageList: React.FC = () => {
         showError(errorMessage);
       }
     },
-    [workerApi, showSuccess, showError, fetchWorkers]
+    [showSuccess, showError, fetchWorkers]
   );
 
   // Define table actions

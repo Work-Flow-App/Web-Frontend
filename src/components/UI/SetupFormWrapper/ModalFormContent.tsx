@@ -60,12 +60,16 @@ export const ModalFormContent = <TFormData extends FieldValues>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Get current modal config to preserve it
+  const { globalModalInnerConfig } = useGlobalModalInnerContext();
+
   // Update modal button disabled state based on form validation
   useEffect(() => {
     updateGlobalModalInnerConfig({
+      ...globalModalInnerConfig,
       isConfirmDisabled: !formState.isValid,
     });
-  }, [formState.isValid, updateGlobalModalInnerConfig]);
+  }, [formState.isValid, globalModalInnerConfig, updateGlobalModalInnerConfig]);
 
   return (
     <FormProvider {...methods}>
