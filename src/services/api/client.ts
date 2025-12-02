@@ -1,4 +1,5 @@
 import { env } from '../../config/env';
+import { decodeJWT } from '../../utils/jwt';
 
 /**
  * API Client for making HTTP requests to the backend
@@ -19,6 +20,10 @@ export interface ApiError {
 class ApiClient {
   private timeout: number;
   private isRefreshing: boolean = false;
+  private emptyResponseRetryCount: number = 0;
+  private readonly MAX_EMPTY_RESPONSE_RETRIES = 1;
+  private tokenRefreshTimer: NodeJS.Timeout | null = null;
+  private readonly TOKEN_REFRESH_BUFFER = 60 * 1000; // Refresh 1 minute before expiry
   private failedRequestsQueue: Array<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolve: (value: any) => void;
@@ -108,6 +113,91 @@ class ApiClient {
   }
 
   /**
+   * Check if access token is expired or will expire soon
+   */
+  private isAccessTokenExpiringSoon(): boolean {
+    const token = this.getAuthToken();
+    if (!token) return true;
+
+    try {
+      const payload = decodeJWT(token);
+      if (!payload || !payload.exp) return true;
+
+      const expirationTime = payload.exp * 1000; // Convert to milliseconds
+      const currentTime = Date.now();
+      const timeUntilExpiry = expirationTime - currentTime;
+
+      // Return true if token expires within the buffer time (1 minute)
+      return timeUntilExpiry <= this.TOKEN_REFRESH_BUFFER;
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+      return true;
+    }
+  }
+
+  /**
+   * Schedule automatic token refresh before expiration
+   */
+  private scheduleTokenRefresh(): void {
+    // Clear any existing timer
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
+    }
+
+    const token = this.getAuthToken();
+    if (!token) return;
+
+    try {
+      const payload = decodeJWT(token);
+      if (!payload || !payload.exp) return;
+
+      const expirationTime = payload.exp * 1000;
+      const currentTime = Date.now();
+      const refreshTime = expirationTime - this.TOKEN_REFRESH_BUFFER;
+      const timeUntilRefresh = refreshTime - currentTime;
+
+      // Only schedule if refresh time is in the future
+      if (timeUntilRefresh > 0) {
+        console.log(`🕐 Token refresh scheduled in ${Math.round(timeUntilRefresh / 1000)}s`);
+        this.tokenRefreshTimer = setTimeout(async () => {
+          console.log('⏰ Scheduled token refresh triggered');
+          await this.refreshAccessToken();
+        }, timeUntilRefresh);
+      } else {
+        // Token already expired or expiring soon, refresh immediately
+        console.log('⚠️ Token expired or expiring soon, refreshing immediately');
+        this.refreshAccessToken().catch(error => {
+          console.error('Failed to refresh expired token:', error);
+        });
+      }
+    } catch (error) {
+      console.error('Error scheduling token refresh:', error);
+    }
+  }
+
+  /**
+   * Ensure token is valid before making request
+   */
+  private async ensureValidToken(): Promise<void> {
+    // Skip for public endpoints
+    if (!this.getAuthToken()) return;
+
+    // Check if token is expiring soon
+    if (this.isAccessTokenExpiringSoon()) {
+      console.log('🔄 Token expiring soon, refreshing before request...');
+      const refreshed = await this.refreshAccessToken();
+      if (!refreshed) {
+        console.error('Failed to refresh token before request');
+        throw {
+          message: 'Session expired. Please log in again.',
+          status: 401,
+        } as ApiError;
+      }
+    }
+  }
+
+  /**
    * Check if endpoint is a public auth endpoint
    */
   private isPublicAuthEndpoint(endpoint?: string): boolean {
@@ -142,8 +232,17 @@ class ApiClient {
     const refreshToken = this.getRefreshToken();
 
     if (!refreshToken) {
+      console.warn('No refresh token available');
       return false;
     }
+
+    // Prevent refresh attempts if already refreshing
+    if (this.isRefreshing) {
+      console.log('Token refresh already in progress');
+      return false;
+    }
+
+    this.isRefreshing = true;
 
     try {
       const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
@@ -157,6 +256,13 @@ class ApiClient {
       });
 
       if (!response.ok) {
+        console.warn(`Token refresh failed with status ${response.status}`);
+        return false;
+      }
+
+      const contentLength = response.headers.get('content-length');
+      if (contentLength === '0') {
+        console.error('Token refresh returned empty response - possible backend issue');
         return false;
       }
 
@@ -167,13 +273,20 @@ class ApiClient {
         if (data.refreshToken) {
           this.setRefreshToken(data.refreshToken);
         }
+
+        // Schedule next refresh after setting new token
+        this.scheduleTokenRefresh();
+
         return true;
       }
 
+      console.warn('Token refresh response missing accessToken');
       return false;
     } catch (error) {
       console.error('Token refresh failed:', error);
       return false;
+    } finally {
+      this.isRefreshing = false;
     }
   }
 
@@ -202,7 +315,10 @@ class ApiClient {
     endpoint: string
   ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
     const isJson = contentType?.includes('application/json');
+    // Check if response body is empty (Content-Length: 0 or very small body)
+    const isEmpty = contentLength === '0';
 
     if (!response.ok) {
       const error: ApiError = {
@@ -210,7 +326,7 @@ class ApiClient {
         status: response.status,
       };
 
-      if (isJson) {
+      if (isJson && !isEmpty) {
         const errorData = await response.json();
         error.message = errorData.message || error.message;
         error.errors = errorData.errors;
@@ -226,6 +342,70 @@ class ApiClient {
 
       throw error;
     }
+
+    // Handle empty response body (Content-Length: 0)
+    // This can happen when the session expires but server returns 200
+    if (isEmpty) {
+      console.warn('⚠️ Received empty response body with 200 status - possible session issue');
+
+      // Prevent infinite retry loop
+      if (this.emptyResponseRetryCount >= this.MAX_EMPTY_RESPONSE_RETRIES) {
+        console.error('❌ Max retry attempts reached for empty response');
+        this.emptyResponseRetryCount = 0;
+        this.clearAuthToken();
+        this.clearRefreshToken();
+
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+
+        throw {
+          message: 'Session expired. Please log in again.',
+          status: 401,
+        } as ApiError;
+      }
+
+      // If we have a token, try to refresh it
+      if (this.getAuthToken() && !this.isPublicAuthEndpoint(endpoint)) {
+        console.log('🔄 Attempting token refresh due to empty response...');
+        this.emptyResponseRetryCount++;
+
+        const refreshed = await this.refreshAccessToken();
+
+        if (refreshed) {
+          console.log('✅ Token refreshed, retrying request...');
+          const result = await retryRequest();
+          // Reset counter on successful retry
+          this.emptyResponseRetryCount = 0;
+          return result;
+        } else {
+          // Refresh failed - treat as authentication error
+          console.error('❌ Token refresh failed, clearing session');
+          this.emptyResponseRetryCount = 0;
+          this.clearAuthToken();
+          this.clearRefreshToken();
+
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+
+          throw {
+            message: 'Session expired. Please log in again.',
+            status: 401,
+          } as ApiError;
+        }
+      }
+
+      // Return empty data for endpoints that don't require auth
+      this.emptyResponseRetryCount = 0;
+      return {
+        data: null as T,
+        status: response.status,
+      };
+    }
+
+    // Reset counter on successful response with data
+    this.emptyResponseRetryCount = 0;
 
     const data = isJson ? await response.json() : null;
 
@@ -285,6 +465,11 @@ class ApiClient {
    * Make a GET request
    */
   async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    // Ensure token is valid before making request
+    if (!this.isPublicAuthEndpoint(endpoint)) {
+      await this.ensureValidToken();
+    }
+
     const makeRequest = async (): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -312,6 +497,11 @@ class ApiClient {
    * Make a POST request
    */
   async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    // Ensure token is valid before making request
+    if (!this.isPublicAuthEndpoint(endpoint)) {
+      await this.ensureValidToken();
+    }
+
     const makeRequest = async (): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -340,6 +530,11 @@ class ApiClient {
    * Make a PUT request
    */
   async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    // Ensure token is valid before making request
+    if (!this.isPublicAuthEndpoint(endpoint)) {
+      await this.ensureValidToken();
+    }
+
     const makeRequest = async (): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -368,6 +563,11 @@ class ApiClient {
    * Make a PATCH request
    */
   async patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    // Ensure token is valid before making request
+    if (!this.isPublicAuthEndpoint(endpoint)) {
+      await this.ensureValidToken();
+    }
+
     const makeRequest = async (): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -396,6 +596,11 @@ class ApiClient {
    * Make a DELETE request
    */
   async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    // Ensure token is valid before making request
+    if (!this.isPublicAuthEndpoint(endpoint)) {
+      await this.ensureValidToken();
+    }
+
     const makeRequest = async (): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -425,6 +630,8 @@ class ApiClient {
   setAuthToken(token: string): void {
     try {
       sessionStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+      // Schedule automatic refresh when token is set
+      this.scheduleTokenRefresh();
     } catch (error) {
       console.error('Failed to store access token:', error);
     }
@@ -447,6 +654,11 @@ class ApiClient {
   clearAuthToken(): void {
     try {
       sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      // Clear scheduled refresh timer
+      if (this.tokenRefreshTimer) {
+        clearTimeout(this.tokenRefreshTimer);
+        this.tokenRefreshTimer = null;
+      }
     } catch (error) {
       console.error('Failed to clear access token:', error);
     }
