@@ -82,6 +82,7 @@ export const SetupFormWrapper = <TFormData extends Record<string, any>>(
     // @ts-expect-error - Yup resolver type compatibility
     resolver: yupResolver(fieldRules),
     defaultValues: mergedDefaultValues,
+    mode: 'onChange',
   });
 
   const methods = externalFormMethods || internalMethods;

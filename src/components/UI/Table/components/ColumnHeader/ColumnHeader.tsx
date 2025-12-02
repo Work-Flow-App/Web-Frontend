@@ -12,7 +12,6 @@ import {
 import {
   ColumnHeaderRow,
   ColumnSearchRow,
-  HeaderCellWrapper,
   ColumnSearchInput,
   SearchCellWrapper,
 } from './ColumnHeader.styles';
@@ -91,7 +90,6 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
               <StyledHeaderCell
                 width={firstColumn.width}
                 align={firstColumn.align}
-                sortable={firstColumn.sortable}
                 onClick={() => firstColumn.sortable && handleSort(firstColumn.id)}
                 sx={{
                   position: 'sticky',
@@ -99,8 +97,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   zIndex: 5,
                   background: theme.palette.colors.grey_50,
                   boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
+                  cursor: firstColumn.sortable ? 'pointer' : 'default',
                   '&:hover': {
-                    background: theme.palette.colors.grey_50,
+                    background: firstColumn.sortable ? theme.palette.colors.grey_100 : theme.palette.colors.grey_50,
                   }
                 }}
               >
@@ -113,19 +112,23 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
 
             {/* Center Section: Remaining Columns */}
             {remainingColumns.map((column) => (
-              <HeaderCellWrapper key={column.id} width={column.width}>
-                <StyledHeaderCell
-                  width={column.width}
-                  align={column.align}
-                  sortable={column.sortable}
-                  onClick={() => column.sortable && handleSort(column.id)}
-                >
-                  <HeaderContent>
-                    {column.label}
-                    {column.sortable && <SortIcon />}
-                  </HeaderContent>
-                </StyledHeaderCell>
-              </HeaderCellWrapper>
+              <StyledHeaderCell
+                key={column.id}
+                width={column.width}
+                align={column.align}
+                onClick={() => column.sortable && handleSort(column.id)}
+                sx={{
+                  cursor: column.sortable ? 'pointer' : 'default',
+                  '&:hover': {
+                    background: column.sortable ? theme.palette.colors.grey_100 : 'transparent',
+                  }
+                }}
+              >
+                <HeaderContent>
+                  {column.label}
+                  {column.sortable && <SortIcon />}
+                </HeaderContent>
+              </StyledHeaderCell>
             ))}
 
             {/* Sticky Right Section: Actions */}
@@ -156,19 +159,23 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
             )}
 
             {columns.map((column) => (
-              <HeaderCellWrapper key={column.id} width={column.width}>
-                <StyledHeaderCell
-                  width={column.width}
-                  align={column.align}
-                  sortable={column.sortable}
-                  onClick={() => column.sortable && handleSort(column.id)}
-                >
-                  <HeaderContent>
-                    {column.label}
-                    {column.sortable && <SortIcon />}
-                  </HeaderContent>
-                </StyledHeaderCell>
-              </HeaderCellWrapper>
+              <StyledHeaderCell
+                key={column.id}
+                width={column.width}
+                align={column.align}
+                onClick={() => column.sortable && handleSort(column.id)}
+                sx={{
+                  cursor: column.sortable ? 'pointer' : 'default',
+                  '&:hover': {
+                    background: column.sortable ? theme.palette.colors.grey_100 : 'transparent',
+                  }
+                }}
+              >
+                <HeaderContent>
+                  {column.label}
+                  {column.sortable && <SortIcon />}
+                </HeaderContent>
+              </StyledHeaderCell>
             ))}
 
             {showActions && (

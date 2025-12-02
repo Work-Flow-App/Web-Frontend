@@ -66,6 +66,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   titleActions,
   selectable = false,
   showActions = false,
+  actions,
   renderActions,
   onActionClick,
   loading = false,
@@ -105,6 +106,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
             <DataTableBody
               selectable={selectable}
               showActions={showActions}
+              actions={actions}
               renderActions={renderActions}
               onActionClick={onActionClick}
               loading={loading}

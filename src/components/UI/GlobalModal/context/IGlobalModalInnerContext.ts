@@ -42,6 +42,11 @@ export interface IGlobalModalInnerContextConfigProps {
    * The header action button on right side
    */
   hideFooter?: boolean;
+
+  /**
+   * Whether the confirm button should be disabled
+   */
+  isConfirmDisabled?: boolean;
 }
 
 export interface IGlobalModalInnerContentState {

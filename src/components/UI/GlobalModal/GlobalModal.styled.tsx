@@ -35,7 +35,7 @@ export const ModalContainerWrapper = styled(Box, {
 
   [breakpoints.up('sm')]: {
     width: rem(600),
-    maxHeight: '60vh',
+    maxHeight: '85vh',
     ...(size === ModalSizes.MEDIUM && {
       width: rem(900),
     }),
@@ -95,7 +95,7 @@ export const ModalBody = styled(Box)(({ theme: { palette, breakpoints } }) => ({
 
   [breakpoints.up('sm')]: {
     padding: `${rem(40)} ${rem(20)}`,
-    maxHeight: '50vh',
+    maxHeight: 'calc(85vh - 180px)',
     gap: rem(20),
   },
 

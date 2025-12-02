@@ -90,6 +90,11 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
   const [sortConfig, setSortConfig] = useState<ISortConfig | null>(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
 
+  // Sync rows when initialData changes
+  React.useEffect(() => {
+    setRows(initialData);
+  }, [initialData]);
+
   // DataColumn State
   const [columns, setColumns] = useState<ITableColumn<T>[]>(initialColumns);
   const [columnSearchQueries, setColumnSearchQueries] = useState<Record<string, string>>({});
@@ -175,6 +180,11 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
 
     return filtered;
   }, [rows, globalSearchQuery, columnSearchQueries, sortConfig, columns]);
+
+  // Update totalRows when filteredRows changes
+  React.useEffect(() => {
+    setTotalRows(filteredRows.length);
+  }, [filteredRows]);
 
   const toggleRowSelection = useCallback((id: string | number) => {
     setSelectedRows((prev) => {

@@ -40,30 +40,30 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 }));
 
 export const StyledTable = styled(Table)(({ theme }) => ({
-  width: 'max-content',
-  minWidth: '100%',
+  width: '100%',
   borderCollapse: 'collapse',
   background: theme.palette.colors.white,
   position: 'relative',
+  tableLayout: 'auto',
 }));
 
 export const StyledTableHead = styled(TableHead)(({ theme }) => ({
   background: theme.palette.colors.grey_50,
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
-  display: 'block',
+  display: 'table-header-group',
 }));
 
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
   background: theme.palette.colors.white,
-  display: 'block',
+  display: 'table-row-group',
 }));
 
 export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
   transition: 'background 0.2s ease',
   background: theme.palette.colors.white,
-  display: 'flex',
-  minWidth: 'max-content',
+  display: 'table-row',
+  width: '100%',
 
   '&:last-child': {
     borderBottom: 'none',
@@ -74,8 +74,11 @@ export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
+export const StyledHeaderCell = styled(TableCell, {
+  shouldForwardProp: (prop) => prop !== 'sortable',
+})<IStyledTableCellProps>(
   ({ theme, width, align, sortable }) => ({
+    display: 'table-cell',
     padding: '0.625rem 1.25rem', // 10px 20px
     fontSize: '0.875rem', // 14px
     fontWeight: 600,
@@ -83,13 +86,12 @@ export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
     color: theme.palette.colors.grey_600,
     textAlign: align || 'left',
     width: width || 'auto',
-    minWidth: width || 'auto',
-    maxWidth: width || 'none',
     whiteSpace: 'nowrap',
     borderBottom: 'none',
     cursor: sortable ? 'pointer' : 'default',
     userSelect: 'none',
     boxSizing: 'border-box',
+    verticalAlign: 'middle',
 
     '&:hover': {
       background: sortable ? theme.palette.colors.grey_100 : 'transparent',
@@ -116,6 +118,7 @@ export const StyledHeaderCell = styled(TableCell)<IStyledTableCellProps>(
 
 export const StyledTableCell = styled(TableCell)<IStyledTableCellProps>(
   ({ theme, width, align }) => ({
+    display: 'table-cell',
     padding: '0.625rem 1.25rem', // 10px 20px
     fontSize: '0.875rem', // 14px
     fontWeight: 400,
@@ -125,6 +128,7 @@ export const StyledTableCell = styled(TableCell)<IStyledTableCellProps>(
     width: width || 'auto',
     borderBottom: 'none',
     boxSizing: 'border-box',
+    verticalAlign: 'middle',
   })
 );
 
@@ -137,22 +141,32 @@ export const HeaderContent = styled(Box)(() => ({
 }));
 
 export const CheckboxCell = styled(TableCell)(() => ({
+  display: 'table-cell',
   padding: '0.625rem 1.25rem', // 10px 20px
   width: '3rem', // 48px
-  minWidth: '3rem',
-  maxWidth: '3rem',
   borderBottom: 'none',
   boxSizing: 'border-box',
+  verticalAlign: 'middle',
 }));
 
-export const ActionsCell = styled(TableCell)(() => ({
+export const ActionsCell = styled(TableCell)(({ theme }) => ({
+  display: 'table-cell',
   padding: '0.625rem 1.25rem', // 10px 20px
-  width: '4rem', // 64px
+  fontSize: '0.875rem', // 14px
+  fontWeight: 600,
+  fontFamily: 'Manrope, sans-serif',
+  color: theme.palette.colors.grey_600,
+  width: '6rem', // 96px
   textAlign: 'center',
   borderBottom: 'none',
+  boxSizing: 'border-box',
+  whiteSpace: 'nowrap',
+  verticalAlign: 'middle',
 }));
 
-export const CustomCheckbox = styled(Box)<IStyledCheckboxProps>(
+export const CustomCheckbox = styled(Box, {
+  shouldForwardProp: (prop) => !['checked', 'indeterminate'].includes(prop as string),
+})<IStyledCheckboxProps>(
   ({ theme, checked, indeterminate }) => ({
     width: '1.25rem', // 20px
     height: '1.25rem', // 20px
@@ -246,6 +260,9 @@ export const ActionButton = styled(Box)(({ theme }) => ({
   borderRadius: '0.25rem', // 4px
   cursor: 'pointer',
   transition: 'background 0.2s ease',
+  fontFamily: 'Manrope, sans-serif',
+  fontSize: '0.75rem', // 12px
+  fontWeight: 400,
 
   '&:hover': {
     background: theme.palette.colors.grey_100,
@@ -257,14 +274,9 @@ export const ActionButton = styled(Box)(({ theme }) => ({
 }));
 
 export const EmptyState = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '3rem 1.25rem', // 48px 20px
   color: theme.palette.colors.grey_400,
   fontSize: '0.875rem', // 14px
   fontFamily: 'Manrope, sans-serif',
-  textAlign: 'center',
 }));
 
 export const LoadingOverlay = styled(Box)(() => ({

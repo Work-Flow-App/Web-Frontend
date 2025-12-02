@@ -9,7 +9,9 @@ interface StyledButtonProps {
   buttonSize: ButtonSize;
 }
 
-export const StyledButton = styled(MuiButton)<StyledButtonProps>(
+export const StyledButton = styled(MuiButton, {
+  shouldForwardProp: (prop) => !['buttonColor', 'buttonVariant', 'buttonSize'].includes(prop as string),
+})<StyledButtonProps>(
   ({ theme, buttonColor, buttonVariant, buttonSize, fullWidth }) => {
     const { palette, shadows } = theme;
 

@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react';
+import type { ITableAction, ITableRow } from '../../ITable';
 
-export interface IDataTableBody {
+export interface IDataTableBody<T = ITableRow> {
   /** Enable row selection checkboxes */
   selectable?: boolean;
   /** Enable actions column */
   showActions?: boolean;
-  /** Custom render function for row actions */
-  renderActions?: (row: any) => ReactNode;
-  /** Callback when row action is clicked */
-  onActionClick?: (row: any, event: React.MouseEvent) => void;
+  /** Array of action configurations for row actions menu */
+  actions?: ITableAction<T>[];
+  /** Custom render function for row actions (deprecated - use actions prop instead) */
+  renderActions?: (row: T) => ReactNode;
+  /** Callback when row action is clicked (deprecated - use actions prop instead) */
+  onActionClick?: (row: T, event: React.MouseEvent) => void;
   /** Loading state */
   loading?: boolean;
   /** Empty state message */

@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { FormProvider, type FieldValues } from 'react-hook-form';
-import { useGlobalModalInnerContext, useGlobalModalOuterContext } from '../GlobalModal/context';
+import { useGlobalModalInnerContext } from '../GlobalModal/context';
 import type { SetupFormWrapperProps } from './SetupFormWrapper.types';
 import * as S from './SetupFormWrapper.styled';
 
@@ -16,75 +16,60 @@ export const ModalFormContent = <TFormData extends FieldValues>(
 ) => {
   const {
     children,
-    title,
-    confirmButtonText = 'Submit',
-    cancelButtonText = 'Cancel',
-    confirmButtonOnly = false,
-    closeModalOnSuccess = true,
     methods,
     handleFormSubmit,
   } = props;
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, formState } = methods;
 
-  // Get modal contexts
-  const modalInnerContext = useGlobalModalInnerContext();
-  const modalOuterContext = useGlobalModalOuterContext();
-
+  // Get modal context
   const {
-    updateModalTitle,
-    updateGlobalModalInnerConfig,
     updateOnConfirm,
     updateOnClose,
     setSkipResetModal,
-  } = modalInnerContext;
+    updateGlobalModalInnerConfig,
+  } = useGlobalModalInnerContext();
 
-  const { resetGlobalModalOuterProps } = modalOuterContext;
+  // Use ref to store the latest submit handler
+  const submitHandlerRef = useRef(handleFormSubmit);
 
-  // Setup modal configuration
+  // Update ref when handler changes
   useEffect(() => {
-    // Set modal title
-    if (title) {
-      updateModalTitle(title);
-    }
+    submitHandlerRef.current = handleFormSubmit;
+  }, [handleFormSubmit]);
 
-    // Configure modal buttons
-    updateGlobalModalInnerConfig({
-      confirmModalButtonText: confirmButtonText,
-      cancelButtonText: cancelButtonText,
-      confirmButtonOnly: confirmButtonOnly,
-      hideFooter: false,
-    });
+  // Create a stable submit function that calls the latest handler
+  const stableSubmitHandler = useCallback(() => {
+    handleSubmit(submitHandlerRef.current)();
+  }, [handleSubmit]);
 
-    // Wire confirm button to form submit
-    updateOnConfirm(() => {
-      handleSubmit(handleFormSubmit)();
-    });
-
+  // Setup modal handlers only once on mount
+  useEffect(() => {
     // Handle close
     updateOnClose(() => {
       reset();
     });
 
+    // Wire confirm button to stable submit handler
+    updateOnConfirm(stableSubmitHandler);
+
     // Skip auto-reset so we can control it
     setSkipResetModal?.(true);
 
-    // Cleanup function
-    return () => {
-      // Reset modal when component unmounts if closeModalOnSuccess is true
-      if (closeModalOnSuccess) {
-        resetGlobalModalOuterProps();
-      }
-    };
+    // No cleanup function - modal reset is handled by the modal buttons
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-wire confirm handler when handleFormSubmit changes
+  // Get current modal config to preserve it
+  const { globalModalInnerConfig } = useGlobalModalInnerContext();
+
+  // Update modal button disabled state based on form validation
   useEffect(() => {
-    updateOnConfirm(() => {
-      handleSubmit(handleFormSubmit)();
+    updateGlobalModalInnerConfig({
+      ...globalModalInnerConfig,
+      isConfirmDisabled: !formState.isValid,
     });
-  }, [handleFormSubmit, handleSubmit, updateOnConfirm]);
+  }, [formState.isValid, globalModalInnerConfig, updateGlobalModalInnerConfig]);
 
   return (
     <FormProvider {...methods}>

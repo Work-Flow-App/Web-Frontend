@@ -26,7 +26,7 @@ const Footer: React.FC<IFooter> = ({
 }) => {
   const { currentPage, totalPages, goToPage } = usePagination();
 
-  if (!showPagination || totalPages <= 1) {
+  if (!showPagination) {
     return null;
   }
 

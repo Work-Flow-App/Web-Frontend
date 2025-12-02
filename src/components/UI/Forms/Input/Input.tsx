@@ -205,15 +205,22 @@ const BaseTextInput = (props: InputProps) => {
 };
 
 export const Input = memo((props: InputProps) => {
-  const { label, error, hideErrorMessage, fullWidth } = props;
+  const { label, hideErrorMessage, fullWidth, required, name } = props;
+  const { formState } = useFormContext();
+  const fieldError = props.error || (formState.errors[name] as any);
 
   return (
     <S.StyledFormControl fullWidth={fullWidth}>
-      {label && <S.InputLabel htmlFor={props.name}>{label}</S.InputLabel>}
+      {label && (
+        <S.InputLabel htmlFor={name}>
+          {label}
+          {required && <S.RequiredIndicator> *</S.RequiredIndicator>}
+        </S.InputLabel>
+      )}
       <S.InputWrapper>
-        <BaseTextInput {...props} />
+        <BaseTextInput {...props} error={fieldError} />
       </S.InputWrapper>
-      {!hideErrorMessage && error && <S.ErrorWrapper>{error.message}</S.ErrorWrapper>}
+      {!hideErrorMessage && fieldError && <S.ErrorWrapper>{fieldError.message}</S.ErrorWrapper>}
     </S.StyledFormControl>
   );
 });

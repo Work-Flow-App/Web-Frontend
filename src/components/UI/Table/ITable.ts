@@ -1,6 +1,23 @@
 import type { ReactNode } from 'react';
 
-export interface ITableColumn<T = any> {
+export interface ITableAction<T = ITableRow> {
+  /** Unique identifier for the action */
+  id: string;
+  /** Action label */
+  label: string;
+  /** Icon component (optional) */
+  icon?: ReactNode;
+  /** Click handler for the action */
+  onClick: (row: T) => void;
+  /** Show/hide action based on row data (optional) */
+  show?: (row: T) => boolean;
+  /** Disable action based on row data (optional) */
+  disabled?: (row: T) => boolean;
+  /** Custom styling */
+  color?: 'default' | 'primary' | 'error' | 'warning' | 'success';
+}
+
+export interface ITableColumn<T = ITableRow> {
   /** Unique identifier for the column */
   id: string;
   /** Column header label */
@@ -52,9 +69,11 @@ export interface ITable<T = ITableRow> {
   onSortChange?: (config: ISortConfig) => void;
   /** Enable row actions menu */
   showActions?: boolean;
-  /** Custom render function for row actions */
+  /** Array of action configurations for row actions menu */
+  actions?: ITableAction<T>[];
+  /** Custom render function for row actions (deprecated - use actions prop instead) */
   renderActions?: (row: T) => ReactNode;
-  /** Callback when row action menu is clicked */
+  /** Callback when row action menu is clicked (deprecated - use actions prop instead) */
   onActionClick?: (row: T, event: React.MouseEvent) => void;
   /** Loading state */
   loading?: boolean;
