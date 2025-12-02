@@ -1,4 +1,5 @@
 import { env } from '../../config/env';
+import { decodeJWT } from '../../utils/jwt';
 
 /**
  * API Client for making HTTP requests to the backend
@@ -19,6 +20,7 @@ export interface ApiError {
 class ApiClient {
   private timeout: number;
   private isRefreshing: boolean = false;
+  private tokenRefreshTimer: NodeJS.Timeout | null = null;
   private failedRequestsQueue: Array<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolve: (value: any) => void;
@@ -31,6 +33,9 @@ class ApiClient {
   // Token storage keys for sessionStorage
   private readonly ACCESS_TOKEN_KEY = 'app_access_token';
   private readonly REFRESH_TOKEN_KEY = 'app_refresh_token';
+
+  // Refresh token 1 minute before expiration (in milliseconds)
+  private readonly TOKEN_REFRESH_BUFFER = 60 * 1000;
 
   /**
    * Public authentication endpoints that don't require authorization
@@ -53,27 +58,65 @@ class ApiClient {
    * Called on application initialization
    */
   private async restoreSession(): Promise<void> {
-    // If we already have an access token, no need to refresh
     if (this.getAuthToken()) {
-      console.log('✅ Access token found in session');
+      console.log('Access token found in session');
+      this.scheduleTokenRefresh();
       return;
     }
 
-    // If we have a refresh token, try to get a new access token
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
       try {
-        console.log('🔄 Restoring session with refresh token...');
+        console.log('Restoring session with refresh token');
         await this.refreshAccessToken();
-        console.log('✅ Session restored successfully');
+        console.log('Session restored successfully');
+        this.scheduleTokenRefresh();
       } catch (error) {
-        console.error('❌ Failed to restore session:', error);
-        // Clear invalid tokens
+        console.error('Failed to restore session:', error);
         this.clearAuthToken();
         this.clearRefreshToken();
       }
     } else {
-      console.log('ℹ️ No tokens found - user needs to log in');
+      console.log('No tokens found - user needs to log in');
+    }
+  }
+
+  /**
+   * Schedule proactive token refresh before expiration
+   */
+  private scheduleTokenRefresh(): void {
+    this.cancelTokenRefresh();
+
+    const token = this.getAuthToken();
+    if (!token) {
+      return;
+    }
+
+    const payload = decodeJWT(token);
+    if (!payload || !payload.exp) {
+      const delay = 13 * 60 * 1000;
+      this.tokenRefreshTimer = setTimeout(() => this.refreshAccessToken(), delay);
+      return;
+    }
+
+    const expirationTime = payload.exp * 1000;
+    const now = Date.now();
+    const delay = expirationTime - now - this.TOKEN_REFRESH_BUFFER;
+
+    if (delay <= 0) {
+      this.refreshAccessToken();
+    } else {
+      this.tokenRefreshTimer = setTimeout(() => this.refreshAccessToken(), delay);
+    }
+  }
+
+  /**
+   * Cancel the scheduled token refresh
+   */
+  private cancelTokenRefresh(): void {
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
     }
   }
 
@@ -425,6 +468,8 @@ class ApiClient {
   setAuthToken(token: string): void {
     try {
       sessionStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+      // Schedule proactive refresh when new token is set
+      this.scheduleTokenRefresh();
     } catch (error) {
       console.error('Failed to store access token:', error);
     }
@@ -447,6 +492,8 @@ class ApiClient {
   clearAuthToken(): void {
     try {
       sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      // Cancel any scheduled token refresh on logout
+      this.cancelTokenRefresh();
     } catch (error) {
       console.error('Failed to clear access token:', error);
     }
