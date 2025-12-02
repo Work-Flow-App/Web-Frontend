@@ -1,5 +1,5 @@
-import { apiClient } from './client';
-import type { ApiResponse } from './client';
+import { createAuthApi } from './factories';
+import { tokenManager } from './config';
 import type {
   SignupRequest as WorkflowSignupRequest,
   LoginRequest,
@@ -7,8 +7,9 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   PasswordResetResponse,
+  AuthenticationResponse,
 } from '../../../workflow-api';
-import type { UserRole, AuthTokens, User } from '../../types/auth';
+import type { UserRole } from '../../types/auth';
 
 /**
  * Authentication API Service
@@ -19,22 +20,23 @@ export type SignupRequest = Omit<WorkflowSignupRequest, 'role'> & {
   role: UserRole;
 };
 
-// Re-export other types with original names
+// Re-export other types
 export type { LoginRequest, RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse };
-
-export type AuthResponse = AuthTokens;
+export type AuthResponse = AuthenticationResponse;
 
 export const authService = {
   /**
    * Sign up a new user
    */
-  async signup(data: SignupRequest): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/signup', data);
+  async signup(data: SignupRequest) {
+    const api = createAuthApi();
+    const response = await api.signup(data as any);
 
-    // Store auth tokens in memory
     if (response.data.accessToken) {
-      apiClient.setAuthToken(response.data.accessToken);
-      apiClient.setRefreshToken(response.data.refreshToken);
+      tokenManager.setAccessToken(response.data.accessToken);
+      if (response.data.refreshToken) {
+        tokenManager.setRefreshToken(response.data.refreshToken);
+      }
     }
 
     return response;
@@ -43,13 +45,15 @@ export const authService = {
   /**
    * Sign in an existing user
    */
-  async login(data: LoginRequest): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
+  async login(data: LoginRequest) {
+    const api = createAuthApi();
+    const response = await api.login(data);
 
-    // Store auth tokens in memory
     if (response.data.accessToken) {
-      apiClient.setAuthToken(response.data.accessToken);
-      apiClient.setRefreshToken(response.data.refreshToken);
+      tokenManager.setAccessToken(response.data.accessToken);
+      if (response.data.refreshToken) {
+        tokenManager.setRefreshToken(response.data.refreshToken);
+      }
     }
 
     return response;
@@ -58,15 +62,15 @@ export const authService = {
   /**
    * Refresh access token using refresh token
    */
-  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh', {
-      refreshToken,
-    });
+  async refreshToken(refreshToken: string) {
+    const api = createAuthApi();
+    const response = await api.refreshToken({ refreshToken });
 
-    // Update stored tokens in memory
     if (response.data.accessToken) {
-      apiClient.setAuthToken(response.data.accessToken);
-      apiClient.setRefreshToken(response.data.refreshToken);
+      tokenManager.setAccessToken(response.data.accessToken);
+      if (response.data.refreshToken) {
+        tokenManager.setRefreshToken(response.data.refreshToken);
+      }
     }
 
     return response;
@@ -74,81 +78,67 @@ export const authService = {
 
   /**
    * Sign out the current user
-   * Sends refresh token to backend to invalidate it
    */
   async logout(): Promise<void> {
-    const refreshToken = apiClient.getStoredRefreshToken();
+    const refreshToken = tokenManager.getRefreshToken();
 
     try {
-      // Only call API if we have a refresh token
       if (refreshToken) {
-        await apiClient.post('/api/v1/auth/logout', { refreshToken });
+        const api = createAuthApi();
+        await api.logout({ refreshToken });
       }
     } finally {
-      // Clear tokens from memory even if request fails
-      apiClient.clearAuthToken();
-      apiClient.clearRefreshToken();
+      tokenManager.clearTokens();
     }
   },
 
   /**
    * Sign out the current user from all devices
-   * Invalidates all refresh tokens for the user
    */
   async logoutFromAllDevices(): Promise<void> {
     try {
-      await apiClient.post('/api/v1/auth/logout-all');
+      const api = createAuthApi();
+      await api.logoutFromAllDevices();
     } finally {
-      // Clear tokens from memory even if request fails
-      apiClient.clearAuthToken();
-      apiClient.clearRefreshToken();
+      tokenManager.clearTokens();
     }
-  },
-
-  /**
-   * Get current user profile
-   * NOTE: This endpoint is not currently available in the backend.
-   * Use getRoleFromToken() from utils/jwt.ts to extract role from JWT token instead.
-   */
-  async getCurrentUser(): Promise<ApiResponse<User>> {
-    return await apiClient.get<User>('/api/v1/auth/me');
   },
 
   /**
    * Verify if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!apiClient.getStoredAccessToken();
+    return tokenManager.isAuthenticated();
   },
 
   /**
    * Get stored access token
    */
   getAccessToken(): string | null {
-    return apiClient.getStoredAccessToken();
+    return tokenManager.getAccessToken();
   },
 
   /**
    * Get stored refresh token
    */
   getRefreshToken(): string | null {
-    return apiClient.getStoredRefreshToken();
+    return tokenManager.getRefreshToken();
   },
 
   /**
    * Request password reset email
-   * Sends a reset code to the user's email
    */
-  async forgotPassword(data: ForgotPasswordRequest): Promise<ApiResponse<PasswordResetResponse>> {
-    return await apiClient.post<PasswordResetResponse>('/api/v1/auth/forgot-password', data);
+  async forgotPassword(data: ForgotPasswordRequest) {
+    const api = createAuthApi();
+    return await api.forgotPassword(data);
   },
 
   /**
    * Reset password with code from email
-   * After successful reset, user must login again to get tokens
    */
-  async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<PasswordResetResponse>> {
-    return await apiClient.post<PasswordResetResponse>('/api/v1/auth/reset-password', data);
+  async resetPassword(data: ResetPasswordRequest) {
+    const api = createAuthApi();
+    return await api.resetPassword(data);
   },
 };
 
