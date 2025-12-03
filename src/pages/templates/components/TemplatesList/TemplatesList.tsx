@@ -4,18 +4,19 @@ import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
 import { jobTemplateService, jobService } from '../../../../services/api';
-import type { JobTemplateResponse, JobResponse } from '../../../../services/api';
+import type { JobTemplateResponse, JobResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { columns, type TemplateTableRow } from './DataColumn';
+import { generateTemplateColumns, type TemplateTableRow } from './DataColumn';
 import { TemplateForm } from '../TemplateForm/TemplateForm';
 import { TemplateFields } from '../TemplateFields/TemplateFields';
 
 export const TemplatesList: React.FC = () => {
   const [templates, setTemplates] = useState<TemplateTableRow[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
+  const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
-  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
+  const { setGlobalModalOuterProps, resetGlobalModalOuterProps} = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
   // Fetch jobs for counting
@@ -29,21 +30,66 @@ export const TemplatesList: React.FC = () => {
     }
   }, []);
 
-  // Fetch templates
+  // Fetch all unique fields across all templates
+  const fetchAllTemplateFields = useCallback(async () => {
+    try {
+      const response = await jobTemplateService.getAllTemplates();
+      const templatesData = Array.isArray(response.data) ? response.data : [];
+
+      // Collect all unique fields from all templates
+      const allFieldsMap = new Map<string, JobTemplateFieldResponse>();
+
+      await Promise.all(
+        templatesData.map(async (template: JobTemplateResponse) => {
+          try {
+            const fieldsResponse = await jobTemplateService.getTemplateFields(template.id || 0);
+            const fieldsData = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
+
+            // Add unique fields to map
+            fieldsData.forEach((field) => {
+              if (field.name && !allFieldsMap.has(field.name)) {
+                allFieldsMap.set(field.name, field);
+              }
+            });
+          } catch (error) {
+            console.error(`Error fetching fields for template ${template.id}:`, error);
+          }
+        })
+      );
+
+      // Convert map to array and sort by orderIndex
+      const uniqueFields = Array.from(allFieldsMap.values()).sort(
+        (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
+      );
+
+      setTemplateFields(uniqueFields);
+    } catch (error) {
+      console.error('Error fetching template fields:', error);
+    }
+  }, []);
+
+  // Fetch templates with their field values
   const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
       const response = await jobTemplateService.getAllTemplates();
       const templatesData = Array.isArray(response.data) ? response.data : [];
 
-      // Fetch field counts for each template
+      // Fetch fields for each template and build field values
       const transformedData: TemplateTableRow[] = await Promise.all(
         templatesData.map(async (template: JobTemplateResponse) => {
-          let fieldCount = 0;
+          const fieldValues: { [key: string]: string } = {};
+
           try {
             const fieldsResponse = await jobTemplateService.getTemplateFields(template.id || 0);
             const fieldsData = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
-            fieldCount = fieldsData.length;
+
+            // Populate field values (currently empty, can be populated from template data if available)
+            fieldsData.forEach((field) => {
+              if (field.name) {
+                fieldValues[field.name] = ''; // Empty for now - can be populated with actual values
+              }
+            });
           } catch (error) {
             console.error(`Error fetching fields for template ${template.id}:`, error);
           }
@@ -54,9 +100,9 @@ export const TemplatesList: React.FC = () => {
             id: template.id || 0,
             name: template.name || '',
             description: template.description,
-            fieldCount,
             jobCount,
             createdAt: template.createdAt || new Date().toISOString(),
+            fieldValues,
           };
         })
       );
@@ -71,16 +117,17 @@ export const TemplatesList: React.FC = () => {
     }
   }, [jobs, showError]);
 
-  // Load jobs first, then templates
+  // Load data on mount
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
   useEffect(() => {
     if (jobs.length >= 0) {
+      fetchAllTemplateFields();
       fetchTemplates();
     }
-  }, [jobs, fetchTemplates]);
+  }, [jobs, fetchAllTemplateFields, fetchTemplates]);
 
   // Handle add template
   const handleAddTemplate = () => {
@@ -93,6 +140,7 @@ export const TemplatesList: React.FC = () => {
           isModal={true}
           onSuccess={() => {
             resetGlobalModalOuterProps();
+            fetchAllTemplateFields();
             fetchTemplates();
           }}
         />
@@ -113,13 +161,14 @@ export const TemplatesList: React.FC = () => {
             templateId={template.id}
             onSuccess={() => {
               resetGlobalModalOuterProps();
+              fetchAllTemplateFields();
               fetchTemplates();
             }}
           />
         ),
       });
     },
-    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates]
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchAllTemplateFields, fetchTemplates]
   );
 
   // Handle delete template
@@ -137,6 +186,7 @@ export const TemplatesList: React.FC = () => {
       try {
         await jobTemplateService.deleteTemplate(template.id);
         showSuccess(`Template "${template.name}" deleted successfully`);
+        fetchAllTemplateFields();
         fetchTemplates();
       } catch (error) {
         console.error('Error deleting template:', error);
@@ -144,11 +194,11 @@ export const TemplatesList: React.FC = () => {
         showError(errorMessage);
       }
     },
-    [showSuccess, showError, fetchTemplates]
+    [showSuccess, showError, fetchAllTemplateFields, fetchTemplates]
   );
 
-  // Handle view/manage fields
-  const handleViewFields = useCallback(
+  // Handle manage fields
+  const handleManageFields = useCallback(
     (template: TemplateTableRow) => {
       setSelectedTemplateId(template.id);
     },
@@ -159,9 +209,9 @@ export const TemplatesList: React.FC = () => {
   const tableActions: ITableAction<TemplateTableRow>[] = useMemo(
     () => [
       {
-        id: 'viewFields',
+        id: 'manageFields',
         label: 'Manage Fields',
-        onClick: handleViewFields,
+        onClick: handleManageFields,
         color: 'primary' as const,
       },
       {
@@ -177,10 +227,15 @@ export const TemplatesList: React.FC = () => {
         disabled: (row) => row.jobCount > 0,
       },
     ],
-    [handleViewFields, handleEditTemplate, handleDeleteTemplate]
+    [handleManageFields, handleEditTemplate, handleDeleteTemplate]
   );
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+
+  // Memoize columns to ensure they update when templateFields changes
+  const tableColumns = useMemo(() => {
+    return generateTemplateColumns(templateFields);
+  }, [templateFields]);
 
   return (
     <PageWrapper
@@ -198,7 +253,7 @@ export const TemplatesList: React.FC = () => {
       searchPlaceholder="Search templates"
     >
       <Table<TemplateTableRow>
-        columns={columns}
+        columns={tableColumns}
         data={templates}
         selectable
         showActions
@@ -211,7 +266,14 @@ export const TemplatesList: React.FC = () => {
       />
 
       {selectedTemplateId && selectedTemplate && (
-        <TemplateFields templateId={selectedTemplateId} templateName={selectedTemplate.name} />
+        <TemplateFields
+          templateId={selectedTemplateId}
+          templateName={selectedTemplate.name}
+          onFieldsChange={() => {
+            fetchAllTemplateFields();
+            fetchTemplates();
+          }}
+        />
       )}
     </PageWrapper>
   );

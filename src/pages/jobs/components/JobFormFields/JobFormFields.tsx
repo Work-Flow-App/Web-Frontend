@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { JobFormSchema } from '../../schema/JobFormSchema';
 import { useSchema } from '../../../../utils/validation';
@@ -62,10 +62,16 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     fetchTemplateFields();
   }, [selectedTemplateId]);
 
-  const templateOptions = templates.map((template) => ({
-    label: template.name || '',
-    value: template.id?.toString() || '',
-  }));
+  // const templateOptions = templates.map((template) => ({
+  //   label: template.name || '',
+  //   value: template.id?.toString() || '',
+  // }));
+  const templateOptions = useMemo(() => {
+      return templates.map((template) => ({
+        label: template.name || '',
+        value: template.id?.toString() || '',
+      }));
+    }, [templates]);
 
   const statusOptions = [
     { label: 'Pending', value: 'pending' },
@@ -154,6 +160,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           placeHolder={placeHolders.templateId}
           isPreFetchLoading={loadingTemplates}
           disabled={isEditMode}
+          disablePortal={true}
         />
       </FormField>
 
@@ -164,6 +171,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
               name={fieldTitles.status}
               preFetchedOptions={statusOptions}
               placeHolder={placeHolders.status}
+              disablePortal={true}
             />
           </FormField>
 

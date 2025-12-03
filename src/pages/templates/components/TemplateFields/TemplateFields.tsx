@@ -15,9 +15,10 @@ import { floowColors } from '../../../../theme/colors';
 interface TemplateFieldsProps {
   templateId: number;
   templateName: string;
+  onFieldsChange?: () => void;
 }
 
-export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, templateName }) => {
+export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, templateName, onFieldsChange }) => {
   const [fields, setFields] = useState<FieldTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -69,6 +70,7 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
           onSuccess={() => {
             resetGlobalModalOuterProps();
             fetchFields();
+            onFieldsChange?.(); // Notify parent to refresh columns
           }}
         />
       ),
@@ -90,12 +92,13 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
             onSuccess={() => {
               resetGlobalModalOuterProps();
               fetchFields();
+              onFieldsChange?.(); // Notify parent to refresh columns
             }}
           />
         ),
       });
     },
-    [templateId, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchFields]
+    [templateId, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchFields, onFieldsChange]
   );
 
   // Handle delete field
@@ -109,13 +112,14 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
         await jobTemplateService.deleteField(field.id);
         showSuccess(`Field "${field.label}" deleted successfully`);
         fetchFields();
+        onFieldsChange?.(); // Notify parent to refresh columns
       } catch (error) {
         console.error('Error deleting field:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
         showError(errorMessage);
       }
     },
-    [showSuccess, showError, fetchFields]
+    [showSuccess, showError, fetchFields, onFieldsChange]
   );
 
   // Define table actions
