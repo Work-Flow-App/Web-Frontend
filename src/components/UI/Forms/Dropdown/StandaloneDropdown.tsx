@@ -1,12 +1,10 @@
-import React, { useEffect, useState, useRef, memo, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, memo, useCallback } from 'react';
 import { TextField, CircularProgress, FormHelperText, InputLabel } from '@mui/material';
 import type { DropdownProps, DropdownOption } from './Dropdown.types';
 import * as S from './Dropdown.styles';
-import { useFormContext, useController, useWatch } from 'react-hook-form';
 
-// Helper function to add scrollbar classes (can be replaced with actual implementation)
+// Helper function to add scrollbar classes
 const addScrollbarClasses = (selector: string) => {
-  // Implementation for adding scrollbar classes
   const elements = document.querySelectorAll(selector);
   elements.forEach((el) => {
     el.classList.add('custom-scrollbar');
@@ -32,37 +30,32 @@ const useDebouncedCallback = <T extends (...args: never[]) => void>(
 };
 
 /**
- * Reusable Dropdown component based on Floow design system
- * Supports React Hook Form, async data fetching, dependencies, and more
+ * Standalone Dropdown component (does NOT use React Hook Form)
+ * Use this component when the dropdown is NOT inside a form
  */
-export const BaseDropdown = memo((props: DropdownProps) => {
+export const StandaloneDropdown = memo((props: DropdownProps) => {
   // Destructure Props
   const {
     apiHook,
     id,
     placeHolder = 'Select an option',
-    name,
+    name = 'standalone',
     isAsync = false,
     preFetchedOptions = [],
     getQueryParams,
-    readOnlyBox,
     setFetchedOption,
     onValueChange,
     withRequiredBorder = false,
     isPreFetchLoading = false,
     isDisabled = false,
     disabled = false,
-    dependency,
-    dependentFields,
     disableClearable = false,
-    dynamicOptionCallback,
     defaultValue,
     isOptionEqualToValue = true,
     getLiveData = false,
     onChange,
-    disablePortal = false,
+    disablePortal,
     error,
-    skipDefaultReset = false,
     addNewConfig,
     size = 'medium',
     label,
@@ -72,6 +65,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     fullWidth = false,
     className,
     sx,
+    value: controlledValue,
   } = props;
 
   // Component States
@@ -80,35 +74,20 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   const [hasValue, setHasValue] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const [inputFieldValue, setInputFieldValue] = useState<string>('');
-  const [prevParentCache, setParentCache] = useState<DropdownOption | null>(null);
+  const [internalValue, setInternalValue] = useState<DropdownOption | null>(
+    controlledValue || defaultValue || null
+  );
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // React Hook Form
-  const methods = useFormContext?.() || {};
-  const { control, setValue, resetField, clearErrors } = methods;
-
-  const { field } = useController({
-    control,
-    name,
-    defaultValue,
-  });
-
-  const fieldValue = useWatch({ name, control });
-  const dependencyValueRaw = methods.watch?.(dependency || `${name}-dependency`);
-  const dependencyValue = useMemo(
-    () =>
-      dependencyValueRaw && !dependencyValueRaw?.value
-        ? { label: dependencyValueRaw, value: dependencyValueRaw }
-        : dependencyValueRaw,
-    [dependencyValueRaw]
-  );
+  // Use controlled value if provided, otherwise use internal state
+  const fieldValue = controlledValue !== undefined ? controlledValue : internalValue;
 
   // Local Variables
   const isValueFetchableOnPress = apiHook && isAsync;
 
   // Side Effects
   useEffect(() => {
-    if (apiHook && !isAsync && setFetchedOption && !getLiveData && !dependency) {
+    if (apiHook && !isAsync && setFetchedOption && !getLiveData) {
       let qParam: Record<string, unknown> | undefined;
       setLoading(true);
 
@@ -125,7 +104,6 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setLoading(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -142,48 +120,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setOptions([...(preFetchedOptions as DropdownOption[])]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preFetchedOptions?.length, apiHook]);
-
-  useEffect(() => {
-    if (!skipDefaultReset && resetField) {
-      resetField(name, { defaultValue });
-    }
-  }, [defaultValue, skipDefaultReset, resetField, name]);
-
-  useEffect(() => {
-    if (dependency && prevParentCache && prevParentCache?.value !== dependencyValue?.value) {
-      setValue?.(name, null);
-      if (readOnlyBox?.name) {
-        resetField?.(readOnlyBox.name);
-      }
-      clearErrors?.(name);
-    }
-    if (apiHook && !isAsync && dependency && prevParentCache?.value !== dependencyValue?.value && setFetchedOption) {
-      if (dependencyValue?.value) {
-        let qParam: Record<string, unknown> | undefined;
-        setLoading(true);
-
-        if (getQueryParams) {
-          qParam = getQueryParams(dependencyValue);
-        }
-
-        apiHook.callAsyncApi(qParam).then((res) => {
-          if (res?.data) {
-            setOptions([...setFetchedOption(res.data, name)]);
-          } else {
-            setOptions([]);
-          }
-          setLoading(false);
-        });
-      } else {
-        setOptions([]);
-      }
-    }
-
-    setParentCache(dependencyValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependency, dependencyValue?.value, prevParentCache?.value]);
+  }, [preFetchedOptions?.length, apiHook, setFetchedOption, name]);
 
   useEffect(() => {
     const isError = !!error;
@@ -192,12 +129,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
 
   useEffect(() => {
     setHasValue(!!fieldValue);
-
-    if (!fieldValue && readOnlyBox && setValue) {
-      setValue(readOnlyBox.name, '');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fieldValue, readOnlyBox?.name]);
+  }, [fieldValue]);
 
   useEffect(() => {
     if (apiHook && isAsync && setFetchedOption && !apiHook.isLoading && apiHook.isSuccess) {
@@ -209,32 +141,21 @@ export const BaseDropdown = memo((props: DropdownProps) => {
 
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiHook?.isLoading, apiHook?.isSuccess, apiHook?.data]);
+  }, [apiHook?.isLoading, apiHook?.isSuccess, apiHook?.data, setFetchedOption, name, isAsync]);
 
   useEffect(() => {
     if (apiHook && isAsync && setFetchedOption && !apiHook.isLoading && apiHook.isError) {
       setOptions([]);
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiHook?.isLoading, apiHook?.isError]);
-
-  useEffect(() => {
-    if (readOnlyBox?.value && setValue) {
-      setValue(readOnlyBox.name, readOnlyBox.value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnlyBox?.value, readOnlyBox?.name]);
+  }, [apiHook?.isLoading, apiHook?.isError, setFetchedOption, isAsync]);
 
   useEffect(() => {
     addScrollbarClasses('.MuiAutocomplete-listbox');
   }, []);
 
   const fetchOptions = useCallback(() => {
-    if (dependency && dynamicOptionCallback) {
-      setOptions(dynamicOptionCallback(dependencyValue));
-    } else if (!apiHook && !isAsync && preFetchedOptions) {
+    if (!apiHook && !isAsync && preFetchedOptions) {
       if (setFetchedOption) {
         setOptions([...setFetchedOption(preFetchedOptions, name)]);
       } else {
@@ -245,7 +166,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
       setLoading(true);
 
       if (getQueryParams) {
-        qParam = getQueryParams(dependencyValue);
+        qParam = getQueryParams();
       }
 
       apiHook.callAsyncApi(qParam).then((res) => {
@@ -277,7 +198,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         setLoading(false);
       }
     }
-  }, [dependency, dynamicOptionCallback, apiHook, isAsync, preFetchedOptions, setFetchedOption, getLiveData, getQueryParams, addNewConfig, dependencyValue, name]);
+  }, [apiHook, isAsync, preFetchedOptions, setFetchedOption, getLiveData, getQueryParams, addNewConfig, name]);
 
   const handleOnKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     const inputFieldValue = (event.target as HTMLInputElement).value;
@@ -285,44 +206,42 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     if (isValueFetchableOnPress) {
       if (inputFieldValue) {
         setLoading(true);
-        if (dependency) {
-          const qParam = getQueryParams?.(dependencyValue, inputFieldValue);
-          if (qParam && apiHook) {
-            apiHook.callApi(qParam);
-          }
-        } else {
-          const qParam = getQueryParams?.(inputFieldValue);
-          if (qParam && apiHook) {
-            apiHook.callApi(qParam);
-          }
+        const qParam = getQueryParams?.(inputFieldValue);
+        if (qParam && apiHook) {
+          apiHook.callApi(qParam);
         }
       } else {
         setOptions([]);
         setLoading(false);
       }
     }
-  }, [isValueFetchableOnPress, dependency, dependencyValue, getQueryParams, apiHook]);
+  }, [isValueFetchableOnPress, getQueryParams, apiHook]);
 
   const handleKeyUpWithDebounce = useDebouncedCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     handleOnKeyUp(e);
   }, 300);
 
   const clearOptions = useCallback(() => {
-    // Don't clear options if we're using preFetchedOptions (static list)
-    if (isValueFetchableOnPress || (getLiveData && apiHook)) {
+    if (isValueFetchableOnPress || !apiHook || getLiveData) {
       setOptions([]);
     }
   }, [isValueFetchableOnPress, apiHook, getLiveData]);
 
   const handleChange = useCallback((_event: React.SyntheticEvent, data: unknown) => {
     const dropdownData = data as DropdownOption | null;
-    field.onChange(dropdownData);
+
+    // Update internal value if not controlled
+    if (controlledValue === undefined) {
+      setInternalValue(dropdownData);
+    }
+
+    // Call external onChange handlers
     if (dropdownData?.value !== undefined && dropdownData?.value !== null) {
-      onChange?.(dropdownData.value, dependentFields);
-      onValueChange?.(dropdownData.value, dependentFields, name);
+      onChange?.(dropdownData.value);
+      onValueChange?.(dropdownData.value, undefined, name);
     }
     parentRef?.current?.focus();
-  }, [field, onChange, onValueChange, dependentFields, name]);
+  }, [controlledValue, onChange, onValueChange, name]);
 
   const handleIsOptionEqualToValue = useCallback((option: unknown, selectedOption: unknown): boolean => {
     if (!isOptionEqualToValue) return true;
@@ -338,8 +257,8 @@ export const BaseDropdown = memo((props: DropdownProps) => {
         input.blur();
       }
     }
-    addNewConfig?.onAddNew?.(inputFieldValue, name, dependentFields);
-  }, [inputFieldValue, name, dependentFields, addNewConfig]);
+    addNewConfig?.onAddNew?.(inputFieldValue, name, undefined);
+  }, [inputFieldValue, name, addNewConfig]);
 
   const classNameString = `${className || ''} ${withRequiredBorder ? 'withRequiredBorder' : ''} ${
     hasValue ? 'hasValue' : ''
@@ -374,12 +293,8 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           disablePortal={disablePortal}
           id={id}
           options={options}
-          onOpen={() => {
-            fetchOptions();
-          }}
-          onClose={() => {
-            clearOptions();
-          }}
+          onOpen={fetchOptions}
+          onClose={clearOptions}
           className={classNameString}
           loading={isLoading}
           dropdownSize={size}
@@ -406,14 +321,15 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           PopperComponent={(props) => <S.CustomPopper {...props} className={`${props.className} custom-popper-class`} />}
           renderOption={(props, option, state) => {
             const dropdownOption = option as DropdownOption;
+            const { key, ...otherProps } = props as any;
             return (
-              <li {...props} key={`${name}-${dropdownOption.value}-${state?.index}`}>
+              <li {...otherProps} key={key || `${name}-${dropdownOption.value}-${state?.index}`}>
                 <S.MuiListItemContent>{dropdownOption.label}</S.MuiListItemContent>
               </li>
             );
           }}
           noOptionsText={customNoOptionsText}
-          {...field}
+          value={fieldValue}
           onChange={handleChange}
           isOptionEqualToValue={handleIsOptionEqualToValue}
           disabled={isDisabled || disabled || (!isAsync && isLoading)}
@@ -428,13 +344,6 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   );
 });
 
-BaseDropdown.displayName = 'BaseDropdown';
+StandaloneDropdown.displayName = 'StandaloneDropdown';
 
-/**
- * Dropdown component wrapper for use with React Hook Form
- */
-export const Dropdown = (props: DropdownProps) => {
-  return <BaseDropdown {...props} />;
-};
-
-export default Dropdown;
+export default StandaloneDropdown;

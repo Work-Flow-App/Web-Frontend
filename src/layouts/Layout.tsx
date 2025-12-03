@@ -10,6 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import WorkIcon from '@mui/icons-material/Work';
+import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
@@ -280,7 +281,15 @@ export const Layout: React.FC = () => {
   const sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
     { id: 'workers', label: 'Workers', icon: <PeopleIcon />, href: '/company/workers' },
-    { id: 'jobs', label: 'Jobs', icon: <WorkIcon />, href: '/company/jobs' },
+    {
+      id: 'jobs',
+      label: 'Jobs',
+      icon: <WorkIcon />,
+      href: '/company/jobs',
+      children: [
+        { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
+      ]
+    },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
     { id: 'equipments', label: 'Equipments', icon: <BuildIcon />, href: '/company/equipments' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },

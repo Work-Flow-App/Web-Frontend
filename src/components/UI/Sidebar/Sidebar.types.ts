@@ -30,6 +30,11 @@ export interface SidebarItem {
    * Callback when item is clicked
    */
   onClick?: () => void;
+
+  /**
+   * Optional child items for submenu
+   */
+  children?: SidebarItem[];
 }
 
 /**

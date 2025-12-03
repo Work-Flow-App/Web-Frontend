@@ -5,6 +5,8 @@ import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { JobsPage } from './pages/jobs/JobsPage'
+import { TemplatesPage } from './pages/templates/TemplatesPage'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
@@ -29,6 +31,8 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/company/workers" element={<WorkerPage />} />
+              <Route path="/company/jobs" element={<JobsPage />} />
+              <Route path="/company/jobs/templates" element={<TemplatesPage />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />

@@ -1,9 +1,8 @@
-import { memo } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { memo, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { Button } from '../Button';
 import { Search } from '../Search';
-import { Dropdown } from '../Forms/Dropdown';
+import { StandaloneDropdown } from '../Forms/Dropdown';
 import type { PageWrapperProps } from './PageWrapper.types';
 import * as S from './PageWrapper.styles';
 
@@ -40,19 +39,14 @@ const PageWrapperContent = memo(
     headerExtra,
     maxWidth,
   }: PageWrapperProps) => {
-    const methods = useForm({
-      defaultValues: {
-        pageDropdown: dropdownValue || '',
-      },
-    });
-
-    const handleDropdownChange = (value: string | number) => {
-      onDropdownChange?.(value);
-    };
+    const handleDropdownChange = useCallback((value: string | number | null) => {
+      if (value !== null) {
+        onDropdownChange?.(value);
+      }
+    }, [onDropdownChange]);
 
     return (
-      <FormProvider {...methods}>
-        <S.PageContainer maxWidth={maxWidth}>
+      <S.PageContainer maxWidth={maxWidth}>
           <S.PageHeader>
             <S.HeaderContent>
               <S.HeaderLeft>
@@ -77,13 +71,15 @@ const PageWrapperContent = memo(
                 {headerExtra}
 
                 {dropdownOptions && dropdownOptions.length > 0 && (
-                  <Box sx={{ minWidth: 'auto', maxWidth: 'fit-content' }}>
-                    <Dropdown
+                  <Box sx={{ minWidth: 200, display: 'flex', alignItems: 'center' }}>
+                    <StandaloneDropdown
                       name="pageDropdown"
                       placeHolder={dropdownPlaceholder}
                       preFetchedOptions={dropdownOptions}
+                      defaultValue={dropdownValue || ''}
                       onChange={handleDropdownChange}
                       hideErrorMessage
+                      size="medium"
                     />
                   </Box>
                 )}
@@ -107,7 +103,6 @@ const PageWrapperContent = memo(
 
           <S.PageContent>{children}</S.PageContent>
         </S.PageContainer>
-      </FormProvider>
     );
   }
 );
