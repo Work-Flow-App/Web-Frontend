@@ -5,7 +5,8 @@ import type {
   WorkerUpdateRequest,
   WorkerInviteResponse,
 } from '../../../workflow-api';
-import { apiClient } from './client';
+import { env } from '../../config/env';
+import { axiosInstance } from './axiosConfig';
 
 export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse };
 
@@ -16,13 +17,13 @@ export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerIn
 
 /**
  * Get a configured WorkerControllerApi instance with the access token
+ * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
 function getWorkerApi(): WorkerControllerApi {
-  const accessToken = apiClient.getStoredAccessToken();
   const config = new Configuration({
-    accessToken: accessToken || undefined,
+    basePath: env.apiBaseUrl,
   });
-  return new WorkerControllerApi(config);
+  return new WorkerControllerApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const workerService = {

@@ -3,32 +3,29 @@ import { InputValidationRules, type IFields } from '../../../utils/validation';
 export const JobFormSchema: IFields = {
   templateId: {
     title: 'templateId',
-    rule: InputValidationRules.NumberRequired,
-    defaultValue: '',
+    rule: InputValidationRules.DropDownRequired(), // Required dropdown
+    defaultValue: null,
     placeHolder: 'Choose a job template',
     label: 'Template',
     isRequired: true,
   },
   status: {
     title: 'status',
-    rule: InputValidationRules.StringNotRequired,
-    defaultValue: 'pending',
+    defaultValue: null,
     placeHolder: 'Select status',
     label: 'Status',
     isRequired: false,
   },
   clientId: {
     title: 'clientId',
-    rule: InputValidationRules.NumberNotRequired,
-    defaultValue: '',
+    defaultValue: null,
     placeHolder: 'Select client',
     label: 'Client',
     isRequired: false,
   },
   assignedWorkerId: {
     title: 'assignedWorkerId',
-    rule: InputValidationRules.NumberNotRequired,
-    defaultValue: '',
+    defaultValue: null,
     placeHolder: 'Select worker',
     label: 'Assigned Worker',
     isRequired: false,
@@ -36,9 +33,9 @@ export const JobFormSchema: IFields = {
 };
 
 export interface JobFormData {
-  templateId: number;
-  status?: string;
-  clientId?: number;
-  assignedWorkerId?: number;
-  [key: string]: string | number | undefined; // For dynamic template fields
+  templateId: number | string | { label: string; value: string } | null;
+  status?: string | { label: string; value: string } | null;
+  clientId?: number | string | { label: string; value: string } | null;
+  assignedWorkerId?: number | string | { label: string; value: string } | null;
+  [key: string]: string | number | undefined | null | { label: string; value: string }; // For dynamic template fields
 }

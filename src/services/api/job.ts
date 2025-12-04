@@ -4,7 +4,8 @@ import type {
   JobCreateRequest,
   JobUpdateRequest,
 } from '../../../workflow-api';
-import { apiClient } from './client';
+import { env } from '../../config/env';
+import { axiosInstance } from './axiosConfig';
 
 export type {
   JobResponse,
@@ -19,13 +20,13 @@ export type {
 
 /**
  * Get a configured JobControllerApi instance with the access token
+ * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
 function getJobApi(): JobControllerApi {
-  const accessToken = apiClient.getStoredAccessToken();
   const config = new Configuration({
-    accessToken: accessToken || undefined,
+    basePath: env.apiBaseUrl,
   });
-  return new JobControllerApi(config);
+  return new JobControllerApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobService = {
@@ -61,7 +62,7 @@ export const jobService = {
    * Delete a job
    */
   async deleteJob(id: number) {
-    return await getJobApi().delete(id);
+    return await getJobApi()._delete(id);
   },
 };
 

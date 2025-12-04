@@ -6,7 +6,8 @@ import type {
   JobTemplateFieldCreateRequest,
   JobTemplateWithFieldsResponse,
 } from '../../../workflow-api';
-import { apiClient } from './client';
+import { env } from '../../config/env';
+import { axiosInstance } from './axiosConfig';
 
 export type {
   JobTemplateResponse,
@@ -23,13 +24,13 @@ export type {
 
 /**
  * Get a configured JobTemplateControllerApi instance with the access token
+ * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
 function getJobTemplateApi(): JobTemplateControllerApi {
-  const accessToken = apiClient.getStoredAccessToken();
   const config = new Configuration({
-    accessToken: accessToken || undefined,
+    basePath: env.apiBaseUrl,
   });
-  return new JobTemplateControllerApi(config);
+  return new JobTemplateControllerApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobTemplateService = {
@@ -37,14 +38,14 @@ export const jobTemplateService = {
    * Get all job templates
    */
   async getAllTemplates() {
-    return await getJobTemplateApi().getAll1();
+    return await getJobTemplateApi().getAllTemplates();
   },
 
   /**
    * Get template by ID
    */
   async getTemplateById(id: number) {
-    return await getJobTemplateApi().get1(id);
+    return await getJobTemplateApi().getTemplate(id);
   },
 
   /**
@@ -58,56 +59,56 @@ export const jobTemplateService = {
    * Create a new template
    */
   async createTemplate(data: JobTemplateCreateRequest) {
-    return await getJobTemplateApi().create1(data);
+    return await getJobTemplateApi().createTemplate(data);
   },
 
   /**
    * Update an existing template
    */
   async updateTemplate(id: number, data: JobTemplateCreateRequest) {
-    return await getJobTemplateApi().update1(id, data);
+    return await getJobTemplateApi().updateTemplate(id, data);
   },
 
   /**
    * Delete a template
    */
   async deleteTemplate(id: number) {
-    return await getJobTemplateApi().delete1(id);
+    return await getJobTemplateApi().deleteTemplate(id);
   },
 
   /**
    * Get all fields for a template
    */
   async getTemplateFields(templateId: number) {
-    return await getJobTemplateApi().getFields(templateId);
+    return await getJobTemplateApi().getTemplateFields(templateId);
   },
 
   /**
    * Get a specific field
    */
   async getFieldById(fieldId: number) {
-    return await getJobTemplateApi().getField(fieldId);
+    return await getJobTemplateApi().getTemplateField(fieldId);
   },
 
   /**
    * Create a new field for a template
    */
   async createField(data: JobTemplateFieldCreateRequest) {
-    return await getJobTemplateApi().createField(data);
+    return await getJobTemplateApi().createTemplateField(data);
   },
 
   /**
    * Update an existing field
    */
   async updateField(fieldId: number, data: JobTemplateFieldCreateRequest) {
-    return await getJobTemplateApi().updateField(fieldId, data);
+    return await getJobTemplateApi().updateTemplateField(fieldId, data);
   },
 
   /**
    * Delete a field
    */
   async deleteField(fieldId: number) {
-    return await getJobTemplateApi().deleteField(fieldId);
+    return await getJobTemplateApi().deleteTemplateField(fieldId);
   },
 };
 

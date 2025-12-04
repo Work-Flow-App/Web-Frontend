@@ -49,8 +49,20 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         return;
       }
 
+      // Extract the value if selectedTemplateId is an object
+      const templateIdValue = typeof selectedTemplateId === 'object' && selectedTemplateId !== null
+        ? (selectedTemplateId as { value: string }).value
+        : selectedTemplateId;
+
+      const templateIdNumber = Number(templateIdValue);
+      if (isNaN(templateIdNumber) || templateIdNumber <= 0) {
+        console.warn('Invalid template ID:', selectedTemplateId);
+        setTemplateFields([]);
+        return;
+      }
+
       try {
-        const response = await jobTemplateService.getTemplateFields(Number(selectedTemplateId));
+        const response = await jobTemplateService.getTemplateFields(templateIdNumber);
         const fieldsData = Array.isArray(response.data) ? response.data : [];
         setTemplateFields(fieldsData);
       } catch (error) {

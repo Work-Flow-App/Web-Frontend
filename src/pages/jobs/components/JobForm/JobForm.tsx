@@ -4,6 +4,7 @@ import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { JobFormFields } from '../JobFormFields/JobFormFields';
 import { Loader } from '../../../../components/UI';
 import { jobService, jobTemplateService } from '../../../../services/api';
+import type { JobCreateRequest, JobUpdateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -16,7 +17,9 @@ export interface JobFormProps {
 export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSuccess }) => {
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig } = useGlobalModalInnerContext();
-  const [jobData, setJobData] = useState<Partial<JobFormData> | undefined>(undefined);
+
+  // Initialize with empty object - fields will use schema defaults
+  const [jobData, setJobData] = useState<Partial<JobFormData>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const isEditMode = !!jobId;
@@ -83,6 +86,18 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
         // Extract template ID and status
         const { templateId, status, clientId, assignedWorkerId, ...dynamicFields } = data;
 
+        // Extract the value if templateId is an object (from dropdown)
+        const templateIdValue = typeof templateId === 'object' && templateId !== null
+          ? (templateId as { value: string }).value
+          : templateId;
+
+        // Validate templateId
+        const templateIdNumber = Number(templateIdValue);
+        if (!isEditMode && (isNaN(templateIdNumber) || templateIdNumber <= 0)) {
+          showError('Please select a valid template');
+          return;
+        }
+
         // Build fieldValues from dynamic fields (those starting with "field_")
         const fieldValues: { [key: string]: string } = {};
         Object.entries(dynamicFields).forEach(([key, value]) => {
@@ -92,25 +107,45 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           }
         });
 
+        // Extract status value if it's an object
+        const statusValue = typeof status === 'object' && status !== null
+          ? (status as { value: string }).value
+          : status;
+
+        // Convert clientId and assignedWorkerId to numbers or undefined
+        const clientIdValue = typeof clientId === 'object' && clientId !== null
+          ? (clientId as { value: string }).value
+          : clientId;
+        const clientIdNumber = clientIdValue ? Number(clientIdValue) : undefined;
+
+        const assignedWorkerIdValue = typeof assignedWorkerId === 'object' && assignedWorkerId !== null
+          ? (assignedWorkerId as { value: string }).value
+          : assignedWorkerId;
+        const assignedWorkerIdNumber = assignedWorkerIdValue ? Number(assignedWorkerIdValue) : undefined;
+
         if (isEditMode) {
           // Update existing job
-          await jobService.updateJob(jobId, {
-            status,
-            clientId,
-            assignedWorkerId,
+          const updatePayload: JobUpdateRequest = {
             archived: false,
             fieldValues,
-          });
+          };
+          if (statusValue) updatePayload.status = statusValue;
+          if (clientIdNumber) updatePayload.clientId = clientIdNumber;
+          if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
+
+          await jobService.updateJob(jobId, updatePayload);
           showSuccess('Job updated successfully');
         } else {
-          // Create new job
-          await jobService.createJob({
-            templateId: Number(templateId),
-            status,
-            clientId,
-            assignedWorkerId,
+          // Create new job - only include fields that have values
+          const createPayload: JobCreateRequest = {
+            templateId: templateIdNumber,
             fieldValues,
-          });
+          };
+          if (statusValue) createPayload.status = statusValue;
+          if (clientIdNumber) createPayload.clientId = clientIdNumber;
+          if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
+
+          await jobService.createJob(createPayload);
           showSuccess('Job created successfully');
         }
 
