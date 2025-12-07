@@ -5,8 +5,8 @@ import { UserRole } from '../../../types/auth';
 export const SignupFormSchema: IFields = {
   role: {
     title: 'role',
-    defaultValue: UserRole.WORKER,
-    label: 'I am a',
+    defaultValue: UserRole.COMPANY,
+    label: 'Register As',
     isRequired: false,
   },
   username: {

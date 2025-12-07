@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -8,14 +9,12 @@ import type { JobTemplateResponse, JobResponse, JobTemplateFieldResponse } from 
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { generateTemplateColumns, type TemplateTableRow } from './DataColumn';
 import { TemplateForm } from '../TemplateForm/TemplateForm';
-import { TemplateFields } from '../TemplateFields/TemplateFields';
 
 export const TemplatesList: React.FC = () => {
   const [templates, setTemplates] = useState<TemplateTableRow[]>([]);
   const [jobs, setJobs] = useState<JobResponse[]>([]);
-  const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
+  const navigate = useNavigate();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps} = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -30,66 +29,21 @@ export const TemplatesList: React.FC = () => {
     }
   }, []);
 
-  // Fetch all unique fields across all templates
-  const fetchAllTemplateFields = useCallback(async () => {
-    try {
-      const response = await jobTemplateService.getAllTemplates();
-      const templatesData = Array.isArray(response.data) ? response.data : [];
-
-      // Collect all unique fields from all templates
-      const allFieldsMap = new Map<string, JobTemplateFieldResponse>();
-
-      await Promise.all(
-        templatesData.map(async (template: JobTemplateResponse) => {
-          try {
-            const fieldsResponse = await jobTemplateService.getTemplateFields(template.id || 0);
-            const fieldsData = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
-
-            // Add unique fields to map
-            fieldsData.forEach((field) => {
-              if (field.name && !allFieldsMap.has(field.name)) {
-                allFieldsMap.set(field.name, field);
-              }
-            });
-          } catch (error) {
-            console.error(`Error fetching fields for template ${template.id}:`, error);
-          }
-        })
-      );
-
-      // Convert map to array and sort by orderIndex
-      const uniqueFields = Array.from(allFieldsMap.values()).sort(
-        (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
-      );
-
-      setTemplateFields(uniqueFields);
-    } catch (error) {
-      console.error('Error fetching template fields:', error);
-    }
-  }, []);
-
-  // Fetch templates with their field values
+  // Fetch templates with their fields
   const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
       const response = await jobTemplateService.getAllTemplates();
       const templatesData = Array.isArray(response.data) ? response.data : [];
 
-      // Fetch fields for each template and build field values
+      // Fetch fields for each template
       const transformedData: TemplateTableRow[] = await Promise.all(
         templatesData.map(async (template: JobTemplateResponse) => {
-          const fieldValues: { [key: string]: string } = {};
+          let fields: JobTemplateFieldResponse[] = [];
 
           try {
             const fieldsResponse = await jobTemplateService.getTemplateFields(template.id || 0);
-            const fieldsData = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
-
-            // Populate field values (currently empty, can be populated from template data if available)
-            fieldsData.forEach((field) => {
-              if (field.name) {
-                fieldValues[field.name] = ''; // Empty for now - can be populated with actual values
-              }
-            });
+            fields = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
           } catch (error) {
             console.error(`Error fetching fields for template ${template.id}:`, error);
           }
@@ -102,7 +56,7 @@ export const TemplatesList: React.FC = () => {
             description: template.description,
             jobCount,
             createdAt: template.createdAt || new Date().toISOString(),
-            fieldValues,
+            fields,
           };
         })
       );
@@ -124,10 +78,9 @@ export const TemplatesList: React.FC = () => {
 
   useEffect(() => {
     if (jobs.length >= 0) {
-      fetchAllTemplateFields();
       fetchTemplates();
     }
-  }, [jobs, fetchAllTemplateFields, fetchTemplates]);
+  }, [jobs, fetchTemplates]);
 
   // Handle add template
   const handleAddTemplate = () => {
@@ -140,7 +93,6 @@ export const TemplatesList: React.FC = () => {
           isModal={true}
           onSuccess={() => {
             resetGlobalModalOuterProps();
-            fetchAllTemplateFields();
             fetchTemplates();
           }}
         />
@@ -161,14 +113,13 @@ export const TemplatesList: React.FC = () => {
             templateId={template.id}
             onSuccess={() => {
               resetGlobalModalOuterProps();
-              fetchAllTemplateFields();
               fetchTemplates();
             }}
           />
         ),
       });
     },
-    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchAllTemplateFields, fetchTemplates]
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates]
   );
 
   // Handle delete template
@@ -186,7 +137,6 @@ export const TemplatesList: React.FC = () => {
       try {
         await jobTemplateService.deleteTemplate(template.id);
         showSuccess(`Template "${template.name}" deleted successfully`);
-        fetchAllTemplateFields();
         fetchTemplates();
       } catch (error) {
         console.error('Error deleting template:', error);
@@ -194,15 +144,15 @@ export const TemplatesList: React.FC = () => {
         showError(errorMessage);
       }
     },
-    [showSuccess, showError, fetchAllTemplateFields, fetchTemplates]
+    [showSuccess, showError, fetchTemplates]
   );
 
   // Handle manage fields
   const handleManageFields = useCallback(
     (template: TemplateTableRow) => {
-      setSelectedTemplateId(template.id);
+      navigate(`/company/jobs/templates/${template.id}/fields`);
     },
-    []
+    [navigate]
   );
 
   // Define table actions
@@ -230,12 +180,18 @@ export const TemplatesList: React.FC = () => {
     [handleManageFields, handleEditTemplate, handleDeleteTemplate]
   );
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  // Handle template name click
+  const handleTemplateNameClick = useCallback(
+    (templateId: number) => {
+      navigate(`/company/jobs/templates/${templateId}/fields`);
+    },
+    [navigate]
+  );
 
   // Memoize columns to ensure they update when templateFields changes
   const tableColumns = useMemo(() => {
-    return generateTemplateColumns(templateFields);
-  }, [templateFields]);
+    return generateTemplateColumns(handleTemplateNameClick);
+  }, [handleTemplateNameClick]);
 
   return (
     <PageWrapper
@@ -264,17 +220,6 @@ export const TemplatesList: React.FC = () => {
         showPagination={true}
         enableStickyLeft={true}
       />
-
-      {selectedTemplateId && selectedTemplate && (
-        <TemplateFields
-          templateId={selectedTemplateId}
-          templateName={selectedTemplate.name}
-          onFieldsChange={() => {
-            fetchAllTemplateFields();
-            fetchTemplates();
-          }}
-        />
-      )}
     </PageWrapper>
   );
 };

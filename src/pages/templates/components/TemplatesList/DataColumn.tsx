@@ -1,5 +1,7 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
+import { Link } from '../../../../components/UI/Link';
+import { FieldsBadgeList } from '../../../../components/UI/FieldsBadgeList';
 
 export interface TemplateTableRow {
   id: number;
@@ -7,23 +9,27 @@ export interface TemplateTableRow {
   description?: string;
   jobCount: number;
   createdAt: string;
-  fieldValues?: { [key: string]: string };
+  fields?: JobTemplateFieldResponse[];
 }
 
 /**
- * Generate dynamic columns based on template fields
- * Fields will appear as columns in the template table
+ * Generate template columns with a single Fields column showing badges
  */
 export const generateTemplateColumns = (
-  templateFields: JobTemplateFieldResponse[] = []
+  onTemplateNameClick?: (templateId: number) => void
 ): ITableColumn<TemplateTableRow>[] => {
-  const baseColumns: ITableColumn<TemplateTableRow>[] = [
+  const columns: ITableColumn<TemplateTableRow>[] = [
     {
       id: 'name',
       label: 'Template Name',
       accessor: 'name',
       sortable: true,
       width: 'auto',
+      render: (row) => (
+        <Link onClick={() => onTemplateNameClick?.(row.id)}>
+          {row.name}
+        </Link>
+      ),
     },
     {
       id: 'description',
@@ -33,41 +39,12 @@ export const generateTemplateColumns = (
       width: 'auto',
       render: (row) => row.description || '-',
     },
-  ];
-
-  // Add dynamic columns from template fields
-  const dynamicColumns: ITableColumn<TemplateTableRow>[] = templateFields.map((field) => ({
-    id: `field_${field.name}`,
-    label: field.label || field.name || '',
-    sortable: false,
-    width: 'auto',
-    render: (row) => {
-      const value = row.fieldValues?.[field.name || ''];
-      if (!value) return '-';
-
-      // Format based on field type
-      switch (field.jobFieldType) {
-        case 'BOOLEAN':
-          return value === 'true' ? 'Yes' : 'No';
-        case 'DATE':
-          try {
-            return new Date(value).toLocaleDateString();
-          } catch {
-            return value;
-          }
-        default:
-          return value;
-      }
-    },
-  }));
-
-  const endColumns: ITableColumn<TemplateTableRow>[] = [
     {
-      id: 'jobCount',
-      label: '# of Jobs',
-      accessor: 'jobCount',
-      sortable: true,
+      id: 'fields',
+      label: 'Fields',
+      sortable: false,
       width: 'auto',
+      render: (row) => <FieldsBadgeList fields={row.fields || []} />,
     },
     {
       id: 'createdAt',
@@ -79,5 +56,5 @@ export const generateTemplateColumns = (
     },
   ];
 
-  return [...baseColumns, ...dynamicColumns, ...endColumns];
+  return columns;
 };
