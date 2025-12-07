@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
-import { Box, Avatar, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
@@ -17,123 +16,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
-import { floowColors } from '../theme/colors';
-import { rem } from '../components/UI/Typography/utility';
 import { authService } from '../services/api/auth';
 import { getRoleFromToken } from '../utils/jwt';
 import { useSessionRestore } from '../hooks/useSessionRestore';
-
-/**
- * Main page wrapper with sidebar and right section
- */
-const PageWrapper = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'row',
-  minHeight: '100vh',
-  width: '100%',
-
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-  },
-}));
-
-/**
- * Right section containing TopNav and content area
- */
-const PageRightSection = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  height: '100vh',
-  overflow: 'hidden',
-
-  [theme.breakpoints.down('sm')]: {
-    height: 'auto',
-  },
-}));
-
-/**
- * Main content area that scrolls independently
- */
-const MainContent = styled(Box)(({ theme }) => ({
-  flex: 1,
-  overflow: 'auto',
-  background: floowColors.grey[50],
-
-  [theme.breakpoints.down('sm')]: {
-    overflow: 'visible',
-  },
-}));
-
-/**
- * Right actions container for TopNav
- */
-const RightActionsContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: rem(12),
-
-  [theme.breakpoints.down('md')]: {
-    gap: rem(10),
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    gap: rem(8),
-  },
-}));
-
-/**
- * Action button styling
- */
-const ActionButton = styled(Box)(({ theme }) => ({
-  cursor: 'pointer',
-  color: floowColors.grey[300],
-  fontSize: rem(20),
-  display: 'flex',
-  alignItems: 'center',
-  transition: 'color 0.2s ease',
-
-  '&:hover': {
-    color: floowColors.grey[100],
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    fontSize: rem(18),
-  },
-}));
-
-/**
- * Divider between action buttons
- */
-const ActionDivider = styled(Box)({
-  width: rem(1),
-  height: rem(24),
-  backgroundColor: floowColors.grey[600],
-});
-
-/**
- * User avatar styling
- */
-const UserAvatar = styled(Avatar)(({ theme }) => ({
-  width: rem(32),
-  height: rem(32),
-  background: floowColors.white,
-  cursor: 'pointer',
-  fontSize: rem(12),
-  color: floowColors.black,
-  fontWeight: 600,
-  transition: 'opacity 0.2s ease',
-
-  '&:hover': {
-    opacity: 0.8,
-  },
-
-  [theme.breakpoints.down('sm')]: {
-    width: rem(28),
-    height: rem(28),
-    fontSize: rem(11),
-  },
-}));
+import * as S from './Layout.styles';
 
 /**
  * Right actions component with profile menu
@@ -156,26 +42,26 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
   };
 
   return (
-    <RightActionsContainer>
-      <ActionButton
+    <S.RightActionsContainer>
+      <S.ActionButton
         role="button"
         aria-label="Notifications"
         tabIndex={0}
       >
         <NotificationsIcon />
-      </ActionButton>
+      </S.ActionButton>
 
-      <ActionDivider aria-hidden={true} />
+      <S.ActionDivider aria-hidden={true} />
 
-      <ActionButton
+      <S.ActionButton
         role="button"
         aria-label="Settings"
         tabIndex={0}
       >
         <SettingsIcon />
-      </ActionButton>
+      </S.ActionButton>
 
-      <UserAvatar
+      <S.UserAvatar
         role="button"
         aria-label="User profile"
         aria-controls={open ? 'profile-menu' : undefined}
@@ -185,7 +71,7 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
         onClick={handleClick}
       >
         {userInitials}
-      </UserAvatar>
+      </S.UserAvatar>
 
       <Menu
         id="profile-menu"
@@ -200,13 +86,7 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
           vertical: 'top',
           horizontal: 'right',
         }}
-        sx={{
-          mt: 1.5,
-          '& .MuiPaper-root': {
-            minWidth: 180,
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-          },
-        }}
+        sx={S.menuSx}
       >
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
@@ -215,7 +95,7 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
           <ListItemText>Logout</ListItemText>
         </MenuItem>
       </Menu>
-    </RightActionsContainer>
+    </S.RightActionsContainer>
   );
 };
 
@@ -282,11 +162,11 @@ export const Layout: React.FC = () => {
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
     { id: 'workers', label: 'Workers', icon: <PeopleIcon />, href: '/company/workers' },
     {
-      id: 'jobs',
-      label: 'Jobs',
+      id: 'worker-jobs',
+      label: 'Worker Jobs',
       icon: <WorkIcon />,
-      href: '/company/jobs',
       children: [
+        { id: 'jobs', label: 'Jobs', icon: <WorkIcon />, href: '/company/jobs' },
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
       ]
     },
@@ -311,7 +191,7 @@ export const Layout: React.FC = () => {
   }
 
   return (
-    <PageWrapper>
+    <S.PageWrapper>
       {/* Persistent Sidebar */}
       <Sidebar
         items={sidebarItems}
@@ -320,11 +200,11 @@ export const Layout: React.FC = () => {
       />
 
       {/* Right Section: TopNav + MainContent */}
-      <PageRightSection>
+      <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
           searchContent={
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+            <Box sx={S.searchContainerSx}>
               <Search
                 placeholder="Search..."
                 value={searchQuery}
@@ -333,12 +213,7 @@ export const Layout: React.FC = () => {
                   console.log('Search:', query);
                 }}
                 width="300px"
-                styles={{
-                  input: {
-                    height: '36px',
-                    padding: '8px 12px',
-                  },
-                }}
+                styles={S.searchStyles}
               />
             </Box>
           }
@@ -347,11 +222,11 @@ export const Layout: React.FC = () => {
         />
 
         {/* Dynamic Content Area - Changes based on route */}
-        <MainContent>
+        <S.MainContent>
           <Outlet />
-        </MainContent>
-      </PageRightSection>
-    </PageWrapper>
+        </S.MainContent>
+      </S.PageRightSection>
+    </S.PageWrapper>
   );
 };
 

@@ -80,7 +80,7 @@ export const StyledBadge = styled(Box, {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: rem(12),
-    fontWeight: 500,
+    fontWeight: theme.typography.fontWeightMedium,
     whiteSpace: 'nowrap',
     transition: 'all 0.2s ease',
     ...getVariantStyles(),
