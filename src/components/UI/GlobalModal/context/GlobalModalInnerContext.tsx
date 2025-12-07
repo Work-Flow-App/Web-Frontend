@@ -35,20 +35,26 @@ export const useGlobalModalInnerContext = () => {
 
 // The context provider
 export const GlobalModalInnerContextProvider = ({ children }: IGlobalModalInnerContextProvider): JSX.Element => {
-  const [activeScreen, updateActiveScreen] = useState<number>(0);
-  const [modalTitle, updateModalTitle] = useState<string>('');
-  const [globalModalInnerConfig, updateGlobalModalInnerConfig] = useState<IGlobalModalInnerContextConfigProps>({});
-  const [headerActionButton, updateHeaderActionButton] = useState<ReactNode>('');
+  const [activeScreen, setActiveScreen] = useState<number>(0);
+  const [modalTitle, setModalTitle] = useState<string>('');
+  const [globalModalInnerConfig, setGlobalModalInnerConfig] = useState<IGlobalModalInnerContextConfigProps>({});
+  const [headerActionButton, setHeaderActionButton] = useState<ReactNode>('');
   const [onClose, setOnClose] = useState<() => void>(() => {});
   const [onConfirm, setOnConfirm] = useState<() => void>(() => {});
   const [innerModalData, setInnerModalData] = useState<any>({});
   const [skipResetModal, setSkipResetModal] = useState<boolean>(false);
 
+  const updateActiveScreen = useCallback((screen: number) => setActiveScreen(screen), []);
+  const updateModalTitle = useCallback((title: string) => setModalTitle(title), []);
+  const updateGlobalModalInnerConfig = useCallback((config: IGlobalModalInnerContextConfigProps) => {
+    setGlobalModalInnerConfig((prev) => ({ ...prev, ...config }));
+  }, []);
+  const updateHeaderActionButton = useCallback((button: ReactNode) => setHeaderActionButton(button), []);
   const updateOnClose = useCallback((callBack: () => void) => setOnClose(() => callBack), []);
   const updateOnConfirm = useCallback((callBack: () => void) => setOnConfirm(() => callBack), []);
 
   const handleReset = useCallback(() => {
-    updateActiveScreen(0);
+    setActiveScreen(0);
   }, []);
 
   return (

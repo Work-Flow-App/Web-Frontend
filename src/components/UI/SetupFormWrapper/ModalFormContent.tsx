@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { FormProvider, type FieldValues } from 'react-hook-form';
 import { useGlobalModalInnerContext } from '../GlobalModal/context';
 import type { SetupFormWrapperProps } from './SetupFormWrapper.types';
@@ -60,16 +60,15 @@ export const ModalFormContent = <TFormData extends FieldValues>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Get current modal config to preserve it
-  const { globalModalInnerConfig } = useGlobalModalInnerContext();
+  // Memoize the config to prevent recreating object on every render
+  const modalConfig = useMemo(() => ({
+    isConfirmDisabled: !formState.isValid,
+  }), [formState.isValid]);
 
   // Update modal button disabled state based on form validation
   useEffect(() => {
-    updateGlobalModalInnerConfig({
-      ...globalModalInnerConfig,
-      isConfirmDisabled: !formState.isValid,
-    });
-  }, [formState.isValid, globalModalInnerConfig, updateGlobalModalInnerConfig]);
+    updateGlobalModalInnerConfig(modalConfig);
+  }, [modalConfig, updateGlobalModalInnerConfig]);
 
   return (
     <FormProvider {...methods}>

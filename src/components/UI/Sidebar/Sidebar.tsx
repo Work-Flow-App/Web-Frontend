@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Collapse } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { SidebarWrapper, SidebarItemButton, IconWrapper, SidebarLogoSection, SidebarBackdrop } from './Sidebar.styles';
-import type { SidebarProps } from './Sidebar.types';
+import type { SidebarProps, SidebarItem } from './Sidebar.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { floowColors } from '../../../theme/colors';
 import { rem } from '../Typography/utility';
@@ -42,13 +44,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sx,
 }) => {
   const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Auto-expand parent items when child is active
+  React.useEffect(() => {
+    const newExpanded = new Set<string>();
+    items.forEach((item) => {
+      if (item.children) {
+        const hasActiveChild = item.children.some((child) => child.href === location.pathname);
+        if (hasActiveChild) {
+          newExpanded.add(item.id);
+        }
+      }
+    });
+    setExpandedItems(newExpanded);
+  }, [location.pathname, items]);
 
   /**
    * Determine if a sidebar item is active based on:
    * 1. activeItemId prop (for controlled behavior)
    * 2. Current route pathname (for automatic detection)
    */
-  const isItemActive = (item: typeof items[0]): boolean => {
+  const isItemActive = (item: SidebarItem): boolean => {
     if (activeItemId) {
       return activeItemId === item.id;
     }
@@ -60,9 +77,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return false;
   };
 
+  /**
+   * Check if item or any of its children is active
+   */
+  const isItemOrChildActive = (item: SidebarItem): boolean => {
+    if (isItemActive(item)) return true;
+    if (item.children) {
+      return item.children.some(child => isItemOrChildActive(child));
+    }
+    return false;
+  };
+
   // Handle menu item click
   const handleItemClick = (itemId: string) => {
     onItemClick?.(itemId);
+  };
+
+  // Toggle submenu expansion
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -123,8 +164,148 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation Items */}
       {items.map((item) => {
         const active = isItemActive(item);
+        const hasChildren = item.children && item.children.length > 0;
+        const isExpanded = expandedItems.has(item.id);
+        const isActiveOrChildActive = isItemOrChildActive(item);
 
-        // If item has href, render as Link; otherwise render as button
+        // Item with children (parent menu)
+        if (hasChildren) {
+          return (
+            <Box key={item.id} sx={{ width: '100%' }}>
+              {/* Parent item */}
+              {item.href ? (
+                <Link
+                  to={item.href}
+                  onClick={() => {
+                    handleItemClick(item.id);
+                    item.onClick?.();
+                  }}
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    display: 'block',
+                    width: '100%',
+                  }}
+                >
+                  <SidebarItemButton
+                    className={isActiveOrChildActive ? 'active' : ''}
+                    role="menuitem"
+                    aria-label={item.label}
+                    aria-current={active ? 'page' : undefined}
+                    title={isCollapsed ? item.label : undefined}
+                    tabIndex={0}
+                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+                      {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                      {!isCollapsed && <span>{item.label}</span>}
+                    </Box>
+                    {!isCollapsed && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleExpanded(item.id);
+                        }}
+                        sx={{
+                          padding: 0,
+                          color: 'inherit',
+                          '&:hover': { backgroundColor: 'transparent' },
+                        }}
+                      >
+                        {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      </IconButton>
+                    )}
+                  </SidebarItemButton>
+                </Link>
+              ) : (
+                <SidebarItemButton
+                  className={isActiveOrChildActive ? 'active' : ''}
+                  onClick={() => {
+                    handleItemClick(item.id);
+                    item.onClick?.();
+                    toggleExpanded(item.id);
+                  }}
+                  role="menuitem"
+                  aria-label={item.label}
+                  title={isCollapsed ? item.label : undefined}
+                  tabIndex={0}
+                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+                    {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Box>
+                  {!isCollapsed && (
+                    isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
+                  )}
+                </SidebarItemButton>
+              )}
+
+              {/* Child items */}
+              {!isCollapsed && (
+                <Collapse in={isExpanded}>
+                  <Box sx={{ pl: rem(32) }}>
+                    {item.children?.map((child) => {
+                      const childActive = isItemActive(child);
+                      if (child.href) {
+                        return (
+                          <Link
+                            key={child.id}
+                            to={child.href}
+                            onClick={() => {
+                              handleItemClick(child.id);
+                              child.onClick?.();
+                            }}
+                            style={{
+                              textDecoration: 'none',
+                              color: 'inherit',
+                              display: 'block',
+                              width: '100%',
+                            }}
+                          >
+                            <SidebarItemButton
+                              className={childActive ? 'active' : ''}
+                              role="menuitem"
+                              aria-label={child.label}
+                              aria-current={childActive ? 'page' : undefined}
+                              tabIndex={0}
+                              sx={{ fontSize: rem(14) }}
+                            >
+                              {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
+                              <span>{child.label}</span>
+                            </SidebarItemButton>
+                          </Link>
+                        );
+                      }
+                      return (
+                        <SidebarItemButton
+                          key={child.id}
+                          className={childActive ? 'active' : ''}
+                          onClick={() => {
+                            handleItemClick(child.id);
+                            child.onClick?.();
+                          }}
+                          role="menuitem"
+                          aria-label={child.label}
+                          aria-current={childActive ? 'page' : undefined}
+                          tabIndex={0}
+                          sx={{ fontSize: rem(14) }}
+                        >
+                          {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
+                          <span>{child.label}</span>
+                        </SidebarItemButton>
+                      );
+                    })}
+                  </Box>
+                </Collapse>
+              )}
+            </Box>
+          );
+        }
+
+        // Regular item without children
         if (item.href) {
           return (
             <Link

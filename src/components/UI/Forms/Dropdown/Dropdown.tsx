@@ -308,7 +308,8 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   }, 300);
 
   const clearOptions = useCallback(() => {
-    if (isValueFetchableOnPress || !apiHook || getLiveData) {
+    // Don't clear options if we're using preFetchedOptions (static list)
+    if (isValueFetchableOnPress || (getLiveData && apiHook)) {
       setOptions([]);
     }
   }, [isValueFetchableOnPress, apiHook, getLiveData]);
@@ -373,8 +374,12 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           disablePortal={disablePortal}
           id={id}
           options={options}
-          onOpen={fetchOptions}
-          onClose={clearOptions}
+          onOpen={() => {
+            fetchOptions();
+          }}
+          onClose={() => {
+            clearOptions();
+          }}
           className={classNameString}
           loading={isLoading}
           dropdownSize={size}

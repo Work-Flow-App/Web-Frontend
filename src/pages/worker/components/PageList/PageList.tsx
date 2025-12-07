@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { SetupForm } from '../SetupForm';
 import { workerService, type Worker } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -95,22 +95,40 @@ export const PageList: React.FC = () => {
 
   // Handle delete worker
   const handleDeleteWorker = useCallback(
-    async (worker: WorkerTableRow) => {
-      if (!window.confirm(`Are you sure you want to delete ${worker.name}?`)) {
-        return;
-      }
-
-      try {
-        await workerService.deleteWorker(worker.id);
-        showSuccess(`${worker.name} deleted successfully`);
-        fetchWorkers();
-      } catch (error) {
-        console.error('Error deleting worker:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete worker';
-        showError(errorMessage);
-      }
+    (worker: WorkerTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'deleteWorker',
+        children: (
+          <ConfirmationModal
+            title="Delete Worker"
+            message={`Are you sure you want to delete ${worker.name}?`}
+            description="This action cannot be undone."
+            variant="danger"
+            confirmButtonText="Delete"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await workerService.deleteWorker(worker.id);
+                showSuccess(`${worker.name} deleted successfully`);
+                resetGlobalModalOuterProps();
+                fetchWorkers();
+              } catch (error) {
+                console.error('Error deleting worker:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete worker';
+                showError(errorMessage);
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
     },
-    [showSuccess, showError, fetchWorkers]
+    [showSuccess, showError, fetchWorkers, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   // Define table actions

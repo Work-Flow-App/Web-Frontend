@@ -3,7 +3,7 @@ import { WorkerFormSchema, type WorkerFormData } from '../../schema/WorkerFormSc
 import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { WorkerFormFields } from '../WorkerFormFields';
 import { Loader } from '../../../../components/UI';
-import { workerService } from '../../../../services/api';
+import { workerService, type WorkerCreateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
@@ -77,16 +77,18 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
           });
           showSuccess(response.data.name ? `${response.data.name} updated successfully` : 'Worker updated successfully');
         } else {
-          // Create new worker
-          const response = await workerService.createWorker({
+          // Create new worker - only include optional fields if they have values
+          const createPayload: WorkerCreateRequest = {
             name: data.name,
-            initials: data.initials,
             email: data.email,
-            telephone: data.telephone,
-            mobile: data.mobile,
             username: data.username,
             password: data.password,
-          });
+          };
+          if (data.initials) createPayload.initials = data.initials;
+          if (data.telephone) createPayload.telephone = data.telephone;
+          if (data.mobile) createPayload.mobile = data.mobile;
+
+          const response = await workerService.createWorker(createPayload);
           showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Worker added successfully');
         }
 

@@ -99,6 +99,16 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
   const [columns, setColumns] = useState<ITableColumn<T>[]>(initialColumns);
   const [columnSearchQueries, setColumnSearchQueries] = useState<Record<string, string>>({});
 
+  // Sync columns when initialColumns changes
+  React.useEffect(() => {
+    setColumns(initialColumns);
+  }, [initialColumns]);
+
+  // Debug: Log when columns change
+  React.useEffect(() => {
+    console.log('Context columns updated:', columns.map((c: any) => ({ id: c.id, label: c.label })));
+  }, [columns]);
+
   // ============================================
   // Pagination Logic
   // ============================================

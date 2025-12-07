@@ -55,6 +55,7 @@ export const ModalOverlay = styled(Box)(({ theme: { palette } }) => ({
   backgroundColor: palette.common.black,
   opacity: 0.5,
   zIndex: ZIndex,
+  pointerEvents: 'none',
 }));
 
 export const ModalContentWrapper = styled(Box)(() => ({

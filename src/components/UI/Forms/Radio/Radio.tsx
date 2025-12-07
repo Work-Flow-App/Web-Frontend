@@ -1,22 +1,40 @@
 import React from 'react';
+import { useFormContext, useController } from 'react-hook-form';
 import type { RadioGroupProps } from './Radio.types';
 import * as S from './Radio.styles';
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
   name,
   options,
-  value,
-  onChange,
-  error,
+  value: externalValue,
+  onChange: externalOnChange,
+  error: externalError,
   label,
   orientation = 'vertical',
 }) => {
+  // Try to get React Hook Form context
+  const methods = useFormContext?.();
+  const { control } = methods || {};
+
+  // Use controller if we have React Hook Form context
+  const { field, fieldState } = control
+    ? useController({ control, name })
+    : { field: null, fieldState: null };
+
+  // Use either form-controlled value or external value
+  const value = field?.value ?? externalValue;
+  const error = fieldState?.error ?? externalError;
+
   const hasError = Boolean(error);
   const errorMessage = typeof error === 'object' && error?.message ? error.message : '';
 
   const handleOptionClick = (optionValue: string) => {
-    if (onChange) {
-      onChange(optionValue);
+    if (field) {
+      // React Hook Form controlled
+      field.onChange(optionValue);
+    } else if (externalOnChange) {
+      // External controlled
+      externalOnChange(optionValue);
     }
   };
 
