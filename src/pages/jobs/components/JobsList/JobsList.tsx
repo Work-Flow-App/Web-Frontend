@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { jobService, jobTemplateService } from '../../../../services/api';
 import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -149,22 +149,40 @@ export const JobsList: React.FC = () => {
 
   // Handle delete job
   const handleDeleteJob = useCallback(
-    async (job: JobTableRow) => {
-      if (!window.confirm(`Are you sure you want to delete Job #${job.id}?`)) {
-        return;
-      }
-
-      try {
-        await jobService.deleteJob(job.id);
-        showSuccess(`Job #${job.id} deleted successfully`);
-        fetchJobs();
-      } catch (error) {
-        console.error('Error deleting job:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete job';
-        showError(errorMessage);
-      }
+    (job: JobTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'deleteJob',
+        children: (
+          <ConfirmationModal
+            title="Delete Job"
+            message={`Are you sure you want to delete Job #${job.id}?`}
+            description="This action cannot be undone. All data associated with this job will be permanently deleted."
+            variant="danger"
+            confirmButtonText="Delete"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobService.deleteJob(job.id);
+                showSuccess(`Job #${job.id} deleted successfully`);
+                resetGlobalModalOuterProps();
+                fetchJobs();
+              } catch (error) {
+                console.error('Error deleting job:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete job';
+                showError(errorMessage);
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
     },
-    [showSuccess, showError, fetchJobs]
+    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   // Define table actions

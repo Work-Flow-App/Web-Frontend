@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -97,7 +97,7 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
             onSuccess={() => {
               resetGlobalModalOuterProps();
               fetchFields();
-              onFieldsChange?.(); // Notify parent to refresh columns
+              onFieldsChange?.(); 
             }}
           />
         ),
@@ -108,23 +108,41 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
 
   // Handle delete field
   const handleDeleteField = useCallback(
-    async (field: FieldTableRow) => {
-      if (!window.confirm(`Are you sure you want to delete field "${field.label}"?`)) {
-        return;
-      }
-
-      try {
-        await jobTemplateService.deleteField(field.id);
-        showSuccess(`Field "${field.label}" deleted successfully`);
-        fetchFields();
-        onFieldsChange?.(); // Notify parent to refresh columns
-      } catch (error) {
-        console.error('Error deleting field:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
-        showError(errorMessage);
-      }
+    (field: FieldTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'deleteField',
+        children: (
+          <ConfirmationModal
+            title="Delete Field"
+            message={`Are you sure you want to delete field "${field.label}"?`}
+            description="This action cannot be undone."
+            variant="danger"
+            confirmButtonText="Delete"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobTemplateService.deleteField(field.id);
+                showSuccess(`Field "${field.label}" deleted successfully`);
+                resetGlobalModalOuterProps();
+                fetchFields();
+                onFieldsChange?.(); // Notify parent to refresh columns
+              } catch (error) {
+                console.error('Error deleting field:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
+                showError(errorMessage);
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
     },
-    [showSuccess, showError, fetchFields, onFieldsChange]
+    [showSuccess, showError, fetchFields, onFieldsChange, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   // Define table actions

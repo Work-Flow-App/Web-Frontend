@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { jobTemplateService, jobService } from '../../../../services/api';
 import type { JobTemplateResponse, JobResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -124,27 +124,45 @@ export const TemplatesList: React.FC = () => {
 
   // Handle delete template
   const handleDeleteTemplate = useCallback(
-    async (template: TemplateTableRow) => {
+    (template: TemplateTableRow) => {
       if (template.jobCount > 0) {
         showError(`Cannot delete template "${template.name}" because it has ${template.jobCount} job(s) using it.`);
         return;
       }
 
-      if (!window.confirm(`Are you sure you want to delete template "${template.name}"?`)) {
-        return;
-      }
-
-      try {
-        await jobTemplateService.deleteTemplate(template.id);
-        showSuccess(`Template "${template.name}" deleted successfully`);
-        fetchTemplates();
-      } catch (error) {
-        console.error('Error deleting template:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete template';
-        showError(errorMessage);
-      }
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'deleteTemplate',
+        children: (
+          <ConfirmationModal
+            title="Delete Template"
+            message={`Are you sure you want to delete template "${template.name}"?`}
+            description="This action cannot be undone. All fields associated with this template will also be deleted."
+            variant="danger"
+            confirmButtonText="Delete"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobTemplateService.deleteTemplate(template.id);
+                showSuccess(`Template "${template.name}" deleted successfully`);
+                resetGlobalModalOuterProps();
+                fetchTemplates();
+              } catch (error) {
+                console.error('Error deleting template:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete template';
+                showError(errorMessage);
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
     },
-    [showSuccess, showError, fetchTemplates]
+    [showSuccess, showError, fetchTemplates, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   // Handle manage fields
