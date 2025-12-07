@@ -1,24 +1,24 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Box, Typography } from '@mui/material';
+import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { Button } from '../../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../components/UI/GlobalModal';
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { fieldColumns, type FieldTableRow } from './FieldsDataColumn';
 import { FieldForm } from '../FieldForm/FieldForm';
-import { rem } from '../../../../components/UI/Typography/utility';
-import { floowColors } from '../../../../theme/colors';
 
 interface TemplateFieldsProps {
   templateId: number;
-  templateName: string;
   onFieldsChange?: () => void;
 }
 
-export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, templateName, onFieldsChange }) => {
+export interface TemplateFieldsRef {
+  handleAddField: () => void;
+}
+
+export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>(
+  ({ templateId, onFieldsChange }, ref) => {
   const [fields, setFields] = useState<FieldTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -58,7 +58,7 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
   }, [fetchFields]);
 
   // Handle add field
-  const handleAddField = () => {
+  const handleAddField = useCallback(() => {
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
@@ -75,7 +75,12 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
         />
       ),
     });
-  };
+  }, [templateId, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchFields, onFieldsChange]);
+
+  // Expose handleAddField via ref
+  useImperativeHandle(ref, () => ({
+    handleAddField,
+  }), [handleAddField]);
 
   // Handle edit field
   const handleEditField = useCallback(
@@ -141,40 +146,17 @@ export const TemplateFields: React.FC<TemplateFieldsProps> = ({ templateId, temp
   );
 
   return (
-    <Box sx={{ marginTop: rem(32) }}>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: rem(16),
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontSize: rem(18),
-            fontWeight: 600,
-            color: floowColors.black,
-          }}
-        >
-          Fields for "{templateName}"
-        </Typography>
-        <Button onClick={handleAddField} variant="contained" color="primary">
-          Add Field
-        </Button>
-      </Box>
-
-      <Table<FieldTableRow>
-        columns={fieldColumns}
-        data={fields}
-        showActions
-        actions={tableActions}
-        loading={loading}
-        emptyMessage="No fields found. Add your first field to get started."
-        rowsPerPage={10}
-        showPagination={false}
-      />
-    </Box>
+    <Table<FieldTableRow>
+      columns={fieldColumns}
+      data={fields}
+      showActions
+      actions={tableActions}
+      loading={loading}
+      emptyMessage="No fields found. Add your first field to get started."
+      rowsPerPage={10}
+      showPagination={true}
+    />
   );
-};
+});
+
+TemplateFields.displayName = 'TemplateFields';

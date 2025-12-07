@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { TemplateFields } from './components/TemplateFields/TemplateFields';
+import type { TemplateFieldsRef } from './components/TemplateFields/TemplateFields';
 import { jobTemplateService } from '../../services/api';
+import { Loader } from '../../components/UI';
 
 export const TemplateFieldsPage: React.FC = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
   const [templateName, setTemplateName] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const templateFieldsRef = useRef<TemplateFieldsRef>(null);
 
   useEffect(() => {
     const fetchTemplate = async () => {
@@ -36,8 +39,12 @@ export const TemplateFieldsPage: React.FC = () => {
     navigate('/company/jobs/templates');
   };
 
+  const handleAddField = () => {
+    templateFieldsRef.current?.handleAddField();
+  };
+
   if (loading) {
-    return null;
+    return <Loader/>;
   }
 
   return (
@@ -46,17 +53,23 @@ export const TemplateFieldsPage: React.FC = () => {
       description="Manage fields for this job template"
       actions={[
         {
+          label: 'Add Field',
+          onClick: handleAddField,
+          variant: 'contained',
+          color: 'primary',
+        },
+        {
           label: 'Back to Templates',
           onClick: handleBack,
           variant: 'outlined',
-          color: 'primary',
+          color: 'secondary',
         },
       ]}
     >
       {templateId && (
         <TemplateFields
+          ref={templateFieldsRef}
           templateId={Number(templateId)}
-          templateName={templateName}
         />
       )}
     </PageWrapper>
