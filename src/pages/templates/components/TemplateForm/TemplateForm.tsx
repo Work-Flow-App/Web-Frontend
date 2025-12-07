@@ -24,9 +24,12 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ isModal = false, tem
   // Set modal title and button text based on mode
   useEffect(() => {
     if (isModal) {
-      updateModalTitle(isEditMode ? 'Edit Template' : 'Add New Template');
+      const title = isEditMode ? 'Edit Template' : 'Add New Template';
+      const buttonText = isEditMode ? 'Update Template' : 'Add Template';
+
+      updateModalTitle(title);
       updateGlobalModalInnerConfig({
-        confirmModalButtonText: isEditMode ? 'Update Template' : 'Add Template',
+        confirmModalButtonText: buttonText,
       });
     }
   }, [isModal, isEditMode, updateModalTitle, updateGlobalModalInnerConfig]);

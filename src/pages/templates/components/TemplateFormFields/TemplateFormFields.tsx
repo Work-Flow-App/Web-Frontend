@@ -21,8 +21,6 @@ export const TemplateFormFields: React.FC = () => {
         <Input
           name={fieldTitles.description}
           placeholder={placeHolders.description}
-          multiline
-          rows={3}
           hideErrorMessage={false}
         />
       </FormField>

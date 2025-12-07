@@ -55,7 +55,7 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
             name: field.name || '',
             label: field.label || '',
             jobFieldType: selectedFieldType as any,
-            required: field.required || false,
+            required: String(field.required) as any, // Convert boolean to string for RadioGroup
             options: field.options || '',
             orderIndex: field.orderIndex || 0,
           });
