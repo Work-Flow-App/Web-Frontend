@@ -23,6 +23,82 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
+export interface AssetAssignmentCreateRequest {
+    'assetId'?: number;
+    'jobId'?: number;
+    'assignedWorkerId'?: number;
+    'notes'?: string;
+}
+export interface AssetAssignmentResponse {
+    'assignmentId'?: number;
+    'assetId'?: number;
+    'jobId'?: number;
+    'assignedWorkerId'?: number;
+    'notes'?: string;
+    'assignedAt'?: string;
+    'returnedAt'?: string;
+    'durationDays'?: number;
+    'status'?: string;
+}
+export interface AssetAssignmentReturnRequest {
+    'assignmentId'?: number;
+    'notes'?: string;
+}
+export interface AssetCreateRequest {
+    'name'?: string;
+    'description'?: string;
+    'serialNumber'?: string;
+    'assetTag'?: string;
+    'purchasePrice'?: number;
+    'purchaseDate'?: string;
+    'depreciationRate'?: number;
+    'salvageValue'?: number;
+    'currentLocation'?: string;
+    'latitude'?: number;
+    'longitude'?: number;
+}
+export interface AssetResponse {
+    'id'?: number;
+    'companyId'?: number;
+    'name'?: string;
+    'description'?: string;
+    'serialNumber'?: string;
+    'assetTag'?: string;
+    'purchasePrice'?: number;
+    'purchaseDate'?: string;
+    'depreciationRate'?: number;
+    'salvageValue'?: number;
+    'currentLocation'?: string;
+    'latitude'?: number;
+    'longitude'?: number;
+    'available'?: boolean;
+    'archived'?: boolean;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface AssetUpdateRequest {
+    'name'?: string;
+    'description'?: string;
+    'serialNumber'?: string;
+    'assetTag'?: string;
+    'salvageValue'?: number;
+    'currentLocation'?: string;
+    'latitude'?: number;
+    'longitude'?: number;
+}
+export interface AssetValueResponse {
+    'assetId'?: number;
+    'assetName'?: string;
+    'purchasePrice'?: number;
+    'currentValue'?: number;
+    'totalDepreciation'?: number;
+    'depreciationRate'?: number;
+    'salvageValue'?: number;
+    'purchaseDate'?: string;
+    'daysOwned'?: number;
+    'yearsOwned'?: number;
+    'valueAsOfDate'?: string;
+}
 export interface AuthenticationResponse {
     'accessToken'?: string;
     'refreshToken'?: string;
@@ -98,6 +174,25 @@ export interface CompanyProfileUpdateRequest {
     'contactEmail'?: string;
     'contactNumber'?: string;
 }
+export interface FieldValueResponse {
+    'name'?: string;
+    'label'?: string;
+    'type'?: FieldValueResponseTypeEnum;
+    'value'?: any;
+}
+
+export const FieldValueResponseTypeEnum = {
+    Text: 'TEXT',
+    Number: 'NUMBER',
+    Date: 'DATE',
+    Boolean: 'BOOLEAN',
+    Dropdown: 'DROPDOWN',
+    Json: 'JSON',
+    Reference: 'REFERENCE'
+} as const;
+
+export type FieldValueResponseTypeEnum = typeof FieldValueResponseTypeEnum[keyof typeof FieldValueResponseTypeEnum];
+
 export interface ForgotPasswordRequest {
     'email': string;
 }
@@ -105,21 +200,43 @@ export interface JobCreateRequest {
     'templateId'?: number;
     'clientId'?: number;
     'assignedWorkerId'?: number;
-    'status'?: string;
-    'fieldValues'?: { [key: string]: string; };
+    'status'?: JobCreateRequestStatusEnum;
+    'fieldValues'?: { [key: string]: any; };
 }
+
+export const JobCreateRequestStatusEnum = {
+    New: 'NEW',
+    Pending: 'PENDING',
+    InProgress: 'IN_PROGRESS',
+    Completed: 'COMPLETED',
+    Cancelled: 'CANCELLED'
+} as const;
+
+export type JobCreateRequestStatusEnum = typeof JobCreateRequestStatusEnum[keyof typeof JobCreateRequestStatusEnum];
+
 export interface JobResponse {
     'id'?: number;
     'companyId'?: number;
     'templateId'?: number;
     'clientId'?: number;
     'assignedWorkerId'?: number;
-    'status'?: string;
+    'status'?: JobResponseStatusEnum;
     'archived'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
-    'fieldValues'?: { [key: string]: string; };
+    'fieldValues'?: { [key: string]: FieldValueResponse; };
 }
+
+export const JobResponseStatusEnum = {
+    New: 'NEW',
+    Pending: 'PENDING',
+    InProgress: 'IN_PROGRESS',
+    Completed: 'COMPLETED',
+    Cancelled: 'CANCELLED'
+} as const;
+
+export type JobResponseStatusEnum = typeof JobResponseStatusEnum[keyof typeof JobResponseStatusEnum];
+
 export interface JobTemplateCreateRequest {
     'name'?: string;
     'description'?: string;
@@ -139,7 +256,9 @@ export const JobTemplateFieldCreateRequestJobFieldTypeEnum = {
     Number: 'NUMBER',
     Date: 'DATE',
     Boolean: 'BOOLEAN',
-    Dropdown: 'DROPDOWN'
+    Dropdown: 'DROPDOWN',
+    Json: 'JSON',
+    Reference: 'REFERENCE'
 } as const;
 
 export type JobTemplateFieldCreateRequestJobFieldTypeEnum = typeof JobTemplateFieldCreateRequestJobFieldTypeEnum[keyof typeof JobTemplateFieldCreateRequestJobFieldTypeEnum];
@@ -160,7 +279,9 @@ export const JobTemplateFieldResponseJobFieldTypeEnum = {
     Number: 'NUMBER',
     Date: 'DATE',
     Boolean: 'BOOLEAN',
-    Dropdown: 'DROPDOWN'
+    Dropdown: 'DROPDOWN',
+    Json: 'JSON',
+    Reference: 'REFERENCE'
 } as const;
 
 export type JobTemplateFieldResponseJobFieldTypeEnum = typeof JobTemplateFieldResponseJobFieldTypeEnum[keyof typeof JobTemplateFieldResponseJobFieldTypeEnum];
@@ -180,16 +301,48 @@ export interface JobTemplateWithFieldsResponse {
 export interface JobUpdateRequest {
     'clientId'?: number;
     'assignedWorkerId'?: number;
-    'status'?: string;
+    'status'?: JobUpdateRequestStatusEnum;
     'archived'?: boolean;
-    'fieldValues'?: { [key: string]: string; };
+    'fieldValues'?: { [key: string]: any; };
 }
+
+export const JobUpdateRequestStatusEnum = {
+    New: 'NEW',
+    Pending: 'PENDING',
+    InProgress: 'IN_PROGRESS',
+    Completed: 'COMPLETED',
+    Cancelled: 'CANCELLED'
+} as const;
+
+export type JobUpdateRequestStatusEnum = typeof JobUpdateRequestStatusEnum[keyof typeof JobUpdateRequestStatusEnum];
+
 export interface LoginRequest {
     'userName': string;
     'password': string;
 }
 export interface LogoutRequest {
     'refreshToken': string;
+}
+export interface PageAssetResponse {
+    'totalElements'?: number;
+    'totalPages'?: number;
+    'numberOfElements'?: number;
+    'pageable'?: PageableObject;
+    'size'?: number;
+    'content'?: Array<AssetResponse>;
+    'number'?: number;
+    'sort'?: SortObject;
+    'first'?: boolean;
+    'last'?: boolean;
+    'empty'?: boolean;
+}
+export interface PageableObject {
+    'pageNumber'?: number;
+    'paged'?: boolean;
+    'pageSize'?: number;
+    'offset'?: number;
+    'sort'?: SortObject;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -217,6 +370,11 @@ export const SignupRequestRoleEnum = {
 
 export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof SignupRequestRoleEnum];
 
+export interface SortObject {
+    'sorted'?: boolean;
+    'unsorted'?: boolean;
+    'empty'?: boolean;
+}
 export interface WorkerCreateRequest {
     'name': string;
     'initials'?: string;
@@ -252,6 +410,885 @@ export interface WorkerUpdateRequest {
     'mobile'?: string;
     'email'?: string;
 }
+
+/**
+ * AssetAssignmentControllerApi - axios parameter creator
+ */
+export const AssetAssignmentControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {AssetAssignmentCreateRequest} assetAssignmentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assign: async (assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetAssignmentCreateRequest' is not null or undefined
+            assertParamExists('assign', 'assetAssignmentCreateRequest', assetAssignmentCreateRequest)
+            const localVarPath = `/api/v1/asset-assignments/assign`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetAssignmentCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        history: async (assetId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('history', 'assetId', assetId)
+            const localVarPath = `/api/v1/asset-assignments/asset/{assetId}/history`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} jobId 
+         * @param {boolean} [onlyActive] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobAssignments: async (jobId: number, onlyActive?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'jobId' is not null or undefined
+            assertParamExists('jobAssignments', 'jobId', jobId)
+            const localVarPath = `/api/v1/asset-assignments/job/{jobId}`
+                .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (onlyActive !== undefined) {
+                localVarQueryParameter['onlyActive'] = onlyActive;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {AssetAssignmentReturnRequest} assetAssignmentReturnRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        returnAsset: async (assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetAssignmentReturnRequest' is not null or undefined
+            assertParamExists('returnAsset', 'assetAssignmentReturnRequest', assetAssignmentReturnRequest)
+            const localVarPath = `/api/v1/asset-assignments/return`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetAssignmentReturnRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * AssetAssignmentControllerApi - functional programming interface
+ */
+export const AssetAssignmentControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = AssetAssignmentControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {AssetAssignmentCreateRequest} assetAssignmentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assign(assetAssignmentCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentControllerApi.assign']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async history(assetId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.history(assetId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentControllerApi.history']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} jobId 
+         * @param {boolean} [onlyActive] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobAssignments(jobId, onlyActive, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentControllerApi.jobAssignments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {AssetAssignmentReturnRequest} assetAssignmentReturnRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.returnAsset(assetAssignmentReturnRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentControllerApi.returnAsset']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * AssetAssignmentControllerApi - factory interface
+ */
+export const AssetAssignmentControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = AssetAssignmentControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {AssetAssignmentCreateRequest} assetAssignmentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.assign(assetAssignmentCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        history(assetId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
+            return localVarFp.history(assetId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} jobId 
+         * @param {boolean} [onlyActive] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
+            return localVarFp.jobAssignments(jobId, onlyActive, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetAssignmentReturnRequest} assetAssignmentReturnRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.returnAsset(assetAssignmentReturnRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * AssetAssignmentControllerApi - object-oriented interface
+ */
+export class AssetAssignmentControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {AssetAssignmentCreateRequest} assetAssignmentCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentControllerApiFp(this.configuration).assign(assetAssignmentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} assetId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public history(assetId: number, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentControllerApiFp(this.configuration).history(assetId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} jobId 
+     * @param {boolean} [onlyActive] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentControllerApiFp(this.configuration).jobAssignments(jobId, onlyActive, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetAssignmentReturnRequest} assetAssignmentReturnRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentControllerApiFp(this.configuration).returnAsset(assetAssignmentReturnRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * AssetControllerApi - axios parameter creator
+ */
+export const AssetControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        archive: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('archive', 'id', id)
+            const localVarPath = `/api/v1/assets/{id}/archive`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {AssetCreateRequest} assetCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create1: async (assetCreateRequest: AssetCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetCreateRequest' is not null or undefined
+            assertParamExists('create1', 'assetCreateRequest', assetCreateRequest)
+            const localVarPath = `/api/v1/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        get1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('get1', 'id', id)
+            const localVarPath = `/api/v1/assets/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {boolean} [archived] 
+         * @param {boolean} [available] 
+         * @param {string} [sort] 
+         * @param {string} [dir] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list: async (page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (archived !== undefined) {
+                localVarQueryParameter['archived'] = archived;
+            }
+
+            if (available !== undefined) {
+                localVarQueryParameter['available'] = available;
+            }
+
+            if (sort !== undefined) {
+                localVarQueryParameter['sort'] = sort;
+            }
+
+            if (dir !== undefined) {
+                localVarQueryParameter['dir'] = dir;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        stats: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/assets/statistics`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {AssetUpdateRequest} assetUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update1: async (id: number, assetUpdateRequest: AssetUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update1', 'id', id)
+            // verify required parameter 'assetUpdateRequest' is not null or undefined
+            assertParamExists('update1', 'assetUpdateRequest', assetUpdateRequest)
+            const localVarPath = `/api/v1/assets/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {string} [asOf] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        value: async (id: number, asOf?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('value', 'id', id)
+            const localVarPath = `/api/v1/assets/{id}/value`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (asOf !== undefined) {
+                localVarQueryParameter['asOf'] = asOf;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * AssetControllerApi - functional programming interface
+ */
+export const AssetControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = AssetControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async archive(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.archive(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.archive']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {AssetCreateRequest} assetCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create1(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create1(assetCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.create1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async get1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.get1(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.get1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {boolean} [archived] 
+         * @param {boolean} [available] 
+         * @param {string} [sort] 
+         * @param {string} [dir] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageAssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list(page, size, archived, available, sort, dir, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.list']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async stats(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.stats(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.stats']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {AssetUpdateRequest} assetUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update1(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update1(id, assetUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.update1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {string} [asOf] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async value(id: number, asOf?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetValueResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.value(id, asOf, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetControllerApi.value']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * AssetControllerApi - factory interface
+ */
+export const AssetControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = AssetControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        archive(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.archive(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {AssetCreateRequest} assetCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create1(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.create1(assetCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        get1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.get1(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {boolean} [archived] 
+         * @param {boolean} [available] 
+         * @param {string} [sort] 
+         * @param {string} [dir] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageAssetResponse> {
+            return localVarFp.list(page, size, archived, available, sort, dir, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        stats(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.stats(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {AssetUpdateRequest} assetUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update1(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.update1(id, assetUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {string} [asOf] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        value(id: number, asOf?: string, options?: RawAxiosRequestConfig): AxiosPromise<AssetValueResponse> {
+            return localVarFp.value(id, asOf, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * AssetControllerApi - object-oriented interface
+ */
+export class AssetControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public archive(id: number, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).archive(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {AssetCreateRequest} assetCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public create1(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).create1(assetCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public get1(id: number, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).get1(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {boolean} [archived] 
+     * @param {boolean} [available] 
+     * @param {string} [sort] 
+     * @param {string} [dir] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).list(page, size, archived, available, sort, dir, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public stats(options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).stats(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {AssetUpdateRequest} assetUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public update1(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).update1(id, assetUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {string} [asOf] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public value(id: number, asOf?: string, options?: RawAxiosRequestConfig) {
+        return AssetControllerApiFp(this.configuration).value(id, asOf, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
 
 /**
  * AuthControllerApi - axios parameter creator
@@ -1522,6 +2559,43 @@ export const JobControllerApiAxiosParamCreator = function (configuration?: Confi
         },
         /**
          * 
+         * @param {number} templateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getJobsByTemplate: async (templateId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'templateId' is not null or undefined
+            assertParamExists('getJobsByTemplate', 'templateId', templateId)
+            const localVarPath = `/api/v1/jobs/templates/{templateId}`
+                .replace(`{${"templateId"}}`, encodeURIComponent(String(templateId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {JobUpdateRequest} jobUpdateRequest 
          * @param {*} [options] Override http request option.
@@ -1621,6 +2695,18 @@ export const JobControllerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} templateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getJobsByTemplate(templateId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobControllerApi.getJobsByTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {JobUpdateRequest} jobUpdateRequest 
          * @param {*} [options] Override http request option.
@@ -1678,6 +2764,15 @@ export const JobControllerApiFactory = function (configuration?: Configuration, 
         },
         /**
          * 
+         * @param {number} templateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
+            return localVarFp.getJobsByTemplate(templateId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {JobUpdateRequest} jobUpdateRequest 
          * @param {*} [options] Override http request option.
@@ -1730,6 +2825,16 @@ export class JobControllerApi extends BaseAPI {
      */
     public getAll(options?: RawAxiosRequestConfig) {
         return JobControllerApiFp(this.configuration).getAll(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} templateId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig) {
+        return JobControllerApiFp(this.configuration).getJobsByTemplate(templateId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
