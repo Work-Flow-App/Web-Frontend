@@ -5,6 +5,7 @@ import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { ClientPage } from './pages/client/ClientPage'
 import { JobsPage } from './pages/jobs/JobsPage'
 import { TemplatesPage } from './pages/templates/TemplatesPage'
 import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
@@ -32,6 +33,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/company/workers" element={<WorkerPage />} />
+              <Route path="/company/clients" element={<ClientPage />} />
               <Route path="/company/jobs" element={<JobsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
