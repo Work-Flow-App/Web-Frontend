@@ -8,7 +8,8 @@ import { RadioGroup } from '../../../../components/UI/Forms/Radio';
 import {  FormField } from '../../../../components/UI/FormComponents';
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateResponse, JobTemplateFieldResponse } from '../../../../services/api';
-import { Box } from '@mui/material';
+import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
+
 
 interface JobFormFieldsProps {
   isEditMode?: boolean;
@@ -74,10 +75,6 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     fetchTemplateFields();
   }, [selectedTemplateId]);
 
-  // const templateOptions = templates.map((template) => ({
-  //   label: template.name || '',
-  //   value: template.id?.toString() || '',
-  // }));
   const templateOptions = useMemo(() => {
       return templates.map((template) => ({
         label: template.name || '',
@@ -85,19 +82,12 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }));
     }, [templates]);
 
-  const statusOptions = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'In Progress', value: 'in_progress' },
-    { label: 'Completed', value: 'completed' },
-    { label: 'Cancelled', value: 'cancelled' },
-  ];
-
   // Render input based on field type
   const renderFieldInput = (field: JobTemplateFieldResponse) => {
     const fieldName = `field_${field.name}`;
 
     switch (field.jobFieldType) {
-      case 'TEXT':
+      case FieldType.TEXT:
         return (
           <Input
             name={fieldName}
@@ -106,7 +96,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'NUMBER':
+      case FieldType.NUMBER:
         return (
           <Input
             type="number"
@@ -116,7 +106,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'DATE':
+      case FieldType.DATE:
         return (
           <Input
             type="date"
@@ -125,7 +115,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'BOOLEAN':
+      case FieldType.BOOLEAN:
         return (
           <RadioGroup
             name={fieldName}
@@ -136,7 +126,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'DROPDOWN': {
+      case FieldType.DROPDOWN: {
         const options = field.options
           ? field.options.split(',').map((opt) => ({
               label: opt.trim(),
@@ -148,6 +138,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             name={fieldName}
             preFetchedOptions={options}
             placeHolder={`Select ${field.label}`}
+            fullWidth={true}
           />
         );
       }
@@ -173,6 +164,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           isPreFetchLoading={loadingTemplates}
           disabled={isEditMode}
           disablePortal={true}
+          fullWidth={true}
         />
       </FormField>
 
@@ -181,9 +173,10 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           <FormField label={fieldLabels.status} required={isRequireds.status}>
             <Dropdown
               name={fieldTitles.status}
-              preFetchedOptions={statusOptions}
+              preFetchedOptions={JOB_STATUS_OPTIONS}
               placeHolder={placeHolders.status}
               disablePortal={true}
+              fullWidth={true}
             />
           </FormField>
 
@@ -208,7 +201,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
 
           {/* Dynamic fields based on template */}
           {templateFields.length > 0 && (
-            <Box sx={{ marginTop: 2 }}>
+            <>
               {templateFields
                 .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
                 .map((field) => (
@@ -220,7 +213,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
                     {renderFieldInput(field)}
                   </FormField>
                 ))}
-            </Box>
+            </>
           )}
         </>
       )}

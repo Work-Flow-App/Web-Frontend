@@ -5,6 +5,7 @@ import type { DropdownSize } from './Dropdown.types';
 
 interface StyledDropdownProps {
   dropdownSize?: DropdownSize;
+  fullWidth?: boolean;
 }
 
 export const AutocompleteWrapper = styled(Box)({
@@ -25,10 +26,17 @@ export const AutocompleteInnerWrapper = styled(Box)({
   width: '100%',
 });
 
-export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ theme, dropdownSize }) => {
+export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ theme, dropdownSize, fullWidth }) => {
   const { palette } = theme;
 
   const getSizeStyles = () => {
+    // fullWidth takes priority over dropdownSize
+    if (fullWidth) {
+      return {
+        width: '100%',
+      };
+    }
+
     switch (dropdownSize) {
       case 'small':
         return {
