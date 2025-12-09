@@ -5,7 +5,7 @@ import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
-import {  FormField } from '../../../../components/UI/FormComponents';
+import {  FormField, FormRow } from '../../../../components/UI/FormComponents';
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
@@ -156,29 +156,33 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
 
   return (
     <>
-      <FormField label={fieldLabels.templateId} required={isRequireds.templateId}>
-        <Dropdown
-          name={fieldTitles.templateId}
-          preFetchedOptions={templateOptions}
-          placeHolder={placeHolders.templateId}
-          isPreFetchLoading={loadingTemplates}
-          disabled={isEditMode}
-          disablePortal={true}
-          fullWidth={true}
-        />
-      </FormField>
+      <FormRow>
+        <FormField label={fieldLabels.templateId} required={isRequireds.templateId}>
+          <Dropdown
+            name={fieldTitles.templateId}
+            preFetchedOptions={templateOptions}
+            placeHolder={placeHolders.templateId}
+            isPreFetchLoading={loadingTemplates}
+            disabled={isEditMode}
+            disablePortal={true}
+            fullWidth={true}
+          />
+        </FormField>
+
+        <FormField label={fieldLabels.status} required={isRequireds.status}>
+          <Dropdown
+            name={fieldTitles.status}
+            preFetchedOptions={JOB_STATUS_OPTIONS}
+            placeHolder={placeHolders.status}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={!selectedTemplateId}
+          />
+        </FormField>
+      </FormRow>
 
       {selectedTemplateId && (
         <>
-          <FormField label={fieldLabels.status} required={isRequireds.status}>
-            <Dropdown
-              name={fieldTitles.status}
-              preFetchedOptions={JOB_STATUS_OPTIONS}
-              placeHolder={placeHolders.status}
-              disablePortal={true}
-              fullWidth={true}
-            />
-          </FormField>
 
           {/* TODO: Add Client and Worker dropdowns when those services are available */}
           {/* <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
