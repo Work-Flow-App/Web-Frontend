@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/UI/Button';
+import { authService } from '../../services/api/auth';
+import { getRoleFromToken } from '../../utils/jwt';
 import notFoundImage from '../../assets/logo/404.png';
 import {
   NotFoundContainer,
@@ -16,8 +18,16 @@ export const NotFound: React.FC = () => {
   const navigate = useNavigate();
 
   const handleGoToDashboard = () => {
-    // Get user role from localStorage
-    const userRole = localStorage.getItem('user_role');
+    // Get user role from token (same pattern as Layout component)
+    const token = authService.getAccessToken();
+
+    if (!token) {
+      // If no token, redirect to login
+      navigate('/login');
+      return;
+    }
+
+    const userRole = getRoleFromToken(token);
 
     // Navigate to appropriate dashboard based on user role
     if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
@@ -25,7 +35,7 @@ export const NotFound: React.FC = () => {
     } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
       navigate('/worker');
     } else {
-      // If no role found, redirect to login
+      // If no valid role found, redirect to login
       navigate('/login');
     }
   };
