@@ -5,9 +5,13 @@ import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { ClientPage } from './pages/client/ClientPage'
 import { JobsPage } from './pages/jobs/JobsPage'
 import { TemplatesPage } from './pages/templates/TemplatesPage'
 import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
+import { EquipmentPage } from './pages/equipment/EquipmentPage'
+import { CustomersPage } from './pages/customers/CustomersPage'
+import { SettingsPage } from './pages/settings/SettingsPage'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
@@ -32,6 +36,10 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/company/workers" element={<WorkerPage />} />
+              <Route path="/company/clients" element={<ClientPage />} />
+              <Route path="/company/equipments" element={<EquipmentPage />} />
+              <Route path="/company/customers" element={<CustomersPage />} />
+              <Route path="/company/settings" element={<SettingsPage />} />
               <Route path="/company/jobs" element={<JobsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />

@@ -5,6 +5,7 @@ import { JobFormFields } from '../JobFormFields/JobFormFields';
 import { Loader } from '../../../../components/UI';
 import { jobService, jobTemplateService } from '../../../../services/api';
 import type { JobCreateRequest, JobUpdateRequest } from '../../../../services/api';
+import { JobCreateRequestStatusEnum, JobUpdateRequestStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -49,19 +50,25 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             const fields = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
 
             // Map field values to form data
+            // For edit mode, just pass the raw values and let react-hook-form and Dropdown handle them
             const formData: Partial<JobFormData> = {
               templateId: job.templateId,
-              status: job.status || 'pending',
+              status: job.status,
               clientId: job.clientId,
               assignedWorkerId: job.assignedWorkerId,
             };
 
+            console.log('Edit mode - Setting form data:', formData);
+
             // Add dynamic field values
             fields.forEach((field) => {
-              const fieldName = `field_${field.name}`;
-              const fieldValue = job.fieldValues?.[field.name || ''];
+              const fieldName = `field_${field.id}`;
+              const fieldValue = job.fieldValues?.[field.id?.toString() || ''];
               if (fieldValue !== undefined) {
-                formData[fieldName] = fieldValue;
+                // Extract the actual value from FieldValueResponse object
+                formData[fieldName] = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
+                  ? fieldValue.value
+                  : fieldValue;
               }
             });
 
@@ -99,11 +106,19 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
         }
 
         // Build fieldValues from dynamic fields (those starting with "field_")
-        const fieldValues: { [key: string]: string } = {};
+        // The keys should be field IDs (numbers), not field names
+        const fieldValues: Record<string, string | number | boolean | object> = {};
         Object.entries(dynamicFields).forEach(([key, value]) => {
           if (key.startsWith('field_')) {
-            const fieldName = key.replace('field_', '');
-            fieldValues[fieldName] = String(value || '');
+            const fieldId = key.replace('field_', ''); // This is the field ID
+            // Extract value from dropdown objects if needed
+            const actualValue = typeof value === 'object' && value !== null && 'value' in value
+              ? (value as { value: string | number | boolean }).value
+              : value;
+            // Only add non-empty values
+            if (actualValue !== '' && actualValue !== null && actualValue !== undefined) {
+              fieldValues[fieldId] = actualValue;
+            }
           }
         });
 
@@ -129,7 +144,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             archived: false,
             fieldValues,
           };
-          if (statusValue) updatePayload.status = statusValue;
+          if (statusValue) updatePayload.status = statusValue as JobUpdateRequestStatusEnum;
           if (clientIdNumber) updatePayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
 
@@ -141,7 +156,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             templateId: templateIdNumber,
             fieldValues,
           };
-          if (statusValue) createPayload.status = statusValue;
+          if (statusValue) createPayload.status = statusValue as JobCreateRequestStatusEnum;
           if (clientIdNumber) createPayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
 

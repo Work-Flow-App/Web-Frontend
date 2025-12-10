@@ -38,7 +38,7 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
   gap: rem(12),
   width: '100%',
   height: rem(48),
-  background: floowColors.black,
+  background: floowColors.dark.navy,
   borderRadius: 0,
   borderBottom: `${rem(1)} solid ${floowColors.grey[200]}`,
   boxSizing: 'border-box',

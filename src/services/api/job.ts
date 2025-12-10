@@ -38,6 +38,13 @@ export const jobService = {
   },
 
   /**
+   * Get jobs by template ID
+   */
+  async getJobsByTemplate(templateId: number) {
+    return await getJobApi().getJobsByTemplate(templateId);
+  },
+
+  /**
    * Get job by ID
    */
   async getJobById(id: number) {

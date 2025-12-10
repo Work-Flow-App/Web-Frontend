@@ -12,6 +12,9 @@ export type { SignupRequest, LoginRequest, AuthResponse } from './auth';
 export { workerService } from './worker';
 export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse } from './worker';
 
+export { companyClientService } from './companyClient';
+export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest } from './companyClient';
+
 export { jobTemplateService } from './jobTemplate';
 export type { JobTemplateResponse, JobTemplateCreateRequest, JobTemplateFieldResponse, JobTemplateFieldCreateRequest, JobTemplateWithFieldsResponse } from './jobTemplate';
 export { JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../workflow-api';

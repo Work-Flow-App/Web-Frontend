@@ -6,8 +6,9 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
 import {  FormField } from '../../../../components/UI/FormComponents';
-import { jobTemplateService } from '../../../../services/api';
-import type { JobTemplateResponse, JobTemplateFieldResponse } from '../../../../services/api';
+import { jobTemplateService, companyClientService, workerService } from '../../../../services/api';
+import type { JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse } from '../../../../services/api';
+import { JobCreateRequestStatusEnum } from '../../../../../workflow-api';
 import { Box } from '@mui/material';
 
 interface JobFormFieldsProps {
@@ -19,11 +20,15 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [workers, setWorkers] = useState<WorkerResponse[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [loadingWorkers, setLoadingWorkers] = useState(true);
 
   const { control } = useFormContext();
   const selectedTemplateId = useWatch({ control, name: fieldTitles.templateId });
 
-  // Fetch templates on mount
+  // Fetch templates, clients, and workers on mount
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -38,7 +43,35 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }
     };
 
+    const fetchClients = async () => {
+      try {
+        setLoadingClients(true);
+        const response = await companyClientService.getAllClients();
+        const clientsData = Array.isArray(response.data) ? response.data : [];
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      } finally {
+        setLoadingClients(false);
+      }
+    };
+
+    const fetchWorkers = async () => {
+      try {
+        setLoadingWorkers(true);
+        const response = await workerService.getAllWorkers();
+        const workersData = Array.isArray(response.data) ? response.data : [];
+        setWorkers(workersData);
+      } catch (error) {
+        console.error('Error fetching workers:', error);
+      } finally {
+        setLoadingWorkers(false);
+      }
+    };
+
     fetchTemplates();
+    fetchClients();
+    fetchWorkers();
   }, []);
 
   // Fetch template fields when template is selected
@@ -85,16 +118,32 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }));
     }, [templates]);
 
+  const clientOptions = useMemo(() => {
+    return clients.map((client) => ({
+      label: client.name || '',
+      value: client.id?.toString() || '',
+    }));
+  }, [clients]);
+
+  const workerOptions = useMemo(() => {
+    return workers.map((worker) => ({
+      label: worker.name || '',
+      value: worker.id?.toString() || '',
+    }));
+  }, [workers]);
+
   const statusOptions = [
-    { label: 'Pending', value: 'pending' },
-    { label: 'In Progress', value: 'in_progress' },
-    { label: 'Completed', value: 'completed' },
-    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'New', value: JobCreateRequestStatusEnum.New },
+    { label: 'Pending', value: JobCreateRequestStatusEnum.Pending },
+    { label: 'In Progress', value: JobCreateRequestStatusEnum.InProgress },
+    { label: 'Completed', value: JobCreateRequestStatusEnum.Completed },
+    { label: 'Cancelled', value: JobCreateRequestStatusEnum.Cancelled },
   ];
 
   // Render input based on field type
   const renderFieldInput = (field: JobTemplateFieldResponse) => {
-    const fieldName = `field_${field.name}`;
+    // Use field ID as the key, not field name
+    const fieldName = `field_${field.id}`;
 
     switch (field.jobFieldType) {
       case 'TEXT':
@@ -187,13 +236,13 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             />
           </FormField>
 
-          {/* TODO: Add Client and Worker dropdowns when those services are available */}
-          {/* <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
+          <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
             <Dropdown
               name={fieldTitles.clientId}
               preFetchedOptions={clientOptions}
-              placeholder={placeHolders.clientId}
-              hideErrorMessage={false}
+              placeHolder={placeHolders.clientId}
+              isPreFetchLoading={loadingClients}
+              disablePortal={true}
             />
           </FormField>
 
@@ -201,10 +250,11 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             <Dropdown
               name={fieldTitles.assignedWorkerId}
               preFetchedOptions={workerOptions}
-              placeholder={placeHolders.assignedWorkerId}
-              hideErrorMessage={false}
+              placeHolder={placeHolders.assignedWorkerId}
+              isPreFetchLoading={loadingWorkers}
+              disablePortal={true}
             />
-          </FormField> */}
+          </FormField>
 
           {/* Dynamic fields based on template */}
           {templateFields.length > 0 && (

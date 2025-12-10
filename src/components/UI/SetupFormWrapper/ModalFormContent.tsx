@@ -62,10 +62,10 @@ export const ModalFormContent = <TFormData extends FieldValues>(
 
   // Memoize the config to prevent recreating object on every render
   const modalConfig = useMemo(() => ({
-    isConfirmDisabled: !formState.isValid,
-  }), [formState.isValid]);
+    isConfirmDisabled: !formState.isValid || !formState.isDirty,
+  }), [formState.isValid, formState.isDirty]);
 
-  // Update modal button disabled state based on form validation
+  // Update modal button disabled state based on form validation and changes
   useEffect(() => {
     updateGlobalModalInnerConfig(modalConfig);
   }, [modalConfig, updateGlobalModalInnerConfig]);
