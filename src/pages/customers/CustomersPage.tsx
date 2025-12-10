@@ -1,75 +1,129 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
-import { FloowLogo } from '../../components/UI/FloowLogo';
+import { rem } from '../../components/UI/Typography/utility';
+import comingSoonImage from '../../assets/logo/coming_soon.png';
 
-const PageContainer = styled(Box)({
+const PageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '100vh',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  padding: '2rem',
-});
-
-const ContentBox = styled(Box)({
-  background: 'white',
-  borderRadius: '16px',
-  padding: '3rem 2rem',
-  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-  textAlign: 'center',
-  maxWidth: '600px',
+  minHeight: '100%',
   width: '100%',
-});
+  backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
+  padding: rem(40),
+  '@media (max-width: 1536px)': {
+    padding: rem(32),
+  },
+  '@media (max-width: 1366px)': {
+    padding: rem(24),
+  },
+}));
 
-const LogoWrapper = styled(Box)({
-  marginBottom: '2rem',
+const ContentBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  background: theme.palette.colors?.white || theme.palette.background.paper,
+  borderRadius: rem(16),
+  padding: rem(48),
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  textAlign: 'center',
+  maxWidth: rem(700),
+  width: '100%',
+  gap: rem(24),
+  '@media (max-width: 1536px)': {
+    padding: rem(40),
+    gap: rem(20),
+    maxWidth: rem(650),
+  },
+  '@media (max-width: 1366px)': {
+    padding: rem(32),
+    gap: rem(16),
+    maxWidth: rem(600),
+  },
+}));
+
+const ImageWrapper = styled(Box)({
   display: 'flex',
   justifyContent: 'center',
+  alignItems: 'center',
+  width: '100%',
+  marginBottom: rem(8),
+  '& img': {
+    maxWidth: '100%',
+    height: 'auto',
+    maxHeight: rem(300),
+    objectFit: 'contain',
+  },
+  '@media (max-width: 1536px)': {
+    '& img': {
+      maxHeight: rem(250),
+    },
+  },
+  '@media (max-width: 1366px)': {
+    '& img': {
+      maxHeight: rem(220),
+    },
+  },
 });
 
-const Title = styled(Typography)({
-  fontSize: '2.5rem',
-  fontWeight: 700,
-  color: '#1a1a2e',
-  marginBottom: '1rem',
-});
+const Title = styled(Typography)(({ theme }) => ({
+  fontSize: rem(32),
+  fontWeight: theme.typography.fontWeightBold || 700,
+  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
+  lineHeight: 1.2,
+  marginBottom: rem(8),
+  '@media (max-width: 1536px)': {
+    fontSize: rem(28),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(26),
+  },
+}));
 
-const Subtitle = styled(Typography)({
-  fontSize: '1.5rem',
-  fontWeight: 600,
-  color: '#667eea',
-  marginBottom: '1.5rem',
-});
+const Subtitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(20),
+  fontWeight: theme.typography.fontWeightMedium || 600,
+  color: theme.palette.primary.main,
+  marginBottom: rem(12),
+  '@media (max-width: 1536px)': {
+    fontSize: rem(18),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(16),
+  },
+}));
 
-const Message = styled(Typography)({
-  fontSize: '1.125rem',
-  color: '#6b7280',
+const Message = styled(Typography)(({ theme }) => ({
+  fontSize: rem(16),
+  fontWeight: 500,
+  color: theme.palette.colors?.grey_700 || theme.palette.text.secondary,
   lineHeight: 1.6,
-  marginBottom: '2rem',
-});
-
-const IconWrapper = styled(Box)({
-  fontSize: '4rem',
-  marginBottom: '1.5rem',
-});
+  maxWidth: rem(500),
+  '@media (max-width: 1536px)': {
+    fontSize: rem(15),
+  },
+  '@media (max-width: 1366px)': {
+    fontSize: rem(14),
+  },
+}));
 
 export const CustomersPage: React.FC = () => {
   return (
     <PageContainer>
       <ContentBox>
-        <LogoWrapper>
-          <FloowLogo variant="light" showText={true} />
-        </LogoWrapper>
-        <IconWrapper>👥</IconWrapper>
+        <ImageWrapper>
+          <img src={comingSoonImage} alt="Coming Soon" />
+        </ImageWrapper>
         <Title>Customers Dashboard</Title>
         <Subtitle>Page Under Construction</Subtitle>
         <Message>
           We're working hard to bring you an amazing experience.
           This page is currently under construction and will be available soon.
         </Message>
-        <Message style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
+        <Message>
           Thank you for your patience!
         </Message>
       </ContentBox>
