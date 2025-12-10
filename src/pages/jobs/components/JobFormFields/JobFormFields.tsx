@@ -5,11 +5,11 @@ import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
-import {  FormField } from '../../../../components/UI/FormComponents';
+import {  FormField, FormRow } from '../../../../components/UI/FormComponents';
 import { jobTemplateService, companyClientService, workerService } from '../../../../services/api';
 import type { JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse } from '../../../../services/api';
-import { JobCreateRequestStatusEnum } from '../../../../../workflow-api';
-import { Box } from '@mui/material';
+import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
+
 
 interface JobFormFieldsProps {
   isEditMode?: boolean;
@@ -107,10 +107,6 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     fetchTemplateFields();
   }, [selectedTemplateId]);
 
-  // const templateOptions = templates.map((template) => ({
-  //   label: template.name || '',
-  //   value: template.id?.toString() || '',
-  // }));
   const templateOptions = useMemo(() => {
       return templates.map((template) => ({
         label: template.name || '',
@@ -118,7 +114,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }));
     }, [templates]);
 
-  const clientOptions = useMemo(() => {
+    const clientOptions = useMemo(() => {
     return clients.map((client) => ({
       label: client.name || '',
       value: client.id?.toString() || '',
@@ -132,13 +128,6 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     }));
   }, [workers]);
 
-  const statusOptions = [
-    { label: 'New', value: JobCreateRequestStatusEnum.New },
-    { label: 'Pending', value: JobCreateRequestStatusEnum.Pending },
-    { label: 'In Progress', value: JobCreateRequestStatusEnum.InProgress },
-    { label: 'Completed', value: JobCreateRequestStatusEnum.Completed },
-    { label: 'Cancelled', value: JobCreateRequestStatusEnum.Cancelled },
-  ];
 
   // Render input based on field type
   const renderFieldInput = (field: JobTemplateFieldResponse) => {
@@ -146,7 +135,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     const fieldName = `field_${field.id}`;
 
     switch (field.jobFieldType) {
-      case 'TEXT':
+      case FieldType.TEXT:
         return (
           <Input
             name={fieldName}
@@ -155,7 +144,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'NUMBER':
+      case FieldType.NUMBER:
         return (
           <Input
             type="number"
@@ -165,7 +154,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'DATE':
+      case FieldType.DATE:
         return (
           <Input
             type="date"
@@ -174,7 +163,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'BOOLEAN':
+      case FieldType.BOOLEAN:
         return (
           <RadioGroup
             name={fieldName}
@@ -185,7 +174,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         );
 
-      case 'DROPDOWN': {
+      case FieldType.DROPDOWN: {
         const options = field.options
           ? field.options.split(',').map((opt) => ({
               label: opt.trim(),
@@ -197,6 +186,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             name={fieldName}
             preFetchedOptions={options}
             placeHolder={`Select ${field.label}`}
+            fullWidth={true}
           />
         );
       }
@@ -214,51 +204,61 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
 
   return (
     <>
-      <FormField label={fieldLabels.templateId} required={isRequireds.templateId}>
-        <Dropdown
-          name={fieldTitles.templateId}
-          preFetchedOptions={templateOptions}
-          placeHolder={placeHolders.templateId}
-          isPreFetchLoading={loadingTemplates}
-          disabled={isEditMode}
-          disablePortal={true}
-        />
-      </FormField>
+      <FormRow>
+        <FormField label={fieldLabels.templateId} required={isRequireds.templateId}>
+          <Dropdown
+            name={fieldTitles.templateId}
+            preFetchedOptions={templateOptions}
+            placeHolder={placeHolders.templateId}
+            isPreFetchLoading={loadingTemplates}
+            disabled={isEditMode}
+            disablePortal={true}
+            fullWidth={true}
+          />
+        </FormField>
+
+        <FormField label={fieldLabels.status} required={isRequireds.status}>
+          <Dropdown
+            name={fieldTitles.status}
+            preFetchedOptions={JOB_STATUS_OPTIONS}
+            placeHolder={placeHolders.status}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={!selectedTemplateId}
+          />
+        </FormField>
+      </FormRow>
 
       {selectedTemplateId && (
         <>
-          <FormField label={fieldLabels.status} required={isRequireds.status}>
-            <Dropdown
-              name={fieldTitles.status}
-              preFetchedOptions={statusOptions}
-              placeHolder={placeHolders.status}
-              disablePortal={true}
-            />
-          </FormField>
+          <FormRow>
+                  <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
+                      <Dropdown
+                        name={fieldTitles.clientId}
+                        preFetchedOptions={clientOptions}
+                        placeHolder={placeHolders.clientId}
+                        isPreFetchLoading={loadingClients}
+                        disablePortal={true}
+                        fullWidth={true}
+                      />
+                    </FormField>
 
-          <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
-            <Dropdown
-              name={fieldTitles.clientId}
-              preFetchedOptions={clientOptions}
-              placeHolder={placeHolders.clientId}
-              isPreFetchLoading={loadingClients}
-              disablePortal={true}
-            />
-          </FormField>
-
-          <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
-            <Dropdown
-              name={fieldTitles.assignedWorkerId}
-              preFetchedOptions={workerOptions}
-              placeHolder={placeHolders.assignedWorkerId}
-              isPreFetchLoading={loadingWorkers}
-              disablePortal={true}
-            />
-          </FormField>
+                    <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
+                      <Dropdown
+                        name={fieldTitles.assignedWorkerId}
+                        preFetchedOptions={workerOptions}
+                        placeHolder={placeHolders.assignedWorkerId}
+                        isPreFetchLoading={loadingWorkers}
+                        disablePortal={true}
+                        fullWidth={true}
+                      />
+                    </FormField>
+          </FormRow>
+          
 
           {/* Dynamic fields based on template */}
           {templateFields.length > 0 && (
-            <Box sx={{ marginTop: 2 }}>
+            <>
               {templateFields
                 .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
                 .map((field) => (
@@ -270,7 +270,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
                     {renderFieldInput(field)}
                   </FormField>
                 ))}
-            </Box>
+            </>
           )}
         </>
       )}

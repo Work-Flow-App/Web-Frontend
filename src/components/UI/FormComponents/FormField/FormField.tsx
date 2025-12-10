@@ -1,7 +1,7 @@
 import * as S from './FormField.styled';
 import type { FormFieldProps } from './FormField.types';
 
-export const FormField = (props: FormFieldProps): JSX.Element => {
+export const FormField = (props: FormFieldProps) => {
   const { label, hideLabel, icon, required, children, className } = props;
 
   return (

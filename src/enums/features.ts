@@ -1,4 +1,4 @@
-import { FeatureName } from '../enums/FeatureName';
+import { FeatureName } from './FeatureName';
 
 export const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
   [FeatureName.CONTACTS_MANAGER]:

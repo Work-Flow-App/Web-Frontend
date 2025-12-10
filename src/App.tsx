@@ -12,6 +12,7 @@ import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
 import { EquipmentPage } from './pages/equipment/EquipmentPage'
 import { CustomersPage } from './pages/customers/CustomersPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
+import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
@@ -43,6 +44,9 @@ function App() {
               <Route path="/company/jobs" element={<JobsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
+
+              {/* Catch all route - 404 with Layout */}
+              <Route path="*" element={<NotFound />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />

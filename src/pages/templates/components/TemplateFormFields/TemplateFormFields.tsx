@@ -1,7 +1,7 @@
 import React from 'react';
 import { TemplateFormSchema } from '../../schema/TemplateFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input } from '../../../../components/UI/Forms/Input';
+import { Input, TextArea } from '../../../../components/UI/Forms';
 import { FormField } from '../../../../components/UI/FormComponents';
 
 export const TemplateFormFields: React.FC = () => {
@@ -18,10 +18,13 @@ export const TemplateFormFields: React.FC = () => {
       </FormField>
 
       <FormField label={fieldLabels.description} required={isRequireds.description}>
-        <Input
+        <TextArea
           name={fieldTitles.description}
           placeholder={placeHolders.description}
           hideErrorMessage={false}
+          rows={4}
+          maxLength={250}
+          showCharCount={true}
         />
       </FormField>
     </>

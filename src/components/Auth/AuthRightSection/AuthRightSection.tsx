@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FloowLogo } from '../../UI/FloowLogo';
 import { FeatureCard } from '../../UI/FeatureCard';
-import { DEFAULT_AUTH_FEATURES, DEFAULT_AUTH_TAGLINE } from '../../../constants';
+import { DEFAULT_AUTH_FEATURES, DEFAULT_AUTH_TAGLINE } from '../../../enums';
 import {
   RightSection,
   RightContent,

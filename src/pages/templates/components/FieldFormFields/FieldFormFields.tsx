@@ -6,14 +6,7 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
 import { FormField } from '../../../../components/UI/FormComponents';
-
-const FIELD_TYPES = [
-  { label: 'Text', value: 'TEXT' },
-  { label: 'Number', value: 'NUMBER' },
-  { label: 'Date', value: 'DATE' },
-  { label: 'Boolean', value: 'BOOLEAN' },
-  { label: 'Dropdown', value: 'DROPDOWN' },
-];
+import { FieldType, FIELD_TYPE_OPTIONS } from '../../../../enums';
 
 export const FieldFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(FieldFormSchema);
@@ -46,13 +39,14 @@ export const FieldFormFields: React.FC = () => {
       <FormField label={fieldLabels.jobFieldType} required={isRequireds.jobFieldType}>
         <Dropdown
           name={fieldTitles.jobFieldType}
-          preFetchedOptions={FIELD_TYPES}
+          preFetchedOptions={FIELD_TYPE_OPTIONS}
           placeHolder={placeHolders.jobFieldType}
           disablePortal={true}
+          fullWidth={true}
         />
       </FormField>
 
-      {selectedFieldTypeValue === 'DROPDOWN' && (
+      {selectedFieldTypeValue === FieldType.DROPDOWN && (
         <FormField label={fieldLabels.options} required={isRequireds.options}>
           <Input
             name={fieldTitles.options}
