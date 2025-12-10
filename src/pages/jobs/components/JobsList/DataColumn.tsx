@@ -61,12 +61,12 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
 
   // Add dynamic columns from template fields
   const dynamicColumns: ITableColumn<JobTableRow>[] = templateFields.map((field) => ({
-    id: `field_${field.name}`,
+    id: `field_${field.id}`,
     label: field.label || field.name || '',
     sortable: false,
     width: 'auto',
     render: (row) => {
-      const value = row.fieldValues?.[field.name || ''];
+      const value = row.fieldValues?.[field.id?.toString() || ''];
       if (!value) return '-';
 
       // Format based on field type

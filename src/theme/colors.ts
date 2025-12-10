@@ -26,6 +26,7 @@ export const floowColors = {
     primary: '#121212',
     secondary: '#171717',
     tertiary: '#262626',
+    navy: '#151d26',
   },
 
   // Gradient Colors
