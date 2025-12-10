@@ -93,7 +93,26 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     defaultValue,
   });
 
-  const fieldValue = useWatch({ name, control });
+  const fieldValueRaw = useWatch({ name, control });
+
+  // Convert string/number values to DropdownOption format by finding matching option
+  const fieldValue = useMemo(() => {
+    if (!fieldValueRaw) return null;
+    // If it's already an object with value property, return as is
+    if (typeof fieldValueRaw === 'object' && 'value' in fieldValueRaw) {
+      return fieldValueRaw;
+    }
+    // If it's a primitive (string/number), find the matching option
+    const matchingOption = options.find(opt => opt.value === String(fieldValueRaw));
+    console.log(`Dropdown [${name}]: raw=${fieldValueRaw}, options=${options.length}, matched=`, matchingOption);
+
+    // If we found a match and the current value is primitive, update the form value
+    if (matchingOption && setValue) {
+      setValue(name, matchingOption, { shouldValidate: false, shouldDirty: false });
+    }
+
+    return matchingOption || null;
+  }, [fieldValueRaw, options, name, setValue]);
   const dependencyValueRaw = methods.watch?.(dependency || `${name}-dependency`);
   const dependencyValue = useMemo(
     () =>

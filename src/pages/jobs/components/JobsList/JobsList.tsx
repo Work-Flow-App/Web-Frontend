@@ -3,8 +3,8 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, companyClientService, workerService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { JobForm } from '../JobForm/JobForm';
@@ -12,6 +12,8 @@ import { JobForm } from '../JobForm/JobForm';
 export const JobsList: React.FC = () => {
   const [jobs, setJobs] = useState<JobTableRow[]>([]);
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
+  const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,7 @@ export const JobsList: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Fetch templates on mount
+  // Fetch templates, clients, and workers on mount
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -35,7 +37,29 @@ export const JobsList: React.FC = () => {
       }
     };
 
+    const fetchClients = async () => {
+      try {
+        const response = await companyClientService.getAllClients();
+        const clientsData = Array.isArray(response.data) ? response.data : [];
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
+
+    const fetchWorkers = async () => {
+      try {
+        const response = await workerService.getAllWorkers();
+        const workersData = Array.isArray(response.data) ? response.data : [];
+        setWorkers(workersData);
+      } catch (error) {
+        console.error('Error fetching workers:', error);
+      }
+    };
+
     fetchTemplates();
+    fetchClients();
+    fetchWorkers();
   }, [showError]);
 
   // Fetch template fields when template is selected
@@ -64,29 +88,41 @@ export const JobsList: React.FC = () => {
   const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await jobService.getAllJobs();
+      // Use template-specific API if a template is selected
+      const response = selectedTemplateId
+        ? await jobService.getJobsByTemplate(selectedTemplateId)
+        : await jobService.getAllJobs();
       const jobsData = Array.isArray(response.data) ? response.data : [];
 
-      // Filter by selected template if any
-      const filteredJobs = selectedTemplateId
-        ? jobsData.filter((job: JobResponse) => job.templateId === selectedTemplateId)
-        : jobsData;
-
       // Transform API response to table format
-      const transformedData: JobTableRow[] = filteredJobs.map((job: JobResponse) => {
+      const transformedData: JobTableRow[] = jobsData.map((job: JobResponse) => {
         const template = templates.find((t) => t.id === job.templateId);
+        const client = clients.find((c) => c.id === job.clientId);
+        const worker = workers.find((w) => w.id === job.assignedWorkerId);
+
+        // Extract values from FieldValueResponse objects
+        const fieldValues: { [key: string]: string } = {};
+        if (job.fieldValues) {
+          Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
+            if (fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse) {
+              fieldValues[key] = String(fieldValueResponse.value);
+            } else if (fieldValueResponse) {
+              fieldValues[key] = String(fieldValueResponse);
+            }
+          });
+        }
 
         return {
           id: job.id || 0,
           templateId: job.templateId,
           templateName: template?.name || '-',
           clientId: job.clientId,
-          clientName: '-', // TODO: Fetch client name from client service when available
+          clientName: client?.name || '-',
           assignedWorkerId: job.assignedWorkerId,
-          workerName: '-', // TODO: Fetch worker name from worker service when available
+          workerName: worker?.name || '-',
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
-          fieldValues: job.fieldValues || {},
+          fieldValues,
         };
       });
 
@@ -98,7 +134,7 @@ export const JobsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, templates, showError]);
+  }, [selectedTemplateId, templates, clients, workers, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
