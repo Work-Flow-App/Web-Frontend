@@ -229,30 +229,30 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         </FormField>
       </FormRow>
 
-      {selectedTemplateId && (
-        <>
           <FormRow>
-                  <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
-                      <Dropdown
-                        name={fieldTitles.clientId}
-                        preFetchedOptions={clientOptions}
-                        placeHolder={placeHolders.clientId}
-                        isPreFetchLoading={loadingClients}
-                        disablePortal={true}
-                        fullWidth={true}
-                      />
-                    </FormField>
+            <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
+              <Dropdown
+                name={fieldTitles.clientId}
+                preFetchedOptions={clientOptions}
+                placeHolder={placeHolders.clientId}
+                isPreFetchLoading={loadingClients}
+                disablePortal={true}
+                fullWidth={true}
+                disabled={clientOptions.length === 0}
+              />
+            </FormField>
 
-                    <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
-                      <Dropdown
-                        name={fieldTitles.assignedWorkerId}
-                        preFetchedOptions={workerOptions}
-                        placeHolder={placeHolders.assignedWorkerId}
-                        isPreFetchLoading={loadingWorkers}
-                        disablePortal={true}
-                        fullWidth={true}
-                      />
-                    </FormField>
+            <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
+              <Dropdown
+                name={fieldTitles.assignedWorkerId}
+                preFetchedOptions={workerOptions}
+                placeHolder={placeHolders.assignedWorkerId}
+                isPreFetchLoading={loadingWorkers}
+                disablePortal={true}
+                fullWidth={true}
+                disabled={workerOptions.length === 0}
+              />
+            </FormField>
           </FormRow>
           
 
@@ -273,7 +273,6 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             </>
           )}
         </>
-      )}
-    </>
+
   );
 };

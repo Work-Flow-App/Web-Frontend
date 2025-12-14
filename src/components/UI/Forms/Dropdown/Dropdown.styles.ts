@@ -161,7 +161,7 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
     },
 
     '& .MuiAutocomplete-listbox': {
-      maxHeight: rem(300),
+      maxHeight: rem(200),
       padding: rem(4),
       overflowY: 'auto',
 

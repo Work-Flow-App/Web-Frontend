@@ -246,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {/* Child items */}
               {!isCollapsed && (
                 <Collapse in={isExpanded}>
-                  <Box sx={{ pl: rem(32) }}>
+                  <Box sx={{ pl: rem(32), pt: rem(8) }}>
                     {item.children?.map((child) => {
                       const childActive = isItemActive(child);
                       if (child.href) {
