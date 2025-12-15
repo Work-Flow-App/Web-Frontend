@@ -14,7 +14,6 @@ export const StyledTextArea = styled('textarea')(({ theme: { spacing, palette, t
   borderColor: `${palette.border?.main || palette.grey[300]}`,
   borderRadius: shape.borderRadius,
   padding: spacing(1.5, 2),
-  fontSize: typography.subtitle2.fontSize,
   backgroundColor: palette.colors.white,
   fontFamily: typography.fontFamily,
   resize: 'vertical',

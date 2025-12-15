@@ -1,159 +1,155 @@
-import React from 'react';
-import { styled } from '@mui/material/styles';
-import { Box, Typography } from '@mui/material';
-import { rem } from '../../components/UI/Typography/utility';
-import comingSoonImage from '../../assets/logo/coming_soon.png';
-// import { useGlobalModalOuterContext, ModalSizes } from '../../components/UI/GlobalModal';
+import React, { useEffect, useState } from 'react';
+import { CircularProgress, useTheme } from '@mui/material';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { workerService, jobService } from '../../services/api';
+import type { JobResponse } from '../../services/api';
+import {
+  PageContainer,
+  DashboardHeader,
+  DashboardGrid,
+  StatCard,
+  StatValue,
+  StatLabel,
+  LoadingContainer,
+  Title,
+  ChartsContainer,
+  ChartCard,
+  ChartTitle,
+} from './CompanyPage.styles';
 
-const PageContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minHeight: '100%',
-  width: '100%',
-  backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
-  padding: rem(40),
-  '@media (max-width: 1536px)': {
-    padding: rem(32),
-  },
-  '@media (max-width: 1366px)': {
-    padding: rem(24),
-  },
-}));
-
-const ContentBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  background: theme.palette.colors?.white || theme.palette.background.paper,
-  borderRadius: rem(16),
-  padding: rem(48),
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-  textAlign: 'center',
-  maxWidth: rem(700),
-  width: '100%',
-  gap: rem(24),
-  '@media (max-width: 1536px)': {
-    padding: rem(40),
-    gap: rem(20),
-    maxWidth: rem(650),
-  },
-  '@media (max-width: 1366px)': {
-    padding: rem(32),
-    gap: rem(16),
-    maxWidth: rem(600),
-  },
-}));
-
-const ImageWrapper = styled(Box)({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  width: '100%',
-  marginBottom: rem(8),
-  '& img': {
-    maxWidth: '100%',
-    height: 'auto',
-    maxHeight: rem(300),
-    objectFit: 'contain',
-  },
-  '@media (max-width: 1536px)': {
-    '& img': {
-      maxHeight: rem(250),
-    },
-  },
-  '@media (max-width: 1366px)': {
-    '& img': {
-      maxHeight: rem(220),
-    },
-  },
-});
-
-const Title = styled(Typography)(({ theme }) => ({
-  fontSize: rem(32),
-  fontWeight: theme.typography.fontWeightBold || 700,
-  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
-  lineHeight: 1.2,
-  marginBottom: rem(8),
-  '@media (max-width: 1536px)': {
-    fontSize: rem(28),
-  },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(26),
-  },
-}));
-
-const Subtitle = styled(Typography)(({ theme }) => ({
-  fontSize: rem(20),
-  fontWeight: theme.typography.fontWeightMedium || 600,
-  color: theme.palette.primary.main,
-  marginBottom: rem(12),
-  '@media (max-width: 1536px)': {
-    fontSize: rem(18),
-  },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(16),
-  },
-}));
-
-const Message = styled(Typography)(({ theme }) => ({
-  fontSize: rem(16),
-  fontWeight: 500,
-  color: theme.palette.colors?.grey_700 || theme.palette.text.secondary,
-  lineHeight: 1.6,
-  maxWidth: rem(500),
-  '@media (max-width: 1536px)': {
-    fontSize: rem(15),
-  },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(14),
-  },
-}));
+interface JobStatusData {
+  name: string;
+  value: number;
+  [key: string]: string | number;
+}
 
 export const CompanyPage: React.FC = () => {
-  // const { setGlobalModalOuterProps } = useGlobalModalOuterContext();
+  const theme = useTheme();
+  const [workerCount, setWorkerCount] = useState<number>(0);
+  const [jobCount, setJobCount] = useState<number>(0);
+  const [jobStatusData, setJobStatusData] = useState<JobStatusData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // const handleOpenModal = () => {
-  //   setGlobalModalOuterProps({
-  //     isOpen: true,
-  //     children: (
-  //       <AddMemberScreen
-  //         onInvite={async (data) => {
-  //           console.log('Member invited:', data);
-  //           alert(`Invitation sent to ${data.email} with role ${data.role}`);
-  //         }}
-  //       />
-  //     ),
-  //     fieldName: 'addMember',
-  //     size: ModalSizes.SMALL,
-  //   });
-  // };
+  // Color palette for charts using theme colors
+  const CHART_COLORS = [
+    theme.palette.colors.chart_primary,
+    theme.palette.colors.chart_secondary,
+    theme.palette.colors.chart_tertiary,
+    theme.palette.colors.chart_quaternary,
+    theme.palette.colors.chart_quinary,
+  ];
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [workersResponse, jobsResponse] = await Promise.all([
+          workerService.getAllWorkers(),
+          jobService.getAllJobs(),
+        ]);
+
+        const workersData = Array.isArray(workersResponse.data) ? workersResponse.data : [];
+        const jobsData: JobResponse[] = Array.isArray(jobsResponse.data) ? jobsResponse.data : [];
+
+        setWorkerCount(workersData.length);
+        setJobCount(jobsData.length);
+
+        // Calculate job status distribution
+        const statusCounts: Record<string, number> = {};
+        jobsData.forEach((job) => {
+          const status = job.status || 'Unknown';
+          statusCounts[status] = (statusCounts[status] || 0) + 1;
+        });
+
+        const statusData: JobStatusData[] = Object.entries(statusCounts).map(([name, value]) => ({
+          name,
+          value,
+        }));
+
+        setJobStatusData(statusData);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setWorkerCount(0);
+        setJobCount(0);
+        setJobStatusData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const overviewData = [
+    { name: 'Workers', value: workerCount },
+    { name: 'Jobs', value: jobCount },
+  ];
 
   return (
     <PageContainer>
-      <ContentBox>
-        <ImageWrapper>
-          <img src={comingSoonImage} alt="Coming Soon" />
-        </ImageWrapper>
+      <DashboardHeader>
         <Title>Company Dashboard</Title>
-        <Subtitle>Page Under Construction</Subtitle>
-        <Message>
-          We're working hard to bring you an amazing experience.
-          This page is currently under construction and will be available soon.
-        </Message>
-        {/* <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenModal}
-          style={{ marginTop: '1rem', marginBottom: '1rem' }}
-        >
-          Test Add Member Modal
-        </Button> */}
-        <Message>
-          Thank you for your patience!
-        </Message>
-      </ContentBox>
+      </DashboardHeader>
+
+      {loading ? (
+        <LoadingContainer>
+          <CircularProgress size={40} />
+        </LoadingContainer>
+      ) : (
+        <>
+          <DashboardGrid>
+            <StatCard>
+              <StatValue>{workerCount}</StatValue>
+              <StatLabel>Total Workers</StatLabel>
+            </StatCard>
+
+            <StatCard>
+              <StatValue>{jobCount}</StatValue>
+              <StatLabel>Total Jobs</StatLabel>
+            </StatCard>
+          </DashboardGrid>
+
+          <ChartsContainer>
+            <ChartCard>
+              <ChartTitle>Job Status Distribution</ChartTitle>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={jobStatusData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {jobStatusData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard>
+              <ChartTitle>Workers vs Jobs Overview</ChartTitle>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={overviewData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.colors.grey_200} />
+                  <XAxis dataKey="name" stroke={theme.palette.colors.grey_600} />
+                  <YAxis stroke={theme.palette.colors.grey_600} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill={theme.palette.primary.main} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </ChartsContainer>
+        </>
+      )}
     </PageContainer>
   );
 };
