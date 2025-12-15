@@ -32,11 +32,11 @@ export const CompanyPage: React.FC = () => {
 
   // Color palette for charts using theme colors
   const CHART_COLORS = [
-    theme.palette.primary.main,
-    theme.palette.error.main,
-    theme.palette.success.main,
-    theme.palette.warning.main,
-    theme.palette.info.main,
+    theme.palette.colors.chart_primary,
+    theme.palette.colors.chart_secondary,
+    theme.palette.colors.chart_tertiary,
+    theme.palette.colors.chart_quaternary,
+    theme.palette.colors.chart_quinary,
   ];
 
   useEffect(() => {

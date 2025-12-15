@@ -87,6 +87,11 @@ declare module '@mui/material/styles' {
     info_light: string;
     success: string;
     success_light: string;
+    chart_primary: string;
+    chart_secondary: string;
+    chart_tertiary: string;
+    chart_quaternary: string;
+    chart_quinary: string;
   }
   interface PaletteOptions {
     icon?: DynamicValues;
@@ -216,6 +221,11 @@ const FloowPalette = {
     info_light: 'rgba(33, 150, 243, 0.15)',
     success: SUCCESS,
     success_light: 'rgba(0, 166, 62, 0.15)',
+    chart_primary: floowColors.chart.primary,
+    chart_secondary: floowColors.chart.secondary,
+    chart_tertiary: floowColors.chart.tertiary,
+    chart_quaternary: floowColors.chart.quaternary,
+    chart_quinary: floowColors.chart.quinary,
   },
   boxShadow: {
     buttonShadow: `0px 1px 5px 0px rgba(0, 0, 0, 0.12), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.20)`,

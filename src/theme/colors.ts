@@ -86,6 +86,15 @@ export const floowColors = {
     dark: '#000000',
     secondary: '#171717',
   },
+
+  // Chart Colors
+  chart: {
+    primary: '#3f51b5',    // Indigo/Blue
+    secondary: '#f50057',  // Pink/Magenta
+    tertiary: '#4caf50',   // Green
+    quaternary: '#ff9800', // Orange
+    quinary: '#9c27b0',    // Purple
+  },
 } as const;
 
 export type FloowColors = typeof floowColors;
