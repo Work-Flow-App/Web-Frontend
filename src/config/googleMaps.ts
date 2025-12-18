@@ -41,22 +41,21 @@ export const LEAFLET_CONFIG = {
   },
   defaultZoom: 7, // Country view - shows Bangladesh
 
-  // Map tile layer (English labels)
-  // Using CartoDB Positron for clean English labels
+  // Map tile layer - Standard OpenStreetMap
   tileLayer: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    maxZoom: 20,
-    subdomains: 'abcd',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
   },
 
   // Alternative tile layers (uncomment to use):
 
-  // Standard OpenStreetMap (shows local language)
+  // CartoDB Positron (English labels, light theme)
   // tileLayer: {
-  //   url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  //   maxZoom: 19,
+  //   url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  //   maxZoom: 20,
+  //   subdomains: 'abcd',
   // },
 
   // CartoDB Dark Mode (English labels, dark theme)

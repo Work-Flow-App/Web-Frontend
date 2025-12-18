@@ -6,7 +6,7 @@ import type { LocationSearchProps, PlaceDetails, NominatimSearchResult } from '.
 /**
  * LocationSearch Component
  * Provides a search input with Nominatim (OpenStreetMap) geocoding
- * 100% FREE - No API key required
+ 
  */
 const LocationSearch: React.FC<LocationSearchProps> = ({
   onPlaceSelect,
