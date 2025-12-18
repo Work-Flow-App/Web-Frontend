@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, Chip, Stack } from '@mui/material';
-import { GoogleMap } from '../../components/UI/GoogleMap';
-import type { PlaceDetails } from '../../components/UI/GoogleMap';
-import { POPULAR_LOCATIONS } from '../../config/googleMaps';
+import { LeafletMap } from '../../components/UI/LeafletMap';
+import type { PlaceDetails } from '../../components/UI/LeafletMap';
+import { POPULAR_LOCATIONS, LEAFLET_CONFIG } from '../../config/googleMaps';
 import {
   PageContainer,
   PageHeader,
@@ -18,28 +18,30 @@ import {
 
 /**
  * MapsPage Component
- * Displays an interactive Google Map with location search and quick access to popular locations
+ * Displays an interactive map with location search and quick access to popular locations
+ * Uses OpenStreetMap (FREE - No API key required)
  */
 export const MapsPage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(null);
-  const [mapCenter, setMapCenter] = useState(POPULAR_LOCATIONS[0]); // Default to Dhaka
+  const [mapCenter, setMapCenter] = useState(LEAFLET_CONFIG.defaultCenter); // Start with world view
   const [markers, setMarkers] = useState<PlaceDetails[]>([]);
 
   // Handle location selection from map
   const handleLocationSelect = (location: PlaceDetails) => {
     setSelectedLocation(location);
+    setMapCenter(location.location);
     setMarkers([location]); // Show single marker for selected location
   };
 
   // Handle quick location selection from chips
   const handleQuickLocation = (location: { name: string; lat: number; lng: number }) => {
-    setMapCenter(location);
     const quickLocation: PlaceDetails = {
       name: location.name,
       address: `${location.name}, Bangladesh`,
       location: { lat: location.lat, lng: location.lng },
     };
     setSelectedLocation(quickLocation);
+    setMapCenter(location); // Update map center to trigger re-render
     setMarkers([quickLocation]);
   };
 
@@ -54,9 +56,8 @@ export const MapsPage: React.FC = () => {
 
       <ContentSection>
         <MapSection>
-          <GoogleMap
+          <LeafletMap
             center={mapCenter}
-            zoom={12}
             markers={markers}
             onLocationSelect={handleLocationSelect}
             showSearchBox

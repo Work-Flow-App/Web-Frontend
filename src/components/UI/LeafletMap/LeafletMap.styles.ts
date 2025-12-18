@@ -1,0 +1,69 @@
+import { styled, Box } from '@mui/material';
+
+export const MapContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '100%',
+  borderRadius: theme.spacing(1),
+  overflow: 'hidden',
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: theme.palette.background.paper,
+
+  // Leaflet CSS overrides to match theme
+  '& .leaflet-container': {
+    height: '100%',
+    width: '100%',
+    borderRadius: theme.spacing(1),
+  },
+
+  '& .leaflet-popup-content-wrapper': {
+    borderRadius: theme.spacing(0.5),
+    boxShadow: theme.shadows[3],
+  },
+
+  '& .leaflet-popup-content': {
+    margin: theme.spacing(1),
+  },
+
+  '& .leaflet-control-attribution': {
+    fontSize: '10px',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+}));
+
+export const SearchBoxContainer = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: '90%',
+  maxWidth: 600,
+  zIndex: 1000,
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.spacing(1),
+  boxShadow: theme.shadows[4],
+}));
+
+export const LoadingContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  backgroundColor: theme.palette.background.default,
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
+
+export const MarkerPopupContent = styled(Box)(({ theme }) => ({
+  minWidth: 200,
+  '& h6': {
+    fontWeight: 600,
+    marginBottom: theme.spacing(0.5),
+    fontSize: '0.875rem',
+  },
+  '& p': {
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+    margin: 0,
+  },
+}));
