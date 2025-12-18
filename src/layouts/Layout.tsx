@@ -20,6 +20,7 @@ import { authService } from '../services/api/auth';
 import { getRoleFromToken } from '../utils/jwt';
 import { useSessionRestore } from '../hooks/useSessionRestore';
 import * as S from './Layout.styles';
+import { Place } from '@mui/icons-material';
 
 /**
  * Right actions component with profile menu
@@ -43,21 +44,13 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
 
   return (
     <S.RightActionsContainer>
-      <S.ActionButton
-        role="button"
-        aria-label="Notifications"
-        tabIndex={0}
-      >
+      <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
         <NotificationsIcon />
       </S.ActionButton>
 
       <S.ActionDivider aria-hidden={true} />
 
-      <S.ActionButton
-        role="button"
-        aria-label="Settings"
-        tabIndex={0}
-      >
+      <S.ActionButton role="button" aria-label="Settings" tabIndex={0}>
         <SettingsIcon />
       </S.ActionButton>
 
@@ -168,10 +161,22 @@ export const Layout: React.FC = () => {
       children: [
         { id: 'jobs', label: 'Jobs', icon: <WorkIcon />, href: '/company/jobs' },
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
-      ]
+      ],
     },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
-    { id: 'equipments', label: 'Equipments', icon: <BuildIcon />, href: '/company/equipments' },
+    {
+      id: 'assets',
+      label: 'Assets',
+      icon: <BuildIcon />,
+      children: [
+        {
+          id: 'maps',
+          label: 'Maps',
+          icon: <Place />,
+          href: '/company/assets/maps',
+        },
+      ],
+    },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
     { id: 'settings', label: 'Settings', icon: <SettingsIcon />, href: '/company/settings' },
   ];
@@ -193,11 +198,7 @@ export const Layout: React.FC = () => {
   return (
     <S.PageWrapper>
       {/* Persistent Sidebar */}
-      <Sidebar
-        items={sidebarItems}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={handleToggleSidebar}
-      />
+      <Sidebar items={sidebarItems} isCollapsed={isSidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
 
       {/* Right Section: TopNav + MainContent */}
       <S.PageRightSection>
