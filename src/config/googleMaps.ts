@@ -61,14 +61,16 @@ export const LEAFLET_CONFIG = {
   // CartoDB Dark Mode (English labels, dark theme)
   // tileLayer: {
   //   url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  //   attribution:
+  //     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   //   maxZoom: 20,
   // },
 
   // Stamen Terrain (English labels with terrain)
   // tileLayer: {
   //   url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png',
-  //   attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  //   attribution:
+  //     'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   //   maxZoom: 18,
   // },
 };
@@ -96,7 +98,7 @@ export const POPULAR_LOCATIONS = [
   { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
   { name: 'Rajshahi', lat: 24.3745, lng: 88.6042 },
   { name: 'Sylhet', lat: 24.8949, lng: 91.8687 },
-  { name: 'Barisal', lat: 22.7010, lng: 90.3535 },
+  { name: 'Barisal', lat: 22.701, lng: 90.3535 },
   { name: 'Rangpur', lat: 25.7439, lng: 89.2752 },
   { name: 'Mymensingh', lat: 24.7471, lng: 90.4203 },
 ];

@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { LEAFLET_CONFIG, NOMINATIM_CONFIG } from '../../../config/googleMaps';
 import LocationSearch from './LocationSearch';
 import type { LeafletMapProps, PlaceDetails } from './LeafletMap.types';
-import { MapContainer, SearchBoxContainer, LoadingContainer, MarkerPopupContent } from './LeafletMap.styles';
+import { MapContainer, SearchBoxContainer, MarkerPopupContent, GeocodingLoadingOverlay } from './LeafletMap.styles';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in Leaflet with Webpack/Vite
@@ -81,21 +81,9 @@ const MapClickHandler: React.FC<MapClickHandlerProps> = ({ onLocationSelect }) =
 
   if (loading) {
     return (
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1000,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          padding: '16px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        }}
-      >
+      <GeocodingLoadingOverlay>
         <CircularProgress size={24} />
-      </div>
+      </GeocodingLoadingOverlay>
     );
   }
 
@@ -158,7 +146,6 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
         key={mapKey}
         center={[mapCenter.lat, mapCenter.lng]}
         zoom={mapZoom}
-        style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
       >
         <TileLayer

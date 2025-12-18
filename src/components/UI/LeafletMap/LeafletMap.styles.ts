@@ -4,6 +4,7 @@ export const MapContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '100%',
   height: '100%',
+  // padding: theme.spacing(2),
   borderRadius: theme.spacing(1),
   overflow: 'hidden',
   border: `1px solid ${theme.palette.divider}`,
@@ -11,8 +12,8 @@ export const MapContainer = styled(Box)(({ theme }) => ({
 
   // Leaflet CSS overrides to match theme
   '& .leaflet-container': {
-    height: '100%',
-    width: '100%',
+    height: '100% !important',
+    width: '100% !important',
     borderRadius: theme.spacing(1),
   },
 
@@ -66,4 +67,16 @@ export const MarkerPopupContent = styled(Box)(({ theme }) => ({
     color: theme.palette.text.secondary,
     margin: 0,
   },
+}));
+
+export const GeocodingLoadingOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 1000,
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(1),
+  boxShadow: theme.shadows[3],
 }));

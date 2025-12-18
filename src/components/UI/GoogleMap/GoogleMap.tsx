@@ -11,7 +11,6 @@ import {
   LoadingContainer,
   ErrorContainer,
   MarkerInfoWindow,
-  StyledSearchInput,
 } from './GoogleMap.styles';
 
 /**
@@ -121,10 +120,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         <MapWrapper>
           {showSearchBox && (
             <SearchBoxContainer>
-              <PlacesAutocomplete
-                onPlaceSelect={handlePlaceSelect}
-                placeholder="Search for a location..."
-              />
+              <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} placeholder="Search for a location..." />
             </SearchBoxContainer>
           )}
 
@@ -146,10 +142,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
             {/* Show info window for selected marker */}
             {selectedMarker && (
-              <InfoWindow
-                position={selectedMarker.location}
-                onCloseClick={() => setSelectedMarker(null)}
-              >
+              <InfoWindow position={selectedMarker.location} onCloseClick={() => setSelectedMarker(null)}>
                 <MarkerInfoWindow>
                   {selectedMarker.name && (
                     <Typography variant="subtitle2" component="h6">

@@ -13,7 +13,7 @@ export const PageContainer = styled(Box, {
   width: '100%',
   maxWidth: maxWidth || '100%',
   margin: '0 auto',
-  padding: spacing(3),
+  padding: spacing(1),
 }));
 
 export const PageHeader = styled(Box)(({ theme: { spacing, palette } }) => ({
