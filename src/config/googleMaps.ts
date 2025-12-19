@@ -86,6 +86,32 @@ export const NOMINATIM_CONFIG = {
   },
 };
 
+// TomTom Traffic Configuration (Optional - for traffic layer)
+export const TOMTOM_CONFIG = {
+  apiKey: import.meta.env.VITE_TOMTOM_API_KEY || '',
+  trafficFlow: {
+    // Traffic flow tiles showing congestion levels
+    // relative0 = current traffic relative to free flow
+    // Styles: relative (green/yellow/red), absolute (speed in km/h), relative-delay (delay time)
+    url: 'https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.tomtom.com">TomTom</a>',
+    opacity: 0.7,
+    zIndex: 1000,
+  },
+  trafficIncidents: {
+    // Traffic incidents (accidents, closures, etc.)
+    url: 'https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.tomtom.com">TomTom</a>',
+    opacity: 0.8,
+    zIndex: 1001,
+  },
+};
+
+// Validate TomTom API key
+export const isTomTomConfigured = (): boolean => {
+  return !!TOMTOM_CONFIG.apiKey && TOMTOM_CONFIG.apiKey !== '';
+};
+
 // Validate API key (for Google Maps)
 export const isGoogleMapsConfigured = (): boolean => {
   return !!GOOGLE_MAPS_CONFIG.apiKey && GOOGLE_MAPS_CONFIG.apiKey !== 'your_google_maps_api_key_here';

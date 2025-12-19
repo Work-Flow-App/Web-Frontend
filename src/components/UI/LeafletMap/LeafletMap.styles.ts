@@ -81,3 +81,22 @@ export const GeocodingLoadingOverlay = styled(Box)(({ theme }) => ({
   borderRadius: theme.spacing(1),
   boxShadow: theme.shadows[3],
 }));
+
+export const TrafficToggleButton = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  right: theme.spacing(2),
+  zIndex: 1000,
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.spacing(1),
+  boxShadow: theme.shadows[2],
+
+  '& .MuiIconButton-root': {
+    padding: theme.spacing(1),
+
+    '&.active': {
+      color: theme.palette.primary.main,
+      backgroundColor: theme.palette.primary.light,
+    },
+  },
+}));
