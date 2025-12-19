@@ -1,4 +1,5 @@
 import { styled, Box, TextField } from '@mui/material';
+import { rem, Bold } from '../Typography/utility';
 
 export const MapContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -6,7 +7,7 @@ export const MapContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   borderRadius: theme.spacing(1),
   overflow: 'hidden',
-  border: `1px solid ${theme.palette.divider}`,
+  border: `${rem(1)} solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
 }));
 
@@ -22,7 +23,7 @@ export const SearchBoxContainer = styled(Box)(({ theme }) => ({
   left: '50%',
   transform: 'translateX(-50%)',
   width: '90%',
-  maxWidth: 600,
+  maxWidth: rem(600),
   zIndex: 1000,
 }));
 
@@ -67,13 +68,13 @@ export const ErrorContainer = styled(Box)(({ theme }) => ({
 
 export const MarkerInfoWindow = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
-  minWidth: 200,
+  minWidth: rem(200),
   '& h6': {
-    fontWeight: 600,
+    fontWeight: Bold._600,
     marginBottom: theme.spacing(0.5),
   },
   '& p': {
-    fontSize: '0.875rem',
+    fontSize: rem(14),
     color: theme.palette.text.secondary,
   },
 }));
