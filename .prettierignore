@@ -1,0 +1,34 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-ssr
+build
+.vite
+
+# Storybook
+storybook-static
+
+# Generated API code
+workflow-api
+
+# Coverage reports
+coverage
+.nyc_output
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
