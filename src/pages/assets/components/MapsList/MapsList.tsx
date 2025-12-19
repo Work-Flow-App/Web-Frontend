@@ -21,7 +21,7 @@ export const MapsList: React.FC = () => {
   const handleQuickLocation = (location: { name: string; lat: number; lng: number }) => {
     const quickLocation: PlaceDetails = {
       name: location.name,
-      address: `${location.name}, Bangladesh`,
+      address: `${location.name}, Ukraine`,
       location: { lat: location.lat, lng: location.lng },
     };
     setSelectedLocation(quickLocation);
@@ -54,7 +54,7 @@ export const MapsList: React.FC = () => {
             <S.QuickLocationSection>
               <S.SectionTitle variant="subtitle2">Quick Locations</S.SectionTitle>
               <S.SectionDescription variant="caption" color="textSecondary">
-                Select a popular city in Bangladesh
+                Select a popular city in Ukraine
               </S.SectionDescription>
               <S.LocationChipContainer>
                 {POPULAR_LOCATIONS.map((location) => (

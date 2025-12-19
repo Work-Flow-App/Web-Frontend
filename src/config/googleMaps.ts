@@ -17,8 +17,8 @@ export const GOOGLE_MAPS_CONFIG = {
 
   // Default map configuration
   defaultCenter: {
-    lat: 23.8103, // Dhaka, Bangladesh
-    lng: 90.4125,
+    lat: 50.4501, // Kyiv, Ukraine
+    lng: 30.5234,
   },
   defaultZoom: 12,
 
@@ -34,12 +34,12 @@ export const GOOGLE_MAPS_CONFIG = {
 
 // Leaflet/OpenStreetMap Configuration (FREE)
 export const LEAFLET_CONFIG = {
-  // Default map configuration - Bangladesh (Dhaka)
+  // Default map configuration - Ukraine (Kyiv)
   defaultCenter: {
-    lat: 23.8103, // Dhaka, Bangladesh
-    lng: 90.4125,
+    lat: 50.4501, // Kyiv, Ukraine
+    lng: 30.5234,
   },
-  defaultZoom: 7, // Country view - shows Bangladesh
+  defaultZoom: 6, // Country view - shows Ukraine
 
   // Map tile layer - Standard OpenStreetMap
   tileLayer: {
@@ -91,14 +91,14 @@ export const isGoogleMapsConfigured = (): boolean => {
   return !!GOOGLE_MAPS_CONFIG.apiKey && GOOGLE_MAPS_CONFIG.apiKey !== 'your_google_maps_api_key_here';
 };
 
-// Predefined location suggestions for Bangladesh
+// Predefined location suggestions for Ukraine
 export const POPULAR_LOCATIONS = [
-  { name: 'Dhaka', lat: 23.8103, lng: 90.4125 },
-  { name: 'Chittagong', lat: 22.3569, lng: 91.7832 },
-  { name: 'Khulna', lat: 22.8456, lng: 89.5403 },
-  { name: 'Rajshahi', lat: 24.3745, lng: 88.6042 },
-  { name: 'Sylhet', lat: 24.8949, lng: 91.8687 },
-  { name: 'Barisal', lat: 22.701, lng: 90.3535 },
-  { name: 'Rangpur', lat: 25.7439, lng: 89.2752 },
-  { name: 'Mymensingh', lat: 24.7471, lng: 90.4203 },
+  { name: 'Kyiv', lat: 50.4501, lng: 30.5234 },
+  { name: 'Kharkiv', lat: 49.9935, lng: 36.2304 },
+  { name: 'Odesa', lat: 46.4825, lng: 30.7233 },
+  { name: 'Dnipro', lat: 48.4647, lng: 35.0462 },
+  { name: 'Lviv', lat: 49.8397, lng: 24.0297 },
+  { name: 'Zaporizhzhia', lat: 47.8388, lng: 35.1396 },
+  { name: 'Kryvyi Rih', lat: 47.9105, lng: 33.3917 },
+  { name: 'Mykolaiv', lat: 46.9750, lng: 31.9946 },
 ];
