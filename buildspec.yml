@@ -6,6 +6,7 @@ version: 0.2
 env:
   variables:
     NODE_VERSION: "20"
+    VITE_TOMTOM_API_KEY: "zI1f6EP4BLb5yzAbbd9RFf06f0LIQ1YP"
     # Override these in CodeBuild project settings or parameter store
     # VITE_API_BASE_URL: "https://api.workfloow.app"
     # VITE_API_TIMEOUT: "30000"
@@ -27,6 +28,7 @@ phases:
       - echo "Build started on `date`"
       - echo "Current environment variables:"
       - echo "VITE_API_BASE_URL=$VITE_API_BASE_URL"
+      - echo "VITE_TOMTOM_API_KEY is set:" $(if [ -z "$VITE_TOMTOM_API_KEY" ]; then echo "NO"; else echo "YES"; fi)
       - echo "Skipping linter in CI/CD - linting should be done in development and PR reviews"
       # Uncomment the following lines if you want to run linting (will fail build on errors)
       # - echo "Running linter..."
