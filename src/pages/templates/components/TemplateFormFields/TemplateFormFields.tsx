@@ -1,7 +1,7 @@
 import React from 'react';
 import { TemplateFormSchema } from '../../schema/TemplateFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input, TextArea } from '../../../../components/UI/Forms';
+import { Input, TextArea, Checkbox } from '../../../../components/UI/Forms';
 import { FormField } from '../../../../components/UI/FormComponents';
 
 export const TemplateFormFields: React.FC = () => {
@@ -27,6 +27,13 @@ export const TemplateFormFields: React.FC = () => {
           showCharCount={true}
         />
       </FormField>
+
+      <Checkbox
+        name={fieldTitles.isDefault}
+        label={fieldLabels.isDefault}
+        description="Make this the default template for your company"
+        hideErrorMessage={false}
+      />
     </>
   );
 };

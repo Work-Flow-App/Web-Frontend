@@ -372,6 +372,7 @@ export const InputValidationRules = {
   StringNotRequired: string().notRequired(),
   StringRequiredWithMessage: stringValidationWithMessage,
   CheckBoxRequired: boolean().oneOf([true]),
+  BooleanNotRequired: boolean().notRequired(),
   SelectOne: boolean().oneOf([true]),
   EmailWithMessage: emailValidationWithMessage,
   DependencyRequired: dependencyValidation,

@@ -57,6 +57,7 @@ export const TemplatesList: React.FC = () => {
             jobCount,
             createdAt: template.createdAt || new Date().toISOString(),
             fields,
+            isDefault: template.default || false,
           };
         })
       );
@@ -173,9 +174,58 @@ export const TemplatesList: React.FC = () => {
     [navigate]
   );
 
+  // Handle set as default
+  const handleSetAsDefault = useCallback(
+    (template: TemplateTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'setDefaultTemplate',
+        children: (
+          <ConfirmationModal
+            title="Set Default Template"
+            message={`Set "${template.name}" as the default template?`}
+            description="This will replace the current default template for your company."
+            variant="default"
+            confirmButtonText="Set as Default"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobTemplateService.updateTemplate(template.id, {
+                  name: template.name,
+                  description: template.description,
+                  isDefault: true,
+                });
+                showSuccess(`"${template.name}" is now the default template`);
+                resetGlobalModalOuterProps();
+                fetchTemplates();
+              } catch (error) {
+                console.error('Error setting default template:', error);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to set default template';
+                showError(errorMessage);
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
+    },
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates, showSuccess, showError]
+  );
+
   // Define table actions
   const tableActions: ITableAction<TemplateTableRow>[] = useMemo(
     () => [
+      {
+        id: 'setDefault',
+        label: 'Set as Default',
+        onClick: handleSetAsDefault,
+        color: 'primary' as const,
+        show: (row) => !row.isDefault,
+      },
       {
         id: 'manageFields',
         label: 'Manage Fields',
@@ -192,10 +242,10 @@ export const TemplatesList: React.FC = () => {
         label: 'Delete',
         onClick: handleDeleteTemplate,
         color: 'error' as const,
-        disabled: (row) => row.jobCount > 0,
+        disabled: (row) => row.jobCount > 0 || !!row.isDefault,
       },
     ],
-    [handleManageFields, handleEditTemplate, handleDeleteTemplate]
+    [handleManageFields, handleEditTemplate, handleDeleteTemplate, handleSetAsDefault]
   );
 
   // Handle template name click

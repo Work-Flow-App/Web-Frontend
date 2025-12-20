@@ -2,6 +2,8 @@ import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { Link } from '../../../../components/UI/Link';
 import { FieldsBadgeList } from '../../../../components/UI/FieldsBadgeList';
+import { FieldsContainer } from '../../../../components/UI/FieldsBadgeList/FieldsBadgeList.styles';
+import { Badge } from '../../../../components/UI/Badge';
 
 export interface TemplateTableRow {
   id: number;
@@ -10,6 +12,7 @@ export interface TemplateTableRow {
   jobCount: number;
   createdAt: string;
   fields?: JobTemplateFieldResponse[];
+  isDefault?: boolean;
 }
 
 /**
@@ -26,9 +29,16 @@ export const generateTemplateColumns = (
       sortable: true,
       width: 'auto',
       render: (row) => (
-        <Link onClick={() => onTemplateNameClick?.(row.id)}>
-          {row.name}
-        </Link>
+        <FieldsContainer>
+          <Link onClick={() => onTemplateNameClick?.(row.id)}>
+            {row.name}
+          </Link>
+          {row.isDefault && (
+            <Badge variant="success" size="small">
+              Default
+            </Badge>
+          )}
+        </FieldsContainer>
       ),
     },
     {
