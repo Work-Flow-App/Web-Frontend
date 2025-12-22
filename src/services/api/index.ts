@@ -22,5 +22,17 @@ export { JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../workflow
 export { jobService } from './job';
 export type { JobResponse, JobCreateRequest, JobUpdateRequest } from './job';
 
+export { assetService } from './asset';
+export type {
+  AssetResponse,
+  AssetCreateRequest,
+  AssetUpdateRequest,
+  AssetValueResponse,
+  AssetAssignmentResponse,
+  AssetAssignmentCreateRequest,
+  AssetAssignmentReturnRequest,
+  PageAssetResponse,
+} from './asset';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';
