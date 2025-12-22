@@ -73,7 +73,7 @@ export const StyledButton = styled(MuiButton, {
           return {
             height: rem(51),
             padding: `${rem(12)} ${rem(24)}`,
-            fontSize: rem(20), // From Figma
+            fontSize: rem(10), // From Figma
             lineHeight: rem(27), // From Figma
             borderRadius: rem(8),
             gap: rem(10),
