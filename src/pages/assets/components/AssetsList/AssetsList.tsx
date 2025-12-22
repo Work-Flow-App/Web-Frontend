@@ -174,18 +174,18 @@ export const AssetsList: React.FC = () => {
     [navigate]
   );
 
-  // Handle asset name click to navigate to history
-  const handleAssetNameClick = useCallback(
-    (assetId: number) => {
-      navigate(`/company/assets/${assetId}/history`);
+  // Handle row click to navigate to history
+  const handleRowClick = useCallback(
+    (asset: AssetTableRow) => {
+      navigate(`/company/assets/${asset.id}/history`);
     },
     [navigate]
   );
 
-  // Generate columns with clickable name
+  // Generate columns
   const assetColumns = useMemo(() => {
-    return generateAssetColumns(handleAssetNameClick);
-  }, [handleAssetNameClick]);
+    return generateAssetColumns();
+  }, []);
 
   // Define table actions
   const tableActions: ITableAction<AssetTableRow>[] = useMemo(
@@ -243,6 +243,7 @@ export const AssetsList: React.FC = () => {
         selectable
         showActions
         actions={tableActions}
+        onRowClick={handleRowClick}
         loading={loading}
         emptyMessage="No assets found. Add your first asset to get started."
         rowsPerPage={20}

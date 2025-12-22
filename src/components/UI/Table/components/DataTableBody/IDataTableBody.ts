@@ -12,6 +12,8 @@ export interface IDataTableBody<T = ITableRow> {
   renderActions?: (row: T) => ReactNode;
   /** Callback when row action is clicked (deprecated - use actions prop instead) */
   onActionClick?: (row: T, event: React.MouseEvent) => void;
+  /** Callback when row is clicked */
+  onRowClick?: (row: T) => void;
   /** Loading state */
   loading?: boolean;
   /** Empty state message */
