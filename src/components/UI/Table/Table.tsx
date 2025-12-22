@@ -58,6 +58,8 @@ export interface IEnhancedTable<T = ITableRow> extends Omit<ITable<T>, 'sortConf
   enableStickyLeft?: boolean;
   /** Enable sticky right columns (for actions) */
   enableStickyRight?: boolean;
+  /** Callback when row is clicked */
+  onRowClick?: (row: T) => void;
 }
 
 const TableInner = <T extends ITableRow = ITableRow>({
@@ -69,6 +71,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   actions,
   renderActions,
   onActionClick,
+  onRowClick,
   loading = false,
   emptyMessage = 'No data available',
   showPagination = true,
@@ -109,6 +112,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
               actions={actions}
               renderActions={renderActions}
               onActionClick={onActionClick}
+              onRowClick={onRowClick}
               loading={loading}
               emptyMessage={emptyMessage}
               enableStickyLeft={enableStickyLeft}

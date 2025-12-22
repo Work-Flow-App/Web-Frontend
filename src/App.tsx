@@ -12,7 +12,7 @@ import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
 import { EquipmentPage } from './pages/equipment/EquipmentPage'
 import { CustomersPage } from './pages/customers/CustomersPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
-import { MapsPage } from './pages/assets'
+import { MapsPage, AssetsPage, AssetHistory } from './pages/assets'
 import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
@@ -45,6 +45,8 @@ function App() {
               <Route path="/company/jobs" element={<JobsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
+              <Route path="/company/assets" element={<AssetsPage />} />
+              <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
               <Route path="/company/assets/maps" element={<MapsPage />} />
 
               {/* Catch all route - 404 with Layout */}

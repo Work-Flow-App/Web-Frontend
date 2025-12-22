@@ -170,6 +170,12 @@ export const Layout: React.FC = () => {
       icon: <BuildIcon />,
       children: [
         {
+          id: 'all-assets',
+          label: 'All Assets',
+          icon: <BuildIcon />,
+          href: '/company/assets',
+        },
+        {
           id: 'maps',
           label: 'Maps',
           icon: <Place />,

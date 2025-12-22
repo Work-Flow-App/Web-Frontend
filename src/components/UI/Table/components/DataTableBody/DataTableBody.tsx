@@ -35,6 +35,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   actions,
   renderActions,
   onActionClick,
+  onRowClick,
   loading = false,
   emptyMessage = 'No data available',
   enableStickyLeft = false,
@@ -52,9 +53,22 @@ const DataTableBody: React.FC<IDataTableBody> = ({
     return filteredRows.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, rowsPerPage]);
 
-  const handleRowClick = (rowId: string | number) => {
-    if (selectable) {
-      toggleRowSelection(rowId);
+  const handleRowClick = (row: any, event: React.MouseEvent) => {
+    // Don't trigger row click when clicking on checkboxes, action buttons, or interactive elements
+    const target = event.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input[type="checkbox"]') ||
+      target.closest('a') ||
+      target.closest('[role="button"]')
+    ) {
+      return;
+    }
+
+    if (onRowClick) {
+      onRowClick(row);
+    } else if (selectable) {
+      toggleRowSelection(row.id);
     }
   };
 
@@ -105,7 +119,14 @@ const DataTableBody: React.FC<IDataTableBody> = ({
       )}
 
       {paginatedRows.map((row) => (
-        <StyledTableRow key={row.id}>
+        <StyledTableRow
+          key={row.id}
+          onClick={(e) => handleRowClick(row, e)}
+          title={onRowClick ? 'Click to view details' : undefined}
+          sx={{
+            cursor: onRowClick ? 'pointer' : 'default',
+          }}
+        >
           {enableStickyLeft ? (
             <>
               {/* Sticky Left Section: Checkbox */}
@@ -124,7 +145,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                 >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
-                    onClick={() => handleRowClick(row.id)}
+                    onClick={() => toggleRowSelection(row.id)}
                   />
                 </CheckboxCell>
               )}
@@ -198,7 +219,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                 <CheckboxCell>
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
-                    onClick={() => handleRowClick(row.id)}
+                    onClick={() => toggleRowSelection(row.id)}
                   />
                 </CheckboxCell>
               )}
