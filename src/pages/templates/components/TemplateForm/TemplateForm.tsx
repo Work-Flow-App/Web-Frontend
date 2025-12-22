@@ -46,6 +46,7 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ isModal = false, tem
           setTemplateData({
             name: template.name || '',
             description: template.description || '',
+            isDefault: template.default || false,
           });
         } catch (error) {
           console.error('Error fetching template:', error);

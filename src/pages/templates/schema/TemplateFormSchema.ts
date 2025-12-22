@@ -17,9 +17,18 @@ export const TemplateFormSchema: IFields = {
     label: 'Description',
     isRequired: false,
   },
+  isDefault: {
+    title: 'isDefault',
+    rule: InputValidationRules.BooleanNotRequired,
+    defaultValue: false,
+    placeHolder: '',
+    label: 'Set as default template',
+    isRequired: false,
+  },
 };
 
 export interface TemplateFormData {
   name: string;
   description?: string;
+  isDefault?: boolean;
 }

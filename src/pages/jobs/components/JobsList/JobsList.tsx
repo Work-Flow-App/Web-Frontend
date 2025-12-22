@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -10,6 +11,7 @@ import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { JobForm } from '../JobForm/JobForm';
 
 export const JobsList: React.FC = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobTableRow[]>([]);
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [clients, setClients] = useState<ClientResponse[]>([]);
@@ -18,6 +20,7 @@ export const JobsList: React.FC = () => {
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -143,8 +146,65 @@ export const JobsList: React.FC = () => {
     }
   }, [selectedTemplateId, loadingTemplates, fetchJobs]);
 
+  // Show "No Templates Available" modal when page loads if no templates exist
+  useEffect(() => {
+    if (!loadingTemplates && templates.length === 0 && !hasShownNoTemplateModal) {
+      setHasShownNoTemplateModal(true);
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'noTemplateWarning',
+        children: (
+          <ConfirmationModal
+            title="No Templates Available"
+            message="You need to create a job template before you can manage jobs."
+            description="Job templates define the structure and fields for your jobs. Would you like to create a template now?"
+            variant="default"
+            confirmButtonText="Create Template"
+            cancelButtonText="Cancel"
+            onConfirm={() => {
+              resetGlobalModalOuterProps();
+              navigate('/company/jobs/templates');
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
+    }
+  }, [loadingTemplates, templates.length, hasShownNoTemplateModal, setGlobalModalOuterProps, resetGlobalModalOuterProps, navigate]);
+
   // Handle add job
   const handleAddJob = () => {
+    // Check if templates exist
+    if (templates.length === 0) {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'noTemplateWarning',
+        children: (
+          <ConfirmationModal
+            title="No Templates Available"
+            message="You need to create a job template before creating a job."
+            description="Job templates define the structure and fields for your jobs. Would you like to create a template now?"
+            variant="default"
+            confirmButtonText="Create Template"
+            cancelButtonText="Cancel"
+            onConfirm={() => {
+              resetGlobalModalOuterProps();
+              // Navigate to templates page
+              navigate('/company/jobs/templates');
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
+      return;
+    }
+
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,

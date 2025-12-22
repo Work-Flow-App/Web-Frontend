@@ -97,6 +97,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       try {
         const response = await jobTemplateService.getTemplateFields(templateIdNumber);
         const fieldsData = Array.isArray(response.data) ? response.data : [];
+        console.log('Fetched template fields:', fieldsData);
         setTemplateFields(fieldsData);
       } catch (error) {
         console.error('Error fetching template fields:', error);
@@ -128,6 +129,35 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     }));
   }, [workers]);
 
+
+  // Memoize dropdown options to prevent re-parsing on every render
+  const dropdownOptionsMap = useMemo(() => {
+    const map = new Map<number, Array<{ label: string; value: string }>>();
+    templateFields.forEach(field => {
+      if (field.jobFieldType === FieldType.DROPDOWN && field.options) {
+        const options = field.options
+          .split(',')
+          .map((opt) => {
+            const trimmedOpt = opt.trim();
+            return {
+              label: trimmedOpt,
+              value: trimmedOpt,
+            };
+          })
+          .filter(opt => opt.label && opt.value);
+
+        map.set(field.id!, options);
+
+        // Debug logging (only once during memoization)
+        console.log(`Dropdown field "${field.label}" (ID: ${field.id}):`, {
+          rawOptions: field.options,
+          parsedOptions: options,
+          optionsCount: options.length
+        });
+      }
+    });
+    return map;
+  }, [templateFields]);
 
   // Render input based on field type
   const renderFieldInput = (field: JobTemplateFieldResponse) => {
@@ -175,18 +205,20 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         );
 
       case FieldType.DROPDOWN: {
-        const options = field.options
-          ? field.options.split(',').map((opt) => ({
-              label: opt.trim(),
-              value: opt.trim(),
-            }))
-          : [];
+        const options = dropdownOptionsMap.get(field.id!) || [];
+
+        // Log warning if no options available
+        if (options.length === 0) {
+          console.warn(`Dropdown field "${field.label}" (ID: ${field.id}) has no options.`);
+        }
+
         return (
           <Dropdown
             name={fieldName}
             preFetchedOptions={options}
             placeHolder={`Select ${field.label}`}
             fullWidth={true}
+            disablePortal={true}
           />
         );
       }

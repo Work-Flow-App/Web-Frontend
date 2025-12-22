@@ -240,6 +240,7 @@ export type JobResponseStatusEnum = typeof JobResponseStatusEnum[keyof typeof Jo
 export interface JobTemplateCreateRequest {
     'name'?: string;
     'description'?: string;
+    'isDefault'?: boolean;
 }
 export interface JobTemplateFieldCreateRequest {
     'templateId'?: number;
@@ -293,6 +294,7 @@ export interface JobTemplateResponse {
     'description'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
+    'default'?: boolean;
 }
 export interface JobTemplateWithFieldsResponse {
     'template'?: JobTemplateResponse;
@@ -326,8 +328,8 @@ export interface LogoutRequest {
 export interface PageAssetResponse {
     'totalElements'?: number;
     'totalPages'?: number;
-    'numberOfElements'?: number;
     'pageable'?: PageableObject;
+    'numberOfElements'?: number;
     'size'?: number;
     'content'?: Array<AssetResponse>;
     'number'?: number;
@@ -337,12 +339,12 @@ export interface PageAssetResponse {
     'empty'?: boolean;
 }
 export interface PageableObject {
+    'unpaged'?: boolean;
     'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
     'offset'?: number;
     'sort'?: SortObject;
-    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -371,8 +373,8 @@ export const SignupRequestRoleEnum = {
 export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof SignupRequestRoleEnum];
 
 export interface SortObject {
-    'sorted'?: boolean;
     'unsorted'?: boolean;
+    'sorted'?: boolean;
     'empty'?: boolean;
 }
 export interface WorkerCreateRequest {
@@ -3043,6 +3045,39 @@ export const JobTemplateControllerApiAxiosParamCreator = function (configuration
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getDefaultTemplate: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/job-templates/default`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3345,6 +3380,17 @@ export const JobTemplateControllerApiFp = function(configuration?: Configuration
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getDefaultTemplate(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getDefaultTemplate(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplateControllerApi.getDefaultTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3472,6 +3518,14 @@ export const JobTemplateControllerApiFactory = function (configuration?: Configu
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getDefaultTemplate(options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
+            return localVarFp.getDefaultTemplate(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3580,6 +3634,15 @@ export class JobTemplateControllerApi extends BaseAPI {
      */
     public getAllTemplates(options?: RawAxiosRequestConfig) {
         return JobTemplateControllerApiFp(this.configuration).getAllTemplates(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getDefaultTemplate(options?: RawAxiosRequestConfig) {
+        return JobTemplateControllerApiFp(this.configuration).getDefaultTemplate(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
