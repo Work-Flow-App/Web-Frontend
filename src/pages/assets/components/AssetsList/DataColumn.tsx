@@ -1,5 +1,6 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import { StatusBadge } from './StatusBadge';
+import { Link } from '../../../../components/UI/Link';
 
 export interface AssetTableRow {
   id: number;
@@ -17,9 +18,11 @@ export interface AssetTableRow {
 }
 
 /**
- * Asset table columns configuration
+ * Generate asset columns with clickable name
  */
-export const assetColumns: ITableColumn<AssetTableRow>[] = [
+export const generateAssetColumns = (
+  onAssetNameClick?: (assetId: number) => void
+): ITableColumn<AssetTableRow>[] => [
   {
     id: 'id',
     label: 'Asset ID',
@@ -33,6 +36,11 @@ export const assetColumns: ITableColumn<AssetTableRow>[] = [
     accessor: 'name',
     sortable: true,
     width: 'auto',
+    render: (row) => (
+      <Link onClick={() => onAssetNameClick?.(row.id)}>
+        {row.name}
+      </Link>
+    ),
   },
   {
     id: 'assetTag',

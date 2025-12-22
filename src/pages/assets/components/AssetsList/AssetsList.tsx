@@ -7,7 +7,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { assetColumns, type AssetTableRow } from './DataColumn';
+import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
 
 export const AssetsList: React.FC = () => {
@@ -174,6 +174,19 @@ export const AssetsList: React.FC = () => {
     [navigate]
   );
 
+  // Handle asset name click to navigate to history
+  const handleAssetNameClick = useCallback(
+    (assetId: number) => {
+      navigate(`/company/assets/${assetId}/history`);
+    },
+    [navigate]
+  );
+
+  // Generate columns with clickable name
+  const assetColumns = useMemo(() => {
+    return generateAssetColumns(handleAssetNameClick);
+  }, [handleAssetNameClick]);
+
   // Define table actions
   const tableActions: ITableAction<AssetTableRow>[] = useMemo(
     () => [
@@ -184,7 +197,7 @@ export const AssetsList: React.FC = () => {
       },
       {
         id: 'history',
-        label: 'View History',
+        label: 'Assignment History',
         onClick: handleViewHistory,
       },
       {
