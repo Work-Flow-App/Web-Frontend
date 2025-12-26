@@ -3,6 +3,7 @@ import { AssetFormSchema } from '../../schema/AssetFormSchema';
 import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { LocationInput } from '../../../../components/UI/Forms/LocationInput';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
 
 export interface AssetFormFieldsProps {
@@ -90,10 +91,10 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
       </FormRow>
 
       <FormField label={fieldLabels.currentLocation} required={isRequireds.currentLocation}>
-        <Input
-          name={fieldTitles.currentLocation}
+        <LocationInput
+          namePrefix={fieldTitles.currentLocation}
           placeholder={placeHolders.currentLocation}
-          hideErrorMessage={false}
+          showGeolocation={true}
         />
       </FormField>
 
@@ -104,6 +105,7 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
             placeholder={placeHolders.latitude}
             type="number"
             hideErrorMessage={false}
+            disabled
           />
         </FormField>
         <FormField label={fieldLabels.longitude} required={isRequireds.longitude}>
@@ -112,6 +114,7 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
             placeholder={placeHolders.longitude}
             type="number"
             hideErrorMessage={false}
+            disabled
           />
         </FormField>
       </FormRow>

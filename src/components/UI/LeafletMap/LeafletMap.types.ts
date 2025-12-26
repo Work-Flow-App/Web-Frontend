@@ -25,6 +25,7 @@ export interface LocationSearchProps {
   onPlaceSelect: (place: PlaceDetails) => void;
   placeholder?: string;
   defaultValue?: string;
+  currentValue?: string;
 }
 
 export interface NominatimSearchResult {

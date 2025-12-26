@@ -13,6 +13,7 @@ import type { LocationSearchProps, PlaceDetails, NominatimSearchResult } from '.
 const LocationSearch: React.FC<LocationSearchProps> = ({
   onPlaceSelect,
   placeholder = 'Search for a location...',
+  currentValue,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string | number | undefined>(undefined);
   const searchCacheRef = useRef<Map<string, NominatimSearchResult[]>>(new Map());
@@ -112,7 +113,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     // Handle both call patterns from StandaloneDropdown
     // Pattern 1: getQueryParams(inputFieldValue) - called from handleOnKeyUp
     // Pattern 2: getQueryParams(dependencyValue, keyword) - called from other places
-    const searchQuery = typeof keywordOrDependency === 'string' ? keywordOrDependency : (keyword || '');
+    const searchQuery = typeof keywordOrDependency === 'string' ? keywordOrDependency : keyword || '';
 
     return {
       query: searchQuery,
@@ -149,16 +150,17 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   return (
     <StandaloneDropdown
       name="location-search"
-      placeHolder={placeholder}
+      placeHolder={currentValue || placeholder}
       isAsync={true}
       apiHook={nominatimApiHook}
       setFetchedOption={setFetchedOption}
       getQueryParams={getQueryParams}
       onValueChange={handleValueChange}
-      value={selectedValue}
-      fullWidth
+      value={selectedValue || ''}
+      fullWidth={true}
       size="medium"
       disableClearable={false}
+      disablePortal={true}
     />
   );
 };
