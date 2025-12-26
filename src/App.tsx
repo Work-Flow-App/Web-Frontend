@@ -7,6 +7,7 @@ import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
 import { ClientPage } from './pages/client/ClientPage'
 import { JobsPage } from './pages/jobs/JobsPage'
+import { JobDetailsPage } from './pages/jobs/JobDetailsPage'
 import { TemplatesPage } from './pages/templates/TemplatesPage'
 import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
 import { EquipmentPage } from './pages/equipment/EquipmentPage'
@@ -43,6 +44,7 @@ function App() {
               <Route path="/company/customers" element={<CustomersPage />} />
               <Route path="/company/settings" element={<SettingsPage />} />
               <Route path="/company/jobs" element={<JobsPage />} />
+              <Route path="/company/jobs/:jobId/details" element={<JobDetailsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
               <Route path="/company/assets" element={<AssetsPage />} />

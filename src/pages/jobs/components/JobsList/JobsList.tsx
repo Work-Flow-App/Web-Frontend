@@ -221,6 +221,14 @@ export const JobsList: React.FC = () => {
     });
   };
 
+  // Handle row click - navigate to job details
+  const handleRowClick = useCallback(
+    (job: JobTableRow) => {
+      navigate(`/company/jobs/${job.id}/details`);
+    },
+    [navigate]
+  );
+
   // Handle edit job
   const handleEditJob = useCallback(
     (job: JobTableRow) => {
@@ -337,6 +345,7 @@ export const JobsList: React.FC = () => {
         selectable
         showActions
         actions={tableActions}
+        onRowClick={handleRowClick}
         loading={loading || loadingTemplates}
         emptyMessage={
           selectedTemplateId
