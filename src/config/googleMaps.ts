@@ -34,12 +34,12 @@ export const GOOGLE_MAPS_CONFIG = {
 
 // Leaflet/OpenStreetMap Configuration (FREE)
 export const LEAFLET_CONFIG = {
-  // Default map configuration - Ukraine (Kyiv)
+  // Default map configuration - United Kingdom (London)
   defaultCenter: {
-    lat: 50.4501, // Kyiv, Ukraine
-    lng: 30.5234,
+    lat: 51.5074, // London, UK
+    lng: -0.1278,
   },
-  defaultZoom: 6, // Country view - shows Ukraine
+  defaultZoom: 6, // Country view - shows UK
 
   // Map tile layer - Standard OpenStreetMap
   tileLayer: {
@@ -117,14 +117,16 @@ export const isGoogleMapsConfigured = (): boolean => {
   return !!GOOGLE_MAPS_CONFIG.apiKey && GOOGLE_MAPS_CONFIG.apiKey !== 'your_google_maps_api_key_here';
 };
 
-// Predefined location suggestions for Ukraine
+// Predefined location suggestions for United Kingdom
 export const POPULAR_LOCATIONS = [
-  { name: 'Kyiv', lat: 50.4501, lng: 30.5234 },
-  { name: 'Kharkiv', lat: 49.9935, lng: 36.2304 },
-  { name: 'Odesa', lat: 46.4825, lng: 30.7233 },
-  { name: 'Dnipro', lat: 48.4647, lng: 35.0462 },
-  { name: 'Lviv', lat: 49.8397, lng: 24.0297 },
-  { name: 'Zaporizhzhia', lat: 47.8388, lng: 35.1396 },
-  { name: 'Kryvyi Rih', lat: 47.9105, lng: 33.3917 },
-  { name: 'Mykolaiv', lat: 46.9750, lng: 31.9946 },
+  { name: 'London', lat: 51.5074, lng: -0.1278 },
+  { name: 'Manchester', lat: 53.4808, lng: -2.2426 },
+  { name: 'Birmingham', lat: 52.4862, lng: -1.8904 },
+  { name: 'Leeds', lat: 53.8008, lng: -1.5491 },
+  { name: 'Glasgow', lat: 55.8642, lng: -4.2518 },
+  { name: 'Edinburgh', lat: 55.9533, lng: -3.1883 },
+  { name: 'Liverpool', lat: 53.4084, lng: -2.9916 },
+  { name: 'Bristol', lat: 51.4545, lng: -2.5879 },
+  { name: 'Cardiff', lat: 51.4816, lng: -3.1791 },
+  { name: 'Belfast', lat: 54.5973, lng: -5.9301 },
 ];
