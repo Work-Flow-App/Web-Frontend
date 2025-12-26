@@ -24,7 +24,7 @@ export const MapSection = styled(Box)(({ theme }) => ({
 }));
 
 export const SidePanel = styled(Box)(({ theme }) => ({
-  width: rem(450),
+  width: rem(600),
   flexShrink: 0,
   padding: theme.spacing(2),
   height: '100%',
