@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Input } from '../../../../components/UI/Forms/Input';
-import { Button } from '../../../../components/UI/Button';
 import { workerService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import {
-  FormContainer,
-  FormWrapper,
-  ButtonGroup,
-} from './InviteWorkerForm.styles';
+import { FormContainer, FormWrapper } from './InviteWorkerForm.styles';
 
 interface InviteWorkerFormProps {
   onSuccess?: () => void;
@@ -44,11 +40,36 @@ export const InviteWorkerForm: React.FC<InviteWorkerFormProps> = ({
 
   const {
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = methods;
 
   const { showSuccess, showError } = useSnackbar();
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
+
+  const {
+    updateModalTitle,
+    updateGlobalModalInnerConfig,
+    updateOnClose,
+    updateOnConfirm,
+  } = useGlobalModalInnerContext();
+
+  // Configure modal
+  useEffect(() => {
+    updateModalTitle('Invite Worker');
+
+    updateGlobalModalInnerConfig({
+      confirmModalButtonText: 'Send Invitation',
+      cancelButtonText: 'Cancel',
+    });
+
+    updateOnClose(() => {
+      onCancel?.();
+    });
+
+    updateOnConfirm(() => {
+      handleSubmit(onSubmit)();
+    });
+  }, [updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm, onCancel]);
 
   const onSubmit = async (data: InviteFormData) => {
     setLoading(true);
@@ -81,7 +102,7 @@ export const InviteWorkerForm: React.FC<InviteWorkerFormProps> = ({
   return (
     <FormProvider {...methods}>
       <FormContainer>
-        <FormWrapper onSubmit={handleSubmit(onSubmit)}>
+        <FormWrapper>
           <Input
             name="email"
             label="Worker Email"
@@ -89,30 +110,7 @@ export const InviteWorkerForm: React.FC<InviteWorkerFormProps> = ({
             placeholder="worker@example.com"
             fullWidth
             error={errors.email}
-            helperText="Enter the email address of the worker you want to invite"
           />
-
-          <ButtonGroup>
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outlined"
-                color="secondary"
-                onClick={onCancel}
-                disabled={loading || isSubmitting}
-              >
-                Cancel
-              </Button>
-            )}
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading || isSubmitting}
-            >
-              {loading || isSubmitting ? 'Sending Invitation...' : 'Send Invitation'}
-            </Button>
-          </ButtonGroup>
         </FormWrapper>
       </FormContainer>
     </FormProvider>

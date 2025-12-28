@@ -5,14 +5,6 @@ export const InvitationsContainer = styled.div`
   height: 100%;
 `;
 
-export const FilterContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 0 4px;
-`;
-
 export const StatusBadge = styled.span<{ color: string }>`
   display: inline-flex;
   align-items: center;

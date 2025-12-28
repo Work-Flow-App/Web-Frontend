@@ -4,10 +4,10 @@ import Table from '../../components/UI/Table/Table';
 import type { ITableColumn, ITableAction } from '../../components/UI/Table/ITable';
 import { workerService, type WorkerInvitationStatus } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { Box, MenuItem, Select, FormControl, InputLabel, IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
-import { StatusBadge, InvitationsContainer, FilterContainer } from './InvitationsPage.styles';
+import { StatusBadge, InvitationsContainer } from './InvitationsPage.styles';
 
 interface InvitationTableRow {
   id: number;
@@ -35,7 +35,7 @@ const getStatusColor = (status: string): string => {
 export const InvitationsPage: React.FC = () => {
   const [invitations, setInvitations] = useState<InvitationTableRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string | number>('ALL');
   const { showError, showSuccess } = useSnackbar();
 
   const fetchInvitations = useCallback(async () => {
@@ -91,6 +91,17 @@ export const InvitationsPage: React.FC = () => {
       }
     },
     [showSuccess, showError, fetchInvitations]
+  );
+
+  // Dropdown options for status filter
+  const statusFilterOptions = useMemo(
+    () => [
+      { label: 'All Statuses', value: 'ALL' },
+      { label: 'Pending', value: 'PENDING' },
+      { label: 'Accepted', value: 'ACCEPTED' },
+      { label: 'Expired', value: 'EXPIRED' },
+    ],
+    []
   );
 
   // Table columns
@@ -157,28 +168,18 @@ export const InvitationsPage: React.FC = () => {
         description="View and manage all worker invitations sent from your company."
         showSearch
         searchPlaceholder="Search invitations by email"
-      >
-        <FilterContainer>
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 180 }}>
-            <InputLabel>Filter by Status</InputLabel>
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              label="Filter by Status"
-            >
-              <MenuItem value="ALL">All Statuses</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="ACCEPTED">Accepted</MenuItem>
-              <MenuItem value="EXPIRED">Expired</MenuItem>
-            </Select>
-          </FormControl>
+        dropdownOptions={statusFilterOptions}
+        dropdownValue={statusFilter}
+        dropdownPlaceholder="All Statuses"
+        onDropdownChange={setStatusFilter}
+        headerExtra={
           <Tooltip title="Refresh invitations">
             <IconButton onClick={fetchInvitations} disabled={loading}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>
-        </FilterContainer>
-
+        }
+      >
         <Table<InvitationTableRow>
           columns={columns}
           data={filteredInvitations}
