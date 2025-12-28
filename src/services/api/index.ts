@@ -10,7 +10,17 @@ export { authService } from './auth';
 export type { SignupRequest, LoginRequest, AuthResponse } from './auth';
 
 export { workerService } from './worker';
-export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse } from './worker';
+export type {
+  WorkerResponse,
+  WorkerCreateRequest,
+  WorkerUpdateRequest,
+  WorkerInviteResponse,
+  WorkerInvitationRequest,
+  WorkerInvitationResponse,
+  WorkerInvitationStatus,
+  WorkerSignupRequest,
+  WorkerSignupResponse
+} from './worker';
 
 export { companyClientService } from './companyClient';
 export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest } from './companyClient';

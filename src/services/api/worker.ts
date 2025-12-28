@@ -10,6 +10,46 @@ import { axiosInstance } from './axiosConfig';
 
 export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse };
 
+// Additional types for worker invitation system
+export interface WorkerInvitationRequest {
+  email: string;
+}
+
+export interface WorkerInvitationResponse {
+  email: string;
+  message: string;
+  expiresAt: string;
+}
+
+export interface WorkerInvitationStatus {
+  invitationId: number;
+  email: string;
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
+}
+
+export interface WorkerSignupRequest {
+  invitationToken: string;
+  email: string;
+  name: string;
+  initials?: string;
+  telephone?: string;
+  mobile?: string;
+  username: string;
+  password: string;
+}
+
+export interface WorkerSignupResponse {
+  workerId: number;
+  name: string;
+  email: string;
+  username: string;
+  companyName: string;
+  message: string;
+}
+
 /**
  * Worker API Service
  * Provides CRUD operations for worker management
@@ -67,6 +107,27 @@ export const workerService = {
    */
   async sendInvitation(id: number) {
     return await getWorkerApi().sendInvitation(id);
+  },
+
+  /**
+   * Send worker invitation by email (new invitation system)
+   */
+  async sendWorkerInvitation(data: WorkerInvitationRequest): Promise<WorkerInvitationResponse> {
+    const response = await axiosInstance.post<WorkerInvitationResponse>(
+      `${env.apiBaseUrl}/api/v1/workers/invite`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Get all worker invitations status
+   */
+  async getWorkerInvitations(): Promise<WorkerInvitationStatus[]> {
+    const response = await axiosInstance.get<WorkerInvitationStatus[]>(
+      `${env.apiBaseUrl}/api/v1/workers/invites`
+    );
+    return response.data;
   },
 };
 

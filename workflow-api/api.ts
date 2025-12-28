@@ -53,9 +53,6 @@ export interface AssetCreateRequest {
     'purchaseDate'?: string;
     'depreciationRate'?: number;
     'salvageValue'?: number;
-    'currentLocation'?: string;
-    'latitude'?: number;
-    'longitude'?: number;
 }
 export interface AssetResponse {
     'id'?: number;
@@ -68,9 +65,6 @@ export interface AssetResponse {
     'purchaseDate'?: string;
     'depreciationRate'?: number;
     'salvageValue'?: number;
-    'currentLocation'?: string;
-    'latitude'?: number;
-    'longitude'?: number;
     'available'?: boolean;
     'archived'?: boolean;
     'createdAt'?: string;
@@ -82,9 +76,6 @@ export interface AssetUpdateRequest {
     'serialNumber'?: string;
     'assetTag'?: string;
     'salvageValue'?: number;
-    'currentLocation'?: string;
-    'latitude'?: number;
-    'longitude'?: number;
 }
 export interface AssetValueResponse {
     'assetId'?: number;
@@ -202,6 +193,7 @@ export interface JobCreateRequest {
     'assignedWorkerId'?: number;
     'status'?: JobCreateRequestStatusEnum;
     'fieldValues'?: { [key: string]: any; };
+    'assetIds'?: Array<number>;
 }
 
 export const JobCreateRequestStatusEnum = {
@@ -225,6 +217,7 @@ export interface JobResponse {
     'createdAt'?: string;
     'updatedAt'?: string;
     'fieldValues'?: { [key: string]: FieldValueResponse; };
+    'assetIds'?: Array<number>;
 }
 
 export const JobResponseStatusEnum = {
@@ -306,6 +299,7 @@ export interface JobUpdateRequest {
     'status'?: JobUpdateRequestStatusEnum;
     'archived'?: boolean;
     'fieldValues'?: { [key: string]: any; };
+    'assetIds'?: Array<number>;
 }
 
 export const JobUpdateRequestStatusEnum = {
@@ -340,9 +334,9 @@ export interface PageAssetResponse {
 }
 export interface PageableObject {
     'unpaged'?: boolean;
-    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
+    'pageNumber'?: number;
     'offset'?: number;
     'sort'?: SortObject;
 }
