@@ -12,6 +12,8 @@ export interface JobTableRow {
   status?: string;
   createdAt: string;
   fieldValues?: { [key: string]: string };
+  assetIds?: number[];
+  assetNames?: string;
 }
 
 /**
@@ -56,6 +58,14 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       sortable: true,
       width: 'auto',
       render: (row) => row.status || '-',
+    },
+    {
+      id: 'assetNames',
+      label: 'Assets',
+      accessor: 'assetNames',
+      sortable: false,
+      width: 'auto',
+      render: (row) => row.assetNames || '-',
     },
   ];
 
