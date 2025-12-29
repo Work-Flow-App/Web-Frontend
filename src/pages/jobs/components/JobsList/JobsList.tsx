@@ -4,8 +4,8 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, companyClientService, workerService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse, AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { JobForm } from '../JobForm/JobForm';
@@ -16,6 +16,7 @@ export const JobsList: React.FC = () => {
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
+  const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,9 +61,20 @@ export const JobsList: React.FC = () => {
       }
     };
 
+    const fetchAssets = async () => {
+      try {
+        const response = await assetService.getAllAssets(0, 1000);
+        const assetsData = response.data.content || [];
+        setAssets(assetsData);
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      }
+    };
+
     fetchTemplates();
     fetchClients();
     fetchWorkers();
+    fetchAssets();
   }, [showError]);
 
   // Fetch template fields when template is selected
@@ -115,6 +127,14 @@ export const JobsList: React.FC = () => {
           });
         }
 
+        // Map asset IDs to asset names
+        const assetNames = job.assetIds && job.assetIds.length > 0
+          ? job.assetIds
+              .map(assetId => assets.find(a => a.id === assetId)?.name)
+              .filter(Boolean)
+              .join(', ')
+          : undefined;
+
         return {
           id: job.id || 0,
           templateId: job.templateId,
@@ -126,6 +146,8 @@ export const JobsList: React.FC = () => {
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
           fieldValues,
+          assetIds: job.assetIds,
+          assetNames,
         };
       });
 
@@ -137,7 +159,7 @@ export const JobsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, templates, clients, workers, showError]);
+  }, [selectedTemplateId, templates, clients, workers, assets, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
