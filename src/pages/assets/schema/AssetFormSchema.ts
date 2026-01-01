@@ -65,30 +65,6 @@ export const AssetFormSchema: IFields = {
     label: 'Salvage Value',
     isRequired: false,
   },
-  currentLocation: {
-    title: 'currentLocation',
-    rule: InputValidationRules.StringNotRequired,
-    defaultValue: '',
-    placeHolder: 'Enter current location (optional)',
-    label: 'Current Location',
-    isRequired: false,
-  },
-  latitude: {
-    title: 'latitude',
-    rule: InputValidationRules.NumberNotRequired,
-    defaultValue: '',
-    placeHolder: 'Enter latitude (optional)',
-    label: 'Latitude',
-    isRequired: false,
-  },
-  longitude: {
-    title: 'longitude',
-    rule: InputValidationRules.NumberNotRequired,
-    defaultValue: '',
-    placeHolder: 'Enter longitude (optional)',
-    label: 'Longitude',
-    isRequired: false,
-  },
 };
 
 export interface AssetFormData {
@@ -100,7 +76,4 @@ export interface AssetFormData {
   purchaseDate: string;
   depreciationRate?: number;
   salvageValue?: number;
-  currentLocation?: string;
-  latitude?: number;
-  longitude?: number;
 }

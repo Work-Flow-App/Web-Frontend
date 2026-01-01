@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StandaloneDropdown } from '../Forms/Dropdown/StandaloneDropdown';
 import type { DropdownOption } from '../Forms/Dropdown/Dropdown.types';
-import { NOMINATIM_CONFIG } from '../../../config/googleMaps';
+import { NOMINATIM_CONFIG, POPULAR_LOCATIONS } from '../../../config/googleMaps';
 import type { LocationSearchProps, PlaceDetails, NominatimSearchResult } from './LeafletMap.types';
 
 /**
@@ -13,6 +13,7 @@ import type { LocationSearchProps, PlaceDetails, NominatimSearchResult } from '.
 const LocationSearch: React.FC<LocationSearchProps> = ({
   onPlaceSelect,
   placeholder = 'Search for a location...',
+  currentValue,
 }) => {
   const [selectedValue, setSelectedValue] = useState<string | number | undefined>(undefined);
   const searchCacheRef = useRef<Map<string, NominatimSearchResult[]>>(new Map());
@@ -23,12 +24,54 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  // Load popular UK cities on component mount
+  useEffect(() => {
+    // Pre-populate cache with UK cities for quick search
+    const fetchPopularCities = async () => {
+      try {
+        const cityPromises = POPULAR_LOCATIONS.map(async (city) => {
+          const searchParams = new URLSearchParams({
+            q: city.name,
+            format: NOMINATIM_CONFIG.searchParams.format,
+            addressdetails: NOMINATIM_CONFIG.searchParams.addressdetails.toString(),
+            limit: '1',
+            countrycodes: 'gb',
+          });
+
+          const response = await fetch(`${NOMINATIM_CONFIG.baseUrl}/search?${searchParams}`, {
+            headers: {
+              'User-Agent': 'WorkFlow App',
+            },
+          });
+
+          if (response.ok) {
+            const data: NominatimSearchResult[] = await response.json();
+            return data[0];
+          }
+          return null;
+        });
+
+        const results = await Promise.all(cityPromises);
+        const validResults = results.filter((r): r is NominatimSearchResult => r !== null);
+
+        // Cache UK cities for quick access
+        searchCacheRef.current.set('__uk_cities__', validResults);
+      } catch (error) {
+        console.error('Error pre-loading UK cities:', error);
+      }
+    };
+
+    fetchPopularCities();
+  }, []);
+
   const fetchLocations = async (query: string) => {
     if (!query || query.length < 3) {
-      setApiData([]);
+      // Show UK cities as suggestions when no query
+      const ukCities = searchCacheRef.current.get('__uk_cities__') || [];
+      setApiData(ukCities);
       setIsSuccess(true);
       setIsError(false);
-      return { data: [] };
+      return { data: ukCities };
     }
 
     // Check cache first
@@ -112,7 +155,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
     // Handle both call patterns from StandaloneDropdown
     // Pattern 1: getQueryParams(inputFieldValue) - called from handleOnKeyUp
     // Pattern 2: getQueryParams(dependencyValue, keyword) - called from other places
-    const searchQuery = typeof keywordOrDependency === 'string' ? keywordOrDependency : (keyword || '');
+    const searchQuery = typeof keywordOrDependency === 'string' ? keywordOrDependency : keyword || '';
 
     return {
       query: searchQuery,
@@ -149,16 +192,17 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   return (
     <StandaloneDropdown
       name="location-search"
-      placeHolder={placeholder}
+      placeHolder={currentValue || placeholder}
       isAsync={true}
       apiHook={nominatimApiHook}
       setFetchedOption={setFetchedOption}
       getQueryParams={getQueryParams}
       onValueChange={handleValueChange}
-      value={selectedValue}
-      fullWidth
+      value={selectedValue || ''}
+      fullWidth={true}
       size="medium"
       disableClearable={false}
+      disablePortal={true}
     />
   );
 };

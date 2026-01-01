@@ -56,6 +56,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               status: job.status,
               clientId: job.clientId,
               assignedWorkerId: job.assignedWorkerId,
+              assetIds: job.assetIds || [],
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -91,7 +92,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, clientId, assignedWorkerId, ...dynamicFields } = data;
+        const { templateId, status, clientId, assignedWorkerId, assetIds, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -138,6 +139,18 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           : assignedWorkerId;
         const assignedWorkerIdNumber = assignedWorkerIdValue ? Number(assignedWorkerIdValue) : undefined;
 
+        // Convert assetIds from dropdown format to number array
+        const assetIdsArray = Array.isArray(assetIds)
+          ? assetIds
+              .map(asset => {
+                const assetValue = typeof asset === 'object' && asset !== null
+                  ? (asset as { value: string }).value
+                  : asset;
+                return assetValue ? Number(assetValue) : null;
+              })
+              .filter((id): id is number => id !== null && !isNaN(id))
+          : [];
+
         if (isEditMode) {
           // Update existing job
           const updatePayload: JobUpdateRequest = {
@@ -147,6 +160,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (statusValue) updatePayload.status = statusValue as JobUpdateRequestStatusEnum;
           if (clientIdNumber) updatePayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
+          if (assetIdsArray.length > 0) updatePayload.assetIds = assetIdsArray;
 
           await jobService.updateJob(jobId, updatePayload);
           showSuccess('Job updated successfully');
@@ -159,6 +173,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (statusValue) createPayload.status = statusValue as JobCreateRequestStatusEnum;
           if (clientIdNumber) createPayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
+          if (assetIdsArray.length > 0) createPayload.assetIds = assetIdsArray;
 
           await jobService.createJob(createPayload);
           showSuccess('Job created successfully');

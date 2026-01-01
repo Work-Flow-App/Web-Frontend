@@ -52,9 +52,6 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
             purchaseDate: asset.purchaseDate || '',
             depreciationRate: asset.depreciationRate || 0,
             salvageValue: asset.salvageValue || 0,
-            currentLocation: asset.currentLocation || '',
-            latitude: asset.latitude || undefined,
-            longitude: asset.longitude || undefined,
           });
         } catch (error) {
           console.error('Error fetching asset:', error);
@@ -81,9 +78,6 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           if (data.serialNumber) updatePayload.serialNumber = data.serialNumber;
           if (data.assetTag) updatePayload.assetTag = data.assetTag;
           if (data.salvageValue !== undefined) updatePayload.salvageValue = data.salvageValue;
-          if (data.currentLocation) updatePayload.currentLocation = data.currentLocation;
-          if (data.latitude !== undefined) updatePayload.latitude = data.latitude;
-          if (data.longitude !== undefined) updatePayload.longitude = data.longitude;
 
           const response = await assetService.updateAsset(assetId!, updatePayload);
           showSuccess(response.data.name ? `${response.data.name} updated successfully` : 'Asset updated successfully');
@@ -99,9 +93,6 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           if (data.assetTag) createPayload.assetTag = data.assetTag;
           if (data.depreciationRate !== undefined) createPayload.depreciationRate = data.depreciationRate;
           if (data.salvageValue !== undefined) createPayload.salvageValue = data.salvageValue;
-          if (data.currentLocation) createPayload.currentLocation = data.currentLocation;
-          if (data.latitude !== undefined) createPayload.latitude = data.latitude;
-          if (data.longitude !== undefined) createPayload.longitude = data.longitude;
 
           const response = await assetService.createAsset(createPayload);
           showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Asset added successfully');

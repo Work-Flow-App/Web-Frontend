@@ -30,6 +30,13 @@ export const JobFormSchema: IFields = {
     label: 'Assigned Worker',
     isRequired: false,
   },
+  assetIds: {
+    title: 'assetIds',
+    defaultValue: [],
+    placeHolder: 'Select assets (optional)',
+    label: 'Assets',
+    isRequired: false,
+  },
 };
 
 export interface JobFormData {
@@ -37,5 +44,6 @@ export interface JobFormData {
   status?: string | { label: string; value: string } | null;
   clientId?: number | string | { label: string; value: string } | null;
   assignedWorkerId?: number | string | { label: string; value: string } | null;
-  [key: string]: string | number | undefined | null | { label: string; value: string }; // For dynamic template fields
+  assetIds?: Array<number | string | { label: string; value: string }> | null;
+  [key: string]: string | number | undefined | null | { label: string; value: string } | Array<number | string | { label: string; value: string }>; // For dynamic template fields
 }

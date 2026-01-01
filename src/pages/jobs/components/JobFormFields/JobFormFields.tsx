@@ -5,11 +5,16 @@ import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
-import {  FormField, FormRow } from '../../../../components/UI/FormComponents';
-import { jobTemplateService, companyClientService, workerService } from '../../../../services/api';
-import type { JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse } from '../../../../services/api';
+import { FormField, FormRow } from '../../../../components/UI/FormComponents';
+import { jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
+import type {
+  JobTemplateResponse,
+  JobTemplateFieldResponse,
+  ClientResponse,
+  WorkerResponse,
+  AssetResponse,
+} from '../../../../services/api';
 import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
-
 
 interface JobFormFieldsProps {
   isEditMode?: boolean;
@@ -22,8 +27,10 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
+  const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
+  const [loadingAssets, setLoadingAssets] = useState(true);
 
   const { control } = useFormContext();
   const selectedTemplateId = useWatch({ control, name: fieldTitles.templateId });
@@ -69,9 +76,23 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }
     };
 
+    const fetchAssets = async () => {
+      try {
+        setLoadingAssets(true);
+        const response = await assetService.getAllAssets(0, 100, false, true);
+        const assetsData = response.data.content || [];
+        setAssets(assetsData);
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      } finally {
+        setLoadingAssets(false);
+      }
+    };
+
     fetchTemplates();
     fetchClients();
     fetchWorkers();
+    fetchAssets();
   }, []);
 
   // Fetch template fields when template is selected
@@ -83,9 +104,10 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }
 
       // Extract the value if selectedTemplateId is an object
-      const templateIdValue = typeof selectedTemplateId === 'object' && selectedTemplateId !== null
-        ? (selectedTemplateId as { value: string }).value
-        : selectedTemplateId;
+      const templateIdValue =
+        typeof selectedTemplateId === 'object' && selectedTemplateId !== null
+          ? (selectedTemplateId as { value: string }).value
+          : selectedTemplateId;
 
       const templateIdNumber = Number(templateIdValue);
       if (isNaN(templateIdNumber) || templateIdNumber <= 0) {
@@ -109,13 +131,13 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   }, [selectedTemplateId]);
 
   const templateOptions = useMemo(() => {
-      return templates.map((template) => ({
-        label: template.name || '',
-        value: template.id?.toString() || '',
-      }));
-    }, [templates]);
+    return templates.map((template) => ({
+      label: template.name || '',
+      value: template.id?.toString() || '',
+    }));
+  }, [templates]);
 
-    const clientOptions = useMemo(() => {
+  const clientOptions = useMemo(() => {
     return clients.map((client) => ({
       label: client.name || '',
       value: client.id?.toString() || '',
@@ -129,11 +151,17 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     }));
   }, [workers]);
 
+  const assetOptions = useMemo(() => {
+    return assets.map((asset) => ({
+      label: asset.name || '',
+      value: asset.id?.toString() || '',
+    }));
+  }, [assets]);
 
   // Memoize dropdown options to prevent re-parsing on every render
   const dropdownOptionsMap = useMemo(() => {
     const map = new Map<number, Array<{ label: string; value: string }>>();
-    templateFields.forEach(field => {
+    templateFields.forEach((field) => {
       if (field.jobFieldType === FieldType.DROPDOWN && field.options) {
         const options = field.options
           .split(',')
@@ -144,7 +172,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
               value: trimmedOpt,
             };
           })
-          .filter(opt => opt.label && opt.value);
+          .filter((opt) => opt.label && opt.value);
 
         map.set(field.id!, options);
 
@@ -152,7 +180,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         console.log(`Dropdown field "${field.label}" (ID: ${field.id}):`, {
           rawOptions: field.options,
           parsedOptions: options,
-          optionsCount: options.length
+          optionsCount: options.length,
         });
       }
     });
@@ -166,32 +194,13 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
 
     switch (field.jobFieldType) {
       case FieldType.TEXT:
-        return (
-          <Input
-            name={fieldName}
-            placeholder={`Enter ${field.label}`}
-            hideErrorMessage={false}
-          />
-        );
+        return <Input name={fieldName} placeholder={`Enter ${field.label}`} hideErrorMessage={false} />;
 
       case FieldType.NUMBER:
-        return (
-          <Input
-            type="number"
-            name={fieldName}
-            placeholder={`Enter ${field.label}`}
-            hideErrorMessage={false}
-          />
-        );
+        return <Input type="number" name={fieldName} placeholder={`Enter ${field.label}`} hideErrorMessage={false} />;
 
       case FieldType.DATE:
-        return (
-          <Input
-            type="date"
-            name={fieldName}
-            hideErrorMessage={false}
-          />
-        );
+        return <Input type="date" name={fieldName} hideErrorMessage={false} />;
 
       case FieldType.BOOLEAN:
         return (
@@ -224,13 +233,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }
 
       default:
-        return (
-          <Input
-            name={fieldName}
-            placeholder={`Enter ${field.label}`}
-            hideErrorMessage={false}
-          />
-        );
+        return <Input name={fieldName} placeholder={`Enter ${field.label}`} hideErrorMessage={false} />;
     }
   };
 
@@ -261,50 +264,56 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         </FormField>
       </FormRow>
 
-          <FormRow>
-            <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
-              <Dropdown
-                name={fieldTitles.clientId}
-                preFetchedOptions={clientOptions}
-                placeHolder={placeHolders.clientId}
-                isPreFetchLoading={loadingClients}
-                disablePortal={true}
-                fullWidth={true}
-                disabled={clientOptions.length === 0}
-              />
-            </FormField>
+      <FormRow>
+        <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
+          <Dropdown
+            name={fieldTitles.clientId}
+            preFetchedOptions={clientOptions}
+            placeHolder={placeHolders.clientId}
+            isPreFetchLoading={loadingClients}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={clientOptions.length === 0}
+          />
+        </FormField>
 
-            <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
-              <Dropdown
-                name={fieldTitles.assignedWorkerId}
-                preFetchedOptions={workerOptions}
-                placeHolder={placeHolders.assignedWorkerId}
-                isPreFetchLoading={loadingWorkers}
-                disablePortal={true}
-                fullWidth={true}
-                disabled={workerOptions.length === 0}
-              />
-            </FormField>
-          </FormRow>
-          
+        <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
+          <Dropdown
+            name={fieldTitles.assignedWorkerId}
+            preFetchedOptions={workerOptions}
+            placeHolder={placeHolders.assignedWorkerId}
+            isPreFetchLoading={loadingWorkers}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={workerOptions.length === 0}
+          />
+        </FormField>
+      </FormRow>
 
-          {/* Dynamic fields based on template */}
-          {templateFields.length > 0 && (
-            <>
-              {templateFields
-                .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-                .map((field) => (
-                  <FormField
-                    key={field.id}
-                    label={field.label || field.name || ''}
-                    required={field.required}
-                  >
-                    {renderFieldInput(field)}
-                  </FormField>
-                ))}
-            </>
-          )}
+      <FormField label={fieldLabels.assetIds} required={isRequireds.assetIds}>
+        <Dropdown
+          name={fieldTitles.assetIds}
+          preFetchedOptions={assetOptions}
+          placeHolder={placeHolders.assetIds}
+          isPreFetchLoading={loadingAssets}
+          disablePortal={true}
+          fullWidth={true}
+          disabled={assetOptions.length === 0}
+        />
+      </FormField>
+
+      {/* Dynamic fields based on template */}
+      {templateFields.length > 0 && (
+        <>
+          {templateFields
+            .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+            .map((field) => (
+              <FormField key={field.id} label={field.label || field.name || ''} required={field.required}>
+                {renderFieldInput(field)}
+              </FormField>
+            ))}
         </>
-
+      )}
+    </>
   );
 };

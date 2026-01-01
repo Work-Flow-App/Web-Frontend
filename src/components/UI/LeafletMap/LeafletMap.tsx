@@ -176,6 +176,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
   width = '100%',
   showSearchBox = true,
   className,
+  selectedLocation = null,
 }) => {
   const [mapCenter, setMapCenter] = useState(center);
   const [mapZoom, setMapZoom] = useState(zoom);
@@ -208,7 +209,11 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
     <MapContainer sx={{ height, width }} className={className}>
       {showSearchBox && (
         <SearchBoxContainer>
-          <LocationSearch onPlaceSelect={handlePlaceSelect} placeholder="Search for a location..." />
+          <LocationSearch
+            onPlaceSelect={handlePlaceSelect}
+            placeholder="Search for a location..."
+            currentValue={selectedLocation?.address}
+          />
         </SearchBoxContainer>
       )}
 
@@ -245,14 +250,59 @@ const LeafletMap: React.FC<LeafletMapProps> = ({
           >
             <Popup>
               <MarkerPopupContent>
-                {marker.name && (
-                  <Typography variant="subtitle2" component="h6">
-                    {marker.name}
-                  </Typography>
+                {marker.workerData ? (
+                  // Worker-Job marker popup
+                  <>
+                    <Typography variant="subtitle2" component="h6" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                      {marker.workerData.workerName}
+                    </Typography>
+                    {marker.workerData.workerEmail && (
+                      <Typography variant="caption" component="p" style={{ marginBottom: '4px' }}>
+                        {marker.workerData.workerEmail}
+                      </Typography>
+                    )}
+                    {marker.workerData.workerPhone && (
+                      <Typography variant="caption" component="p" style={{ marginBottom: '8px' }}>
+                        {marker.workerData.workerPhone}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" style={{ fontWeight: 'bold', marginTop: '8px', marginBottom: '4px' }}>
+                      Jobs ({marker.workerData.jobs.length}):
+                    </Typography>
+                    {marker.workerData.jobs.map((job) => (
+                      <div key={job.jobId} style={{ marginBottom: '8px', paddingLeft: '8px', borderLeft: '2px solid #1976d2' }}>
+                        <Typography variant="caption" component="p" style={{ fontWeight: 'bold' }}>
+                          Job #{job.jobId}
+                        </Typography>
+                        <Typography variant="caption" component="p">
+                          Status: {job.status}
+                        </Typography>
+                        {job.scheduledTime && (
+                          <Typography variant="caption" component="p">
+                            Time: {job.scheduledTime}
+                          </Typography>
+                        )}
+                        {job.clientName && (
+                          <Typography variant="caption" component="p">
+                            Client: {job.clientName}
+                          </Typography>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  // Standard location marker popup
+                  <>
+                    {marker.name && (
+                      <Typography variant="subtitle2" component="h6">
+                        {marker.name}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" component="p">
+                      {marker.address}
+                    </Typography>
+                  </>
                 )}
-                <Typography variant="body2" component="p">
-                  {marker.address}
-                </Typography>
               </MarkerPopupContent>
             </Popup>
           </Marker>

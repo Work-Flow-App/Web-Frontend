@@ -88,33 +88,6 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
           />
         </FormField>
       </FormRow>
-
-      <FormField label={fieldLabels.currentLocation} required={isRequireds.currentLocation}>
-        <Input
-          name={fieldTitles.currentLocation}
-          placeholder={placeHolders.currentLocation}
-          hideErrorMessage={false}
-        />
-      </FormField>
-
-      <FormRow>
-        <FormField label={fieldLabels.latitude} required={isRequireds.latitude}>
-          <Input
-            name={fieldTitles.latitude}
-            placeholder={placeHolders.latitude}
-            type="number"
-            hideErrorMessage={false}
-          />
-        </FormField>
-        <FormField label={fieldLabels.longitude} required={isRequireds.longitude}>
-          <Input
-            name={fieldTitles.longitude}
-            placeholder={placeHolders.longitude}
-            type="number"
-            hideErrorMessage={false}
-          />
-        </FormField>
-      </FormRow>
     </>
   );
 };
