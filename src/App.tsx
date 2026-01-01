@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Signup } from './pages/auth/Signup'
+import { WorkerSignup } from './pages/auth/WorkerSignup'
 import { Login } from './pages/auth/Login'
 import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
+import { InvitationsPage } from './pages/invitations'
 import { ClientPage } from './pages/client/ClientPage'
 import { JobsPage } from './pages/jobs/JobsPage'
 import { JobDetailsPage } from './pages/jobs/JobDetailsPage'
@@ -30,6 +32,7 @@ function App() {
           <Routes>
             {/* Public routes - No layout */}
             <Route path="/signup" element={<Signup />} />
+            <Route path="/signup/worker" element={<WorkerSignup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -39,6 +42,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/company/workers" element={<WorkerPage />} />
+              <Route path="/company/invitations" element={<InvitationsPage />} />
               <Route path="/company/clients" element={<ClientPage />} />
               <Route path="/company/equipments" element={<EquipmentPage />} />
               <Route path="/company/customers" element={<CustomersPage />} />

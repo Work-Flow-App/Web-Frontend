@@ -8,6 +8,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import WorkIcon from '@mui/icons-material/Work';
 import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -154,6 +155,7 @@ export const Layout: React.FC = () => {
   const sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
     { id: 'workers', label: 'Workers', icon: <PeopleIcon />, href: '/company/workers' },
+    { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
     {
       id: 'worker-jobs',
       label: 'Worker Jobs',

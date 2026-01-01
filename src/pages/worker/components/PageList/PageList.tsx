@@ -4,6 +4,7 @@ import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { SetupForm } from '../SetupForm';
+import { InviteWorkerForm } from '../InviteWorkerForm';
 import { workerService, type Worker } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { columns, type WorkerTableRow } from './DataColumn';
@@ -65,6 +66,25 @@ export const PageList: React.FC = () => {
           onSuccess={() => {
             resetGlobalModalOuterProps();
             fetchWorkers();
+          }}
+        />
+      ),
+    });
+  };
+
+  // Handle invite worker
+  const handleInviteWorker = () => {
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.SMALL,
+      fieldName: 'inviteWorker',
+      children: (
+        <InviteWorkerForm
+          onSuccess={() => {
+            resetGlobalModalOuterProps();
+          }}
+          onCancel={() => {
+            resetGlobalModalOuterProps();
           }}
         />
       ),
@@ -154,6 +174,12 @@ export const PageList: React.FC = () => {
       title="All Workers"
       description="Manage worker details, roles, and assignments in one place."
       actions={[
+        {
+          label: 'Invite Worker',
+          onClick: handleInviteWorker,
+          variant: 'outlined',
+          color: 'primary',
+        },
         {
           label: 'Add Worker',
           onClick: handleAddWorker,
