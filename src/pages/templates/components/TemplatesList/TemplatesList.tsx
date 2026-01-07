@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -15,6 +15,7 @@ export const TemplatesList: React.FC = () => {
   const [jobs, setJobs] = useState<JobResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps} = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -84,7 +85,7 @@ export const TemplatesList: React.FC = () => {
   }, [jobs, fetchTemplates]);
 
   // Handle add template
-  const handleAddTemplate = () => {
+  const handleAddTemplate = useCallback(() => {
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
@@ -99,7 +100,20 @@ export const TemplatesList: React.FC = () => {
         />
       ),
     });
-  };
+  }, [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates]);
+
+  // Check if we should auto-open the add template modal
+  useEffect(() => {
+    const shouldOpenModal = searchParams.get('openAddModal') === 'true';
+    if (shouldOpenModal && !loading) {
+      // Remove the parameter from URL
+      searchParams.delete('openAddModal');
+      setSearchParams(searchParams, { replace: true });
+
+      // Open the add template modal
+      handleAddTemplate();
+    }
+  }, [searchParams, setSearchParams, loading, handleAddTemplate]);
 
   // Handle edit template
   const handleEditTemplate = useCallback(

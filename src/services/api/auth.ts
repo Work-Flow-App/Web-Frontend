@@ -9,6 +9,7 @@ import type {
   PasswordResetResponse,
 } from '../../../workflow-api';
 import type { UserRole, AuthTokens, User } from '../../types/auth';
+import type { WorkerSignupRequest, WorkerSignupResponse } from './worker';
 
 /**
  * Authentication API Service
@@ -149,6 +150,14 @@ export const authService = {
    */
   async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse<PasswordResetResponse>> {
     return await apiClient.post<PasswordResetResponse>('/api/v1/auth/reset-password', data);
+  },
+
+  /**
+   * Worker signup via invitation token
+   * Creates a new worker account using an invitation token
+   */
+  async signupWorkerViaInvitation(data: WorkerSignupRequest): Promise<ApiResponse<WorkerSignupResponse>> {
+    return await apiClient.post<WorkerSignupResponse>('/api/v1/auth/signup/worker', data);
   },
 };
 

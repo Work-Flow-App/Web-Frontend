@@ -46,7 +46,11 @@ class ApiClient {
   private readonly PUBLIC_AUTH_ENDPOINTS = [
     '/auth/login',
     '/auth/signup',
+    '/auth/signup/worker',
     '/auth/refresh',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/workers/invites/check',
   ];
 
   constructor() {
