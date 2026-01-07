@@ -9,7 +9,7 @@ import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { PasswordStrength } from '../../../components/UI/PasswordStrength';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
-import { authService } from '../../../services/api';
+import { authService, workerService } from '../../../services/api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { WorkerSignupSchema } from './WorkerSignupSchema';
@@ -34,7 +34,6 @@ import type { WorkerSignupFormData } from './IWorkerSignup';
 export const WorkerSignup: React.FC = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const emailParam = searchParams.get('email');
 
   const { fieldRules, defaultValues, placeHolders, fieldLabels } = useSchema(
     WorkerSignupSchema
@@ -44,7 +43,7 @@ export const WorkerSignup: React.FC = () => {
     resolver: yupResolver(fieldRules),
     defaultValues: {
       ...defaultValues,
-      email: emailParam || '',
+      email: '',
     },
     mode: 'onChange',
   });
@@ -62,6 +61,7 @@ export const WorkerSignup: React.FC = () => {
 
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingInvitation, setIsCheckingInvitation] = useState(true);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>('');
   const [snackbar, setSnackbar] = useState<{
@@ -75,13 +75,54 @@ export const WorkerSignup: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!token) {
-      setTokenError('Invalid invitation link. Missing token parameter.');
-    }
-    if (emailParam) {
-      setValue('email', emailParam);
-    }
-  }, [token, emailParam, setValue]);
+    const checkInvitation = async () => {
+      if (!token) {
+        setTokenError('Invalid invitation link. Missing token parameter.');
+        setIsCheckingInvitation(false);
+        return;
+      }
+
+      try {
+        setIsCheckingInvitation(true);
+        const response = await workerService.checkInvitation(token);
+
+        // Check if invitation is valid
+        if (!response.data.valid) {
+          const statusMessage =
+            response.data.status === 'EXPIRED'
+              ? 'This invitation has expired. Please contact your company administrator for a new invitation.'
+              : response.data.status === 'ACCEPTED'
+              ? 'This invitation has already been used.'
+              : 'This invitation is not valid.';
+          setTokenError(statusMessage);
+          setIsCheckingInvitation(false);
+          return;
+        }
+
+        // Set email from API response and make it non-editable
+        if (response.data.email) {
+          setValue('email', response.data.email);
+        }
+
+        // Set company name from API response
+        if (response.data.companyName) {
+          setCompanyName(response.data.companyName);
+        }
+
+        setIsCheckingInvitation(false);
+      } catch (error: unknown) {
+        console.error('Failed to check invitation:', error);
+        const errorMessage = extractErrorMessage(
+          error,
+          'Failed to validate invitation. Please try again or contact your company administrator.'
+        );
+        setTokenError(errorMessage);
+        setIsCheckingInvitation(false);
+      }
+    };
+
+    checkInvitation();
+  }, [token, setValue]);
 
   const onSubmit = async (data: WorkerSignupFormData) => {
     if (!token) {
@@ -124,10 +165,22 @@ export const WorkerSignup: React.FC = () => {
       }, 3000);
     } catch (error: unknown) {
       console.error('Worker signup failed:', error);
-      const errorMessage = extractErrorMessage(
+
+      // Handle specific error cases
+      let errorMessage = extractErrorMessage(
         error,
         'Failed to create account. Please try again.'
       );
+
+      // Check if it's a 409 conflict error
+      const axiosError = error as any;
+      if (axiosError?.response?.status === 409) {
+        if (axiosError?.response?.data?.message?.includes('constraint')) {
+          errorMessage = 'This email or username is already registered, or the invitation has already been used. Please use a different username or contact your administrator.';
+        } else {
+          errorMessage = axiosError?.response?.data?.message || 'This invitation has already been used or account already exists.';
+        }
+      }
 
       setSnackbar({
         open: true,
@@ -139,6 +192,29 @@ export const WorkerSignup: React.FC = () => {
     }
   };
 
+  // Show loading state while checking invitation
+  if (isCheckingInvitation) {
+    return (
+      <SignupContainer>
+        <LeftSection>
+          <FormContainer>
+            <HeaderSection>
+              <FloowLogo variant="light" showText={true} />
+            </HeaderSection>
+            <ErrorContainer>
+              <ErrorTitle>Validating Invitation...</ErrorTitle>
+              <ErrorMessage>
+                Please wait while we verify your invitation link.
+              </ErrorMessage>
+            </ErrorContainer>
+          </FormContainer>
+        </LeftSection>
+        <AuthRightSection />
+      </SignupContainer>
+    );
+  }
+
+  // Show error if token is invalid
   if (tokenError || !token) {
     return (
       <SignupContainer>
@@ -190,7 +266,8 @@ export const WorkerSignup: React.FC = () => {
                 placeholder={placeHolders.email}
                 fullWidth
                 error={errors.email}
-                disabled
+                isDisabled={true}
+                readOnly={true}
               />
 
               <Input

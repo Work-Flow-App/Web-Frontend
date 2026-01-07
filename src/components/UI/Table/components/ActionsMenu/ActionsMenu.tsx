@@ -39,7 +39,8 @@ const ActionsMenu = <T extends ITableRow = ITableRow>({ row, actions }: IActions
   }, []);
 
   const handleActionClick = useCallback(
-    (action: ITableAction<T>) => {
+    (action: ITableAction<T>, event: React.MouseEvent) => {
+      event.stopPropagation();
       action.onClick(row);
       handleClose();
     },
@@ -80,7 +81,7 @@ const ActionsMenu = <T extends ITableRow = ITableRow>({ row, actions }: IActions
           return (
             <MenuItem
               key={action.id}
-              onClick={() => handleActionClick(action)}
+              onClick={(e) => handleActionClick(action, e)}
               disabled={isDisabled}
               sx={{
                 color: action.color === 'error' ? 'error.main' :

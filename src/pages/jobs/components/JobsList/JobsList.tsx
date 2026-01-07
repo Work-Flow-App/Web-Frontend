@@ -186,7 +186,7 @@ export const JobsList: React.FC = () => {
             cancelButtonText="Cancel"
             onConfirm={() => {
               resetGlobalModalOuterProps();
-              navigate('/company/jobs/templates');
+              navigate('/company/jobs/templates?openAddModal=true');
             }}
             onCancel={() => {
               resetGlobalModalOuterProps();
@@ -216,7 +216,7 @@ export const JobsList: React.FC = () => {
             onConfirm={() => {
               resetGlobalModalOuterProps();
               // Navigate to templates page
-              navigate('/company/jobs/templates');
+              navigate('/company/jobs/templates?openAddModal=true');
             }}
             onCancel={() => {
               resetGlobalModalOuterProps();

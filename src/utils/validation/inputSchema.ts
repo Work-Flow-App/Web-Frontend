@@ -63,7 +63,7 @@ const checkEmailList = (value: string, { createError }: any) => {
 
 const checkPassword = (value: string, { createError }: any) => {
   if (value) {
-    const validRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{6,}$/;
+    const validRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+.\-=[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+.\-=[\]{};':"\\|,.<>/?]{6,}$/;
 
     const isValid = value.match(validRegex);
 

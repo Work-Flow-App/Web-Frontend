@@ -129,6 +129,13 @@ export const workerService = {
     );
     return response.data;
   },
+
+  /**
+   * Check invitation token validity and get invitation details
+   */
+  async checkInvitation(token: string) {
+    return await getWorkerApi().checkInvitation(token);
+  },
 };
 
 export default workerService;
