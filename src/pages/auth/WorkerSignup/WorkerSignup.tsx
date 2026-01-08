@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Box } from '@mui/material';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { PasswordStrength } from '../../../components/UI/PasswordStrength';
 import { Snackbar } from '../../../components/UI/Snackbar';
-import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService, workerService } from '../../../services/api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
@@ -64,6 +64,7 @@ export const WorkerSignup: React.FC = () => {
   const [isCheckingInvitation, setIsCheckingInvitation] = useState(true);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState<string>('');
+  const [invitationEmail, setInvitationEmail] = useState<string>('');
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -101,6 +102,7 @@ export const WorkerSignup: React.FC = () => {
 
         // Set email from API response and make it non-editable
         if (response.data.email) {
+          setInvitationEmail(response.data.email);
           setValue('email', response.data.email);
         }
 
@@ -142,9 +144,6 @@ export const WorkerSignup: React.FC = () => {
         invitationToken: token,
         email: data.email,
         name: data.name,
-        initials: data.initials,
-        telephone: data.telephone,
-        mobile: data.mobile,
         username: data.username,
         password: data.password,
       });
@@ -209,7 +208,6 @@ export const WorkerSignup: React.FC = () => {
             </ErrorContainer>
           </FormContainer>
         </LeftSection>
-        <AuthRightSection />
       </SignupContainer>
     );
   }
@@ -240,7 +238,6 @@ export const WorkerSignup: React.FC = () => {
             </ErrorContainer>
           </FormContainer>
         </LeftSection>
-        <AuthRightSection />
       </SignupContainer>
     );
   }
@@ -265,9 +262,20 @@ export const WorkerSignup: React.FC = () => {
                 type="email"
                 placeholder={placeHolders.email}
                 fullWidth
+                required
                 error={errors.email}
                 isDisabled={true}
                 readOnly={true}
+                defaultValue={invitationEmail}
+                styles={{
+                  input: {
+                    '& input': {
+                      color: '#1e293b !important',
+                      WebkitTextFillColor: '#1e293b !important',
+                      fontWeight: 500,
+                    },
+                  },
+                }}
               />
 
               <Input
@@ -276,6 +284,7 @@ export const WorkerSignup: React.FC = () => {
                 type="text"
                 placeholder={placeHolders.name}
                 fullWidth
+                required
                 error={errors.name}
               />
 
@@ -285,6 +294,7 @@ export const WorkerSignup: React.FC = () => {
                 type="text"
                 placeholder={placeHolders.username}
                 fullWidth
+                required
                 error={errors.username}
               />
 
@@ -294,6 +304,7 @@ export const WorkerSignup: React.FC = () => {
                   label={fieldLabels.password}
                   placeholder={placeHolders.password}
                   fullWidth
+                  required
                   error={errors.password}
                   onChange={() => {
                     trigger('confirmPassword');
@@ -307,34 +318,8 @@ export const WorkerSignup: React.FC = () => {
                 label={fieldLabels.confirmPassword}
                 placeholder={placeHolders.confirmPassword}
                 fullWidth
+                required
                 error={errors.confirmPassword}
-              />
-
-              <Input
-                name="initials"
-                label={fieldLabels.initials}
-                type="text"
-                placeholder={placeHolders.initials}
-                fullWidth
-                error={errors.initials}
-              />
-
-              <Input
-                name="telephone"
-                label={fieldLabels.telephone}
-                type="text"
-                placeholder={placeHolders.telephone}
-                fullWidth
-                error={errors.telephone}
-              />
-
-              <Input
-                name="mobile"
-                label={fieldLabels.mobile}
-                type="text"
-                placeholder={placeHolders.mobile}
-                fullWidth
-                error={errors.mobile}
               />
 
               <Button
@@ -360,8 +345,6 @@ export const WorkerSignup: React.FC = () => {
             </FormWrapper>
           </FormContainer>
         </LeftSection>
-
-        <AuthRightSection />
 
         <Snackbar
           open={snackbar.open}
