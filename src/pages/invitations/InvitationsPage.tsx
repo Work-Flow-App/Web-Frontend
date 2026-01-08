@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import Table from '../../components/UI/Table/Table';
-import type { ITableColumn, ITableAction } from '../../components/UI/Table/ITable';
+import type { ITableColumn } from '../../components/UI/Table/ITable';
 import { workerService, type WorkerInvitationStatus } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, Box } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SendIcon from '@mui/icons-material/Send';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { StatusBadge, InvitationsContainer } from './InvitationsPage.styles';
 
 interface InvitationTableRow {
   id: number;
   invitationId: number;
   email: string;
+  token: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
   createdAt: string;
   expiresAt: string;
@@ -44,10 +45,11 @@ export const InvitationsPage: React.FC = () => {
       const response = await workerService.getWorkerInvitations();
 
       const transformedData: InvitationTableRow[] = response.map(
-        (invitation: WorkerInvitationStatus) => ({
+        (invitation: any) => ({
           id: invitation.invitationId,
           invitationId: invitation.invitationId,
           email: invitation.email,
+          token: invitation.token || '',
           status: invitation.status,
           createdAt: invitation.createdAt,
           expiresAt: invitation.expiresAt,
@@ -76,21 +78,21 @@ export const InvitationsPage: React.FC = () => {
     return invitations.filter((inv) => inv.status === statusFilter);
   }, [invitations, statusFilter]);
 
-  // Handle resend invitation
-  const handleResendInvitation = useCallback(
-    async (row: InvitationTableRow) => {
-      try {
-        await workerService.sendWorkerInvitation({ email: row.email });
-        showSuccess(`Invitation resent to ${row.email}`);
-        fetchInvitations();
-      } catch (error) {
-        console.error('Error resending invitation:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to resend invitation';
-        showError(errorMessage);
-      }
+  // Handle copy invitation link
+  const handleCopyInvitationLink = useCallback(
+    (row: InvitationTableRow) => {
+      const invitationLink = `${window.location.origin}/signup/worker?token=${row.token}`;
+      navigator.clipboard.writeText(invitationLink).then(
+        () => {
+          showSuccess('Invitation link copied to clipboard!');
+        },
+        (err) => {
+          console.error('Failed to copy link:', err);
+          showError('Failed to copy invitation link');
+        }
+      );
     },
-    [showSuccess, showError, fetchInvitations]
+    [showSuccess, showError]
   );
 
   // Dropdown options for status filter
@@ -112,6 +114,43 @@ export const InvitationsPage: React.FC = () => {
         label: 'Email Address',
         accessor: 'email',
         sortable: true,
+      },
+      {
+        id: 'invitationLink',
+        label: 'Invitation Link',
+        render: (row) => {
+          const invitationLink = `${window.location.origin}/signup/worker?token=${row.token}`;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  maxWidth: '250px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '14px',
+                  color: '#64748b',
+                }}
+              >
+                {invitationLink}
+              </Box>
+              <Tooltip title="Copy invitation link">
+                <IconButton
+                  size="small"
+                  onClick={() => handleCopyInvitationLink(row)}
+                  sx={{
+                    padding: '4px',
+                    '&:hover': {
+                      backgroundColor: '#e2e8f0',
+                    },
+                  }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
       },
       {
         id: 'status',
@@ -143,22 +182,7 @@ export const InvitationsPage: React.FC = () => {
           row.usedAt ? new Date(row.usedAt).toLocaleDateString() : '-',
       },
     ],
-    []
-  );
-
-  // Table actions - Resend for expired invitations
-  const tableActions: ITableAction<InvitationTableRow>[] = useMemo(
-    () => [
-      {
-        id: 'resend',
-        label: 'Resend',
-        icon: <SendIcon fontSize="small" />,
-        onClick: handleResendInvitation,
-        show: (row) => row.status === 'EXPIRED',
-        color: 'primary' as const,
-      },
-    ],
-    [handleResendInvitation]
+    [handleCopyInvitationLink]
   );
 
   return (
@@ -188,8 +212,6 @@ export const InvitationsPage: React.FC = () => {
           rowsPerPage={10}
           showPagination={true}
           enableStickyLeft={true}
-          showActions
-          actions={tableActions}
         />
       </PageWrapper>
     </InvitationsContainer>
