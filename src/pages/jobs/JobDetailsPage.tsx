@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Chip } from '@mui/material';
+import { Box, CircularProgress, Chip, IconButton, Avatar } from '@mui/material';
+import {
+  ArrowBack,
+  ExpandMore,
+  Link as LinkIcon,
+  Notifications,
+  CheckCircle,
+  Delete,
+  Assignment,
+  Description,
+  Edit as EditIcon,
+  Update
+} from '@mui/icons-material';
 import { PageWrapper } from '../../components/UI/PageWrapper';
+import { TabMenu } from '../../components/UI/Tab/TabMenu';
 import { jobService, jobTemplateService, companyClientService, workerService } from '../../services/api';
 import type { JobResponse, JobTemplateResponse, ClientResponse, WorkerResponse } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -17,6 +30,8 @@ export const JobDetailsPage: React.FC = () => {
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [worker, setWorker] = useState<WorkerResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('custom-fields');
+  const [subTab, setSubTab] = useState('all-customers');
 
   const fetchJobDetails = useCallback(async () => {
     if (!jobId) return;
@@ -105,156 +120,288 @@ export const JobDetailsPage: React.FC = () => {
     );
   }
 
+  const tabs = [
+    { id: 'custom-fields', label: 'Custom fields', icon: <Assignment /> },
+    { id: 'notes', label: 'Notes', icon: <Description /> },
+    { id: 'updates', label: 'Updates', icon: <Update /> },
+  ];
+
+  const subTabs = [
+    { id: 'all-customers', label: 'All Customers' },
+    { id: 'all-accounts', label: 'All Accounts' },
+    { id: 'angela-accounts', label: "Angela's Accounts" },
+    { id: 'yellow-accounts', label: 'Yellow Accounts' },
+    { id: 'ariel-accounts', label: "Ariel's Accounts" },
+    { id: 'csm-accounts', label: 'CSM Accounts' },
+    { id: 'forecast', label: 'Forecast' },
+  ];
+
   return (
-    <PageWrapper
-      title={`Job #${job.id} Details`}
-      description="View all information about this job"
-      actions={[
-        {
-          label: 'Back to Jobs',
-          onClick: () => navigate('/company/jobs'),
-          variant: 'outlined',
-        },
-      ]}
-    >
+    <S.PageContainer>
+      {/* Header Section */}
+      <S.Header>
+        <S.HeaderTop>
+          <S.BackButton onClick={() => navigate('/company/jobs')}>
+            <ArrowBack fontSize="small" />
+            <span>Back</span>
+          </S.BackButton>
+
+          <S.HeaderActions>
+            <S.ActionButton>
+              <LinkIcon fontSize="small" />
+            </S.ActionButton>
+            <S.ActionButton>
+              <Notifications fontSize="small" />
+              Snooze
+            </S.ActionButton>
+            <S.ResolveButton>
+              Resolve
+            </S.ResolveButton>
+            <S.DeleteButton>
+              <Delete fontSize="small" />
+            </S.DeleteButton>
+          </S.HeaderActions>
+        </S.HeaderTop>
+
+        <S.HeaderContent>
+          <S.JobTitle>{template?.name || `Job #${job.id}`}</S.JobTitle>
+          <S.JobDescription>
+            {template?.description || 'Typing a new description'}
+          </S.JobDescription>
+        </S.HeaderContent>
+
+        {/* Metadata Row */}
+        <S.MetadataRow>
+          <S.MetadataDropdown>
+            <S.MetadataLabel>Status</S.MetadataLabel>
+            <S.DropdownButton status={job.status}>
+              <S.StatusDot status={job.status} />
+              {job.status?.replace('_', ' ') || 'N/A'}
+              <ExpandMore fontSize="small" />
+            </S.DropdownButton>
+          </S.MetadataDropdown>
+
+          <S.MetadataDropdown>
+            <S.MetadataLabel>Assigned to</S.MetadataLabel>
+            <S.DropdownButton>
+              {worker?.name || 'Unassigned'}
+              <ExpandMore fontSize="small" />
+            </S.DropdownButton>
+          </S.MetadataDropdown>
+
+          <S.MetadataDropdown>
+            <S.MetadataLabel>Priority</S.MetadataLabel>
+            <S.DropdownButton>
+              <S.PriorityDot priority="low" />
+              Low
+              <ExpandMore fontSize="small" />
+            </S.DropdownButton>
+          </S.MetadataDropdown>
+
+          <S.MetadataDropdown>
+            <S.MetadataLabel>Followers</S.MetadataLabel>
+            <S.FollowersContainer>
+              <Avatar sx={{ width: 24, height: 24, fontSize: 12 }}>EE</Avatar>
+            </S.FollowersContainer>
+          </S.MetadataDropdown>
+        </S.MetadataRow>
+
+        {/* Company Badge Section */}
+        <S.CompanySection>
+          <S.CompanyAvatar>A</S.CompanyAvatar>
+          <S.CompanyName>{client?.name || 'Acme, Inc.'}</S.CompanyName>
+          <S.StatusBadge />
+          <S.TagBadge primary>First stage</S.TagBadge>
+          <S.TagBadge>Customer</S.TagBadge>
+          <S.MoreBadge>+1</S.MoreBadge>
+        </S.CompanySection>
+
+        {/* Stages Section */}
+        <S.StagesSection>
+          <S.StagesLabel>Stages</S.StagesLabel>
+          <S.StagesContainer>
+            <S.StageItem active={job.status === 'NEW'} color="#C8E6C9">
+              <S.StageLabel>Meeting scheduled</S.StageLabel>
+            </S.StageItem>
+            <S.StageItem active={job.status === 'PENDING'} color="#FFF9C4">
+              <S.StageLabel>Proposal Made (Sales)</S.StageLabel>
+            </S.StageItem>
+            <S.StageItem active={job.status === 'IN_PROGRESS'} color="#FFCCBC">
+              <S.StageLabel>Account Closed (Sales)</S.StageLabel>
+            </S.StageItem>
+            <S.StageItem active={job.status === 'COMPLETED'} color="#E1BEE7">
+              <S.StageLabel>Onboarding (CS)</S.StageLabel>
+            </S.StageItem>
+          </S.StagesContainer>
+        </S.StagesSection>
+
+        {/* Tabs */}
+        <S.TabsContainer>
+          <TabMenu
+            tabs={tabs}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            size="medium"
+          />
+        </S.TabsContainer>
+      </S.Header>
+
+      {/* Content Section */}
       <S.ContentContainer>
-        <S.DetailsGrid>
-          {/* Job Information Section */}
-          <S.DetailsSection>
-            <S.SectionTitle variant="subtitle2">Job Information</S.SectionTitle>
+        {activeTab === 'custom-fields' && (
+          <S.CustomFieldsSection>
+            {/* Sub Tabs */}
+            <S.SubTabsContainer>
+              {subTabs.map((tab) => (
+                <S.SubTab
+                  key={tab.id}
+                  active={subTab === tab.id}
+                  onClick={() => setSubTab(tab.id)}
+                >
+                  {tab.label}
+                </S.SubTab>
+              ))}
+            </S.SubTabsContainer>
 
-            <S.InfoRow>
-              <S.InfoLabel>Job ID</S.InfoLabel>
-              <S.InfoValue>#{job.id}</S.InfoValue>
-            </S.InfoRow>
+            {/* Account Details Section */}
+            <S.FieldsSection>
+              <S.FieldsSectionTitle>Account details</S.FieldsSectionTitle>
+              <S.FieldsGrid>
+                {/* Template Field Values */}
+                {job.fieldValues && Object.keys(job.fieldValues).length > 0 ? (
+                  Object.entries(job.fieldValues).map(([key, fieldValueResponse]) => {
+                    const fieldValue =
+                      fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse
+                        ? fieldValueResponse
+                        : null;
 
-            <S.InfoRow>
-              <S.InfoLabel>Status</S.InfoLabel>
-              <Box>
-                <Chip
-                  label={job.status || 'N/A'}
-                  color={getStatusColor(job.status)}
-                  size="small"
-                />
-              </Box>
-            </S.InfoRow>
+                    const label = fieldValue?.label || key;
+                    const value = fieldValue?.value !== undefined ? String(fieldValue.value) : '-';
 
-            <S.InfoRow>
-              <S.InfoLabel>Template</S.InfoLabel>
-              <S.InfoValue>{template?.name || '-'}</S.InfoValue>
-            </S.InfoRow>
+                    return (
+                      <S.FieldItem key={key}>
+                        <S.FieldLabel>{label}</S.FieldLabel>
+                        <S.FieldValue>{value}</S.FieldValue>
+                      </S.FieldItem>
+                    );
+                  })
+                ) : (
+                  <>
+                    <S.FieldItem>
+                      <S.FieldLabel>% Allocated 📋</S.FieldLabel>
+                      <S.FieldValue>93%</S.FieldValue>
+                    </S.FieldItem>
+                    <S.FieldItem>
+                      <S.FieldLabel>% License Permeation 📋</S.FieldLabel>
+                      <S.FieldValue>6%</S.FieldValue>
+                    </S.FieldItem>
+                    <S.FieldItem>
+                      <S.FieldLabel>% of Employees as Users 📋</S.FieldLabel>
+                      <S.FieldValue>8.5%</S.FieldValue>
+                    </S.FieldItem>
+                    <S.FieldItem>
+                      <S.FieldLabel>% License Permeation 📋</S.FieldLabel>
+                      <S.FieldValue>6%</S.FieldValue>
+                    </S.FieldItem>
+                    <S.FieldItem>
+                      <S.FieldLabel>Account Description 📋</S.FieldLabel>
+                      <S.FieldValue>
+                        Scale faster when you replace your business bank account and credit card with Brex. No account fees. No paperwork. No personal guarantee.
+                      </S.FieldValue>
+                    </S.FieldItem>
+                  </>
+                )}
+              </S.FieldsGrid>
+            </S.FieldsSection>
 
-            <S.InfoRow>
-              <S.InfoLabel>Created At</S.InfoLabel>
-              <S.InfoValue>{formatDate(job.createdAt)}</S.InfoValue>
-            </S.InfoRow>
+            {/* Client Information */}
+            {client && (
+              <>
+                <S.SectionDivider />
+                <S.FieldsSection>
+                  <S.FieldsSectionTitle>Client Information</S.FieldsSectionTitle>
+                  <S.FieldsGrid>
+                    <S.FieldItem>
+                      <S.FieldLabel>Name</S.FieldLabel>
+                      <S.FieldValue>{client.name || '-'}</S.FieldValue>
+                    </S.FieldItem>
+                    {client.email && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Email</S.FieldLabel>
+                        <S.FieldValue>{client.email}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                    {client.telephone && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Telephone</S.FieldLabel>
+                        <S.FieldValue>{client.telephone}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                    {client.mobile && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Mobile</S.FieldLabel>
+                        <S.FieldValue>{client.mobile}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                    {client.address && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Address</S.FieldLabel>
+                        <S.FieldValue>{client.address}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                  </S.FieldsGrid>
+                </S.FieldsSection>
+              </>
+            )}
 
-            <S.InfoRow>
-              <S.InfoLabel>Updated At</S.InfoLabel>
-              <S.InfoValue>{formatDate(job.updatedAt)}</S.InfoValue>
-            </S.InfoRow>
+            {/* Worker Information */}
+            {worker && (
+              <>
+                <S.SectionDivider />
+                <S.FieldsSection>
+                  <S.FieldsSectionTitle>Assigned Worker</S.FieldsSectionTitle>
+                  <S.FieldsGrid>
+                    <S.FieldItem>
+                      <S.FieldLabel>Name</S.FieldLabel>
+                      <S.FieldValue>{worker.name || '-'}</S.FieldValue>
+                    </S.FieldItem>
+                    {worker.email && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Email</S.FieldLabel>
+                        <S.FieldValue>{worker.email}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                    {worker.telephone && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Telephone</S.FieldLabel>
+                        <S.FieldValue>{worker.telephone}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                    {worker.mobile && (
+                      <S.FieldItem>
+                        <S.FieldLabel>Mobile</S.FieldLabel>
+                        <S.FieldValue>{worker.mobile}</S.FieldValue>
+                      </S.FieldItem>
+                    )}
+                  </S.FieldsGrid>
+                </S.FieldsSection>
+              </>
+            )}
+          </S.CustomFieldsSection>
+        )}
 
-            <S.InfoRow>
-              <S.InfoLabel>Archived</S.InfoLabel>
-              <S.InfoValue>{job.archived ? 'Yes' : 'No'}</S.InfoValue>
-            </S.InfoRow>
-          </S.DetailsSection>
+        {activeTab === 'notes' && (
+          <S.TabContent>
+            <S.EmptyState>Notes functionality coming soon</S.EmptyState>
+          </S.TabContent>
+        )}
 
-          {/* Client Information Section */}
-          {client && (
-            <S.DetailsSection>
-              <S.SectionTitle variant="subtitle2">Client Information</S.SectionTitle>
-
-              <S.InfoRow>
-                <S.InfoLabel>Client Name</S.InfoLabel>
-                <S.InfoValue>{client.name || '-'}</S.InfoValue>
-              </S.InfoRow>
-
-              {client.email && (
-                <S.InfoRow>
-                  <S.InfoLabel>Email</S.InfoLabel>
-                  <S.InfoValue>{client.email}</S.InfoValue>
-                </S.InfoRow>
-              )}
-
-              {client.telephone && (
-                <S.InfoRow>
-                  <S.InfoLabel>Telephone</S.InfoLabel>
-                  <S.InfoValue>{client.telephone}</S.InfoValue>
-                </S.InfoRow>
-              )}
-
-              {client.mobile && (
-                <S.InfoRow>
-                  <S.InfoLabel>Mobile</S.InfoLabel>
-                  <S.InfoValue>{client.mobile}</S.InfoValue>
-                </S.InfoRow>
-              )}
-
-              {client.address && (
-                <S.InfoRow>
-                  <S.InfoLabel>Address</S.InfoLabel>
-                  <S.InfoValue>{client.address}</S.InfoValue>
-                </S.InfoRow>
-              )}
-            </S.DetailsSection>
-          )}
-
-          {/* Worker Information Section */}
-          {worker && (
-            <S.DetailsSection>
-              <S.SectionTitle variant="subtitle2">Assigned Worker</S.SectionTitle>
-
-              <S.InfoRow>
-                <S.InfoLabel>Worker Name</S.InfoLabel>
-                <S.InfoValue>{worker.name || '-'}</S.InfoValue>
-              </S.InfoRow>
-
-              {worker.email && (
-                <S.InfoRow>
-                  <S.InfoLabel>Email</S.InfoLabel>
-                  <S.InfoValue>{worker.email}</S.InfoValue>
-                </S.InfoRow>
-              )}
-
-              {worker.telephone && (
-                <S.InfoRow>
-                  <S.InfoLabel>Telephone</S.InfoLabel>
-                  <S.InfoValue>{worker.telephone}</S.InfoValue>
-                </S.InfoRow>
-              )}
-
-              {worker.mobile && (
-                <S.InfoRow>
-                  <S.InfoLabel>Mobile</S.InfoLabel>
-                  <S.InfoValue>{worker.mobile}</S.InfoValue>
-                </S.InfoRow>
-              )}
-            </S.DetailsSection>
-          )}
-
-          {/* Template Field Values Section */}
-          {job.fieldValues && Object.keys(job.fieldValues).length > 0 && (
-            <S.DetailsSection>
-              <S.SectionTitle variant="subtitle2">Template Field Values</S.SectionTitle>
-
-              {Object.entries(job.fieldValues).map(([key, fieldValueResponse]) => {
-                const value =
-                  fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse
-                    ? String(fieldValueResponse.value)
-                    : String(fieldValueResponse || '-');
-
-                return (
-                  <S.InfoRow key={key}>
-                    <S.InfoLabel>{key}</S.InfoLabel>
-                    <S.InfoValue>{value}</S.InfoValue>
-                  </S.InfoRow>
-                );
-              })}
-            </S.DetailsSection>
-          )}
-        </S.DetailsGrid>
+        {activeTab === 'updates' && (
+          <S.TabContent>
+            <S.EmptyState>Updates functionality coming soon</S.EmptyState>
+          </S.TabContent>
+        )}
       </S.ContentContainer>
-    </PageWrapper>
+    </S.PageContainer>
   );
 };

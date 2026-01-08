@@ -10,7 +10,7 @@ interface ConfigurationModalProps {
 const STORAGE_KEY = 'app_environment_config';
 
 const ENVIRONMENT_OPTIONS = [
-  { label: 'Local', value: 'http://localhost:3000' },
+  { label: 'Local', value: 'http://localhost:5173' },
   { label: 'Production', value: 'https://api.dev.workfloow.app' },
 ];
 
@@ -56,7 +56,7 @@ export const ConfigurationModal = ({ onConfirm, onCancel }: ConfigurationModalPr
               <S.Select
                 value={selectedEnvironment.value}
                 onChange={(e) => {
-                  const option = ENVIRONMENT_OPTIONS.find(opt => opt.value === e.target.value);
+                  const option = ENVIRONMENT_OPTIONS.find((opt) => opt.value === e.target.value);
                   if (option) {
                     setSelectedEnvironment(option);
                   }
