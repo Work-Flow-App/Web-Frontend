@@ -15,6 +15,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { authService } from '../services/api/auth';
@@ -170,6 +171,7 @@ export const Layout: React.FC = () => {
       href: '/company/jobs',
       children: [
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
+        { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },

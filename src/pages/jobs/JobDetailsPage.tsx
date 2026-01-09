@@ -5,6 +5,7 @@ import { PageWrapper } from '../../components/UI/PageWrapper';
 import { jobService, jobTemplateService, companyClientService, workerService } from '../../services/api';
 import type { JobResponse, JobTemplateResponse, ClientResponse, WorkerResponse } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { JobWorkflowViewer } from './components/JobWorkflowViewer/JobWorkflowViewer';
 import * as S from './JobDetailsPage.styles';
 
 export const JobDetailsPage: React.FC = () => {
@@ -118,6 +119,11 @@ export const JobDetailsPage: React.FC = () => {
       ]}
     >
       <S.ContentContainer>
+        {/* Job Workflow Section */}
+        <Box sx={{ mb: 4 }}>
+          <JobWorkflowViewer jobId={Number(jobId)} />
+        </Box>
+
         <S.DetailsGrid>
           {/* Job Information Section */}
           <S.DetailsSection>

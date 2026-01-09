@@ -44,5 +44,23 @@ export type {
   PageAssetResponse,
 } from './asset';
 
+export { workflowService } from './workflow';
+export type {
+  WorkflowResponse,
+  WorkflowCreateRequest,
+  WorkflowStepResponse,
+  WorkflowStepCreateRequest,
+  WorkflowWithStepsResponse,
+  WorkflowBulkUpdateRequest,
+} from './workflow';
+
+export { jobWorkflowService } from './jobWorkflow';
+export type {
+  JobWorkflowResponse,
+  JobWorkflowUpdateRequest,
+  JobWorkflowStepResponse,
+  JobWorkflowStepUpdateRequest,
+} from './jobWorkflow';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

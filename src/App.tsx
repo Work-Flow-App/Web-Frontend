@@ -12,6 +12,8 @@ import { JobsPage } from './pages/jobs/JobsPage'
 import { JobDetailsPage } from './pages/jobs/JobDetailsPage'
 import { TemplatesPage } from './pages/templates/TemplatesPage'
 import { TemplateFieldsPage } from './pages/templates/TemplateFieldsPage'
+import { WorkflowsPage } from './pages/workflows/WorkflowsPage'
+import { WorkflowBuilderPage } from './pages/workflows/WorkflowBuilderPage'
 import { EquipmentPage } from './pages/equipment/EquipmentPage'
 import { CustomersPage } from './pages/customers/CustomersPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
@@ -51,6 +53,8 @@ function App() {
               <Route path="/company/jobs/:jobId/details" element={<JobDetailsPage />} />
               <Route path="/company/jobs/templates" element={<TemplatesPage />} />
               <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
+              <Route path="/company/workflows" element={<WorkflowsPage />} />
+              <Route path="/company/workflows/:workflowId/builder" element={<WorkflowBuilderPage />} />
               <Route path="/company/assets" element={<AssetsPage />} />
               <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
               <Route path="/company/assets/maps" element={<MapsPage />} />
