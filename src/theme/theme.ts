@@ -20,7 +20,7 @@ export const Theme = createTheme({
   },
 } as ThemeOptions);
 
-// Augment theme with custom fontSize scale
+// Augment theme with custom fontSize scale and font weights
 declare module '@mui/material/styles' {
   interface Theme {
     fontSize: {
@@ -55,6 +55,12 @@ declare module '@mui/material/styles' {
       '8xl'?: string;
       '9xl'?: string;
     };
+  }
+  interface TypographyVariants {
+    fontWeightSemiBold: number;
+  }
+  interface TypographyVariantsOptions {
+    fontWeightSemiBold?: number;
   }
 }
 

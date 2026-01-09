@@ -46,18 +46,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Auto-expand parent items when child is active
+  // Auto-expand parent items when child is active (but allow manual collapse)
   React.useEffect(() => {
-    const newExpanded = new Set<string>();
-    items.forEach((item) => {
-      if (item.children) {
-        const hasActiveChild = item.children.some((child) => child.href === location.pathname);
-        if (hasActiveChild) {
-          newExpanded.add(item.id);
+    setExpandedItems((prevExpanded) => {
+      const newExpanded = new Set(prevExpanded);
+      items.forEach((item) => {
+        if (item.children) {
+          const hasActiveChild = item.children.some((child) => child.href === location.pathname);
+          // Only auto-expand when navigating to a child page, don't force expansion for parent page
+          if (hasActiveChild) {
+            newExpanded.add(item.id);
+          }
         }
-      }
+      });
+      return newExpanded;
     });
-    setExpandedItems(newExpanded);
   }, [location.pathname, items]);
 
   /**
@@ -172,13 +175,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (hasChildren) {
           return (
             <Box key={item.id} sx={{ width: '100%' }}>
-              {/* Parent item */}
+              {/* Parent item - navigate and toggle expansion on click */}
               {item.href ? (
                 <Link
                   to={item.href}
                   onClick={() => {
                     handleItemClick(item.id);
                     item.onClick?.();
+                    toggleExpanded(item.id);
                   }}
                   style={{
                     textDecoration: 'none',
@@ -201,21 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       {!isCollapsed && <span>{item.label}</span>}
                     </Box>
                     {!isCollapsed && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          toggleExpanded(item.id);
-                        }}
-                        sx={{
-                          padding: 0,
-                          color: 'inherit',
-                          '&:hover': { backgroundColor: 'transparent' },
-                        }}
-                      >
-                        {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                      </IconButton>
+                      isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
                     )}
                   </SidebarItemButton>
                 </Link>

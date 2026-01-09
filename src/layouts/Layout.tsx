@@ -154,14 +154,21 @@ export const Layout: React.FC = () => {
    */
   const sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
-    { id: 'workers', label: 'Workers', icon: <PeopleIcon />, href: '/company/workers' },
-    { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
     {
-      id: 'worker-jobs',
-      label: 'Worker Jobs',
-      icon: <WorkIcon />,
+      id: 'workers',
+      label: 'Workers',
+      icon: <PeopleIcon />,
+      href: '/company/workers',
       children: [
-        { id: 'jobs', label: 'Jobs', icon: <WorkIcon />, href: '/company/jobs' },
+        { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
+      ],
+    },
+    {
+      id: 'jobs',
+      label: 'Jobs',
+      icon: <WorkIcon />,
+      href: '/company/jobs',
+      children: [
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
       ],
     },
@@ -170,13 +177,8 @@ export const Layout: React.FC = () => {
       id: 'assets',
       label: 'Assets',
       icon: <BuildIcon />,
+      href: '/company/assets',
       children: [
-        {
-          id: 'all-assets',
-          label: 'All Assets',
-          icon: <BuildIcon />,
-          href: '/company/assets',
-        },
         {
           id: 'maps',
           label: 'Maps',
