@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box } from '@mui/material';
+import { AxiosError } from 'axios';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
@@ -35,9 +35,7 @@ export const WorkerSignup: React.FC = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
-  const { fieldRules, defaultValues, placeHolders, fieldLabels } = useSchema(
-    WorkerSignupSchema
-  );
+  const { fieldRules, defaultValues, placeHolders, fieldLabels } = useSchema(WorkerSignupSchema);
 
   const methods = useForm<WorkerSignupFormData>({
     resolver: yupResolver(fieldRules),
@@ -93,8 +91,8 @@ export const WorkerSignup: React.FC = () => {
             response.data.status === 'EXPIRED'
               ? 'This invitation has expired. Please contact your company administrator for a new invitation.'
               : response.data.status === 'ACCEPTED'
-              ? 'This invitation has already been used.'
-              : 'This invitation is not valid.';
+                ? 'This invitation has already been used.'
+                : 'This invitation is not valid.';
           setTokenError(statusMessage);
           setIsCheckingInvitation(false);
           return;
@@ -166,18 +164,18 @@ export const WorkerSignup: React.FC = () => {
       console.error('Worker signup failed:', error);
 
       // Handle specific error cases
-      let errorMessage = extractErrorMessage(
-        error,
-        'Failed to create account. Please try again.'
-      );
+      let errorMessage = extractErrorMessage(error, 'Failed to create account. Please try again.');
 
       // Check if it's a 409 conflict error
-      const axiosError = error as any;
-      if (axiosError?.response?.status === 409) {
-        if (axiosError?.response?.data?.message?.includes('constraint')) {
-          errorMessage = 'This email or username is already registered, or the invitation has already been used. Please use a different username or contact your administrator.';
-        } else {
-          errorMessage = axiosError?.response?.data?.message || 'This invitation has already been used or account already exists.';
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 409) {
+          if (error.response?.data?.message?.includes('constraint')) {
+            errorMessage =
+              'This email or username is already registered, or the invitation has already been used. Please use a different username or contact your administrator.';
+          } else {
+            errorMessage =
+              error.response?.data?.message || 'This invitation has already been used or account already exists.';
+          }
         }
       }
 
@@ -202,9 +200,7 @@ export const WorkerSignup: React.FC = () => {
             </HeaderSection>
             <ErrorContainer>
               <ErrorTitle>Validating Invitation...</ErrorTitle>
-              <ErrorMessage>
-                Please wait while we verify your invitation link.
-              </ErrorMessage>
+              <ErrorMessage>Please wait while we verify your invitation link.</ErrorMessage>
             </ErrorContainer>
           </FormContainer>
         </LeftSection>
@@ -227,12 +223,7 @@ export const WorkerSignup: React.FC = () => {
                 {tokenError ||
                   'This invitation link is invalid or has expired. Please contact your company administrator for a new invitation.'}
               </ErrorMessage>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate('/login')}
-                sx={{ marginTop: '20px' }}
-              >
+              <Button variant="contained" color="primary" onClick={() => navigate('/login')} sx={{ marginTop: '20px' }}>
                 Go to Login
               </Button>
             </ErrorContainer>
@@ -250,9 +241,7 @@ export const WorkerSignup: React.FC = () => {
             <HeaderSection>
               <FloowLogo variant="light" showText={true} />
               <Title>{companyName ? `You're Invited to Join ${companyName}` : 'Join Your Team'}</Title>
-              <Subtitle>
-                Complete your profile to join your company's workspace.
-              </Subtitle>
+              <Subtitle>Complete your profile to join your company's workspace.</Subtitle>
             </HeaderSection>
 
             <FormWrapper onSubmit={handleSubmit(onSubmit)}>
@@ -322,14 +311,7 @@ export const WorkerSignup: React.FC = () => {
                 error={errors.confirmPassword}
               />
 
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                size="large"
-                fullWidth
-                disabled={isLoading}
-              >
+              <Button type="submit" variant="contained" color="primary" size="large" fullWidth disabled={isLoading}>
                 {isLoading ? 'Creating account...' : 'Create Account'}
               </Button>
 

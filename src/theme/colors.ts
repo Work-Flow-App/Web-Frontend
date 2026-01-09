@@ -29,12 +29,31 @@ export const floowColors = {
     navy: '#151d26',
   },
 
+  // Additional UI Colors
+  slate: {
+    light: '#e2e8f0',
+    main: '#94a3b8',
+    dark: '#64748b',
+  },
+
+  blue: {
+    dark: '#1976d2',
+    main: '#2196f3',
+  },
+
+  red: {
+    main: '#ef4444',
+  },
+
   // Gradient Colors
   gradient: {
     whiteToGrey: 'linear-gradient(180deg, #FFFFFF 0%, #999999 100%)',
     darkGrey: 'linear-gradient(180deg, #5E5E5E 0%, #121212 100%)',
     blackWhiteBlack: 'linear-gradient(270deg, #000000 0%, #FFFFFF 50%, #000000 100%)',
     silver: 'linear-gradient(180deg, #FAFAFA 0%, #949494 100%)',
+    blueVertical: 'linear-gradient(135deg, #1976d2 0%, #2196f3 100%)',
+    blueHorizontal: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
+    slateHorizontal: 'linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%)',
   },
 
   // Status Colors
@@ -56,6 +75,13 @@ export const floowColors = {
   success: {
     main: '#00A63E',
     light: 'rgba(0, 166, 62, 0.15)',
+  },
+
+  // Invitation Status Colors
+  invitationStatus: {
+    pending: '#FFA726',
+    accepted: '#66BB6A',
+    expired: '#9E9E9E',
   },
 
   // Glass Morphism Effects

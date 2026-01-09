@@ -1,39 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import Table from '../../components/UI/Table/Table';
-import type { ITableColumn } from '../../components/UI/Table/ITable';
 import { workerService, type WorkerInvitationStatus } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { IconButton, Tooltip, Box } from '@mui/material';
+import { IconButton, Tooltip, useTheme } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { StatusBadge, InvitationsContainer } from './InvitationsPage.styles';
-
-interface InvitationTableRow {
-  id: number;
-  invitationId: number;
-  email: string;
-  token: string;
-  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
-  createdAt: string;
-  expiresAt: string;
-  usedAt: string | null;
-}
-
-const getStatusColor = (status: string): string => {
-  switch (status) {
-    case 'PENDING':
-      return '#FFA726'; // Orange/Yellow
-    case 'ACCEPTED':
-      return '#66BB6A'; // Green
-    case 'EXPIRED':
-      return '#9E9E9E'; // Gray
-    default:
-      return '#9E9E9E';
-  }
-};
+import { InvitationsContainer } from './InvitationsPage.styles';
+import { createInvitationColumns, type InvitationTableRow } from './InvitationsPage.columns';
 
 export const InvitationsPage: React.FC = () => {
+  const theme = useTheme();
   const [invitations, setInvitations] = useState<InvitationTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string | number>('ALL');
@@ -45,11 +21,11 @@ export const InvitationsPage: React.FC = () => {
       const response = await workerService.getWorkerInvitations();
 
       const transformedData: InvitationTableRow[] = response.map(
-        (invitation: any) => ({
+        (invitation: WorkerInvitationStatus) => ({
           id: invitation.invitationId,
           invitationId: invitation.invitationId,
           email: invitation.email,
-          token: invitation.token || '',
+          token: '', // Token is not returned from API for security reasons
           status: invitation.status,
           createdAt: invitation.createdAt,
           expiresAt: invitation.expiresAt,
@@ -107,82 +83,9 @@ export const InvitationsPage: React.FC = () => {
   );
 
   // Table columns
-  const columns: ITableColumn<InvitationTableRow>[] = useMemo(
-    () => [
-      {
-        id: 'email',
-        label: 'Email Address',
-        accessor: 'email',
-        sortable: true,
-      },
-      {
-        id: 'invitationLink',
-        label: 'Invitation Link',
-        render: (row) => {
-          const invitationLink = `${window.location.origin}/signup/worker?token=${row.token}`;
-          return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  maxWidth: '250px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  fontSize: '14px',
-                  color: '#64748b',
-                }}
-              >
-                {invitationLink}
-              </Box>
-              <Tooltip title="Copy invitation link">
-                <IconButton
-                  size="small"
-                  onClick={() => handleCopyInvitationLink(row)}
-                  sx={{
-                    padding: '4px',
-                    '&:hover': {
-                      backgroundColor: '#e2e8f0',
-                    },
-                  }}
-                >
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          );
-        },
-      },
-      {
-        id: 'status',
-        label: 'Status',
-        sortable: true,
-        render: (row) => (
-          <StatusBadge color={getStatusColor(row.status)}>
-            {row.status}
-          </StatusBadge>
-        ),
-      },
-      {
-        id: 'createdAt',
-        label: 'Sent Date',
-        sortable: true,
-        render: (row) => new Date(row.createdAt).toLocaleDateString(),
-      },
-      {
-        id: 'expiresAt',
-        label: 'Expires',
-        sortable: true,
-        render: (row) => new Date(row.expiresAt).toLocaleDateString(),
-      },
-      {
-        id: 'usedAt',
-        label: 'Accepted Date',
-        sortable: true,
-        render: (row) =>
-          row.usedAt ? new Date(row.usedAt).toLocaleDateString() : '-',
-      },
-    ],
-    [handleCopyInvitationLink]
+  const columns = useMemo(
+    () => createInvitationColumns(handleCopyInvitationLink, theme),
+    [handleCopyInvitationLink, theme]
   );
 
   return (

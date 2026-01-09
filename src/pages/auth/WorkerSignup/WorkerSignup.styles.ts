@@ -2,13 +2,13 @@ import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 import { rem } from '../../../components/UI/Typography/utility';
 
-export const SignupContainer = styled(Box)({
+export const SignupContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   width: '100vw',
   height: '100vh',
-  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+  background: theme.palette.background.authGradient,
   overflow: 'hidden',
   padding: `${rem(20)} ${rem(40)}`,
   gap: rem(20),
@@ -24,9 +24,9 @@ export const SignupContainer = styled(Box)({
     padding: `${rem(10)} ${rem(20)}`,
     gap: rem(10),
   },
-});
+}));
 
-export const LeftSection = styled(Box)({
+export const LeftSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
@@ -40,11 +40,11 @@ export const LeftSection = styled(Box)({
   flex: '0 0 auto',
   order: 0,
   alignSelf: 'stretch',
-  backgroundColor: '#FFFFFF',
+  backgroundColor: theme.palette.colors.white,
   overflow: 'auto',
   borderRadius: rem(16),
-  boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08), 0px 2px 8px rgba(0, 0, 0, 0.04)',
-  border: '1px solid rgba(0, 0, 0, 0.05)',
+  boxShadow: theme.palette.boxShadow.authCard,
+  border: `1px solid ${theme.palette.border?.subtle}`,
   '@media (min-width: 1921px)': {
     padding: `${rem(50)} ${rem(50)} ${rem(40)} ${rem(50)}`,
     gap: rem(24),
@@ -65,7 +65,7 @@ export const LeftSection = styled(Box)({
     maxWidth: rem(420),
     borderRadius: rem(12),
   },
-});
+}));
 
 export const FormContainer = styled(Box)({
   display: 'flex',
@@ -122,7 +122,7 @@ export const HeaderSection = styled(Box)({
 
 export const Title = styled(Typography)(({ theme }) => ({
   fontSize: rem(24),
-  fontWeight: 700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.grey[900],
   lineHeight: '1.3',
   textAlign: 'center',
@@ -131,7 +131,7 @@ export const Title = styled(Typography)(({ theme }) => ({
   alignSelf: 'stretch',
   flexGrow: 0,
   letterSpacing: '-0.02em',
-  background: 'linear-gradient(135deg, #1976d2 0%, #2196f3 100%)',
+  background: theme.palette.colors.gradient_blueVertical,
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
   backgroundClip: 'text',
@@ -145,7 +145,7 @@ export const Title = styled(Typography)(({ theme }) => ({
     transform: 'translateX(-50%)',
     width: rem(60),
     height: rem(3),
-    background: 'linear-gradient(90deg, #1976d2 0%, #2196f3 100%)',
+    background: theme.palette.colors.gradient_blueHorizontal,
     borderRadius: rem(2),
   },
   '@media (min-width: 1921px)': {
@@ -169,15 +169,15 @@ export const Title = styled(Typography)(({ theme }) => ({
   },
 }));
 
-export const Subtitle = styled(Typography)(() => ({
+export const Subtitle = styled(Typography)(({ theme }) => ({
   fontFamily: 'Manrope',
   fontStyle: 'normal',
-  fontWeight: 500,
+  fontWeight: theme.typography.fontWeightMedium,
   fontSize: rem(13),
   lineHeight: rem(18),
   textAlign: 'center',
   letterSpacing: '0.01em',
-  color: '#64748b',
+  color: theme.palette.colors.slate_dark,
   flex: 'none',
   order: 2,
   alignSelf: 'stretch',
@@ -236,13 +236,13 @@ export const DividerContainer = styled(Box)({
 export const DividerLine = styled(Box)(({ theme }) => ({
   flex: 1,
   height: rem(1),
-  background: 'linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%)',
+  background: theme.palette.colors.gradient_slateHorizontal,
 }));
 
 export const DividerText = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
-  fontWeight: 500,
-  color: '#94a3b8',
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.colors.slate_main,
   letterSpacing: '0.02em',
   '@media (min-width: 1921px)': {
     fontSize: rem(14),
@@ -257,16 +257,16 @@ export const DividerText = styled(Typography)(({ theme }) => ({
 
 export const SignInLink = styled(Box)(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: 500,
-  color: '#64748b',
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.colors.slate_dark,
   textAlign: 'center',
   '& a': {
-    color: '#1976d2',
+    color: theme.palette.colors.blue_dark,
     textDecoration: 'none',
-    fontWeight: 600,
+    fontWeight: theme.typography.fontWeightSemiBold,
     transition: 'all 0.2s ease',
     '&:hover': {
-      color: '#2196f3',
+      color: theme.palette.colors.blue_main,
       textDecoration: 'none',
     },
   },
@@ -294,16 +294,16 @@ export const ErrorContainer = styled(Box)({
 
 export const ErrorTitle = styled(Typography)(({ theme }) => ({
   fontSize: rem(24),
-  fontWeight: 700,
-  color: '#ef4444',
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.colors.red_main,
   lineHeight: '1.3',
   letterSpacing: '-0.02em',
 }));
 
 export const ErrorMessage = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: 500,
-  color: '#64748b',
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.colors.slate_dark,
   lineHeight: '1.6',
   maxWidth: rem(400),
 }));

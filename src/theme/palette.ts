@@ -59,6 +59,7 @@ declare module '@mui/material/styles' {
     dark?: string;
     default: string;
     disabled?: string;
+    authGradient?: string;
   }
   interface DynamicValues {
     [name: string]: string | number;
@@ -92,6 +93,18 @@ declare module '@mui/material/styles' {
     chart_tertiary: string;
     chart_quaternary: string;
     chart_quinary: string;
+    slate_light: string;
+    slate_main: string;
+    slate_dark: string;
+    blue_dark: string;
+    blue_main: string;
+    red_main: string;
+    gradient_blueVertical: string;
+    gradient_blueHorizontal: string;
+    gradient_slateHorizontal: string;
+    invitation_pending: string;
+    invitation_accepted: string;
+    invitation_expired: string;
   }
   interface PaletteOptions {
     icon?: DynamicValues;
@@ -104,6 +117,7 @@ declare module '@mui/material/styles' {
     buttonShadow: string;
     modalShadow: string;
     dropDownListShadow: string;
+    authCard: string;
   }
   interface Palette {
     icon?: DynamicValues;
@@ -176,12 +190,14 @@ const FloowPalette = {
     default: BACKGROUND,
     paper: BACKGROUND_PAPER,
     disabled: DISABLE_BG,
+    authGradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
   },
   border: {
     light: lighten(FIELD_BORDER, 0.5),
     main: FIELD_BORDER,
     dark: darken(FIELD_BORDER, 0.1),
     secondary: TABLE_BORDER,
+    subtle: 'rgba(0, 0, 0, 0.05)',
   },
 
   // Animation
@@ -226,11 +242,24 @@ const FloowPalette = {
     chart_tertiary: floowColors.chart.tertiary,
     chart_quaternary: floowColors.chart.quaternary,
     chart_quinary: floowColors.chart.quinary,
+    slate_light: floowColors.slate.light,
+    slate_main: floowColors.slate.main,
+    slate_dark: floowColors.slate.dark,
+    blue_dark: floowColors.blue.dark,
+    blue_main: floowColors.blue.main,
+    red_main: floowColors.red.main,
+    gradient_blueVertical: floowColors.gradient.blueVertical,
+    gradient_blueHorizontal: floowColors.gradient.blueHorizontal,
+    gradient_slateHorizontal: floowColors.gradient.slateHorizontal,
+    invitation_pending: floowColors.invitationStatus.pending,
+    invitation_accepted: floowColors.invitationStatus.accepted,
+    invitation_expired: floowColors.invitationStatus.expired,
   },
   boxShadow: {
     buttonShadow: `0px 1px 5px 0px rgba(0, 0, 0, 0.12), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.20)`,
     modalShadow: `0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)`,
     dropDownListShadow: `0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)`,
+    authCard: `0px 4px 20px rgba(0, 0, 0, 0.08), 0px 2px 8px rgba(0, 0, 0, 0.04)`,
   },
 };
 
