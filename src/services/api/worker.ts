@@ -24,6 +24,7 @@ export interface WorkerInvitationResponse {
 export interface WorkerInvitationStatus {
   invitationId: number;
   email: string;
+  token: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
   createdAt: string;
   expiresAt: string;
@@ -103,10 +104,10 @@ export const workerService = {
   },
 
   /**
-   * Send invitation email to worker
+   * Send invitation email to worker (using generated API)
    */
-  async sendInvitation(id: number) {
-    return await getWorkerApi().sendInvitation(id);
+  async sendInvitation(data: WorkerInvitationRequest) {
+    return await getWorkerApi().sendInvitation(data);
   },
 
   /**

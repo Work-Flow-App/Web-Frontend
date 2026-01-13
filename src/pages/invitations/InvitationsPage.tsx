@@ -25,7 +25,7 @@ export const InvitationsPage: React.FC = () => {
           id: invitation.invitationId,
           invitationId: invitation.invitationId,
           email: invitation.email,
-          token: '', // Token is not returned from API for security reasons
+          token: invitation.token,
           status: invitation.status,
           createdAt: invitation.createdAt,
           expiresAt: invitation.expiresAt,
