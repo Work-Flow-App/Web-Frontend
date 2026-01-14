@@ -53,17 +53,37 @@ export const InvitationsPage: React.FC = () => {
 
   // Handle copy invitation link
   const handleCopyInvitationLink = useCallback(
-    (row: InvitationTableRow) => {
+    async (row: InvitationTableRow) => {
       const invitationLink = `${window?.location?.origin}/signup/worker?token=${row?.token}`;
-      navigator.clipboard?.writeText(invitationLink)?.then(
-        () => {
+
+      try {
+        // Try modern clipboard API first (requires HTTPS)
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(invitationLink);
           showSuccess('Invitation link copied to clipboard!');
-        },
-        (err) => {
-          console.error('Failed to copy link:', err);
-          showError('Failed to copy invitation link');
+        } else {
+          // Fallback for non-secure contexts or older browsers
+          const textArea = document.createElement('textarea');
+          textArea.value = invitationLink;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-9999px';
+          textArea.style.top = '-9999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+
+          if (successful) {
+            showSuccess('Invitation link copied to clipboard!');
+          } else {
+            showError('Failed to copy invitation link');
+          }
         }
-      );
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        showError('Failed to copy invitation link');
+      }
     },
     [showSuccess, showError]
   );
