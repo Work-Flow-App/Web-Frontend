@@ -315,10 +315,8 @@ export type JobUpdateRequestStatusEnum = typeof JobUpdateRequestStatusEnum[keyof
 export interface JobWorkflowResponse {
     'id'?: number;
     'jobId'?: number;
-    'workflowId'?: number;
     'steps'?: Array<JobWorkflowStepResponse>;
     'status'?: JobWorkflowResponseStatusEnum;
-    'workerIds'?: Set<number>;
 }
 
 export const JobWorkflowResponseStatusEnum = {
@@ -336,6 +334,8 @@ export type JobWorkflowResponseStatusEnum = typeof JobWorkflowResponseStatusEnum
 export interface JobWorkflowStepResponse {
     'id'?: number;
     'name'?: string;
+    'description'?: string;
+    'orderIndex'?: number;
     'status'?: JobWorkflowStepResponseStatusEnum;
     'startedAt'?: string;
     'completedAt'?: string;
@@ -356,6 +356,9 @@ export type JobWorkflowStepResponseStatusEnum = typeof JobWorkflowStepResponseSt
 
 export interface JobWorkflowStepUpdateRequest {
     'id'?: number;
+    'name'?: string;
+    'description'?: string;
+    'orderIndex'?: number;
     'status'?: JobWorkflowStepUpdateRequestStatusEnum;
     'assignedWorkerIds'?: Set<number>;
 }
@@ -410,12 +413,12 @@ export interface PageAssetResponse {
     'empty'?: boolean;
 }
 export interface PageableObject {
-    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
-    'unpaged'?: boolean;
+    'pageNumber'?: number;
     'offset'?: number;
     'sort'?: SortObject;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -444,9 +447,9 @@ export const SignupRequestRoleEnum = {
 export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof SignupRequestRoleEnum];
 
 export interface SortObject {
-    'unsorted'?: boolean;
     'sorted'?: boolean;
     'empty'?: boolean;
+    'unsorted'?: boolean;
 }
 export interface WorkerCreateRequest {
     'name': string;
@@ -517,9 +520,6 @@ export interface WorkerSignupRequest {
     'invitationToken': string;
     'email': string;
     'name': string;
-    'initials'?: string;
-    'telephone'?: string;
-    'mobile'?: string;
     'username': string;
     'password': string;
 }
@@ -538,6 +538,11 @@ export interface WorkerUpdateRequest {
     'mobile'?: string;
     'email'?: string;
 }
+export interface WorkflowBulkUpdateRequest {
+    'name'?: string;
+    'description'?: string;
+    'steps'?: Array<WorkflowStepBulkRequest>;
+}
 export interface WorkflowCreateRequest {
     'name'?: string;
     'description'?: string;
@@ -547,6 +552,13 @@ export interface WorkflowResponse {
     'companyId'?: number;
     'name'?: string;
     'description'?: string;
+}
+export interface WorkflowStepBulkRequest {
+    'id'?: number;
+    'name'?: string;
+    'description'?: string;
+    'orderIndex'?: number;
+    'optional'?: boolean;
 }
 export interface WorkflowStepCreateRequest {
     'workflowId'?: number;
@@ -562,6 +574,13 @@ export interface WorkflowStepResponse {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+}
+export interface WorkflowWithStepsResponse {
+    'id'?: number;
+    'companyId'?: number;
+    'name'?: string;
+    'description'?: string;
+    'steps'?: Array<WorkflowStepResponse>;
 }
 
 /**
@@ -5160,6 +5179,49 @@ export const WorkflowControllerApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @param {number} workflowId 
+         * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUpdate: async (workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workflowId' is not null or undefined
+            assertParamExists('bulkUpdate', 'workflowId', workflowId)
+            // verify required parameter 'workflowBulkUpdateRequest' is not null or undefined
+            assertParamExists('bulkUpdate', 'workflowBulkUpdateRequest', workflowBulkUpdateRequest)
+            const localVarPath = `/api/v1/workflows/{workflowId}/bulk`
+                .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(workflowBulkUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {WorkflowCreateRequest} workflowCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5452,6 +5514,43 @@ export const WorkflowControllerApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @param {number} workflowId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getWorkflowWithSteps: async (workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workflowId' is not null or undefined
+            assertParamExists('getWorkflowWithSteps', 'workflowId', workflowId)
+            const localVarPath = `/api/v1/workflows/{workflowId}/with-steps`
+                .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {WorkflowCreateRequest} workflowCreateRequest 
          * @param {*} [options] Override http request option.
@@ -5559,6 +5658,19 @@ export const WorkflowControllerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} workflowId 
+         * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.bulkUpdate(workflowId, workflowBulkUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowControllerApi.bulkUpdate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {WorkflowCreateRequest} workflowCreateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5653,6 +5765,18 @@ export const WorkflowControllerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} workflowId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowWithStepsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkflowWithSteps(workflowId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowControllerApi.getWorkflowWithSteps']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {WorkflowCreateRequest} workflowCreateRequest 
          * @param {*} [options] Override http request option.
@@ -5694,6 +5818,16 @@ export const WorkflowControllerApiFactory = function (configuration?: Configurat
          */
         _delete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp._delete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} workflowId 
+         * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
+            return localVarFp.bulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5767,6 +5901,15 @@ export const WorkflowControllerApiFactory = function (configuration?: Configurat
         },
         /**
          * 
+         * @param {number} workflowId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowWithStepsResponse> {
+            return localVarFp.getWorkflowWithSteps(workflowId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} id 
          * @param {WorkflowCreateRequest} workflowCreateRequest 
          * @param {*} [options] Override http request option.
@@ -5800,6 +5943,17 @@ export class WorkflowControllerApi extends BaseAPI {
      */
     public _delete(id: number, options?: RawAxiosRequestConfig) {
         return WorkflowControllerApiFp(this.configuration)._delete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} workflowId 
+     * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowControllerApiFp(this.configuration).bulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5878,6 +6032,16 @@ export class WorkflowControllerApi extends BaseAPI {
      */
     public getSteps(workflowId: number, options?: RawAxiosRequestConfig) {
         return WorkflowControllerApiFp(this.configuration).getSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} workflowId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowControllerApiFp(this.configuration).getWorkflowWithSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
