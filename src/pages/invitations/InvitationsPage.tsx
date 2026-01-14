@@ -20,24 +20,21 @@ export const InvitationsPage: React.FC = () => {
       setLoading(true);
       const response = await workerService.getWorkerInvitations();
 
-      const transformedData: InvitationTableRow[] = response.map(
-        (invitation: WorkerInvitationStatus) => ({
-          id: invitation.invitationId,
-          invitationId: invitation.invitationId,
-          email: invitation.email,
-          token: invitation.token,
-          status: invitation.status,
-          createdAt: invitation.createdAt,
-          expiresAt: invitation.expiresAt,
-          usedAt: invitation.usedAt,
-        })
-      );
+      const transformedData: InvitationTableRow[] = response.map((invitation: WorkerInvitationStatus) => ({
+        id: invitation.invitationId,
+        invitationId: invitation.invitationId,
+        email: invitation.email,
+        token: invitation.token,
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+        expiresAt: invitation.expiresAt,
+        usedAt: invitation.usedAt,
+      }));
 
       setInvitations(transformedData);
     } catch (error) {
       console.error('Error fetching invitations:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to load invitations';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load invitations';
       showError(errorMessage);
     } finally {
       setLoading(false);
@@ -57,8 +54,8 @@ export const InvitationsPage: React.FC = () => {
   // Handle copy invitation link
   const handleCopyInvitationLink = useCallback(
     (row: InvitationTableRow) => {
-      const invitationLink = `${window.location.origin}/signup/worker?token=${row.token}`;
-      navigator.clipboard.writeText(invitationLink).then(
+      const invitationLink = `${window?.location?.origin}/signup/worker?token=${row?.token}`;
+      navigator.clipboard?.writeText(invitationLink)?.then(
         () => {
           showSuccess('Invitation link copied to clipboard!');
         },
