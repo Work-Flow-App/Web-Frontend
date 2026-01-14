@@ -12,7 +12,7 @@ export interface PageAction {
 }
 
 export interface PageWrapperProps {
-  title: string;
+  title: string | ReactNode;
   description?: string;
   children: ReactNode;
   actions?: PageAction[];
