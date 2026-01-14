@@ -413,12 +413,12 @@ export interface PageAssetResponse {
     'empty'?: boolean;
 }
 export interface PageableObject {
-    'unpaged'?: boolean;
-    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
+    'pageNumber'?: number;
     'offset'?: number;
     'sort'?: SortObject;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -447,9 +447,9 @@ export const SignupRequestRoleEnum = {
 export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof SignupRequestRoleEnum];
 
 export interface SortObject {
-    'unsorted'?: boolean;
     'sorted'?: boolean;
     'empty'?: boolean;
+    'unsorted'?: boolean;
 }
 export interface WorkerCreateRequest {
     'name': string;
