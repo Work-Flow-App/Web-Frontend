@@ -3,9 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { jobService, jobTemplateService, companyClientService, workerService } from '../../services/api';
-import type { JobResponse, JobTemplateResponse, ClientResponse, WorkerResponse, JobTemplateFieldResponse } from '../../services/api';
+import type {
+  JobResponse,
+  JobTemplateResponse,
+  ClientResponse,
+  WorkerResponse,
+  JobTemplateFieldResponse,
+} from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { JobWorkflowViewer } from './components/JobWorkflowViewer/JobWorkflowViewer';
+// import { JobWorkflowViewer } from './components/JobWorkflowViewer/JobWorkflowViewer';
 import * as S from './JobDetailsPage.styles';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
@@ -57,15 +63,11 @@ export const JobDetailsPage: React.FC = () => {
       }
 
       if (jobData.clientId) {
-        promises.push(
-          companyClientService.getClientById(jobData.clientId).then((res) => setClient(res.data))
-        );
+        promises.push(companyClientService.getClientById(jobData.clientId).then((res) => setClient(res.data)));
       }
 
       if (jobData.assignedWorkerId) {
-        promises.push(
-          workerService.getWorkerById(jobData.assignedWorkerId).then((res) => setWorker(res.data))
-        );
+        promises.push(workerService.getWorkerById(jobData.assignedWorkerId).then((res) => setWorker(res.data)));
       }
 
       await Promise.all(promises);
@@ -140,10 +142,11 @@ export const JobDetailsPage: React.FC = () => {
       description=""
     >
       <S.ContentContainer>
+        {/*Later will be added */}
         {/* Job Workflow Section */}
-        <Box sx={{ mb: 4 }}>
+        {/* <Box sx={{ mb: 4 }}>
           <JobWorkflowViewer jobId={Number(jobId)} />
-        </Box>
+        </Box> */}
 
         <S.DetailsGrid>
           {/* Section 1: Job Overview Card */}
@@ -177,19 +180,13 @@ export const JobDetailsPage: React.FC = () => {
               <S.MetadataColumn>
                 <S.MetadataLabel>Client</S.MetadataLabel>
                 <S.MetadataValue>
-                  {client?.name && (
-                    <S.Avatar>{client.name.charAt(0).toUpperCase()}</S.Avatar>
-                  )}
+                  {client?.name && <S.Avatar>{client.name.charAt(0).toUpperCase()}</S.Avatar>}
                   {client?.name || '-'}
                 </S.MetadataValue>
               </S.MetadataColumn>
 
               <S.TagsContainer>
-                {job.archived ? (
-                  <S.Tag color="#9E9E9E">Archived</S.Tag>
-                ) : (
-                  <S.Tag color="#2196F3">Active</S.Tag>
-                )}
+                {job.archived ? <S.Tag color="#9E9E9E">Archived</S.Tag> : <S.Tag color="#2196F3">Active</S.Tag>}
               </S.TagsContainer>
             </S.MetadataRow>
           </S.JobOverviewCard>
@@ -252,7 +249,9 @@ export const JobDetailsPage: React.FC = () => {
                       <>
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><BusinessIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <BusinessIcon fontSize="small" />
+                            </S.FieldIcon>
                             Client Name
                           </S.DetailLabel>
                           <S.DetailValue>{client.name || '-'}</S.DetailValue>
@@ -260,7 +259,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><EmailIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <EmailIcon fontSize="small" />
+                            </S.FieldIcon>
                             Email
                           </S.DetailLabel>
                           <S.DetailValue>{client.email || '-'}</S.DetailValue>
@@ -268,7 +269,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><PhoneIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <PhoneIcon fontSize="small" />
+                            </S.FieldIcon>
                             Telephone
                           </S.DetailLabel>
                           <S.DetailValue>{client.telephone || '-'}</S.DetailValue>
@@ -276,7 +279,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><PhoneAndroidIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <PhoneAndroidIcon fontSize="small" />
+                            </S.FieldIcon>
                             Mobile
                           </S.DetailLabel>
                           <S.DetailValue>{client.mobile || '-'}</S.DetailValue>
@@ -284,7 +289,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><LocationOnIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <LocationOnIcon fontSize="small" />
+                            </S.FieldIcon>
                             Address
                           </S.DetailLabel>
                           <S.DetailValue>{client.address || '-'}</S.DetailValue>
@@ -306,7 +313,9 @@ export const JobDetailsPage: React.FC = () => {
                       <>
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><PersonIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <PersonIcon fontSize="small" />
+                            </S.FieldIcon>
                             Worker Name
                           </S.DetailLabel>
                           <S.DetailValue>{worker.name || '-'}</S.DetailValue>
@@ -314,7 +323,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><EmailIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <EmailIcon fontSize="small" />
+                            </S.FieldIcon>
                             Email
                           </S.DetailLabel>
                           <S.DetailValue>{worker.email || '-'}</S.DetailValue>
@@ -322,7 +333,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><PhoneIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <PhoneIcon fontSize="small" />
+                            </S.FieldIcon>
                             Telephone
                           </S.DetailLabel>
                           <S.DetailValue>{worker.telephone || '-'}</S.DetailValue>
@@ -330,7 +343,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><PhoneAndroidIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <PhoneAndroidIcon fontSize="small" />
+                            </S.FieldIcon>
                             Mobile
                           </S.DetailLabel>
                           <S.DetailValue>{worker.mobile || '-'}</S.DetailValue>
@@ -338,7 +353,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><BadgeIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <BadgeIcon fontSize="small" />
+                            </S.FieldIcon>
                             Initials
                           </S.DetailLabel>
                           <S.DetailValue>{worker.initials || '-'}</S.DetailValue>
@@ -360,7 +377,9 @@ export const JobDetailsPage: React.FC = () => {
                       <>
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><CategoryIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <CategoryIcon fontSize="small" />
+                            </S.FieldIcon>
                             Template Name
                           </S.DetailLabel>
                           <S.DetailValue>{template.name || '-'}</S.DetailValue>
@@ -369,7 +388,9 @@ export const JobDetailsPage: React.FC = () => {
                         {template.description && (
                           <S.DetailRow>
                             <S.DetailLabel>
-                              <S.FieldIcon><DescriptionIcon fontSize="small" /></S.FieldIcon>
+                              <S.FieldIcon>
+                                <DescriptionIcon fontSize="small" />
+                              </S.FieldIcon>
                               Description
                             </S.DetailLabel>
                             <S.DetailValue>{template.description}</S.DetailValue>
@@ -378,7 +399,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><CategoryIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <CategoryIcon fontSize="small" />
+                            </S.FieldIcon>
                             Default Template
                           </S.DetailLabel>
                           <S.DetailValue>{template.default ? 'Yes' : 'No'}</S.DetailValue>
@@ -386,7 +409,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><CalendarTodayIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <CalendarTodayIcon fontSize="small" />
+                            </S.FieldIcon>
                             Created At
                           </S.DetailLabel>
                           <S.DetailValue>{formatDate(template.createdAt)}</S.DetailValue>
@@ -394,7 +419,9 @@ export const JobDetailsPage: React.FC = () => {
 
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><CalendarTodayIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <CalendarTodayIcon fontSize="small" />
+                            </S.FieldIcon>
                             Updated At
                           </S.DetailLabel>
                           <S.DetailValue>{formatDate(template.updatedAt)}</S.DetailValue>
@@ -418,7 +445,7 @@ export const JobDetailsPage: React.FC = () => {
                         {(() => {
                           // Create a map of field IDs to template field definitions
                           const fieldDefinitionMap = new Map<string, JobTemplateFieldResponse>();
-                          templateFields.forEach(field => {
+                          templateFields.forEach((field) => {
                             if (field.id) {
                               fieldDefinitionMap.set(String(field.id), field);
                             }
@@ -443,7 +470,9 @@ export const JobDetailsPage: React.FC = () => {
                                   {requiredFields.map(([key, fieldValueResponse]) => {
                                     const fieldDef = fieldDefinitionMap.get(key);
                                     const value =
-                                      fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse
+                                      fieldValueResponse &&
+                                      typeof fieldValueResponse === 'object' &&
+                                      'value' in fieldValueResponse
                                         ? String(fieldValueResponse.value || '-')
                                         : String(fieldValueResponse || '-');
 
@@ -475,7 +504,9 @@ export const JobDetailsPage: React.FC = () => {
                                   {optionalFields.map(([key, fieldValueResponse]) => {
                                     const fieldDef = fieldDefinitionMap.get(key);
                                     const value =
-                                      fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse
+                                      fieldValueResponse &&
+                                      typeof fieldValueResponse === 'object' &&
+                                      'value' in fieldValueResponse
                                         ? String(fieldValueResponse.value || '-')
                                         : String(fieldValueResponse || '-');
 
@@ -514,14 +545,18 @@ export const JobDetailsPage: React.FC = () => {
                       <>
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><InventoryIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <InventoryIcon fontSize="small" />
+                            </S.FieldIcon>
                             Total Assets
                           </S.DetailLabel>
                           <S.DetailValue>{job.assetIds.length}</S.DetailValue>
                         </S.DetailRow>
                         <S.DetailRow>
                           <S.DetailLabel>
-                            <S.FieldIcon><FingerprintIcon fontSize="small" /></S.FieldIcon>
+                            <S.FieldIcon>
+                              <FingerprintIcon fontSize="small" />
+                            </S.FieldIcon>
                             Asset IDs
                           </S.DetailLabel>
                           <S.DetailValue>{job.assetIds.join(', ')}</S.DetailValue>
@@ -541,7 +576,9 @@ export const JobDetailsPage: React.FC = () => {
                   <S.DetailsContent>
                     <S.DetailRow>
                       <S.DetailLabel>
-                        <S.FieldIcon><FingerprintIcon fontSize="small" /></S.FieldIcon>
+                        <S.FieldIcon>
+                          <FingerprintIcon fontSize="small" />
+                        </S.FieldIcon>
                         Job ID
                       </S.DetailLabel>
                       <S.DetailValue>{job.id}</S.DetailValue>
@@ -549,7 +586,9 @@ export const JobDetailsPage: React.FC = () => {
 
                     <S.DetailRow>
                       <S.DetailLabel>
-                        <S.FieldIcon><CategoryIcon fontSize="small" /></S.FieldIcon>
+                        <S.FieldIcon>
+                          <CategoryIcon fontSize="small" />
+                        </S.FieldIcon>
                         Status
                       </S.DetailLabel>
                       <S.DetailValue>
@@ -562,7 +601,9 @@ export const JobDetailsPage: React.FC = () => {
 
                     <S.DetailRow>
                       <S.DetailLabel>
-                        <S.FieldIcon><CalendarTodayIcon fontSize="small" /></S.FieldIcon>
+                        <S.FieldIcon>
+                          <CalendarTodayIcon fontSize="small" />
+                        </S.FieldIcon>
                         Created At
                       </S.DetailLabel>
                       <S.DetailValue>{formatDate(job.createdAt)}</S.DetailValue>
@@ -570,7 +611,9 @@ export const JobDetailsPage: React.FC = () => {
 
                     <S.DetailRow>
                       <S.DetailLabel>
-                        <S.FieldIcon><CalendarTodayIcon fontSize="small" /></S.FieldIcon>
+                        <S.FieldIcon>
+                          <CalendarTodayIcon fontSize="small" />
+                        </S.FieldIcon>
                         Updated At
                       </S.DetailLabel>
                       <S.DetailValue>{formatDate(job.updatedAt)}</S.DetailValue>
@@ -578,7 +621,9 @@ export const JobDetailsPage: React.FC = () => {
 
                     <S.DetailRow>
                       <S.DetailLabel>
-                        <S.FieldIcon><CategoryIcon fontSize="small" /></S.FieldIcon>
+                        <S.FieldIcon>
+                          <CategoryIcon fontSize="small" />
+                        </S.FieldIcon>
                         Archived
                       </S.DetailLabel>
                       <S.DetailValue>{job.archived ? 'Yes' : 'No'}</S.DetailValue>
