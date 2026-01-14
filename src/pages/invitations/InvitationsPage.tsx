@@ -20,7 +20,7 @@ export const InvitationsPage: React.FC = () => {
       setLoading(true);
       const response = await workerService.getWorkerInvitations();
 
-      const transformedData: InvitationTableRow[] = response.map((invitation: WorkerInvitationStatus) => ({
+      const transformedData: InvitationTableRow[] = response?.map((invitation: WorkerInvitationStatus) => ({
         id: invitation.invitationId,
         invitationId: invitation.invitationId,
         email: invitation.email,
