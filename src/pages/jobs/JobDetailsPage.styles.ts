@@ -2,17 +2,16 @@ import { styled, Box, Typography } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(3, 2, 2, 2),
 }));
 
 export const DetailsGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+  display: 'flex',
+  flexDirection: 'column',
   gap: theme.spacing(3),
   width: '100%',
 
   [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: '1fr',
     gap: theme.spacing(2),
   },
 }));
@@ -54,4 +53,33 @@ export const InfoValue = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
   color: theme.palette.text.primary,
   fontWeight: Bold._400,
+}));
+
+export const BreadcrumbContainer = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: `${rem(14)} !important`,
+  fontWeight: `${Bold._500} !important`,
+  lineHeight: '1.5',
+  margin: '0 !important',
+}));
+
+export const BreadcrumbLink = styled('span')(({ theme }) => ({
+  color: theme.palette.primary.main,
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  transition: 'opacity 0.2s ease',
+  '&:hover': {
+    opacity: 0.8,
+  },
+}));
+
+export const BreadcrumbSeparator = styled('span')(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  userSelect: 'none',
+  margin: '0 2px',
+}));
+
+export const BreadcrumbCurrent = styled('span')(({ theme }) => ({
+  color: theme.palette.text.primary,
 }));
