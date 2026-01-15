@@ -221,6 +221,30 @@ export const Tag = styled('span')<TagProps>(({ color = '#9E9E9E' }) => ({
   whiteSpace: 'nowrap',
 }));
 
+// Asset Chips Container and Styles
+export const AssetChipsContainer = styled(Box)(() => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: rem(8),
+  alignItems: 'center',
+}));
+
+export const AssetChip = styled('span')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: `${rem(6)} ${rem(12)}`,
+  borderRadius: rem(8),
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.colors.white,
+  whiteSpace: 'nowrap',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+  },
+}));
+
 // Workflow Stages Styles
 export const WorkflowCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5),

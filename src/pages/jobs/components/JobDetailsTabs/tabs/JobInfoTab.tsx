@@ -43,6 +43,16 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ job, formatDate }) => {
         <S.DetailRow>
           <S.DetailLabel>
             <S.FieldIcon>
+              <CategoryIcon fontSize="small" />
+            </S.FieldIcon>
+            Archived
+          </S.DetailLabel>
+          <S.DetailValue>{job.archived ? 'Yes' : 'No'}</S.DetailValue>
+        </S.DetailRow>
+
+        <S.DetailRow>
+          <S.DetailLabel>
+            <S.FieldIcon>
               <CalendarTodayIcon fontSize="small" />
             </S.FieldIcon>
             Created At
@@ -58,16 +68,6 @@ export const JobInfoTab: React.FC<JobInfoTabProps> = ({ job, formatDate }) => {
             Updated At
           </S.DetailLabel>
           <S.DetailValue>{formatDate(job.updatedAt)}</S.DetailValue>
-        </S.DetailRow>
-
-        <S.DetailRow>
-          <S.DetailLabel>
-            <S.FieldIcon>
-              <CategoryIcon fontSize="small" />
-            </S.FieldIcon>
-            Archived
-          </S.DetailLabel>
-          <S.DetailValue>{job.archived ? 'Yes' : 'No'}</S.DetailValue>
         </S.DetailRow>
       </S.DetailsContent>
     </>
