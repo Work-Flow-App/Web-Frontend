@@ -74,12 +74,13 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   fontWeight: 500,
   color: floowColors.grey[700],
   userSelect: 'none',
-  transition: 'all 0.2s ease',
+  transition: 'all 0.25s ease',
   boxSizing: 'border-box',
 
   '&:hover': {
     backgroundColor: floowColors.grey[100],
-    color: floowColors.black,
+    color: floowColors.grey[800],
+    transform: 'translateX(3px)',
   },
 
   '&.active': {

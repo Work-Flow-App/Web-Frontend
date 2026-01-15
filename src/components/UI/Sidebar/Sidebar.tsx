@@ -142,9 +142,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               padding: rem(4),
               minWidth: rem(40),
               minHeight: rem(40),
-              color: floowColors.black,
+              color: floowColors.grey[700],
               '&:hover': {
                 backgroundColor: floowColors.grey[100],
+                color: floowColors.grey[800],
               },
             }}
             title="Close Sidebar"
