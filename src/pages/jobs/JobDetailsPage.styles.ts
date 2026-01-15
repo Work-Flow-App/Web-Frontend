@@ -2,7 +2,7 @@ import { Box, Typography, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5, 2, 2, 2),
+  padding: theme.spacing(0, 2, 2, 2),
 }));
 
 export const DetailsGrid = styled(Box)(({ theme }) => ({
@@ -75,7 +75,7 @@ export const ColumnBox = styled(Box)(() => ({
 
 // Job Overview Card Styles
 export const JobOverviewCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2.5),
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,

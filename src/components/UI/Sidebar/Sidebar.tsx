@@ -175,63 +175,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (hasChildren) {
           return (
             <Box key={item.id} sx={{ width: '100%' }}>
-              {/* Parent item - navigate and toggle expansion on click */}
-              {item.href ? (
-                <Link
-                  to={item.href}
-                  onClick={() => {
-                    handleItemClick(item.id);
-                    item.onClick?.();
-                    toggleExpanded(item.id);
-                  }}
-                  style={{
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    display: 'block',
-                    width: '100%',
-                  }}
-                >
-                  <SidebarItemButton
-                    className={isActiveOrChildActive ? 'active' : ''}
-                    role="menuitem"
-                    aria-label={item.label}
-                    aria-current={active ? 'page' : undefined}
-                    title={isCollapsed ? item.label : undefined}
-                    tabIndex={0}
-                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
-                      {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-                      {!isCollapsed && <span>{item.label}</span>}
-                    </Box>
-                    {!isCollapsed && (
-                      isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
-                    )}
-                  </SidebarItemButton>
-                </Link>
-              ) : (
-                <SidebarItemButton
-                  className={isActiveOrChildActive ? 'active' : ''}
-                  onClick={() => {
-                    handleItemClick(item.id);
-                    item.onClick?.();
-                    toggleExpanded(item.id);
-                  }}
-                  role="menuitem"
-                  aria-label={item.label}
-                  title={isCollapsed ? item.label : undefined}
-                  tabIndex={0}
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
-                    {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </Box>
-                  {!isCollapsed && (
-                    isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
-                  )}
-                </SidebarItemButton>
-              )}
+              {/* Parent item - only toggle expansion, no navigation */}
+              <SidebarItemButton
+                className={isActiveOrChildActive ? 'active' : ''}
+                onClick={() => {
+                  handleItemClick(item.id);
+                  item.onClick?.();
+                  toggleExpanded(item.id);
+                }}
+                role="menuitem"
+                aria-label={item.label}
+                title={isCollapsed ? item.label : undefined}
+                tabIndex={0}
+                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+                  {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                  {!isCollapsed && <span>{item.label}</span>}
+                </Box>
+                {!isCollapsed && (
+                  isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
+                )}
+              </SidebarItemButton>
 
               {/* Child items */}
               {!isCollapsed && (
@@ -261,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               aria-label={child.label}
                               aria-current={childActive ? 'page' : undefined}
                               tabIndex={0}
-                              sx={{ fontSize: rem(14) }}
+                              sx={{ fontSize: rem(13) }}
                             >
                               {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
                               <span>{child.label}</span>
@@ -281,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           aria-label={child.label}
                           aria-current={childActive ? 'page' : undefined}
                           tabIndex={0}
-                          sx={{ fontSize: rem(14) }}
+                          sx={{ fontSize: rem(13) }}
                         >
                           {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
                           <span>{child.label}</span>

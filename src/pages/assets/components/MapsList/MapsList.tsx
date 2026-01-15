@@ -93,7 +93,7 @@ export const MapsList: React.FC = () => {
 
   if (loading) {
     return (
-      <PageWrapper title="Worker Jobs Map" description="View worker locations and job assignments" showSearch={false}>
+      <PageWrapper title="Maps" description="View assets location" showSearch={false}>
         <S.ContentSection style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <CircularProgress />
         </S.ContentSection>
@@ -103,7 +103,7 @@ export const MapsList: React.FC = () => {
 
   if (error) {
     return (
-      <PageWrapper title="Worker Jobs Map" description="View worker locations and job assignments" showSearch={false}>
+      <PageWrapper title="Maps" description="View assets location" showSearch={false}>
         <S.ContentSection>
           <Alert severity="error">{error}</Alert>
         </S.ContentSection>
@@ -112,7 +112,7 @@ export const MapsList: React.FC = () => {
   }
 
   return (
-    <PageWrapper title="Jobs location " description="View worker locations and job assignments" showSearch={false}>
+    <PageWrapper title="Maps" description="View assets location" showSearch={false}>
       <S.ContentSection>
         <S.MapSection>
           <LeafletMap

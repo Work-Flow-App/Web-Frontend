@@ -13,7 +13,6 @@ import type {
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
-import { JobBreadcrumb } from '../JobBreadcrumb/JobBreadcrumb';
 import { JobOverviewCard } from '../JobOverviewCard/JobOverviewCard';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsTabs } from '../JobDetailsTabs/JobDetailsTabs';
@@ -96,7 +95,7 @@ export const JobDetailsView: React.FC = () => {
 
   if (loading) {
     return (
-      <PageWrapper title={<JobBreadcrumb jobId={jobId || ''} onJobsClick={handleJobsClick} />} description="">
+      <PageWrapper title="" description="">
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -106,7 +105,7 @@ export const JobDetailsView: React.FC = () => {
 
   if (!job) {
     return (
-      <PageWrapper title={<JobBreadcrumb jobId={jobId || ''} onJobsClick={handleJobsClick} />} description="">
+      <PageWrapper title="" description="">
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <S.InfoValue>Job not found</S.InfoValue>
         </Box>
@@ -115,10 +114,10 @@ export const JobDetailsView: React.FC = () => {
   }
 
   return (
-    <PageWrapper title={<JobBreadcrumb jobId={jobId || ''} onJobsClick={handleJobsClick} />} description="">
+    <PageWrapper title="" description="">
       <S.ContentContainer>
         <S.DetailsGrid>
-          <JobOverviewCard job={job} client={client} worker={worker} template={template} />
+          <JobOverviewCard job={job} client={client} worker={worker} template={template} onBackClick={handleJobsClick} />
           <JobWorkflowStages job={job} />
           <JobDetailsTabs
             job={job}
