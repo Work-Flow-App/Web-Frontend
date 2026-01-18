@@ -1,5 +1,4 @@
 import { styled, Box } from '@mui/material';
-import { floowColors } from '../../../theme/colors';
 import { rem } from '../Typography/utility';
 
 /**
@@ -13,7 +12,7 @@ export const TopNavOuterWrapper = styled(Box)(({ theme }) => ({
   gap: rem(10),
   width: '100%',
   boxSizing: 'border-box',
-  background: floowColors.grey[100],
+  background: theme.palette.colors?.grey_100 || theme.palette.background.default,
   flexShrink: 0,
   flexGrow: 0,
 
@@ -38,9 +37,10 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
   gap: rem(12),
   width: '100%',
   height: rem(48),
-  background: floowColors.dark.navy,
+  // Use primary main so it follows the custom theme color
+  background: theme.palette.primary.main, 
   borderRadius: 0,
-  borderBottom: `${rem(1)} solid ${floowColors.grey[200]}`,
+  borderBottom: `${rem(1)} solid ${theme.palette.colors?.grey_200 || 'rgba(0,0,0,0.1)'}`,
   boxSizing: 'border-box',
   flexShrink: 0,
   flexGrow: 0,
