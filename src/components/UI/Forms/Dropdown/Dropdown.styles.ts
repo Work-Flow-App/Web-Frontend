@@ -27,7 +27,9 @@ export const AutocompleteInnerWrapper = styled(Box)({
   width: '100%',
 });
 
-export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ theme, dropdownSize, fullWidth }) => {
+export const MuiAutocomplete = styled(Autocomplete, {
+  shouldForwardProp: (prop) => prop !== 'dropdownSize' && prop !== 'fullWidth',
+})<StyledDropdownProps>(({ theme, dropdownSize, fullWidth }) => {
   const { palette } = theme;
 
   const getSizeStyles = () => {
@@ -252,7 +254,9 @@ export const AddNewButtonWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const AutoCompleteValue = styled(Box)<{ size?: number }>(({ size = 40 }) => ({
+export const AutoCompleteValue = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'size',
+})<{ size?: number }>(({ size = 40 }) => ({
   width: rem(size),
   minWidth: rem(size),
 }));

@@ -14,7 +14,6 @@ export const axiosInstance = axios.create({
   timeout: env.apiTimeout,
   headers: {
     'Content-Type': 'application/json',
-    'Connection': 'keep-alive',
   },
   maxRedirects: 5,
   // Force Axios to use the browser's native fetch/xhr which handles connection pooling

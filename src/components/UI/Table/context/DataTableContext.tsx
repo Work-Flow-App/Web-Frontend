@@ -1,5 +1,5 @@
 import React, { createContext, useState, useMemo, useCallback, type ReactNode } from 'react';
-import type { ITableRow, ITableColumn, ISortConfig, SortDirection } from '../ITable';
+import type { ITableRow, ITableColumn, ISortConfig } from '../ITable';
 
 // ============================================
 // Pagination Context
@@ -105,9 +105,9 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
   }, [initialColumns]);
 
   // Debug: Log when columns change
-  React.useEffect(() => {
-    console.log('Context columns updated:', columns.map((c: any) => ({ id: c.id, label: c.label })));
-  }, [columns]);
+  // React.useEffect(() => {
+  //   console.log('Context columns updated:', columns.map((c: any) => ({ id: c.id, label: c.label })));
+  // }, [columns]);
 
   // ============================================
   // Pagination Logic
@@ -313,8 +313,8 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
 
   return (
     <PaginationModalContext.Provider value={paginationValue}>
-      <DataRowsContext.Provider value={dataRowsValue}>
-        <DataColumnContext.Provider value={dataColumnValue}>{children}</DataColumnContext.Provider>
+      <DataRowsContext.Provider value={dataRowsValue as unknown as IDataRowsContext}>
+        <DataColumnContext.Provider value={dataColumnValue as unknown as IDataColumnContext}>{children}</DataColumnContext.Provider>
       </DataRowsContext.Provider>
     </PaginationModalContext.Provider>
   );

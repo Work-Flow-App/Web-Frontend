@@ -26,6 +26,12 @@ const BaseTextArea = (props: TextAreaProps) => {
     maxRows,
     maxLength,
     readOnly,
+    // Destructure these to prevent them from being passed to DOM via restProps
+    hideErrorMessage,
+    fullWidth,
+    label,
+    required,
+    showCharCount,
     ...restProps
   } = props;
 

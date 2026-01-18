@@ -1,21 +1,22 @@
 import { rem, em } from '../components/UI/Typography/utility';
+import { floowColors } from './colors';
 
 export default {
   MuiCssBaseline: {
     styleOverrides: {
       body: {
-        scrollbarColor: '#A1A1A1 #F5F5F5',
+        scrollbarColor: `${floowColors.scrollbar.thumb} ${floowColors.scrollbar.track}`,
         '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
           width: rem(8),
           height: rem(8),
         },
         '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
           borderRadius: rem(8),
-          backgroundColor: '#A1A1A1',
+          backgroundColor: floowColors.scrollbar.thumb,
           minHeight: rem(24),
         },
         '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
-          backgroundColor: '#F5F5F5',
+          backgroundColor: floowColors.scrollbar.track,
         },
       },
     },
@@ -35,19 +36,19 @@ export default {
         },
       },
       contained: {
-        backgroundColor: '#000000',
-        color: '#FFFFFF',
+        backgroundColor: floowColors.black,
+        color: floowColors.white,
         '&:hover': {
-          backgroundColor: '#333333',
+          backgroundColor: floowColors.grey[800],
         },
       },
       outlined: {
-        borderColor: '#E5E5E5',
+        borderColor: floowColors.grey[200],
         borderWidth: rem(1),
-        color: '#A1A1A1',
+        color: floowColors.grey[400],
         '&:hover': {
-          borderColor: '#D4D4D4',
-          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+          borderColor: floowColors.grey[300],
+          backgroundColor: floowColors.blackAlpha[2],
         },
       },
       sizeLarge: {
@@ -75,21 +76,21 @@ export default {
       root: {
         '& .MuiOutlinedInput-root': {
           borderRadius: rem(6),
-          backgroundColor: '#FAFAFA',
+          backgroundColor: floowColors.grey[50],
           fontSize: rem(16),
           fontWeight: 500,
           '& fieldset': {
-            borderColor: '#F5F5F5',
+            borderColor: floowColors.grey[100],
           },
           '&:hover fieldset': {
-            borderColor: '#E5E5E5',
+            borderColor: floowColors.grey[200],
           },
           '&.Mui-focused fieldset': {
-            borderColor: '#000000',
+            borderColor: floowColors.black,
           },
         },
         '& .MuiInputBase-input::placeholder': {
-          color: '#A1A1A1',
+          color: floowColors.grey[400],
           opacity: 1,
         },
       },
@@ -98,7 +99,7 @@ export default {
   MuiFormLabel: {
     styleOverrides: {
       asterisk: {
-        color: '#FB2C36',
+        color: floowColors.error.main,
       },
     },
   },
@@ -123,9 +124,9 @@ export default {
     styleOverrides: {
       root: {
         borderRadius: rem(16),
-        background: 'rgba(255, 255, 255, 0.02)',
-        border: `${rem(3)} solid rgba(255, 255, 255, 0.25)`,
-        boxShadow: `0 ${rem(16)} ${rem(24)} rgba(0, 0, 0, 0.5)`,
+        background: floowColors.whiteAlpha[2],
+        border: `${rem(3)} solid ${floowColors.whiteAlpha[25]}`,
+        boxShadow: `0 ${rem(16)} ${rem(24)} ${floowColors.shadow.xxxl}`,
         backdropFilter: `blur(${rem(20)})`,
       },
     },
@@ -139,7 +140,7 @@ export default {
         borderRadius: rem(12),
       },
       elevation1: {
-        boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.1)`,
+        boxShadow: `0 ${rem(2)} ${rem(8)} ${floowColors.shadow.xl}`,
       },
     },
   },
@@ -153,30 +154,30 @@ export default {
       },
       outlined: {
         borderWidth: rem(2),
-        borderColor: '#E5E5E5',
-        backgroundColor: '#FAFAFA',
+        borderColor: floowColors.grey[200],
+        backgroundColor: floowColors.grey[50],
       },
     },
   },
   MuiTableCell: {
     styleOverrides: {
       root: {
-        borderBottom: `${rem(1)} solid #F5F5F5`,
+        borderBottom: `${rem(1)} solid ${floowColors.grey[100]}`,
         fontSize: rem(16),
         fontWeight: 500,
         letterSpacing: em(0.08),
       },
       head: {
-        backgroundColor: '#FAFAFA',
+        backgroundColor: floowColors.grey[50],
         fontWeight: 700,
-        color: '#262626',
+        color: floowColors.grey[800],
       },
     },
   },
   MuiDivider: {
     styleOverrides: {
       root: {
-        borderColor: '#F5F5F5',
+        borderColor: floowColors.grey[100],
       },
     },
   },

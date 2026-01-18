@@ -59,6 +59,11 @@ const BaseTextInput = (props: InputProps) => {
     disableResetFieldWhenDependencyValueIsCleared,
     variant,
     showToolTip,
+    // Destructure these to prevent them from being passed to DOM via restProps
+    hideErrorMessage,
+    fullWidth,
+    label,
+    required,
     ...restProps
   } = props;
 
