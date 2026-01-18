@@ -14,7 +14,7 @@ export const TableWrapper = styled(Box)<IStyledTableProps>(({ width }) => ({
 }));
 
 export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  background: theme.palette.colors.white,
+  background: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.colors.white,
   borderRadius: 0,
   boxShadow: 'none',
   border: 'none',
@@ -43,26 +43,26 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 export const StyledTable = styled(Table)(({ theme }) => ({
   width: '100%',
   borderCollapse: 'collapse',
-  background: theme.palette.colors.white,
+  background: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.colors.white,
   position: 'relative',
   tableLayout: 'auto',
 }));
 
 export const StyledTableHead = styled(TableHead)(({ theme }) => ({
-  background: theme.palette.colors.grey_50,
-  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  background: theme.palette.mode === 'dark' ? theme.palette.colors.grey_200 : theme.palette.colors.grey_50,
+  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100}`,
   display: 'table-header-group',
 }));
 
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
-  background: theme.palette.colors.white,
+  background: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.colors.white,
   display: 'table-row-group',
 }));
 
 export const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? theme.palette.colors.grey_200 : theme.palette.colors.grey_100}`,
   transition: 'background 0.2s ease',
-  background: theme.palette.colors.white,
+  background: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.colors.white,
   display: 'table-row',
   width: '100%',
 
@@ -71,50 +71,57 @@ export const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 
   '&:hover': {
-    background: theme.palette.colors.grey_50,
+    background: theme.palette.mode === 'dark' ? theme.palette.colors.grey_50 : theme.palette.colors.grey_50,
   },
 }));
 
 export const StyledHeaderCell = styled(TableCell, {
   shouldForwardProp: (prop) => prop !== 'sortable',
 })<IStyledTableCellProps>(
-  ({ theme, width, align, sortable }) => ({
-    display: 'table-cell',
-    padding: '0.625rem 1.25rem', // 10px 20px
-    fontSize: '0.875rem', // 14px
-    fontWeight: 600,
-    fontFamily: 'Manrope, sans-serif',
-    color: theme.palette.colors.grey_600,
-    textAlign: align || 'left',
-    width: width || 'auto',
-    whiteSpace: 'nowrap',
-    borderBottom: 'none',
-    cursor: sortable ? 'pointer' : 'default',
-    userSelect: 'none',
-    boxSizing: 'border-box',
-    verticalAlign: 'middle',
+  ({ theme, width, align, sortable }) => {
+    const isDark = theme.palette.mode === 'dark';
+    const headerBg = isDark ? theme.palette.colors.grey_200 : theme.palette.colors.grey_50;
+    const headerHoverBg = isDark ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100;
 
-    '&:hover': {
-      background: sortable ? theme.palette.colors.grey_100 : 'transparent',
-    },
+    return {
+      display: 'table-cell',
+      padding: '0.625rem 1.25rem', // 10px 20px
+      fontSize: '0.875rem', // 14px
+      fontWeight: 600,
+      fontFamily: 'Manrope, sans-serif',
+      color: theme.palette.colors.grey_600,
+      textAlign: align || 'left',
+      width: width || 'auto',
+      whiteSpace: 'nowrap',
+      borderBottom: 'none',
+      cursor: sortable ? 'pointer' : 'default',
+      userSelect: 'none',
+      boxSizing: 'border-box',
+      verticalAlign: 'middle',
+      background: headerBg,
 
-    '&:first-of-type': {
-      position: 'sticky',
-      left: 0,
-      zIndex: 3,
-      background: theme.palette.colors.grey_50,
-
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: '1px',
-        background: theme.palette.colors.grey_100,
+      '&:hover': {
+        background: sortable ? headerHoverBg : headerBg,
       },
-    },
-  })
+
+      '&:first-of-type': {
+        position: 'sticky',
+        left: 0,
+        zIndex: 3,
+        background: headerBg,
+
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '1px',
+          background: isDark ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100,
+        },
+      },
+    };
+  }
 );
 
 export const StyledTableCell = styled(TableCell)<IStyledTableCellProps>(

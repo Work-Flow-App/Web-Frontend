@@ -39,6 +39,11 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
   className,
 }) => {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const headerBg = isDark ? theme.palette.colors.grey_200 : theme.palette.colors.grey_50;
+  const headerHoverBg = isDark ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100;
+  const borderColor = isDark ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100;
+  const bodyBg = isDark ? theme.palette.background.paper : theme.palette.colors.white;
   const { isAllSelected, isIndeterminate, toggleAllRows, sortConfig, setSortConfig } = useDataRow();
   const { columns, columnSearchQueries, setColumnSearchQuery } = useDataColumn();
 
@@ -75,7 +80,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 position: 'sticky',
                 left: 0,
                 zIndex: 5,
-                background: theme.palette.colors.grey_50,
+                background: headerBg,
               }}>
                 <CustomCheckbox
                   checked={isAllSelected}
@@ -95,11 +100,11 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   position: 'sticky',
                   left: selectable ? '48px' : 0,
                   zIndex: 5,
-                  background: theme.palette.colors.grey_50,
-                  boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
+                  background: headerBg,
+                  boxShadow: `1px 0 0 0 ${borderColor}`,
                   cursor: firstColumn.sortable ? 'pointer' : 'default',
                   '&:hover': {
-                    background: firstColumn.sortable ? theme.palette.colors.grey_100 : theme.palette.colors.grey_50,
+                    background: firstColumn.sortable ? headerHoverBg : headerBg,
                   }
                 }}
               >
@@ -118,9 +123,10 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 align={column.align}
                 onClick={() => column.sortable && handleSort(column.id)}
                 sx={{
+                  background: headerBg,
                   cursor: column.sortable ? 'pointer' : 'default',
                   '&:hover': {
-                    background: column.sortable ? theme.palette.colors.grey_100 : 'transparent',
+                    background: column.sortable ? headerHoverBg : headerBg,
                   }
                 }}
               >
@@ -138,9 +144,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   position: 'sticky',
                   right: 0,
                   zIndex: 3,
-                  background: theme.palette.colors.grey_50,
-                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
-                } : undefined}
+                  background: headerBg,
+                  borderLeft: `1px solid ${borderColor}`,
+                } : { background: headerBg }}
               >
                 Actions
               </ActionsCell>
@@ -149,7 +155,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
         ) : (
           <>
             {selectable && (
-              <CheckboxCell>
+              <CheckboxCell sx={{ background: headerBg }}>
                 <CustomCheckbox
                   checked={isAllSelected}
                   indeterminate={isIndeterminate}
@@ -165,9 +171,10 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 align={column.align}
                 onClick={() => column.sortable && handleSort(column.id)}
                 sx={{
+                  background: headerBg,
                   cursor: column.sortable ? 'pointer' : 'default',
                   '&:hover': {
-                    background: column.sortable ? theme.palette.colors.grey_100 : 'transparent',
+                    background: column.sortable ? headerHoverBg : headerBg,
                   }
                 }}
               >
@@ -184,9 +191,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   position: 'sticky',
                   right: 0,
                   zIndex: 3,
-                  background: theme.palette.colors.grey_50,
-                  borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
-                } : undefined}
+                  background: headerBg,
+                  borderLeft: `1px solid ${borderColor}`,
+                } : { background: headerBg }}
               >
                 Actions
               </ActionsCell>
@@ -206,7 +213,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   position: 'sticky',
                   left: 0,
                   zIndex: 3,
-                  background: theme.palette.colors.grey_50,
+                  background: bodyBg,
                 }} />
               )}
 
@@ -218,8 +225,8 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                     position: 'sticky',
                     left: selectable ? '48px' : 0,
                     zIndex: 3,
-                    background: theme.palette.colors.white,
-                    boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
+                    background: bodyBg,
+                    boxShadow: `1px 0 0 0 ${borderColor}`,
                   }}
                 >
                   <ColumnSearchInput
@@ -252,15 +259,15 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                     position: 'sticky',
                     right: 0,
                     zIndex: 3,
-                    background: theme.palette.colors.white,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
-                  } : undefined}
+                    background: bodyBg,
+                    borderLeft: `1px solid ${borderColor}`,
+                  } : { background: bodyBg }}
                 />
               )}
             </>
           ) : (
             <>
-              {selectable && <CheckboxCell />}
+              {selectable && <CheckboxCell sx={{ background: bodyBg }} />}
 
               {columns.map((column) => (
                 <SearchCellWrapper key={`search-${column.id}`} width={column.width}>
@@ -280,9 +287,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                     position: 'sticky',
                     right: 0,
                     zIndex: 3,
-                    background: theme.palette.colors.white,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
-                  } : undefined}
+                    background: bodyBg,
+                    borderLeft: `1px solid ${borderColor}`,
+                  } : { background: bodyBg }}
                 />
               )}
             </>
