@@ -1,25 +1,19 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
-import { StatusBadge } from './StatusBadge';
 
-export interface AssetTableRow {
+export interface AssetArchiveRow {
   id: number;
   name: string;
   assetTag?: string;
   serialNumber?: string;
   purchasePrice?: number;
   purchaseDate?: string;
-  currentValue?: number;
-  status: 'available' | 'in-use' | 'archived';
-  currentLocation?: string;
-  available: boolean;
-  archived: boolean;
-  createdAt?: string;
+  archivedAt?: string;
 }
 
 /**
- * Generate asset columns for the table
+ * Asset archive table columns configuration
  */
-export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
+export const assetArchiveColumns: ITableColumn<AssetArchiveRow>[] = [
   {
     id: 'id',
     label: 'Asset ID',
@@ -33,6 +27,22 @@ export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
     accessor: 'name',
     sortable: true,
     width: 'auto',
+  },
+  {
+    id: 'assetTag',
+    label: 'Asset Tag',
+    accessor: 'assetTag',
+    sortable: true,
+    width: 'auto',
+    render: (row) => row.assetTag || '-',
+  },
+  {
+    id: 'serialNumber',
+    label: 'Serial Number',
+    accessor: 'serialNumber',
+    sortable: true,
+    width: 'auto',
+    render: (row) => row.serialNumber || '-',
   },
   {
     id: 'purchasePrice',
@@ -51,19 +61,11 @@ export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
     render: (row) => (row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '-'),
   },
   {
-    id: 'currentLocation',
-    label: 'Location',
-    accessor: 'currentLocation',
+    id: 'archivedAt',
+    label: 'Archived Date',
+    accessor: 'archivedAt',
     sortable: true,
     width: 'auto',
-    render: (row) => row.currentLocation || '-',
-  },
-  {
-    id: 'status',
-    label: 'Status',
-    accessor: 'status',
-    sortable: true,
-    width: 'auto',
-    render: (row) => <StatusBadge status={row.status} />,
+    render: (row) => (row.archivedAt ? new Date(row.archivedAt).toLocaleDateString() : '-'),
   },
 ];
