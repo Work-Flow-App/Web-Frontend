@@ -1,12 +1,13 @@
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
 import { rem } from '../../../components/UI/Typography/utility';
+import { floowColors } from '../../../theme/colors';
 
 export const SignupContainer = styled(Box)({
   display: 'flex',
   width: '100vw',
   height: '100vh',
-  backgroundColor: '#FFFFFF',
+  backgroundColor: floowColors.white,
   overflow: 'hidden',
   padding: rem(20),
   gap: rem(20),
@@ -39,7 +40,7 @@ export const LeftSection = styled(Box)({
   flex: '0 0 auto',
   order: 0,
   alignSelf: 'stretch',
-  backgroundColor: '#FFFFFF',
+  backgroundColor: floowColors.white,
   overflowY: 'auto',
   '@media (min-width: 1921px)': {
     padding: `${rem(40)} ${rem(60)}`,
@@ -138,7 +139,7 @@ export const Subtitle = styled(Typography)(() => ({
   lineHeight: rem(20),
   textAlign: 'center',
   letterSpacing: '0.005em',
-  color: '#525252',
+  color: floowColors.grey[600],
   flex: 'none',
   order: 2,
   alignSelf: 'stretch',
@@ -249,10 +250,10 @@ export const RightSection = styled(Box)({
   gap: rem(40),
   flex: '1 1 auto',
   minWidth: 0,
-  background: `linear-gradient(0deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url(/futuristic-demo.png)`,
+  background: `${floowColors.gradient.authBackground}, url(/futuristic-demo.png)`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  backgroundColor: '#000000',
+  backgroundColor: floowColors.black,
   borderRadius: rem(16),
   position: 'relative',
   overflow: 'hidden',
@@ -276,15 +277,15 @@ export const RightSection = styled(Box)({
         0deg,
         transparent,
         transparent ${rem(2)},
-        rgba(255, 255, 255, 0.03) ${rem(2)},
-        rgba(255, 255, 255, 0.03) ${rem(4)}
+        ${floowColors.whiteAlpha[3]} ${rem(2)},
+        ${floowColors.whiteAlpha[3]} ${rem(4)}
       ),
       repeating-linear-gradient(
         90deg,
         transparent,
         transparent ${rem(2)},
-        rgba(255, 255, 255, 0.03) ${rem(2)},
-        rgba(255, 255, 255, 0.03) ${rem(4)}
+        ${floowColors.whiteAlpha[3]} ${rem(2)},
+        ${floowColors.whiteAlpha[3]} ${rem(4)}
       )
     `,
     pointerEvents: 'none',
@@ -296,7 +297,7 @@ export const RightSection = styled(Box)({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 70%)',
+    background: floowColors.gradient.authGlow,
     pointerEvents: 'none',
   },
 });
@@ -406,7 +407,7 @@ export const FooterText = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
   marginTop: rem(16),
   '& a': {
-    color: '#FB2C36',
+    color: floowColors.error.main,
     textDecoration: 'none',
     fontWeight: 600,
     '&:hover': {

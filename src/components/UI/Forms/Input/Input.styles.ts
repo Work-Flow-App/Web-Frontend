@@ -98,12 +98,12 @@ export const StyledInput = styled(InputBase, {
   },
 }));
 
-export const AdornmentWrapper = styled(InputAdornment)(({ theme: { spacing } }) => ({
+export const AdornmentWrapper = styled(InputAdornment)(({ theme: { spacing, palette } }) => ({
   paddingRight: spacing(1),
   display: 'flex',
   alignItems: 'center',
   svg: {
-    fill: 'black',
+    fill: palette.colors.black,
   },
   position: 'relative',
   top: rem(4),

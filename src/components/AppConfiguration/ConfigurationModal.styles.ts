@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { floowColors } from '../../theme/colors';
 
 export const Overlay = styled.div`
   position: fixed;
@@ -6,7 +7,7 @@ export const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: ${floowColors.overlay.modal};
   z-index: 9998;
 `;
 
@@ -21,22 +22,22 @@ export const ModalContainer = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  background: white;
+  background: ${floowColors.white};
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px ${floowColors.shadow.xl};
   overflow: hidden;
 `;
 
 export const ModalHeader = styled.div`
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${floowColors.tailwind.gray[200]};
 `;
 
 export const ModalTitle = styled.h2`
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: ${floowColors.text.heading};
 `;
 
 export const ModalBody = styled.div`
@@ -52,33 +53,33 @@ export const FormRow = styled.div`
 export const Label = styled.label`
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: ${floowColors.text.label};
 `;
 
 export const Required = styled.span`
-  color: #ef4444;
+  color: ${floowColors.red.main};
   margin-left: 2px;
 `;
 
 export const Select = styled.select`
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${floowColors.border.input};
   border-radius: 6px;
   font-size: 14px;
-  color: #111827;
-  background-color: white;
+  color: ${floowColors.text.heading};
+  background-color: ${floowColors.white};
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    border-color: #9ca3af;
+    border-color: ${floowColors.border.inputHover};
   }
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: ${floowColors.border.inputFocus};
+    box-shadow: 0 0 0 3px ${floowColors.shadow.focus};
   }
 `;
 
@@ -86,8 +87,8 @@ export const ModalFooter = styled.div`
   display: flex;
   gap: 12px;
   padding: 16px 24px;
-  background-color: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background-color: ${floowColors.background.footer};
+  border-top: 1px solid ${floowColors.tailwind.gray[200]};
   justify-content: flex-end;
 `;
 
@@ -99,11 +100,11 @@ export const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: #3b82f6;
-  color: white;
+  background-color: ${floowColors.form.button.primary};
+  color: ${floowColors.white};
 
   &:hover {
-    background-color: #2563eb;
+    background-color: ${floowColors.form.button.primaryHover};
   }
 
   &:active {
@@ -111,10 +112,10 @@ export const Button = styled.button`
   }
 
   &:last-child {
-    background-color: #6b7280;
+    background-color: ${floowColors.form.button.secondary};
 
     &:hover {
-      background-color: #4b5563;
+      background-color: ${floowColors.form.button.secondaryHover};
     }
   }
 `;

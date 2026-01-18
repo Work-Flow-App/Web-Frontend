@@ -1,5 +1,6 @@
 import { Box, Typography, styled } from '@mui/material';
 import { rem, Bold } from '../../../../components/UI/Typography/utility';
+import { floowColors } from '../../../../theme/colors';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -17,7 +18,7 @@ export const DetailsSection = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
 }));
 
 export const AssetOverviewCard = styled(Box)(({ theme }) => ({
@@ -25,7 +26,7 @@ export const AssetOverviewCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
 }));
 
 export const HeaderRow = styled(Box)(({ theme }) => ({

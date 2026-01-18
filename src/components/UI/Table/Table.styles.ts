@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Box, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import type { IStyledTableProps, IStyledTableCellProps, IStyledCheckboxProps, IStyledStatusPillProps } from './ITable';
+import { floowColors } from '../../../theme/colors';
 
 export const TableWrapper = styled(Box)<IStyledTableProps>(({ width }) => ({
   display: 'flex',
@@ -285,7 +286,7 @@ export const LoadingOverlay = styled(Box)(() => ({
   left: 0,
   right: 0,
   bottom: 0,
-  background: 'rgba(255, 255, 255, 0.8)',
+  background: floowColors.whiteAlpha[80],
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

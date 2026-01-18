@@ -145,7 +145,7 @@ export const SidebarBackdrop = styled(Box, {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: floowColors.overlay.backdrop,
     zIndex: 1100,
     transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     opacity: isVisible ? 1 : 0,

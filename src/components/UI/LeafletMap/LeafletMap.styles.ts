@@ -1,5 +1,6 @@
 import { styled, Box } from '@mui/material';
 import { rem, Bold } from '../Typography/utility';
+import { floowColors } from '../../../theme/colors';
 
 export const MapContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -29,7 +30,7 @@ export const MapContainer = styled(Box)(({ theme }) => ({
 
   '& .leaflet-control-attribution': {
     fontSize: rem(10),
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: floowColors.whiteAlpha[80],
   },
 }));
 
@@ -76,7 +77,7 @@ export const GeocodingLoadingOverlay = styled(Box)(({ theme }) => ({
   left: '50%',
   transform: 'translate(-50%, -50%)',
   zIndex: 1000,
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  backgroundColor: floowColors.whiteAlpha[90],
   padding: theme.spacing(2),
   borderRadius: theme.spacing(1),
   boxShadow: theme.shadows[3],

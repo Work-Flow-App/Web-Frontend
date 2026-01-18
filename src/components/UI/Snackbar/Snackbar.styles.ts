@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
-import type { SnackbarVariant } from './Snackbar.types';
+import type { SnackbarVariant } from './ISnackbar';
+import { floowColors } from '../../../theme/colors';
 
 export const SnackbarWrapper = styled.div`
   /* Container for the snackbar */
@@ -13,33 +14,33 @@ const getVariantColors = (variant: SnackbarVariant) => {
   switch (variant) {
     case 'success':
       return {
-        background: '#00A63E', // floowColors.success.main
-        color: '#FFFFFF',
-        lightBg: 'rgba(0, 166, 62, 0.15)',
+        background: floowColors.success.main,
+        color: floowColors.white,
+        lightBg: floowColors.success.light,
       };
     case 'error':
       return {
-        background: '#FB2C36', // floowColors.error.main
-        color: '#FFFFFF',
-        lightBg: 'rgba(251, 44, 54, 0.15)',
+        background: floowColors.error.main,
+        color: floowColors.white,
+        lightBg: floowColors.error.light,
       };
     case 'warning':
       return {
-        background: '#FFA500', // floowColors.warning.main
-        color: '#FFFFFF',
-        lightBg: 'rgba(255, 165, 0, 0.15)',
+        background: floowColors.warning.main,
+        color: floowColors.white,
+        lightBg: floowColors.warning.light,
       };
     case 'info':
       return {
-        background: '#2196F3', // floowColors.info.main
-        color: '#FFFFFF',
-        lightBg: 'rgba(33, 150, 243, 0.15)',
+        background: floowColors.info.main,
+        color: floowColors.white,
+        lightBg: floowColors.info.light,
       };
     default:
       return {
-        background: '#00A63E',
-        color: '#FFFFFF',
-        lightBg: 'rgba(0, 166, 62, 0.15)',
+        background: floowColors.success.main,
+        color: floowColors.white,
+        lightBg: floowColors.success.light,
       };
   }
 };
@@ -55,7 +56,7 @@ export const SnackbarContent = styled.div<SnackbarContentProps>`
   background: ${({ variant }) => getVariantColors(variant).background};
   color: ${({ variant }) => getVariantColors(variant).color};
   border-radius: 8px;
-  box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 6px 24px ${floowColors.shadow.xl};
   font-family: 'Manrope', sans-serif;
   font-size: 14px;
   font-weight: 500;
