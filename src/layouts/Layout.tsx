@@ -159,19 +159,19 @@ export const Layout: React.FC = () => {
       id: 'workers',
       label: 'Workers',
       icon: <PeopleIcon />,
-      href: '/company/workers',
       children: [
-        { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
+        { id: 'workers-list', label: 'All Workers', href: '/company/workers' },
+        { id: 'invitations', label: 'Invitations', href: '/company/invitations' },
       ],
     },
     {
       id: 'jobs',
       label: 'Jobs',
       icon: <WorkIcon />,
-      href: '/company/jobs',
       children: [
-        { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
-        { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
+        { id: 'jobs-list', label: 'All Jobs', href: '/company/jobs' },
+        { id: 'templates', label: 'Templates', href: '/company/jobs/templates' },
+        { id: 'workflows', label: 'Workflows', href: '/company/workflows' },
       ],
     },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
@@ -179,12 +179,11 @@ export const Layout: React.FC = () => {
       id: 'assets',
       label: 'Assets',
       icon: <BuildIcon />,
-      href: '/company/assets',
       children: [
+        { id: 'assets-list', label: 'All Assets', href: '/company/assets' },
         {
           id: 'maps',
           label: 'Maps',
-          icon: <Place />,
           href: '/company/assets/maps',
         },
       ],

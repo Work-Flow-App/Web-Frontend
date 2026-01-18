@@ -322,4 +322,10 @@ export interface DropdownProps {
    * Configuration for adding new items to the dropdown
    */
   addNewConfig?: IAddNewConfig;
+
+  /**
+   * Whether to allow multiple selections
+   * @default false
+   */
+  multiple?: boolean;
 }

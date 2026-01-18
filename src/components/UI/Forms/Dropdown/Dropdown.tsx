@@ -72,6 +72,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     fullWidth = false,
     className,
     sx,
+    multiple = false,
   } = props;
 
   // Component States
@@ -97,7 +98,29 @@ export const BaseDropdown = memo((props: DropdownProps) => {
 
   // Convert string/number values to DropdownOption format by finding matching option
   const fieldValue = useMemo(() => {
-    if (!fieldValueRaw) return null;
+    if (!fieldValueRaw) return multiple ? [] : null;
+
+    // Handle multiple selection mode
+    if (multiple) {
+      // If it's already an array of objects, return as is
+      if (Array.isArray(fieldValueRaw) && fieldValueRaw.length > 0 && typeof fieldValueRaw[0] === 'object' && 'value' in fieldValueRaw[0]) {
+        return fieldValueRaw;
+      }
+      // If it's an array of primitives, find matching options
+      if (Array.isArray(fieldValueRaw)) {
+        const matchingOptions = fieldValueRaw
+          .map(val => options.find(opt => opt.value === String(val)))
+          .filter((opt): opt is DropdownOption => opt !== undefined);
+
+        if (matchingOptions.length > 0 && setValue) {
+          setValue(name, matchingOptions, { shouldValidate: false, shouldDirty: false });
+        }
+        return matchingOptions;
+      }
+      return [];
+    }
+
+    // Handle single selection mode
     // If it's already an object with value property, return as is
     if (typeof fieldValueRaw === 'object' && 'value' in fieldValueRaw) {
       return fieldValueRaw;
@@ -112,7 +135,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
     }
 
     return matchingOption || null;
-  }, [fieldValueRaw, options, name, setValue]);
+  }, [fieldValueRaw, options, name, setValue, multiple]);
   const dependencyValueRaw = methods.watch?.(dependency || `${name}-dependency`);
   const dependencyValue = useMemo(
     () =>
@@ -334,14 +357,29 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   }, [isValueFetchableOnPress, apiHook, getLiveData]);
 
   const handleChange = useCallback((_event: React.SyntheticEvent, data: unknown) => {
-    const dropdownData = data as DropdownOption | null;
-    field.onChange(dropdownData);
-    if (dropdownData?.value !== undefined && dropdownData?.value !== null) {
-      onChange?.(dropdownData.value, dependentFields);
-      onValueChange?.(dropdownData.value, dependentFields, name);
+    if (multiple) {
+      // Handle multiple selection
+      const dropdownDataArray = data as DropdownOption[];
+      field.onChange(dropdownDataArray);
+      if (dropdownDataArray && dropdownDataArray.length > 0) {
+        const values = dropdownDataArray.map(item => item.value);
+        onChange?.(values as never, dependentFields);
+        onValueChange?.(values as never, dependentFields, name);
+      } else {
+        onChange?.([] as never, dependentFields);
+        onValueChange?.([] as never, dependentFields, name);
+      }
+    } else {
+      // Handle single selection
+      const dropdownData = data as DropdownOption | null;
+      field.onChange(dropdownData);
+      if (dropdownData?.value !== undefined && dropdownData?.value !== null) {
+        onChange?.(dropdownData.value, dependentFields);
+        onValueChange?.(dropdownData.value, dependentFields, name);
+      }
     }
     parentRef?.current?.focus();
-  }, [field, onChange, onValueChange, dependentFields, name]);
+  }, [field, onChange, onValueChange, dependentFields, name, multiple]);
 
   const handleIsOptionEqualToValue = useCallback((option: unknown, selectedOption: unknown): boolean => {
     if (!isOptionEqualToValue) return true;
@@ -393,6 +431,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           disablePortal={disablePortal}
           id={id}
           options={options}
+          multiple={multiple}
           onOpen={() => {
             fetchOptions();
           }}

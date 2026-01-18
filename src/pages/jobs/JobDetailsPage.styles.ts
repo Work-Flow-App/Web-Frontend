@@ -1,8 +1,8 @@
-import { styled, Box, Typography } from '@mui/material';
+import { Box, Typography, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5, 2, 2, 2),
+  padding: theme.spacing(0, 2, 2, 2),
 }));
 
 export const DetailsGrid = styled(Box)(({ theme }) => ({
@@ -10,23 +10,22 @@ export const DetailsGrid = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing(3),
   width: '100%',
-
-  [theme.breakpoints.down('md')]: {
+  '@media (max-width: 960px)': {
     gap: theme.spacing(2),
   },
 }));
 
 export const DetailsSection = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5),
-  backgroundColor: '#FFFFFF',
+  backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
-  border: `1px solid #E5E5E5`,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
   height: '100%',
 }));
 
 export const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: Bold._600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   marginBottom: theme.spacing(2),
   fontSize: rem(16),
   color: theme.palette.text.primary,
@@ -35,7 +34,7 @@ export const SectionTitle = styled(Typography)(({ theme }) => ({
 }));
 
 export const SubSectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: Bold._600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(1.5),
   fontSize: rem(14),
@@ -63,8 +62,7 @@ export const TwoColumnLayout = styled(Box)(({ theme }) => ({
   gridTemplateColumns: '1fr 1fr',
   gap: theme.spacing(3),
   width: '100%',
-
-  [theme.breakpoints.down('md')]: {
+  '@media (max-width: 960px)': {
     gridTemplateColumns: '1fr',
     gap: theme.spacing(2),
   },
@@ -75,18 +73,18 @@ export const ColumnBox = styled(Box)(() => ({
   flexDirection: 'column',
 }));
 
-// Section 1: Job Overview Card Styles
+// Job Overview Card Styles
 export const JobOverviewCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
-  backgroundColor: '#FFFFFF',
+  padding: theme.spacing(2.5),
+  backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
-  border: `1px solid #E5E5E5`,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
 }));
 
 export const JobTitle = styled('h1')(({ theme }) => ({
   fontSize: rem(28),
-  fontWeight: Bold._700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.text.primary,
   margin: 0,
   marginBottom: theme.spacing(1),
@@ -108,13 +106,13 @@ export const MetadataRow = styled(Box)(({ theme }) => ({
   margin: `0 -${theme.spacing(3)}`,
   paddingLeft: theme.spacing(3),
   paddingRight: theme.spacing(3),
-  borderTop: `1px solid #E5E5E5`,
+  borderTop: `1px solid ${theme.palette.colors.grey_200}`,
 }));
 
 export const MetadataColumn = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: rem(8),
 }));
 
 interface StatusBadgeProps {
@@ -127,35 +125,17 @@ export const StatusBadge = styled(Box, {
   const getStatusStyles = () => {
     switch (statusType) {
       case 'NEW':
-        return {
-          backgroundColor: '#E8F5E9',
-          color: '#2E7D32',
-        };
+        return { backgroundColor: '#E8F5E9', color: '#2E7D32' };
       case 'PENDING':
-        return {
-          backgroundColor: '#FFE0B2',
-          color: '#E65100',
-        };
+        return { backgroundColor: '#FFE0B2', color: '#E65100' };
       case 'IN_PROGRESS':
-        return {
-          backgroundColor: '#E1F5FE',
-          color: '#0277BD',
-        };
+        return { backgroundColor: '#E1F5FE', color: '#0277BD' };
       case 'COMPLETED':
-        return {
-          backgroundColor: '#E3F2FD',
-          color: '#1565C0',
-        };
+        return { backgroundColor: '#E3F2FD', color: '#1565C0' };
       case 'CANCELLED':
-        return {
-          backgroundColor: '#FFEBEE',
-          color: '#C62828',
-        };
+        return { backgroundColor: '#FFEBEE', color: '#C62828' };
       default:
-        return {
-          backgroundColor: '#F5F5F5',
-          color: '#616161',
-        };
+        return { backgroundColor: '#F5F5F5', color: '#616161' };
     }
   };
 
@@ -164,9 +144,9 @@ export const StatusBadge = styled(Box, {
   return {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '6px',
-    padding: '6px 12px',
-    borderRadius: '6px',
+    gap: rem(6),
+    padding: `${rem(6)} ${rem(12)}`,
+    borderRadius: rem(6),
     backgroundColor: styles.backgroundColor,
     color: styles.color,
     fontSize: rem(13),
@@ -176,8 +156,8 @@ export const StatusBadge = styled(Box, {
 });
 
 export const StatusIcon = styled('span')(() => ({
-  width: '8px',
-  height: '8px',
+  width: rem(8),
+  height: rem(8),
   borderRadius: '50%',
   backgroundColor: 'currentColor',
   display: 'inline-block',
@@ -185,45 +165,45 @@ export const StatusIcon = styled('span')(() => ({
 
 export const MetadataLabel = styled('span')(({ theme }) => ({
   fontSize: rem(12),
-  fontWeight: Bold._500,
+  fontWeight: theme.typography.fontWeightMedium,
   color: theme.palette.text.secondary,
   textTransform: 'capitalize',
 }));
 
 export const MetadataValue = styled('div')(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: Bold._600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   color: theme.palette.text.primary,
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: rem(8),
 }));
 
 export const PriorityIndicator = styled('span')(() => ({
-  width: '8px',
-  height: '8px',
+  width: rem(8),
+  height: rem(8),
   borderRadius: '50%',
   backgroundColor: '#4CAF50',
   display: 'inline-block',
 }));
 
 export const Avatar = styled('div')(({ theme }) => ({
-  width: '28px',
-  height: '28px',
+  width: rem(28),
+  height: rem(28),
   borderRadius: '50%',
   backgroundColor: theme.palette.primary.main,
-  color: '#fff',
+  color: theme.palette.colors.white,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: rem(11),
-  fontWeight: Bold._700,
+  fontWeight: theme.typography.fontWeightBold,
 }));
 
 export const TagsContainer = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: rem(8),
   marginLeft: 'auto',
 }));
 
@@ -232,8 +212,8 @@ interface TagProps {
 }
 
 export const Tag = styled('span')<TagProps>(({ color = '#9E9E9E' }) => ({
-  padding: '6px 12px',
-  borderRadius: '16px',
+  padding: `${rem(6)} ${rem(12)}`,
+  borderRadius: rem(16),
   backgroundColor: color,
   color: '#fff',
   fontSize: rem(12),
@@ -241,31 +221,55 @@ export const Tag = styled('span')<TagProps>(({ color = '#9E9E9E' }) => ({
   whiteSpace: 'nowrap',
 }));
 
-// Section 2: Workflow Stages Styles
+// Asset Chips Container and Styles
+export const AssetChipsContainer = styled(Box)(() => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: rem(8),
+  alignItems: 'center',
+}));
+
+export const AssetChip = styled('span')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: `${rem(6)} ${rem(12)}`,
+  borderRadius: rem(8),
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.colors.white,
+  whiteSpace: 'nowrap',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+  },
+}));
+
+// Workflow Stages Styles
 export const WorkflowCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5),
-  backgroundColor: '#FFFFFF',
+  backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
-  border: `1px solid #E5E5E5`,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
 }));
 
 export const WorkflowTitle = styled('h2')(({ theme }) => ({
   fontSize: rem(16),
-  fontWeight: Bold._700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.text.primary,
   margin: `0 -${theme.spacing(2.5)}`,
   marginBottom: theme.spacing(1.5),
   paddingBottom: theme.spacing(1),
   paddingLeft: theme.spacing(2.5),
   paddingRight: theme.spacing(2.5),
-  borderBottom: '1px solid #E5E5E5',
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
 }));
 
 export const StagesContainer = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: rem(12),
   overflow: 'auto',
 }));
 
@@ -279,33 +283,29 @@ export const StageArrow = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'color' && prop !== 'textColor' && prop !== 'active',
 })<StageArrowProps>(({ color = '#E0E0E0', textColor = '#333', active = false }) => ({
   position: 'relative',
-  padding: '18px 40px',
+  padding: `${rem(18)} ${rem(40)}`,
   backgroundColor: color,
-  minWidth: '220px',
+  minWidth: rem(220),
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   clipPath: 'polygon(0 0, calc(100% - 24px) 0, 100% 50%, calc(100% - 24px) 100%, 0 100%, 24px 50%)',
   opacity: active ? 1 : 0.85,
   transition: 'all 0.3s ease',
-  borderRadius: '4px',
-
+  borderRadius: rem(4),
   '&:first-of-type': {
     clipPath: 'polygon(0 0, calc(100% - 24px) 0, 100% 50%, calc(100% - 24px) 100%, 0 100%)',
-    borderRadius: '8px 0 0 8px',
+    borderRadius: `${rem(8)} 0 0 ${rem(8)}`,
   },
-
   '&:last-of-type': {
     clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 24px 50%)',
-    borderRadius: '0 8px 8px 0',
+    borderRadius: `0 ${rem(8)} ${rem(8)} 0`,
   },
-
   '&:hover': {
     opacity: 1,
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
   },
-
   '& > span': {
     color: textColor,
   },
@@ -318,10 +318,10 @@ export const StageText = styled('span')(() => ({
   zIndex: 1,
 }));
 
-// Section 3: Job Details Styles
+// Job Details Styles
 export const DetailsSectionTitle = styled('h3')(({ theme }) => ({
   fontSize: rem(18),
-  fontWeight: Bold._700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.text.primary,
   margin: 0,
   marginBottom: theme.spacing(3),
@@ -330,21 +330,19 @@ export const DetailsSectionTitle = styled('h3')(({ theme }) => ({
 export const DetailsContent = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: '0',
+  gap: 0,
 }));
 
 export const DetailRow = styled(Box)(({ theme }) => ({
   display: 'grid',
-  gridTemplateColumns: '280px 1fr',
+  gridTemplateColumns: `${rem(280)} 1fr`,
   gap: theme.spacing(4),
   padding: theme.spacing(2, 0),
-  borderBottom: '1px solid #F5F5F5',
-
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
   '&:last-child': {
     borderBottom: 'none',
   },
-
-  [theme.breakpoints.down('md')]: {
+  '@media (max-width: 960px)': {
     gridTemplateColumns: '1fr',
     gap: theme.spacing(1),
   },
@@ -352,11 +350,11 @@ export const DetailRow = styled(Box)(({ theme }) => ({
 
 export const DetailLabel = styled('span')(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: Bold._500,
+  fontWeight: theme.typography.fontWeightMedium,
   color: theme.palette.text.secondary,
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: rem(8),
 }));
 
 export const FieldIcon = styled('span')(({ theme }) => ({
@@ -365,15 +363,14 @@ export const FieldIcon = styled('span')(({ theme }) => ({
   justifyContent: 'center',
   color: theme.palette.primary.main,
   opacity: 0.7,
-
   '& svg': {
-    fontSize: '18px',
+    fontSize: rem(18),
   },
 }));
 
 export const DetailValue = styled('span')(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: Bold._400,
+  fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.text.primary,
   lineHeight: 1.5,
   wordBreak: 'break-word',
@@ -382,12 +379,12 @@ export const DetailValue = styled('span')(({ theme }) => ({
 // Tabs Styles
 export const TabsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: '16px',
-  marginBottom: '32px',
-  borderBottom: '1px solid #E5E5E5',
-  paddingBottom: '0',
+  gap: rem(16),
+  marginBottom: rem(32),
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  paddingBottom: 0,
   flexWrap: 'wrap',
-  margin: `0 -${theme.spacing(2.5)} 32px -${theme.spacing(2.5)}`,
+  margin: `0 -${theme.spacing(2.5)} ${rem(32)} -${theme.spacing(2.5)}`,
   paddingLeft: theme.spacing(2.5),
   paddingRight: theme.spacing(2.5),
 }));
@@ -401,7 +398,7 @@ export const TabButton = styled('button', {
 })<TabButtonProps>(({ active = false }) => ({
   background: 'none',
   border: 'none',
-  padding: '12px 4px',
+  padding: `${rem(12)} ${rem(4)}`,
   fontSize: rem(15),
   fontWeight: active ? Bold._700 : Bold._500,
   color: active ? '#6366F1' : '#71717A',
@@ -409,57 +406,55 @@ export const TabButton = styled('button', {
   position: 'relative',
   transition: 'all 0.2s ease',
   whiteSpace: 'nowrap',
-
   '&::after': {
     content: '""',
     position: 'absolute',
     bottom: '-1px',
     left: 0,
     right: 0,
-    height: '2px',
+    height: rem(2),
     backgroundColor: active ? '#6366F1' : 'transparent',
     transition: 'background-color 0.2s ease',
   },
-
   '&:hover': {
     color: active ? '#6366F1' : '#3F3F46',
   },
 }));
 
 export const TabContent = styled(Box)(() => ({
-  paddingTop: '8px',
+  paddingTop: rem(8),
 }));
 
 export const FieldTypeLabel = styled('span')(({ theme }) => ({
   fontSize: rem(11),
-  fontWeight: Bold._400,
+  fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.text.secondary,
-  marginLeft: '6px',
+  marginLeft: rem(6),
   fontStyle: 'italic',
 }));
 
 export const FieldsGroupTitle = styled('h4')(({ theme }) => ({
   fontSize: rem(13),
-  fontWeight: Bold._700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.text.primary,
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
   margin: 0,
   marginBottom: theme.spacing(2),
   paddingBottom: theme.spacing(1),
-  borderBottom: '1px solid #F5F5F5',
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
 }));
 
 export const RequiredIndicator = styled('span')(() => ({
   color: '#EF4444',
   fontSize: rem(16),
   fontWeight: Bold._700,
-  marginRight: '4px',
+  marginRight: rem(4),
 }));
 
 export const EmptyFieldText = styled('span')(({ theme }) => ({
   fontSize: rem(13),
-  fontWeight: Bold._400,
+  fontWeight: theme.typography.fontWeightRegular,
   color: theme.palette.text.secondary,
   fontStyle: 'italic',
   opacity: 0.7,
@@ -467,7 +462,6 @@ export const EmptyFieldText = styled('span')(({ theme }) => ({
 
 export const InfoRow = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2.5),
-
   '&:last-child': {
     marginBottom: 0,
   },
@@ -475,7 +469,7 @@ export const InfoRow = styled(Box)(({ theme }) => ({
 
 export const InfoLabel = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
-  fontWeight: Bold._600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   color: theme.palette.text.secondary,
   textTransform: 'uppercase',
   marginBottom: theme.spacing(0.5),
@@ -484,7 +478,7 @@ export const InfoLabel = styled(Typography)(({ theme }) => ({
 export const InfoValue = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
   color: theme.palette.text.primary,
-  fontWeight: Bold._400,
+  fontWeight: theme.typography.fontWeightRegular,
 }));
 
 export const BreadcrumbContainer = styled(Box)(() => ({
@@ -509,9 +503,9 @@ export const BreadcrumbLink = styled('span')(({ theme }) => ({
 export const BreadcrumbSeparator = styled('span')(({ theme }) => ({
   color: theme.palette.text.secondary,
   userSelect: 'none',
-  margin: '0 2px',
+  margin: `0 ${rem(2)}`,
 }));
 
-export const BreadcrumbCurrent = styled('span')(({ theme }) => ({
+export const BreadcrumbCurrent = styled('span')(({ theme}) => ({
   color: theme.palette.text.primary,
 }));
