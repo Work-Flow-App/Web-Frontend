@@ -112,11 +112,13 @@ export const FilterButton = styled(Box)(({ theme: { palette } }) => ({
   },
 }));
 
-export const PageContent = styled(Box)(({ theme: { palette } }) => ({
+export const PageContent = styled(Box)(({ theme: { palette, spacing } }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
   background: palette.colors?.white || palette.background.paper || '#FFFFFF',
   borderRadius: '0px 0px 8px 8px',
   minHeight: 200,
+  padding: `0 ${spacing(2.5)}`,
+  paddingBottom: spacing(2.5),
 }));

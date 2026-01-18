@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
@@ -91,6 +91,13 @@ export const SetupFormWrapper = <TFormData extends Record<string, any>>(
     formState: { isSubmitting: formIsSubmitting },
     reset,
   } = methods;
+
+  // Reset form when defaultValues change (e.g., when editing existing data)
+  useEffect(() => {
+    if (defaultValues) {
+      reset({ ...schemaDefaults, ...defaultValues });
+    }
+  }, [defaultValues, reset, schemaDefaults]);
 
   // Combine loading states
   const isSubmitting = showLoadingState && (formState.isSubmitting || formIsSubmitting);
