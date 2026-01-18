@@ -10,30 +10,6 @@ import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { floowColors } from '../../../theme/colors';
 import { rem } from '../Typography/utility';
 
-/**
- * Sidebar Component
- *
- * A responsive sidebar navigation component with support for icons, labels, and collapse toggle.
- * Matches the Floow design system specifications.
- *
- * @example
- * ```tsx
- * const items = [
- *   { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
- *   { id: 'workers', label: 'Workers', icon: <PeopleIcon /> },
- *   { id: 'jobs', label: 'Jobs', icon: <WorkIcon /> },
- *   { id: 'settings', label: 'Settings', icon: <SettingsIcon /> },
- * ];
- *
- * <Sidebar
- *   items={items}
- *   activeItemId="dashboard"
- *   onItemClick={(id) => console.log(id)}
- *   isCollapsed={false}
- *   onToggleCollapse={() => console.log('toggle')}
- * />
- * ```
- */
 export const Sidebar: React.FC<SidebarProps> = ({
   items,
   activeItemId,
