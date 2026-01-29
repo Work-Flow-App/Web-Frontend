@@ -42,6 +42,10 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   enableStickyRight = false,
 }) => {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const bodyBg = isDark ? theme.palette.background.paper : theme.palette.colors.white;
+  const bodyHoverBg = isDark ? theme.palette.colors.grey_50 : theme.palette.colors.grey_50;
+  const borderColor = isDark ? theme.palette.colors.grey_200 : theme.palette.colors.grey_100;
   const { filteredRows, selectedRows, toggleRowSelection } = useDataRow();
   const { columns } = useDataColumn();
   const { currentPage, rowsPerPage } = usePagination();
@@ -136,10 +140,10 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     position: 'sticky',
                     left: 0,
                     zIndex: 10,
-                    backgroundColor: theme.palette.colors.white,
+                    backgroundColor: bodyBg,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
-                      backgroundColor: theme.palette.colors.grey_50,
+                      backgroundColor: bodyHoverBg,
                     },
                   }}
                 >
@@ -159,11 +163,11 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     position: 'sticky',
                     left: selectable ? '48px' : 0,
                     zIndex: 10,
-                    backgroundColor: theme.palette.colors.white,
-                    boxShadow: `1px 0 0 0 ${theme.palette.colors.grey_100}`,
+                    backgroundColor: bodyBg,
+                    boxShadow: `1px 0 0 0 ${borderColor}`,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
-                      backgroundColor: theme.palette.colors.grey_50,
+                      backgroundColor: bodyHoverBg,
                     },
                   }}
                 >
@@ -193,13 +197,18 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     position: 'sticky',
                     right: 0,
                     zIndex: 2,
-                    backgroundColor: theme.palette.colors.white,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                    backgroundColor: bodyBg,
+                    borderLeft: `1px solid ${borderColor}`,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
-                      backgroundColor: theme.palette.colors.grey_50,
+                      backgroundColor: bodyHoverBg,
                     },
-                  } : undefined}
+                  } : {
+                    backgroundColor: bodyBg,
+                    'tr:hover &': {
+                      backgroundColor: bodyHoverBg,
+                    },
+                  }}
                 >
                   {actions && actions.length > 0 ? (
                     <ActionsMenu row={row} actions={actions} />
@@ -216,7 +225,14 @@ const DataTableBody: React.FC<IDataTableBody> = ({
           ) : (
             <>
               {selectable && (
-                <CheckboxCell>
+                <CheckboxCell
+                  sx={{
+                    backgroundColor: bodyBg,
+                    'tr:hover &': {
+                      backgroundColor: bodyHoverBg,
+                    },
+                  }}
+                >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
                     onClick={() => toggleRowSelection(row.id)}
@@ -240,13 +256,18 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                     position: 'sticky',
                     right: 0,
                     zIndex: 2,
-                    backgroundColor: theme.palette.colors.white,
-                    borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
+                    backgroundColor: bodyBg,
+                    borderLeft: `1px solid ${borderColor}`,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
-                      backgroundColor: theme.palette.colors.grey_50,
+                      backgroundColor: bodyHoverBg,
                     },
-                  } : undefined}
+                  } : {
+                    backgroundColor: bodyBg,
+                    'tr:hover &': {
+                      backgroundColor: bodyHoverBg,
+                    },
+                  }}
                 >
                   {actions && actions.length > 0 ? (
                     <ActionsMenu row={row} actions={actions} />

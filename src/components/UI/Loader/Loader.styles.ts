@@ -1,7 +1,13 @@
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
 
-export const CenteredLoader = styled(Box)<{ $minHeight?: string }>`
+interface CenteredLoaderProps {
+  $minHeight?: string;
+}
+
+export const CenteredLoader = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$minHeight',
+})<CenteredLoaderProps>`
   display: flex;
   flex-direction: column;
   justify-content: center;

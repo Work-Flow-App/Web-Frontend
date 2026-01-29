@@ -2,6 +2,7 @@ import { rem, Bold } from '../Typography/utility';
 import { Box, styled } from '@mui/material';
 import ArrowBackIosNewOutlinedIcon from '@mui/icons-material/ArrowBackIosNewOutlined';
 import { ModalSizes } from './enums';
+import { floowColors } from '../../../theme/colors';
 
 interface IModalSize {
   size?: ModalSizes;
@@ -26,7 +27,7 @@ export const ModalContainerWrapper = styled(Box, {
   border: `1px solid ${palette.divider}`,
   borderRadius: rem(16),
   backgroundColor: palette.background.paper,
-  boxShadow: '0px 5px 55px rgba(0, 0, 0, 0.05)',
+  boxShadow: `0px 5px 55px ${floowColors.shadow.md}`,
   position: 'fixed',
   left: '50%',
   top: '50%',

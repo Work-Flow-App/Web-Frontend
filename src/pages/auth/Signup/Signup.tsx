@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
@@ -233,7 +233,7 @@ export const Signup: React.FC = () => {
               </GoogleButton> */}
 
               <SignInLink>
-                Already have an account, <a href="/login">Sign in</a>
+                Already have an account, <Link to="/login">Sign in</Link>
               </SignInLink>
             </FormWrapper>
 

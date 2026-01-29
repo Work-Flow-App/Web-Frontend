@@ -1,6 +1,7 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 
 export interface AssetHistoryRow {
+  id: number;
   assignmentId: number;
   jobId?: number;
   assignedWorkerId?: number;

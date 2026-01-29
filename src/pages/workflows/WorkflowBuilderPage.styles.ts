@@ -1,5 +1,6 @@
 import { styled, Box } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
+import { floowColors } from '../../theme/colors';
 
 // Main container
 export const BuilderContainer = styled(Box)(() => ({
@@ -53,7 +54,7 @@ export const StepItem = styled(Box)(({ theme: { palette } }) => ({
 
   '&:hover': {
     borderColor: palette.grey[400],
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 2px 4px ${floowColors.shadow.lg}',
   },
 
   '&.dragging': {
@@ -101,7 +102,7 @@ export const WorkflowOrderBox = styled(Box)(({ theme: { palette } }) => ({
 
   '&.drag-over': {
     borderColor: palette.primary.main,
-    backgroundColor: palette.primary.light || 'rgba(0, 0, 0, 0.02)',
+    backgroundColor: palette.primary.light || '${floowColors.shadow.xs}',
   },
 }));
 
@@ -123,7 +124,7 @@ export const OrderedStepCard = styled(Box)(({ theme: { palette } }) => ({
 
   '&:hover': {
     borderColor: palette.primary.main,
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 2px 8px ${floowColors.shadow.xl}',
   },
 
   '&.dragging': {
@@ -236,7 +237,7 @@ export const StepCard = styled(Box)(({ theme: { palette } }) => ({
 
   '&:hover': {
     borderColor: palette.primary.main,
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 2px 8px ${floowColors.shadow.xl}',
   },
 
   '&.dragging': {

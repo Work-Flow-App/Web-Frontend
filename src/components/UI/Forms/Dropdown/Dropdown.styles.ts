@@ -2,6 +2,7 @@ import { styled } from '@mui/material/styles';
 import { Autocomplete, Popper, Box } from '@mui/material';
 import { rem } from '../../Typography/utility';
 import type { DropdownSize } from './Dropdown.types';
+import { floowColors } from '../../../../theme/colors';
 
 interface StyledDropdownProps {
   dropdownSize?: DropdownSize;
@@ -26,7 +27,9 @@ export const AutocompleteInnerWrapper = styled(Box)({
   width: '100%',
 });
 
-export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ theme, dropdownSize, fullWidth }) => {
+export const MuiAutocomplete = styled(Autocomplete, {
+  shouldForwardProp: (prop) => prop !== 'dropdownSize' && prop !== 'fullWidth',
+})<StyledDropdownProps>(({ theme, dropdownSize, fullWidth }) => {
   const { palette } = theme;
 
   const getSizeStyles = () => {
@@ -69,28 +72,28 @@ export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ them
       padding: `${rem(10)} ${rem(20)}`,
       gap: rem(4),
       minHeight: rem(44),
-      background: '#FAFAFA',
-      border: `${rem(1)} solid #F5F5F5`,
+      background: floowColors.form.input.bg,
+      border: `${rem(1)} solid ${floowColors.form.input.border}`,
       borderRadius: rem(6),
       fontSize: rem(14),
       fontWeight: 400,
       transition: 'all 0.2s ease-in-out',
 
       '&:hover': {
-        background: '#F5F5F5',
-        borderColor: palette.primary?.light || '#90CAF9',
+        background: floowColors.grey[100],
+        borderColor: palette.primary?.light || floowColors.form.input.borderHover,
       },
 
       '&.Mui-focused': {
-        background: '#FFFFFF',
-        borderColor: palette.primary?.main || '#1976d2',
-        boxShadow: `0 0 0 ${rem(2)} ${palette.primary?.main || '#1976d2'}20`,
+        background: floowColors.white,
+        borderColor: palette.primary?.main || floowColors.form.input.borderFocus,
+        boxShadow: `0 0 0 ${rem(2)} ${palette.primary?.main || floowColors.form.input.borderFocus}20`,
       },
 
       '&.Mui-disabled': {
-        background: '#E0E0E0',
-        borderColor: '#E0E0E0',
-        color: palette.text?.disabled || '#9E9E9E',
+        background: floowColors.form.input.bgDisabled,
+        borderColor: floowColors.form.input.borderDisabled,
+        color: palette.text?.disabled || floowColors.form.input.textDisabled,
         cursor: 'not-allowed',
       },
 
@@ -107,25 +110,25 @@ export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ them
         padding: '0 !important',
         fontSize: rem(14),
         fontWeight: 400,
-        color: palette.text?.primary || '#000',
+        color: palette.text?.primary || floowColors.black,
 
         '&::placeholder': {
-          color: '#9E9E9E',
+          color: floowColors.form.input.textDisabled,
           opacity: 1,
         },
       },
     },
 
     '&.hasError .MuiInputBase-root': {
-      borderColor: palette.error?.main || '#d32f2f',
+      borderColor: palette.error?.main || floowColors.error.main,
     },
 
     '&.withRequiredBorder .MuiInputBase-root': {
-      borderColor: palette.warning?.main || '#FFA726',
+      borderColor: palette.warning?.main || floowColors.warning.main,
     },
 
     '&.hasValue .MuiInputBase-root': {
-      background: '#FFFFFF',
+      background: floowColors.white,
     },
 
     // Icon styles
@@ -133,12 +136,12 @@ export const MuiAutocomplete = styled(Autocomplete)<StyledDropdownProps>(({ them
       right: rem(10),
 
       '& .MuiAutocomplete-popupIndicator': {
-        color: palette.text?.secondary || '#666',
+        color: palette.text?.secondary || floowColors.grey[600],
         padding: rem(4),
       },
 
       '& .MuiAutocomplete-clearIndicator': {
-        color: palette.text?.secondary || '#666',
+        color: palette.text?.secondary || floowColors.grey[600],
         padding: rem(4),
       },
     },
@@ -156,8 +159,8 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
     '& .MuiAutocomplete-paper': {
       marginTop: rem(4),
       borderRadius: rem(6),
-      boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
-      border: `${rem(1)} solid #F5F5F5`,
+      boxShadow: `0px 4px 20px ${floowColors.shadow.xl}`,
+      border: `${rem(1)} solid ${floowColors.grey[100]}`,
     },
 
     '& .MuiAutocomplete-listbox': {
@@ -170,16 +173,16 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
       },
 
       '&::-webkit-scrollbar-track': {
-        background: '#f1f1f1',
+        background: floowColors.scrollbar.track,
         borderRadius: rem(10),
       },
 
       '&::-webkit-scrollbar-thumb': {
-        background: '#888',
+        background: floowColors.grey[500],
         borderRadius: rem(10),
 
         '&:hover': {
-          background: '#555',
+          background: floowColors.grey[600],
         },
       },
     },
@@ -193,20 +196,20 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
       margin: `${rem(2)} 0`,
 
       '&:hover': {
-        background: `${palette.primary?.main || '#1976d2'}10`,
+        background: `${palette.primary?.main || floowColors.blue.dark}10`,
       },
 
       '&[aria-selected="true"]': {
-        background: `${palette.primary?.main || '#1976d2'}20`,
+        background: `${palette.primary?.main || floowColors.blue.dark}20`,
         fontWeight: 500,
 
         '&:hover': {
-          background: `${palette.primary?.main || '#1976d2'}30`,
+          background: `${palette.primary?.main || floowColors.blue.dark}30`,
         },
       },
 
       '&.Mui-disabled': {
-        color: palette.text?.disabled || '#9E9E9E',
+        color: palette.text?.disabled || floowColors.form.input.textDisabled,
         opacity: 0.5,
       },
     },
@@ -214,7 +217,7 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
     '& .MuiAutocomplete-noOptions': {
       padding: `${rem(12)} ${rem(20)}`,
       fontSize: rem(14),
-      color: palette.text?.secondary || '#666',
+      color: palette.text?.secondary || floowColors.grey[600],
     },
   };
 });
@@ -231,7 +234,7 @@ export const MuiListItemContent = styled(Box)({
 export const NoDataText = styled(Box)(({ theme }) => ({
   padding: `${rem(12)} ${rem(20)}`,
   fontSize: rem(14),
-  color: theme.palette.text?.secondary || '#666',
+  color: theme.palette.text?.secondary || floowColors.grey[600],
   textAlign: 'center',
 }));
 
@@ -239,19 +242,21 @@ export const AddNewButtonWrapper = styled(Box)(({ theme }) => ({
   padding: `${rem(10)} ${rem(20)}`,
   fontSize: rem(14),
   fontWeight: 500,
-  color: theme.palette.primary?.main || '#1976d2',
+  color: theme.palette.primary?.main || floowColors.blue.dark,
   cursor: 'pointer',
   textAlign: 'center',
-  borderTop: `${rem(1)} solid #F5F5F5`,
+  borderTop: `${rem(1)} solid ${floowColors.grey[100]}`,
   marginTop: rem(4),
   transition: 'all 0.15s ease-in-out',
 
   '&:hover': {
-    background: `${theme.palette.primary?.main || '#1976d2'}10`,
+    background: `${theme.palette.primary?.main || floowColors.blue.dark}10`,
   },
 }));
 
-export const AutoCompleteValue = styled(Box)<{ size?: number }>(({ size = 40 }) => ({
+export const AutoCompleteValue = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'size',
+})<{ size?: number }>(({ size = 40 }) => ({
   width: rem(size),
   minWidth: rem(size),
 }));

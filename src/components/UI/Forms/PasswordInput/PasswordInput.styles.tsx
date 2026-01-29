@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { floowColors } from '../../../../theme/colors';
 
 export const IconButton = styled.button`
   display: flex;
@@ -8,22 +9,22 @@ export const IconButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: ${floowColors.grey[600]};
   border-radius: 4px;
   transition: all 0.2s ease;
   outline: none;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    color: #333;
+    background-color: ${floowColors.blackAlpha[4]};
+    color: ${floowColors.tailwind.gray[800]};
   }
 
   &:active {
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: ${floowColors.blackAlpha[8]};
   }
 
   &:focus-visible {
-    outline: 2px solid #1976d2;
+    outline: 2px solid ${floowColors.blue.dark};
     outline-offset: 2px;
   }
 `;

@@ -1,4 +1,5 @@
 import { styled, Box } from '@mui/material';
+import { floowColors } from '../../../theme/colors';
 
 interface CardWrapperProps {
   background?: string;
@@ -6,8 +7,8 @@ interface CardWrapperProps {
 }
 
 export const CardWrapper = styled(Box)<CardWrapperProps>(({ background, borderColor }) => {
-  const bgColor = background || 'rgba(255, 255, 255, 0.02)';
-  const borderClr = borderColor || 'rgba(255, 255, 255, 0.25)';
+  const bgColor = background || floowColors.glass.background;
+  const borderClr = borderColor || floowColors.glass.border;
 
   return {
     boxSizing: 'border-box',
@@ -20,7 +21,7 @@ export const CardWrapper = styled(Box)<CardWrapperProps>(({ background, borderCo
     minHeight: '416px',
     background: bgColor,
     border: `3px solid ${borderClr}`,
-    boxShadow: '0px 16px 24px rgba(0, 0, 0, 0.5)',
+    boxShadow: `0px 16px 24px ${floowColors.blackAlpha[50]}`,
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)', // Safari support
     borderRadius: '16px',
@@ -29,7 +30,7 @@ export const CardWrapper = styled(Box)<CardWrapperProps>(({ background, borderCo
 
     '&:hover': {
       transform: 'translateY(-4px)',
-      boxShadow: '0px 20px 32px rgba(0, 0, 0, 0.6)',
+      boxShadow: `0px 20px 32px ${floowColors.blackAlpha[60]}`,
     },
   };
 });
@@ -42,7 +43,7 @@ export const IconWrapper = styled(Box)(() => ({
 
   '& svg': {
     fontSize: '48px',
-    color: '#FFFFFF',
+    color: floowColors.white,
   },
 
   '& img': {
@@ -59,7 +60,7 @@ export const Title = styled(Box)(() => ({
   lineHeight: '41px',
   textAlign: 'center',
   letterSpacing: '0.005em',
-  color: '#FFFFFF',
+  color: floowColors.white,
   width: 'auto',
   maxWidth: '100%',
 }));
@@ -72,7 +73,7 @@ export const Description = styled(Box)(() => ({
   lineHeight: '33px',
   textAlign: 'center',
   letterSpacing: '0.005em',
-  color: '#FFFFFF',
+  color: floowColors.white,
   alignSelf: 'stretch',
   whiteSpace: 'pre-line', // Preserves line breaks from \n
 }));

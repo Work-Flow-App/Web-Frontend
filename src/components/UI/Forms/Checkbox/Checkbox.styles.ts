@@ -18,7 +18,9 @@ export const CheckboxWrapper = styled(Box)({
   },
 });
 
-export const CheckboxContainer = styled(Box)<{ hasError?: boolean; disabled?: boolean }>(
+export const CheckboxContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'hasError' && prop !== 'disabled',
+})<{ hasError?: boolean; disabled?: boolean }>(
   ({ disabled }) => ({
     display: 'flex',
     alignItems: 'flex-start',
@@ -37,7 +39,9 @@ export const CheckboxContainer = styled(Box)<{ hasError?: boolean; disabled?: bo
   })
 );
 
-export const CheckboxBox = styled(Box)<{ isChecked?: boolean; hasError?: boolean; disabled?: boolean }>(
+export const CheckboxBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isChecked' && prop !== 'hasError' && prop !== 'disabled',
+})<{ isChecked?: boolean; hasError?: boolean; disabled?: boolean }>(
   ({ theme, isChecked, hasError, disabled }) => ({
     width: rem(18),
     height: rem(18),
@@ -81,7 +85,9 @@ export const CheckboxBox = styled(Box)<{ isChecked?: boolean; hasError?: boolean
   })
 );
 
-export const CheckIcon = styled('svg')<{ isChecked?: boolean }>(({ theme, isChecked }) => ({
+export const CheckIcon = styled('svg', {
+  shouldForwardProp: (prop) => prop !== 'isChecked',
+})<{ isChecked?: boolean }>(({ theme, isChecked }) => ({
   width: rem(12),
   height: rem(12),
   fill: 'none',

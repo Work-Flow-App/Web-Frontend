@@ -1,13 +1,12 @@
 import { styled, Box, Button } from '@mui/material';
+import { floowColors } from '../../../theme/colors';
 
 interface CardWrapperProps {
   background?: string;
 }
 
 export const CardWrapper = styled(Box)<CardWrapperProps>(({ background }) => {
-  const bgGradient =
-    background ||
-    'linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(255, 255, 255, 0.07) 100%)';
+  const bgGradient = background || floowColors.gradient.pricingCard;
 
   return {
     boxSizing: 'border-box',
@@ -26,7 +25,7 @@ export const CardWrapper = styled(Box)<CardWrapperProps>(({ background }) => {
 
     '&:hover': {
       transform: 'translateY(-4px)',
-      boxShadow: '0px 20px 40px rgba(0, 0, 0, 0.3)',
+      boxShadow: `0px 20px 40px ${floowColors.overlay.medium}`,
     },
   };
 });
@@ -35,7 +34,7 @@ export const IconCircle = styled(Box)(() => ({
   position: 'relative',
   width: '40px',
   height: '40px',
-  background: 'linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.41) 100%)',
+  background: floowColors.gradient.pricingIcon,
   borderRadius: '100px',
   display: 'flex',
   alignItems: 'center',
@@ -49,7 +48,7 @@ export const IconCircle = styled(Box)(() => ({
     height: '20px',
     left: 'calc(50% - 10px)',
     top: 'calc(50% - 10px)',
-    background: '#000000',
+    background: floowColors.black,
     borderRadius: '50%',
   },
 }));
@@ -68,7 +67,7 @@ export const PlanName = styled(Box)(() => ({
   fontWeight: 700,
   fontSize: '24px',
   lineHeight: '33px',
-  color: '#FFFFFF',
+  color: floowColors.white,
 }));
 
 export const PlanDescription = styled(Box)(() => ({
@@ -77,7 +76,7 @@ export const PlanDescription = styled(Box)(() => ({
   fontWeight: 400,
   fontSize: '14px',
   lineHeight: '19px',
-  color: 'rgba(255, 255, 255, 0.7)',
+  color: floowColors.whiteAlpha[70],
 }));
 
 export const PriceSection = styled(Box)(() => ({
@@ -93,7 +92,7 @@ export const Currency = styled(Box)(() => ({
   fontWeight: 700,
   fontSize: '32px',
   lineHeight: '44px',
-  color: '#FFFFFF',
+  color: floowColors.white,
 }));
 
 export const Price = styled(Box)(() => ({
@@ -102,7 +101,7 @@ export const Price = styled(Box)(() => ({
   fontWeight: 700,
   fontSize: '48px',
   lineHeight: '66px',
-  color: '#FFFFFF',
+  color: floowColors.white,
 }));
 
 export const PricePeriod = styled(Box)(() => ({
@@ -111,7 +110,7 @@ export const PricePeriod = styled(Box)(() => ({
   fontWeight: 400,
   fontSize: '14px',
   lineHeight: '19px',
-  color: 'rgba(255, 255, 255, 0.7)',
+  color: floowColors.whiteAlpha[70],
 }));
 
 export const StyledButton = styled(Button)(() => ({
@@ -124,20 +123,20 @@ export const StyledButton = styled(Button)(() => ({
   gap: '10px',
   width: '100%',
   height: '44px',
-  background: 'linear-gradient(180deg, #FFFFFF 0%, #B1B1B1 100%)',
+  background: floowColors.gradient.pricingButton,
   borderRadius: '8px',
   fontFamily: "'Manrope', sans-serif",
   fontStyle: 'normal',
   fontWeight: 600,
   fontSize: '16px',
   lineHeight: '22px',
-  color: '#000000',
+  color: floowColors.black,
   textTransform: 'none',
   boxShadow: 'none',
 
   '&:hover': {
-    background: 'linear-gradient(180deg, #FFFFFF 0%, #D1D1D1 100%)',
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+    background: floowColors.gradient.pricingButtonHover,
+    boxShadow: `0px 4px 12px ${floowColors.shadow.card}`,
   },
 }));
 
@@ -155,7 +154,7 @@ export const FeaturesSectionTitle = styled(Box)(() => ({
   fontWeight: 600,
   fontSize: '16px',
   lineHeight: '22px',
-  color: '#FFFFFF',
+  color: floowColors.white,
   marginBottom: '10px',
 }));
 
@@ -175,7 +174,7 @@ export const RadioIcon = styled(Box)(() => ({
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: '50%',
-  border: '2px solid rgba(255, 255, 255, 0.5)',
+  border: `2px solid ${floowColors.whiteAlpha[50]}`,
   position: 'relative',
 
   '&::after': {
@@ -184,7 +183,7 @@ export const RadioIcon = styled(Box)(() => ({
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    background: '#FFFFFF',
+    background: floowColors.white,
   },
 }));
 
@@ -194,5 +193,5 @@ export const FeatureText = styled(Box)(() => ({
   fontWeight: 400,
   fontSize: '14px',
   lineHeight: '19px',
-  color: 'rgba(255, 255, 255, 0.9)',
+  color: floowColors.whiteAlpha[90],
 }));

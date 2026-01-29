@@ -1,5 +1,6 @@
 import { Box, Typography, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
+import { floowColors } from '../../theme/colors';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -20,7 +21,7 @@ export const DetailsSection = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
   height: '100%',
 }));
 
@@ -79,7 +80,7 @@ export const JobOverviewCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
 }));
 
 export const JobTitle = styled('h1')(({ theme }) => ({
@@ -125,17 +126,17 @@ export const StatusBadge = styled(Box, {
   const getStatusStyles = () => {
     switch (statusType) {
       case 'NEW':
-        return { backgroundColor: '#E8F5E9', color: '#2E7D32' };
+        return { backgroundColor: floowColors.statusBadge.active.bg, color: floowColors.statusBadge.active.text };
       case 'PENDING':
         return { backgroundColor: '#FFE0B2', color: '#E65100' };
       case 'IN_PROGRESS':
-        return { backgroundColor: '#E1F5FE', color: '#0277BD' };
+        return { backgroundColor: floowColors.statusBadge.pending.bg, color: floowColors.statusBadge.pending.text };
       case 'COMPLETED':
         return { backgroundColor: '#E3F2FD', color: '#1565C0' };
       case 'CANCELLED':
-        return { backgroundColor: '#FFEBEE', color: '#C62828' };
+        return { backgroundColor: floowColors.statusBadge.inactive.bg, color: floowColors.statusBadge.inactive.text };
       default:
-        return { backgroundColor: '#F5F5F5', color: '#616161' };
+        return { backgroundColor: floowColors.statusBadge.default.bg, color: floowColors.statusBadge.default.text };
     }
   };
 
@@ -183,7 +184,7 @@ export const PriorityIndicator = styled('span')(() => ({
   width: rem(8),
   height: rem(8),
   borderRadius: '50%',
-  backgroundColor: '#4CAF50',
+  backgroundColor: floowColors.chart.tertiary,
   display: 'inline-block',
 }));
 
@@ -211,11 +212,11 @@ interface TagProps {
   color?: string;
 }
 
-export const Tag = styled('span')<TagProps>(({ color = '#9E9E9E' }) => ({
+export const Tag = styled('span')<TagProps>(({ color = floowColors.tag.default }) => ({
   padding: `${rem(6)} ${rem(12)}`,
   borderRadius: rem(16),
   backgroundColor: color,
-  color: '#fff',
+  color: floowColors.white,
   fontSize: rem(12),
   fontWeight: Bold._600,
   whiteSpace: 'nowrap',
@@ -241,7 +242,7 @@ export const AssetChip = styled('span')(({ theme }) => ({
   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+    boxShadow: '0 4px 8px ${floowColors.shadow.xxxl}',
   },
 }));
 
@@ -251,7 +252,7 @@ export const WorkflowCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
 }));
 
 export const WorkflowTitle = styled('h2')(({ theme }) => ({
@@ -304,7 +305,7 @@ export const StageArrow = styled(Box, {
   '&:hover': {
     opacity: 1,
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 8px ${floowColors.shadow.xl}',
   },
   '& > span': {
     color: textColor,
@@ -401,7 +402,7 @@ export const TabButton = styled('button', {
   padding: `${rem(12)} ${rem(4)}`,
   fontSize: rem(15),
   fontWeight: active ? Bold._700 : Bold._500,
-  color: active ? '#6366F1' : '#71717A',
+  color: active ? floowColors.tab.active : floowColors.tab.inactive,
   cursor: 'pointer',
   position: 'relative',
   transition: 'all 0.2s ease',
@@ -413,11 +414,11 @@ export const TabButton = styled('button', {
     left: 0,
     right: 0,
     height: rem(2),
-    backgroundColor: active ? '#6366F1' : 'transparent',
+    backgroundColor: active ? floowColors.tab.active : 'transparent',
     transition: 'background-color 0.2s ease',
   },
   '&:hover': {
-    color: active ? '#6366F1' : '#3F3F46',
+    color: active ? floowColors.tab.active : floowColors.grey[700],
   },
 }));
 
@@ -446,7 +447,7 @@ export const FieldsGroupTitle = styled('h4')(({ theme }) => ({
 }));
 
 export const RequiredIndicator = styled('span')(() => ({
-  color: '#EF4444',
+  color: floowColors.red.main,
   fontSize: rem(16),
   fontWeight: Bold._700,
   marginRight: rem(4),
