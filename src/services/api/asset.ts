@@ -1,4 +1,4 @@
-import { AssetControllerApi, AssetAssignmentControllerApi, Configuration } from '../../../workflow-api';
+import { AssetsApi, AssetAssignmentsApi, Configuration } from '../../../workflow-api';
 import type {
   AssetResponse,
   AssetCreateRequest,
@@ -29,23 +29,23 @@ export type {
  */
 
 /**
- * Get a configured AssetControllerApi instance
+ * Get a configured AssetsApi instance
  */
-function getAssetApi(): AssetControllerApi {
+function getAssetApi(): AssetsApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new AssetControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new AssetsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 /**
- * Get a configured AssetAssignmentControllerApi instance
+ * Get a configured AssetAssignmentsApi instance
  */
-function getAssetAssignmentApi(): AssetAssignmentControllerApi {
+function getAssetAssignmentApi(): AssetAssignmentsApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new AssetAssignmentControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new AssetAssignmentsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const assetService = {

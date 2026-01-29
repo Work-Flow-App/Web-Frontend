@@ -1,4 +1,4 @@
-import { WorkflowControllerApi, Configuration } from '../../../workflow-api';
+import { WorkflowsApi, Configuration } from '../../../workflow-api';
 import type {
   WorkflowResponse,
   WorkflowCreateRequest,
@@ -25,14 +25,14 @@ export type {
  */
 
 /**
- * Get a configured WorkflowControllerApi instance
+ * Get a configured WorkflowsApi instance
  * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
-function getWorkflowApi(): WorkflowControllerApi {
+function getWorkflowApi(): WorkflowsApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new WorkflowControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new WorkflowsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const workflowService = {
