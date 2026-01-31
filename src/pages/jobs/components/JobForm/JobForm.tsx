@@ -3,7 +3,7 @@ import { JobFormSchema, type JobFormData } from '../../schema/JobFormSchema';
 import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { JobFormFields } from '../JobFormFields/JobFormFields';
 import { Loader } from '../../../../components/UI';
-import { jobService, jobTemplateService } from '../../../../services/api';
+import { jobService, jobTemplateService, assetService, workflowService } from '../../../../services/api';
 import type { JobCreateRequest, JobUpdateRequest } from '../../../../services/api';
 import { JobCreateRequestStatusEnum, JobUpdateRequestStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -46,17 +46,44 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
 
           // Fetch template fields to map fieldValues to form fields
           if (job.templateId) {
-            const fieldsResponse = await jobTemplateService.getTemplateFields(job.templateId);
+            // Fetch all required data in parallel
+            const [fieldsResponse, assetsResponse, workflowsResponse] = await Promise.all([
+              jobTemplateService.getTemplateFields(job.templateId),
+              assetService.getAllAssets(0, 100, false, true),
+              workflowService.getAllWorkflows(),
+            ]);
+
             const fields = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
+            const assetsData = assetsResponse.data.content || [];
+            const workflowsData = Array.isArray(workflowsResponse.data) ? workflowsResponse.data : [];
+
+            // Convert assetIds to dropdown format { label, value }
+            const assetIdsFormatted = (job.assetIds || []).map((assetId: number) => {
+              const asset = assetsData.find(a => a.id === assetId);
+              return {
+                label: asset?.name || `Asset ${assetId}`,
+                value: assetId.toString(),
+              };
+            });
+
+            // Convert workflowId to dropdown format { label, value }
+            let workflowIdFormatted = null;
+            if (job.workflowId) {
+              const workflow = workflowsData.find(w => w.id === job.workflowId);
+              workflowIdFormatted = {
+                label: workflow?.name || `Workflow ${job.workflowId}`,
+                value: job.workflowId.toString(),
+              };
+            }
 
             // Map field values to form data
-            // For edit mode, just pass the raw values and let react-hook-form and Dropdown handle them
             const formData: Partial<JobFormData> = {
               templateId: job.templateId,
               status: job.status,
               clientId: job.clientId,
               assignedWorkerId: job.assignedWorkerId,
-              assetIds: job.assetIds || [],
+              assetIds: assetIdsFormatted,
+              workflowId: workflowIdFormatted,
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -92,7 +119,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, clientId, assignedWorkerId, assetIds, ...dynamicFields } = data;
+        const { templateId, status, clientId, assignedWorkerId, assetIds, workflowId, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -151,6 +178,12 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               .filter((id): id is number => id !== null && !isNaN(id))
           : [];
 
+        // Convert workflowId from dropdown format to number
+        const workflowIdValue = typeof workflowId === 'object' && workflowId !== null
+          ? (workflowId as { value: string }).value
+          : workflowId;
+        const workflowIdNumber = workflowIdValue ? Number(workflowIdValue) : undefined;
+
         if (isEditMode) {
           // Update existing job
           const updatePayload: JobUpdateRequest = {
@@ -174,6 +207,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (clientIdNumber) createPayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) createPayload.assetIds = assetIdsArray;
+          if (workflowIdNumber) createPayload.workflowId = workflowIdNumber;
 
           await jobService.createJob(createPayload);
           showSuccess('Job created successfully');
