@@ -6,13 +6,14 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
 import { FormField, FormRow } from '../../../../components/UI/FormComponents';
-import { jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
+import { jobTemplateService, companyClientService, workerService, assetService, workflowService } from '../../../../services/api';
 import type {
   JobTemplateResponse,
   JobTemplateFieldResponse,
   ClientResponse,
   WorkerResponse,
   AssetResponse,
+  WorkflowResponse,
 } from '../../../../services/api';
 import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
 
@@ -28,9 +29,11 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
   const [loadingAssets, setLoadingAssets] = useState(true);
+  const [loadingWorkflows, setLoadingWorkflows] = useState(true);
 
   const { control } = useFormContext();
   const selectedTemplateId = useWatch({ control, name: fieldTitles.templateId });
@@ -82,7 +85,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         const response = await assetService.getAllAssets(0, 100, false, true);
         const assetsData = response.data.content || [];
         // Additional client-side filtering to ensure only available assets are shown
-        const availableAssets = assetsData.filter(asset => asset.available === true && asset.archived !== true);
+        const availableAssets = assetsData.filter((asset: AssetResponse) => asset.available === true && asset.archived !== true);
         setAssets(availableAssets);
       } catch (error) {
         console.error('Error fetching assets:', error);
@@ -91,10 +94,24 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       }
     };
 
+    const fetchWorkflows = async () => {
+      try {
+        setLoadingWorkflows(true);
+        const response = await workflowService.getAllWorkflows();
+        const workflowsData = Array.isArray(response.data) ? response.data : [];
+        setWorkflows(workflowsData);
+      } catch (error) {
+        console.error('Error fetching workflows:', error);
+      } finally {
+        setLoadingWorkflows(false);
+      }
+    };
+
     fetchTemplates();
     fetchClients();
     fetchWorkers();
     fetchAssets();
+    fetchWorkflows();
   }, []);
 
   // Fetch template fields when template is selected
@@ -159,6 +176,13 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       value: asset.id?.toString() || '',
     }));
   }, [assets]);
+
+  const workflowOptions = useMemo(() => {
+    return workflows.map((workflow) => ({
+      label: workflow.name || '',
+      value: workflow.id?.toString() || '',
+    }));
+  }, [workflows]);
 
   // Memoize dropdown options to prevent re-parsing on every render
   const dropdownOptionsMap = useMemo(() => {
@@ -292,27 +316,41 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         </FormField>
       </FormRow>
 
-      <FormField label={fieldLabels.assetIds} required={isRequireds.assetIds}>
-        <Dropdown
-          name={fieldTitles.assetIds}
-          preFetchedOptions={assetOptions}
-          placeHolder={
-            assetOptions.length === 0 && !loadingAssets
-              ? 'No available assets - all assets are currently in use'
-              : placeHolders.assetIds
-          }
-          isPreFetchLoading={loadingAssets}
-          disablePortal={true}
-          fullWidth={true}
-          disabled={assetOptions.length === 0}
-          multiple={true}
-          helperText={
-            !loadingAssets && assetOptions.length === 0
-              ? 'All assets are currently assigned to other jobs. Please wait for assets to become available or create new assets.'
-              : undefined
-          }
-        />
-      </FormField>
+      <FormRow>
+        <FormField label={fieldLabels.assetIds} required={isRequireds.assetIds}>
+          <Dropdown
+            name={fieldTitles.assetIds}
+            preFetchedOptions={assetOptions}
+            placeHolder={
+              assetOptions.length === 0 && !loadingAssets
+                ? 'No available assets - all assets are currently in use'
+                : placeHolders.assetIds
+            }
+            isPreFetchLoading={loadingAssets}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={assetOptions.length === 0}
+            multiple={true}
+            helperText={
+              !loadingAssets && assetOptions.length === 0
+                ? 'All assets are currently assigned to other jobs. Please wait for assets to become available or create new assets.'
+                : undefined
+            }
+          />
+        </FormField>
+
+        <FormField label={fieldLabels.workflowId} required={isRequireds.workflowId}>
+          <Dropdown
+            name={fieldTitles.workflowId}
+            preFetchedOptions={workflowOptions}
+            placeHolder={placeHolders.workflowId}
+            isPreFetchLoading={loadingWorkflows}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={workflowOptions.length === 0}
+          />
+        </FormField>
+      </FormRow>
 
       {/* Dynamic fields based on template */}
       {templateFields.length > 0 && (

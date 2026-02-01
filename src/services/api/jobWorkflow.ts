@@ -1,4 +1,4 @@
-import { JobWorkflowControllerApi, Configuration } from '../../../workflow-api';
+import { JobWorkflowsApi, Configuration } from '../../../workflow-api';
 import type {
   JobWorkflowResponse,
   JobWorkflowUpdateRequest,
@@ -21,14 +21,14 @@ export type {
  */
 
 /**
- * Get a configured JobWorkflowControllerApi instance
+ * Get a configured JobWorkflowsApi instance
  * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
-function getJobWorkflowApi(): JobWorkflowControllerApi {
+function getJobWorkflowApi(): JobWorkflowsApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new JobWorkflowControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new JobWorkflowsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobWorkflowService = {
@@ -43,7 +43,7 @@ export const jobWorkflowService = {
    * Get job workflow by job ID
    */
   async getJobWorkflowByJobId(jobId: number) {
-    return await getJobWorkflowApi().getJobWorkflow(jobId);
+    return await getJobWorkflowApi().getJobWorkflow1(jobId);
   },
 
   /**

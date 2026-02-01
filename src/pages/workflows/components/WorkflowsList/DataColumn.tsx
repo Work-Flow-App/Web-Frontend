@@ -20,6 +20,14 @@ export const workflowColumns: ITableColumn<WorkflowTableRow>[] = [
     width: 'auto',
   },
   {
+    id: 'stepCount',
+    label: 'Steps',
+    accessor: 'stepCount',
+    sortable: true,
+    width: 'auto',
+    render: (row) => row.stepCount ?? 0,
+  },
+  {
     id: 'description',
     label: 'Description',
     accessor: 'description',

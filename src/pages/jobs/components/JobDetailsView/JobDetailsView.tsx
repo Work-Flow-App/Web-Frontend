@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, IconButton } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import EditIcon from '@mui/icons-material/Edit';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import { jobService, jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
+import { jobService, jobTemplateService, companyClientService } from '../../../../services/api';
 import type {
   JobResponse,
   JobTemplateResponse,
   ClientResponse,
-  WorkerResponse,
   JobTemplateFieldResponse,
-  AssetResponse,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
-import { JobOverviewCard } from '../JobOverviewCard/JobOverviewCard';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
-import { JobDetailsTabs } from '../JobDetailsTabs/JobDetailsTabs';
+import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
+import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -26,9 +27,8 @@ export const JobDetailsView: React.FC = () => {
   const [template, setTemplate] = useState<JobTemplateResponse | null>(null);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [client, setClient] = useState<ClientResponse | null>(null);
-  const [worker, setWorker] = useState<WorkerResponse | null>(null);
-  const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const fetchJobDetails = useCallback(async () => {
     if (!jobId) return;
@@ -57,25 +57,6 @@ export const JobDetailsView: React.FC = () => {
         promises.push(companyClientService.getClientById(jobData.clientId).then((res) => setClient(res.data)));
       }
 
-      if (jobData.assignedWorkerId) {
-        promises.push(workerService.getWorkerById(jobData.assignedWorkerId).then((res) => setWorker(res.data)));
-      }
-
-      // Fetch asset details if job has assets
-      if (jobData.assetIds && jobData.assetIds.length > 0) {
-        promises.push(
-          Promise.all(jobData.assetIds.map((assetId) => assetService.getAssetById(assetId)))
-            .then((assetResponses) => {
-              const assetsData = assetResponses.map((res) => res.data);
-              setAssets(assetsData);
-            })
-            .catch((error) => {
-              console.error('Error fetching assets:', error);
-              setAssets([]);
-            })
-        );
-      }
-
       await Promise.all(promises);
     } catch (error) {
       console.error('Error fetching job details:', error);
@@ -89,7 +70,7 @@ export const JobDetailsView: React.FC = () => {
     fetchJobDetails();
   }, [fetchJobDetails]);
 
-  const handleJobsClick = () => {
+  const handleBackClick = () => {
     navigate('/company/jobs');
   };
 
@@ -116,18 +97,97 @@ export const JobDetailsView: React.FC = () => {
   return (
     <PageWrapper title="" description="">
       <S.ContentContainer>
-        <S.DetailsGrid>
-          <JobOverviewCard job={job} client={client} worker={worker} template={template} onBackClick={handleJobsClick} />
+        {/* Header */}
+        <S.JobHeader>
+          <S.JobHeaderLeft>
+            <S.BackButton onClick={handleBackClick}>
+              <ArrowBackIcon />
+            </S.BackButton>
+            <S.JobHeaderInfo>
+              <S.JobHeaderTitle>{client?.name || 'No Client'}</S.JobHeaderTitle>
+              <S.JobHeaderMeta>
+                {job.id}-{template?.name || 'Mayday Resources'}
+              </S.JobHeaderMeta>
+            </S.JobHeaderInfo>
+          </S.JobHeaderLeft>
+
+          <S.JobHeaderRight>
+            <S.AssignedToSelector>
+              <span className="label">Assigned to</span>
+              <KeyboardArrowDownIcon fontSize="small" />
+            </S.AssignedToSelector>
+            <IconButton size="small">
+              <EditIcon />
+            </IconButton>
+          </S.JobHeaderRight>
+        </S.JobHeader>
+
+        {/* Tabs Navigation */}
+        <S.TabsContainer>
+          <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+            Overview
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'visit-log'} onClick={() => setActiveTab('visit-log')}>
+            Visit Log
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'estimate'} onClick={() => setActiveTab('estimate')}>
+            Estimate
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'financials'} onClick={() => setActiveTab('financials')}>
+            Financials
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
+            Documents
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'complaints'} onClick={() => setActiveTab('complaints')}>
+            Complaints
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
+            History
+          </S.TabButton>
+          <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
+            Form
+          </S.TabButton>
+        </S.TabsContainer>
+
+        {/* Main Content Layout */}
+        <S.JobDetailsLayout>
+          {/* Left Sidebar - Workflow */}
           <JobWorkflowStages job={job} />
-          <JobDetailsTabs
-            job={job}
-            client={client}
-            worker={worker}
-            template={template}
-            templateFields={templateFields}
-            assets={assets}
-          />
-        </S.DetailsGrid>
+
+          {/* Right Content - Details */}
+          <S.MainContentPanel>
+            {activeTab === 'documents' ? (
+              <S.DetailsSection>
+                <JobDocumentsTab job={job} />
+              </S.DetailsSection>
+            ) : (
+              <>
+                {/* Job Details Section */}
+                <JobDetailsSection
+                  job={job}
+                  client={client}
+                  template={template}
+                  templateFields={templateFields}
+                  title="Job Details"
+                  defaultExpanded={true}
+                />
+
+                {/* Policy Details Section - Shows custom fields from template */}
+                {templateFields.length > 0 && (
+                  <JobDetailsSection
+                    job={job}
+                    client={client}
+                    template={template}
+                    templateFields={templateFields}
+                    title="Policy Details"
+                    defaultExpanded={false}
+                  />
+                )}
+              </>
+            )}
+          </S.MainContentPanel>
+        </S.JobDetailsLayout>
       </S.ContentContainer>
     </PageWrapper>
   );

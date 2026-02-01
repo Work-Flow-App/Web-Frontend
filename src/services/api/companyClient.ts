@@ -1,4 +1,4 @@
-import { ClientControllerApi, Configuration } from '../../../workflow-api';
+import { ClientsApi, Configuration } from '../../../workflow-api';
 import type {
   ClientResponse,
   ClientCreateRequest,
@@ -16,14 +16,14 @@ export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest };
  */
 
 /**
- * Get a configured ClientControllerApi instance with the access token
+ * Get a configured ClientsApi instance with the access token
  * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
-function getClientApi(): ClientControllerApi {
+function getClientApi(): ClientsApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new ClientControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new ClientsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const companyClientService = {

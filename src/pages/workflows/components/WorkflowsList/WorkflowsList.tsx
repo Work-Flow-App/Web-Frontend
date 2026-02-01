@@ -24,14 +24,25 @@ export const WorkflowsList: React.FC = () => {
       const response = await workflowService.getAllWorkflows();
       const workflowsData = Array.isArray(response.data) ? response.data : [];
 
-      // Transform API response to table format
-      const transformedData: WorkflowTableRow[] = workflowsData.map((workflow) => ({
-        id: workflow.id || 0,
-        name: workflow.name || '',
-        description: workflow.description,
-        companyId: workflow.companyId,
-        stepCount: 0, // Will be updated if we fetch steps
-      }));
+      // Transform API response to table format and fetch steps count for each workflow
+      const transformedData: WorkflowTableRow[] = await Promise.all(
+        workflowsData.map(async (workflow) => {
+          let stepCount = 0;
+          try {
+            const stepsResponse = await workflowService.getWorkflowSteps(workflow.id || 0);
+            stepCount = Array.isArray(stepsResponse.data) ? stepsResponse.data.length : 0;
+          } catch {
+            // If fetching steps fails, keep stepCount as 0
+          }
+          return {
+            id: workflow.id || 0,
+            name: workflow.name || '',
+            description: workflow.description,
+            companyId: workflow.companyId,
+            stepCount,
+          };
+        })
+      );
 
       setWorkflows(transformedData);
     } catch (error) {

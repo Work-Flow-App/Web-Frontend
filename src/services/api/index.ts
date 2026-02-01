@@ -62,5 +62,13 @@ export type {
   JobWorkflowStepUpdateRequest,
 } from './jobWorkflow';
 
+export { stepActivityService } from './stepActivity';
+export type {
+  StepCommentCreateRequest,
+  StepCommentResponse,
+  StepTimelineItemResponse,
+  StepAttachmentResponse,
+} from './stepActivity';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

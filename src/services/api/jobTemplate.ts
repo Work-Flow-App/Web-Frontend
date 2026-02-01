@@ -1,4 +1,4 @@
-import { JobTemplateControllerApi, Configuration } from '../../../workflow-api';
+import { JobTemplatesApi, Configuration } from '../../../workflow-api';
 import type {
   JobTemplateResponse,
   JobTemplateCreateRequest,
@@ -23,14 +23,14 @@ export type {
  */
 
 /**
- * Get a configured JobTemplateControllerApi instance with the access token
+ * Get a configured JobTemplatesApi instance with the access token
  * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
  */
-function getJobTemplateApi(): JobTemplateControllerApi {
+function getJobTemplateApi(): JobTemplatesApi {
   const config = new Configuration({
     basePath: env.apiBaseUrl,
   });
-  return new JobTemplateControllerApi(config, env.apiBaseUrl, axiosInstance);
+  return new JobTemplatesApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobTemplateService = {
