@@ -693,6 +693,16 @@ export const EventNoteEditButton = styled('button')(({ theme }) => ({
   '&:hover': {
     opacity: 0.7,
   },
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  '&.cancel': {
+    color: theme.palette.text.secondary,
+  },
+  '&.delete': {
+    color: floowColors.red.main,
+  },
 }));
 
 export const EventNoteContent = styled('p')(({ theme }) => ({
@@ -986,6 +996,143 @@ export const AssignedToSelector = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
   '& .label': {
     fontSize: rem(13),
+    color: theme.palette.text.secondary,
+  },
+}));
+
+// Attachment & Comment Section Styles
+export const AttachmentList = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+}));
+
+export const AttachmentItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.colors.grey_100}`,
+  transition: 'background-color 0.2s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_50,
+  },
+}));
+
+export const AttachmentFileName = styled(Box)(({ theme }) => ({
+  flex: 1,
+  minWidth: 0,
+  '& .name': {
+    fontSize: rem(12),
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.palette.text.primary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  '& .date': {
+    fontSize: rem(10),
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const AttachmentActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(0.5),
+}));
+
+export const UploadDropzone = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(2),
+  cursor: 'pointer',
+  border: `1px dashed ${theme.palette.colors.grey_300}`,
+  borderRadius: theme.spacing(0.5),
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors.grey_50,
+  },
+}));
+
+export const AddMoreButton = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(1),
+  cursor: 'pointer',
+  border: `1px dashed ${theme.palette.colors.grey_300}`,
+  borderRadius: theme.spacing(0.5),
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  transition: 'border-color 0.2s ease, color 0.2s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
+  },
+}));
+
+export const CommentList = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  marginBottom: theme.spacing(1.5),
+}));
+
+export const CommentItemBox = styled(Box)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  paddingBottom: theme.spacing(1),
+}));
+
+export const CommentContentRow = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+}));
+
+export const CommentActionsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginLeft: theme.spacing(1),
+}));
+
+export const CommentTimestamp = styled(Box)(({ theme }) => ({
+  fontSize: rem(10),
+  color: theme.palette.text.secondary,
+  marginTop: theme.spacing(0.5),
+}));
+
+export const ButtonActionsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(1),
+  justifyContent: 'flex-end',
+}));
+
+export const NewCommentBox = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+}));
+
+export const StyledTextField = styled('textarea')(({ theme }) => ({
+  width: '100%',
+  padding: theme.spacing(1),
+  fontSize: rem(12),
+  fontFamily: 'inherit',
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(0.5),
+  resize: 'vertical',
+  minHeight: '60px',
+  outline: 'none',
+  transition: 'border-color 0.2s ease',
+  '&:focus': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&::placeholder': {
     color: theme.palette.text.secondary,
   },
 }));

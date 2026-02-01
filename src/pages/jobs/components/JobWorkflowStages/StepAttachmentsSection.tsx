@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Box, CircularProgress, IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -10,6 +10,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { stepActivityService } from '../../../../services/api';
 import type { StepAttachmentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { Loader } from '../../../../components/UI/Loader/Loader';
+import { IconButton } from '../../../../components/UI/Button/IconButton';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepAttachmentsSectionProps {
@@ -17,25 +19,18 @@ interface StepAttachmentsSectionProps {
 }
 
 const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <InsertDriveFileIcon sx={{ fontSize: 16 }} />;
+  if (!fileType) return <InsertDriveFileIcon fontSize="small" />;
 
   if (fileType.startsWith('image/')) {
-    return <ImageIcon sx={{ fontSize: 16, color: '#4CAF50' }} />;
+    return <ImageIcon fontSize="small" sx={{ color: 'success.main' }} />;
   }
   if (fileType === 'application/pdf') {
-    return <PictureAsPdfIcon sx={{ fontSize: 16, color: '#F44336' }} />;
+    return <PictureAsPdfIcon fontSize="small" sx={{ color: 'error.main' }} />;
   }
   if (fileType.includes('word') || fileType.includes('document')) {
-    return <DescriptionIcon sx={{ fontSize: 16, color: '#2196F3' }} />;
+    return <DescriptionIcon fontSize="small" sx={{ color: 'info.main' }} />;
   }
-  return <InsertDriveFileIcon sx={{ fontSize: 16, color: '#757575' }} />;
-};
-
-const formatFileSize = (bytes?: number) => {
-  if (!bytes) return '';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return <InsertDriveFileIcon fontSize="small" sx={{ color: 'text.secondary' }} />;
 };
 
 export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId }) => {
@@ -81,7 +76,6 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
       showError('Failed to upload attachment');
     } finally {
       setUploading(false);
-      // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -113,9 +107,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
         <S.EventNoteHeader>
           <S.EventNoteTitle>Attachments</S.EventNoteTitle>
         </S.EventNoteHeader>
-        <Box display="flex" justifyContent="center" py={2}>
-          <CircularProgress size={20} />
-        </Box>
+        <Loader size={20} centered minHeight="60px" />
       </S.EventNoteBox>
     );
   }
@@ -138,111 +130,55 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
       />
 
       {attachments.length === 0 ? (
-        <Box
-          onClick={handleUploadClick}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 2,
-            cursor: 'pointer',
-            border: '1px dashed #ccc',
-            borderRadius: 1,
-            '&:hover': {
-              borderColor: 'primary.main',
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            },
-          }}
-        >
+        <S.UploadDropzone onClick={handleUploadClick}>
           <AttachFileIcon sx={{ fontSize: 24, color: 'text.secondary', mb: 0.5 }} />
           <S.EventNoteContent>Click to upload attachments</S.EventNoteContent>
-        </Box>
+        </S.UploadDropzone>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <S.AttachmentList>
           {attachments.map((attachment) => (
-            <Box
-              key={attachment.id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                p: 1,
-                backgroundColor: 'white',
-                borderRadius: 0.5,
-                border: '1px solid #eee',
-                '&:hover': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            >
+            <S.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: 'text.primary',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {attachment.fileName || 'Unnamed file'}
-                </Box>
+              <S.AttachmentFileName>
+                <div className="name">{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
-                  <Box sx={{ fontSize: 10, color: 'text.secondary' }}>
+                  <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
-                  </Box>
+                  </div>
                 )}
-              </Box>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
+              </S.AttachmentFileName>
+              <S.AttachmentActions>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
+                    variant="text"
+                    color="secondary"
                     onClick={(e) => handleDownload(attachment, e)}
-                    sx={{ p: 0.5 }}
+                    aria-label="Download attachment"
                   >
-                    <DownloadIcon sx={{ fontSize: 16 }} />
+                    <DownloadIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Delete">
                   <IconButton
                     size="small"
+                    variant="text"
+                    color="danger"
                     onClick={(e) => attachment.id && handleDeleteAttachment(attachment.id, e)}
-                    sx={{ p: 0.5, color: '#F44336' }}
+                    aria-label="Delete attachment"
                   >
-                    <DeleteIcon sx={{ fontSize: 16 }} />
+                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </Box>
-            </Box>
+              </S.AttachmentActions>
+            </S.AttachmentItem>
           ))}
 
-          {/* Add more button */}
-          <Box
-            onClick={handleUploadClick}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 0.5,
-              py: 1,
-              cursor: 'pointer',
-              border: '1px dashed #ccc',
-              borderRadius: 0.5,
-              fontSize: 12,
-              color: 'text.secondary',
-              '&:hover': {
-                borderColor: 'primary.main',
-                color: 'primary.main',
-              },
-            }}
-          >
+          <S.AddMoreButton onClick={handleUploadClick}>
             <AttachFileIcon sx={{ fontSize: 14 }} />
             Add more
-          </Box>
-        </Box>
+          </S.AddMoreButton>
+        </S.AttachmentList>
       )}
     </S.EventNoteBox>
   );

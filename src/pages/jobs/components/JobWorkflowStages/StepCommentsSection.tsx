@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, TextField, CircularProgress } from '@mui/material';
 import { stepActivityService } from '../../../../services/api';
 import type { StepCommentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { Loader } from '../../../../components/UI/Loader/Loader';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentsSectionProps {
@@ -99,9 +99,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
         <S.EventNoteHeader>
           <S.EventNoteTitle>Comments</S.EventNoteTitle>
         </S.EventNoteHeader>
-        <Box display="flex" justifyContent="center" py={2}>
-          <CircularProgress size={20} />
-        </Box>
+        <Loader size={20} centered minHeight="60px" />
       </S.EventNoteBox>
     );
   }
@@ -112,33 +110,24 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
         <S.EventNoteTitle>Comments</S.EventNoteTitle>
       </S.EventNoteHeader>
 
-      {/* Existing comments */}
       {comments.length === 0 ? (
         <S.EventNoteContent>No comments yet.</S.EventNoteContent>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 1.5 }}>
+        <S.CommentList>
           {comments.map((comment) => (
-            <Box key={comment.id} sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+            <S.CommentItemBox key={comment.id}>
               {editingCommentId === comment.id ? (
                 <>
-                  <TextField
-                    multiline
+                  <S.StyledTextField
                     rows={2}
-                    fullWidth
-                    size="small"
                     value={editingContent}
                     onChange={(e) => setEditingContent(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        fontSize: 12,
-                      },
-                    }}
                   />
-                  <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: 'flex-end' }}>
+                  <S.ButtonActionsRow>
                     <S.EventNoteEditButton
                       onClick={() => handleCancelEdit()}
-                      style={{ color: '#666' }}
+                      className="cancel"
                     >
                       Cancel
                     </S.EventNoteEditButton>
@@ -148,64 +137,53 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
                     >
                       {saving ? 'Saving...' : 'Save'}
                     </S.EventNoteEditButton>
-                  </Box>
+                  </S.ButtonActionsRow>
                 </>
               ) : (
                 <>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <S.EventNoteContent sx={{ flex: 1 }}>
-                      {comment.content}
-                    </S.EventNoteContent>
-                    <Box sx={{ display: 'flex', gap: 1, ml: 1 }}>
+                  <S.CommentContentRow>
+                    <S.EventNoteContent>{comment.content}</S.EventNoteContent>
+                    <S.CommentActionsRow>
                       <S.EventNoteEditButton onClick={(e) => handleEditComment(comment, e)}>
                         Edit
                       </S.EventNoteEditButton>
                       <S.EventNoteEditButton
                         onClick={() => comment.id && handleDeleteComment(comment.id)}
-                        style={{ color: '#F44336' }}
+                        className="delete"
                       >
                         Delete
                       </S.EventNoteEditButton>
-                    </Box>
-                  </Box>
+                    </S.CommentActionsRow>
+                  </S.CommentContentRow>
                   {comment.createdAt && (
-                    <Box sx={{ fontSize: 10, color: 'text.secondary', mt: 0.5 }}>
+                    <S.CommentTimestamp>
                       {new Date(comment.createdAt).toLocaleString()}
-                    </Box>
+                    </S.CommentTimestamp>
                   )}
                 </>
               )}
-            </Box>
+            </S.CommentItemBox>
           ))}
-        </Box>
+        </S.CommentList>
       )}
 
-      {/* Add new comment */}
-      <Box sx={{ mt: 1 }}>
-        <TextField
-          multiline
+      <S.NewCommentBox>
+        <S.StyledTextField
           rows={2}
-          fullWidth
-          size="small"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Add a comment..."
           onClick={(e) => e.stopPropagation()}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              fontSize: 12,
-            },
-          }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+        <S.ButtonActionsRow>
           <S.EventNoteEditButton
             onClick={handleAddComment}
             disabled={!newComment.trim() || addingNew}
           >
             {addingNew ? 'Adding...' : 'Add Comment'}
           </S.EventNoteEditButton>
-        </Box>
-      </Box>
+        </S.ButtonActionsRow>
+      </S.NewCommentBox>
     </S.EventNoteBox>
   );
 };
