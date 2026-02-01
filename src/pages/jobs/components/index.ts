@@ -5,3 +5,5 @@ export { JobDetailsView } from './JobDetailsView/JobDetailsView';
 export { JobOverviewCard } from './JobOverviewCard/JobOverviewCard';
 export { JobWorkflowStages } from './JobWorkflowStages/JobWorkflowStages';
 export { JobDetailsTabs } from './JobDetailsTabs/JobDetailsTabs';
+export { JobDetailsSection } from './JobDetailsSection/JobDetailsSection';
+export { StepCommentDialog } from './StepCommentDialog/StepCommentDialog';

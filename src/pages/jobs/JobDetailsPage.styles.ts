@@ -510,3 +510,482 @@ export const BreadcrumbSeparator = styled('span')(({ theme }) => ({
 export const BreadcrumbCurrent = styled('span')(({ theme}) => ({
   color: theme.palette.text.primary,
 }));
+
+// New Job Details Layout Styles
+export const JobDetailsLayout = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '320px 1fr',
+  gap: theme.spacing(3),
+  '@media (max-width: 1024px)': {
+    gridTemplateColumns: '1fr',
+  },
+}));
+
+export const WorkflowSidebar = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  overflow: 'hidden',
+}));
+
+export const WorkflowSidebarHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(2),
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const WorkflowSidebarTitle = styled('h3')(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+  margin: 0,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const WorkflowStepsList = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+interface WorkflowStepItemProps {
+  isActive?: boolean;
+  isCompleted?: boolean;
+  isExpanded?: boolean;
+  isDelayed?: boolean;
+}
+
+export const WorkflowStepItem = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'isCompleted' && prop !== 'isExpanded' && prop !== 'isDelayed',
+})<WorkflowStepItemProps>(({ theme, isActive, isCompleted, isDelayed }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  backgroundColor: isActive ? theme.palette.colors.grey_50 : 'transparent',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+  '& .step-header': {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(1.5, 2),
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+    '&:hover': {
+      backgroundColor: theme.palette.colors.grey_50,
+    },
+  },
+  '& .step-indicator': {
+    width: rem(24),
+    height: rem(24),
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing(1.5),
+    backgroundColor: isCompleted
+      ? '#E8F5E9'
+      : isDelayed
+        ? '#FFEBEE'
+        : isActive
+          ? '#FFF8E1'
+          : theme.palette.colors.grey_200,
+    color: isCompleted
+      ? '#4CAF50'
+      : isDelayed
+        ? '#F44336'
+        : isActive
+          ? '#FFC107'
+          : theme.palette.text.secondary,
+    fontSize: rem(12),
+    fontWeight: Bold._600,
+  },
+  '& .step-content': {
+    flex: 1,
+    minWidth: 0,
+  },
+  '& .step-name': {
+    fontSize: rem(13),
+    fontWeight: theme.typography.fontWeightMedium,
+    color: isActive ? theme.palette.text.primary : theme.palette.text.secondary,
+    marginBottom: rem(2),
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  '& .step-meta': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    fontSize: rem(11),
+    color: theme.palette.text.secondary,
+  },
+  '& .step-expand': {
+    marginLeft: 'auto',
+    color: theme.palette.text.secondary,
+    transition: 'transform 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));
+
+export const WorkflowStepDetails = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(0, 2, 2, 6.5),
+}));
+
+export const StepDetailRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: theme.spacing(1, 0),
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  '& .label': {
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+  '& .value': {
+    color: theme.palette.text.primary,
+  },
+}));
+
+export const StepActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(1),
+}));
+
+export const EventNoteBox = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.grey_50,
+  borderRadius: theme.spacing(0.5),
+  padding: theme.spacing(1.5),
+  marginTop: theme.spacing(1),
+}));
+
+export const EventNoteHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(1),
+}));
+
+export const EventNoteTitle = styled('span')(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+}));
+
+export const EventNoteEditButton = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.primary.main,
+  transition: 'opacity 0.2s ease',
+  '&:hover': {
+    opacity: 0.7,
+  },
+}));
+
+export const EventNoteContent = styled('p')(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  margin: 0,
+  lineHeight: 1.5,
+}));
+
+// Main Content Panel
+export const MainContentPanel = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
+
+// Collapsible Section
+interface CollapsibleSectionProps {
+  isOpen?: boolean;
+}
+
+export const CollapsibleSection = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  overflow: 'hidden',
+}));
+
+export const CollapsibleSectionHeader = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isOpen',
+})<CollapsibleSectionProps>(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(2),
+  cursor: 'pointer',
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_50,
+  },
+}));
+
+export const CollapsibleSectionTitle = styled('h3')(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+  margin: 0,
+}));
+
+export const CollapsibleSectionActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const CollapsibleSectionContent = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+}));
+
+// Comment Dialog Styles
+export const CommentDialog = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  bottom: theme.spacing(3),
+  right: theme.spacing(3),
+  width: rem(360),
+  maxHeight: rem(400),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+  display: 'flex',
+  flexDirection: 'column',
+  zIndex: 1000,
+}));
+
+export const CommentDialogHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(1.5, 2),
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const CommentDialogTitle = styled('span')(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+}));
+
+export const CommentDialogActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+}));
+
+export const CommentsList = styled(Box)(() => ({
+  flex: 1,
+  overflowY: 'auto',
+  maxHeight: rem(280),
+}));
+
+export const CommentItem = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+}));
+
+export const CommentHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(0.5),
+}));
+
+export const CommentAuthorAvatar = styled(Box)<{ bgColor?: string }>(({ theme, bgColor }) => ({
+  width: rem(28),
+  height: rem(28),
+  borderRadius: '50%',
+  backgroundColor: bgColor || theme.palette.primary.main,
+  color: theme.palette.colors.white,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: rem(11),
+  fontWeight: theme.typography.fontWeightBold,
+}));
+
+export const CommentAuthorName = styled('span')(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+}));
+
+export const CommentMention = styled('span')(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: '#D4A017',
+}));
+
+export const CommentTime = styled('span')(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  marginLeft: 'auto',
+}));
+
+export const CommentContent = styled('p')(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.primary,
+  margin: 0,
+  lineHeight: 1.5,
+  paddingLeft: rem(36),
+}));
+
+export const CommentInputContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1.5, 2),
+  borderTop: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const CommentInput = styled('input')(({ theme }) => ({
+  flex: 1,
+  border: 'none',
+  outline: 'none',
+  fontSize: rem(13),
+  color: theme.palette.text.primary,
+  backgroundColor: 'transparent',
+  '&::placeholder': {
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const CommentSendButton = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.5),
+  cursor: 'pointer',
+  color: theme.palette.primary.main,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '50%',
+  transition: 'background-color 0.2s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_100,
+  },
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+}));
+
+// Detail Field Styles for new layout
+export const FieldGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: theme.spacing(3),
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: '1fr',
+  },
+}));
+
+export const FieldColumn = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(16),
+}));
+
+export const FieldItem = styled(Box)(({ theme }) => ({
+  '& .field-label': {
+    fontSize: rem(13),
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.palette.text.secondary,
+    marginBottom: rem(4),
+  },
+  '& .field-value': {
+    fontSize: rem(14),
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.colors.grey_50,
+    padding: theme.spacing(1, 1.5),
+    borderRadius: theme.spacing(0.5),
+    minHeight: rem(36),
+    display: 'flex',
+    alignItems: 'center',
+  },
+}));
+
+// Header with back navigation
+export const JobHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: theme.spacing(3),
+}));
+
+export const JobHeaderLeft = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+}));
+
+export const BackButton = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.5),
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '50%',
+  transition: 'background-color 0.2s ease, color 0.2s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_100,
+    color: theme.palette.text.primary,
+  },
+}));
+
+export const JobHeaderInfo = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+export const JobHeaderTitle = styled('h1')(({ theme }) => ({
+  fontSize: rem(20),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+  margin: 0,
+}));
+
+export const JobHeaderMeta = styled('span')(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+}));
+
+export const JobHeaderRight = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+}));
+
+export const AssignedToSelector = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1, 2),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(1),
+  cursor: 'pointer',
+  '& .label': {
+    fontSize: rem(13),
+    color: theme.palette.text.secondary,
+  },
+}));
