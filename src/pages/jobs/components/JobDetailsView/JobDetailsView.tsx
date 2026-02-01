@@ -16,6 +16,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
+import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -156,26 +157,34 @@ export const JobDetailsView: React.FC = () => {
 
           {/* Right Content - Details */}
           <S.MainContentPanel>
-            {/* Job Details Section */}
-            <JobDetailsSection
-              job={job}
-              client={client}
-              template={template}
-              templateFields={templateFields}
-              title="Job Details"
-              defaultExpanded={true}
-            />
+            {activeTab === 'documents' ? (
+              <S.DetailsSection>
+                <JobDocumentsTab job={job} />
+              </S.DetailsSection>
+            ) : (
+              <>
+                {/* Job Details Section */}
+                <JobDetailsSection
+                  job={job}
+                  client={client}
+                  template={template}
+                  templateFields={templateFields}
+                  title="Job Details"
+                  defaultExpanded={true}
+                />
 
-            {/* Policy Details Section - Shows custom fields from template */}
-            {templateFields.length > 0 && (
-              <JobDetailsSection
-                job={job}
-                client={client}
-                template={template}
-                templateFields={templateFields}
-                title="Policy Details"
-                defaultExpanded={false}
-              />
+                {/* Policy Details Section - Shows custom fields from template */}
+                {templateFields.length > 0 && (
+                  <JobDetailsSection
+                    job={job}
+                    client={client}
+                    template={template}
+                    templateFields={templateFields}
+                    title="Policy Details"
+                    defaultExpanded={false}
+                  />
+                )}
+              </>
             )}
           </S.MainContentPanel>
         </S.JobDetailsLayout>

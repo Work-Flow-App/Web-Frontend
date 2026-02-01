@@ -1136,3 +1136,115 @@ export const StyledTextField = styled('textarea')(({ theme }) => ({
     color: theme.palette.text.secondary,
   },
 }));
+
+// Documents Tab Styles
+export const DocumentsGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+  gap: theme.spacing(2),
+}));
+
+export const DocumentCard = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 4px 12px ${floowColors.shadow.md}`,
+  },
+}));
+
+export const DocumentCardHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1.5),
+  marginBottom: theme.spacing(1.5),
+}));
+
+export const DocumentIcon = styled(Box)(({ theme }) => ({
+  width: rem(40),
+  height: rem(40),
+  borderRadius: theme.spacing(1),
+  backgroundColor: theme.palette.colors.grey_100,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+}));
+
+export const DocumentInfo = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+}));
+
+export const DocumentName = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  marginBottom: rem(2),
+}));
+
+export const DocumentMeta = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+}));
+
+export const DocumentStepBadge = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: `${rem(4)} ${rem(8)}`,
+  borderRadius: rem(4),
+  backgroundColor: theme.palette.colors.grey_100,
+  fontSize: rem(11),
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.text.secondary,
+  marginTop: theme.spacing(1),
+}));
+
+export const DocumentCardActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(1.5),
+  paddingTop: theme.spacing(1.5),
+  borderTop: `1px solid ${theme.palette.colors.grey_100}`,
+}));
+
+export const DocumentsEmptyState = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(6),
+  textAlign: 'center',
+}));
+
+export const DocumentsEmptyIcon = styled(Box)(({ theme }) => ({
+  width: rem(64),
+  height: rem(64),
+  borderRadius: '50%',
+  backgroundColor: theme.palette.colors.grey_100,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: theme.spacing(2),
+  color: theme.palette.text.secondary,
+}));
+
+export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(0.5),
+}));
+
+export const DocumentsEmptySubtext = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+}));
