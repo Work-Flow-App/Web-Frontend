@@ -1,19 +1,15 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Box, Tooltip, Collapse, IconButton } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PauseCircleIcon from '@mui/icons-material/PauseCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import PersonIcon from '@mui/icons-material/Person';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import type {
   JobResponse,
@@ -27,7 +23,6 @@ interface JobActivityLogTabProps {
   job: JobResponse;
 }
 
-// Timeline item from API
 interface TimelineActivity {
   id?: number;
   type?: string;
@@ -40,106 +35,41 @@ interface StepWithTimeline extends JobWorkflowStepResponse {
   timeline?: TimelineActivity[];
 }
 
-// Status colors for visual distinction
-const STATUS_COLORS = {
-  COMPLETED: { bg: '#10B981', text: '#ffffff', light: '#D1FAE5' },
-  ONGOING: { bg: '#3B82F6', text: '#ffffff', light: '#DBEAFE' },
-  STARTED: { bg: '#8B5CF6', text: '#ffffff', light: '#EDE9FE' },
-  PENDING: { bg: '#F59E0B', text: '#ffffff', light: '#FEF3C7' },
-  NOT_STARTED: { bg: '#9CA3AF', text: '#ffffff', light: '#F3F4F6' },
-  INITIATED: { bg: '#6366F1', text: '#ffffff', light: '#E0E7FF' },
-  SKIPPED: { bg: '#EF4444', text: '#ffffff', light: '#FEE2E2' },
-} as const;
+// Gantt bar colors - matching the reference image style
+const GANTT_COLORS = [
+  { primary: '#1E3A5F', secondary: '#2563EB', light: '#DBEAFE' }, // Navy/Blue
+  { primary: '#DC2626', secondary: '#EF4444', light: '#FEE2E2' }, // Red
+  { primary: '#D97706', secondary: '#F59E0B', light: '#FEF3C7' }, // Orange
+  { primary: '#059669', secondary: '#10B981', light: '#D1FAE5' }, // Green
+  { primary: '#7C3AED', secondary: '#8B5CF6', light: '#EDE9FE' }, // Purple
+  { primary: '#0891B2', secondary: '#06B6D4', light: '#CFFAFE' }, // Cyan
+  { primary: '#DB2777', secondary: '#EC4899', light: '#FCE7F3' }, // Pink
+];
 
-// Activity type colors and icons
-const ACTIVITY_CONFIG: Record<string, { color: string; lightColor: string; icon: React.ReactNode; label: string }> = {
-  STEP_CREATED: {
-    color: '#10B981',
-    lightColor: '#D1FAE5',
-    icon: <AddCircleOutlineIcon sx={{ fontSize: 16 }} />,
-    label: 'Step Created'
-  },
-  STATUS_CHANGED: {
-    color: '#8B5CF6',
-    lightColor: '#EDE9FE',
-    icon: <SwapHorizIcon sx={{ fontSize: 16 }} />,
-    label: 'Status Changed'
-  },
-  WORKER_ASSIGNED: {
-    color: '#3B82F6',
-    lightColor: '#DBEAFE',
-    icon: <PersonAddIcon sx={{ fontSize: 16 }} />,
-    label: 'Worker Assigned'
-  },
-  WORKER_UNASSIGNED: {
-    color: '#F59E0B',
-    lightColor: '#FEF3C7',
-    icon: <PersonIcon sx={{ fontSize: 16 }} />,
-    label: 'Worker Unassigned'
-  },
-  STEP_UPDATED: {
-    color: '#06B6D4',
-    lightColor: '#CFFAFE',
-    icon: <EditIcon sx={{ fontSize: 16 }} />,
-    label: 'Step Updated'
-  },
-  ATTACHMENT_ADDED: {
-    color: '#EC4899',
-    lightColor: '#FCE7F3',
-    icon: <UploadFileIcon sx={{ fontSize: 16 }} />,
-    label: 'Attachment Added'
-  },
-  ATTACHMENT_REMOVED: {
-    color: '#EF4444',
-    lightColor: '#FEE2E2',
-    icon: <AttachFileIcon sx={{ fontSize: 16 }} />,
-    label: 'Attachment Removed'
-  },
-  COMMENT: {
-    color: '#6366F1',
-    lightColor: '#E0E7FF',
-    icon: <ChatBubbleOutlineIcon sx={{ fontSize: 16 }} />,
-    label: 'Comment'
-  },
-  COMMENT_ADDED: {
-    color: '#6366F1',
-    lightColor: '#E0E7FF',
-    icon: <ChatBubbleOutlineIcon sx={{ fontSize: 16 }} />,
-    label: 'Comment Added'
-  },
+// Activity type config
+const ACTIVITY_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+  STEP_CREATED: { color: '#10B981', icon: <AddCircleOutlineIcon sx={{ fontSize: 12 }} />, label: 'Created' },
+  STATUS_CHANGED: { color: '#8B5CF6', icon: <SwapHorizIcon sx={{ fontSize: 12 }} />, label: 'Status' },
+  WORKER_ASSIGNED: { color: '#3B82F6', icon: <PersonAddIcon sx={{ fontSize: 12 }} />, label: 'Assigned' },
+  WORKER_UNASSIGNED: { color: '#F59E0B', icon: <PersonIcon sx={{ fontSize: 12 }} />, label: 'Unassigned' },
+  STEP_UPDATED: { color: '#06B6D4', icon: <EditIcon sx={{ fontSize: 12 }} />, label: 'Updated' },
+  ATTACHMENT_ADDED: { color: '#EC4899', icon: <UploadFileIcon sx={{ fontSize: 12 }} />, label: 'Attachment' },
+  ATTACHMENT_REMOVED: { color: '#EF4444', icon: <AttachFileIcon sx={{ fontSize: 12 }} />, label: 'Removed' },
+  COMMENT: { color: '#6366F1', icon: <ChatBubbleOutlineIcon sx={{ fontSize: 12 }} />, label: 'Comment' },
+  COMMENT_ADDED: { color: '#6366F1', icon: <ChatBubbleOutlineIcon sx={{ fontSize: 12 }} />, label: 'Comment' },
 };
 
 const getActivityConfig = (type?: string) => {
   return ACTIVITY_CONFIG[type || ''] || {
     color: '#9CA3AF',
-    lightColor: '#F3F4F6',
-    icon: <TimelineIcon sx={{ fontSize: 16 }} />,
-    label: type || 'Activity',
+    icon: <TimelineIcon sx={{ fontSize: 12 }} />,
+    label: type?.replace('_', ' ') || 'Activity',
   };
-};
-
-const getStatusColor = (status?: string) => {
-  return STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.NOT_STARTED;
-};
-
-const getStatusIcon = (status?: string) => {
-  switch (status) {
-    case 'COMPLETED':
-      return <CheckCircleIcon sx={{ fontSize: 16 }} />;
-    case 'ONGOING':
-    case 'STARTED':
-      return <PlayArrowIcon sx={{ fontSize: 16 }} />;
-    case 'PENDING':
-      return <PauseCircleIcon sx={{ fontSize: 16 }} />;
-    default:
-      return <RadioButtonUncheckedIcon sx={{ fontSize: 16 }} />;
-  }
 };
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -147,28 +77,13 @@ const formatDate = (dateString?: string) => {
   });
 };
 
-const formatDuration = (startDate?: string, endDate?: string) => {
-  if (!startDate) return '-';
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : new Date();
-  const diffMs = end.getTime() - start.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) {
-    return `${diffDays}d ${diffHours % 24}h`;
-  }
-  if (diffHours > 0) {
-    return `${diffHours}h`;
-  }
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  return `${diffMins}m`;
+const formatShortDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 };
 
 export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => {
   const [steps, setSteps] = useState<StepWithTimeline[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
 
   const fetchActivityData = useCallback(async () => {
     if (!job.id) {
@@ -178,44 +93,28 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => 
 
     try {
       setLoading(true);
-
-      // Get the job workflow
       const workflowResponse = await jobWorkflowService.getJobWorkflowByJobId(job.id);
       const workflow = workflowResponse.data;
 
       if (!workflow?.steps || workflow.steps.length === 0) {
         setSteps([]);
-        setLoading(false);
         return;
       }
 
-      // Fetch timeline for all steps in parallel
       const stepsWithTimeline = await Promise.all(
         workflow.steps.map(async (step: JobWorkflowStepResponse) => {
           if (!step.id) return { ...step, timeline: [] };
-
           try {
             const timelineResponse = await stepActivityService.getTimeline(step.id);
-            return {
-              ...step,
-              timeline: (timelineResponse.data || []) as TimelineActivity[],
-            };
+            return { ...step, timeline: (timelineResponse.data || []) as TimelineActivity[] };
           } catch {
             return { ...step, timeline: [] };
           }
         })
       );
 
-      // Sort by order index
       stepsWithTimeline.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       setSteps(stepsWithTimeline);
-
-      // Auto-expand steps that have activities
-      const stepsWithActivities = stepsWithTimeline
-        .filter((s) => s.timeline && s.timeline.length > 0)
-        .map((s) => s.id)
-        .filter((id): id is number => id !== undefined);
-      setExpandedSteps(new Set(stepsWithActivities));
     } catch (error) {
       console.error('Error fetching activity data:', error);
       setSteps([]);
@@ -228,108 +127,90 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => 
     fetchActivityData();
   }, [fetchActivityData]);
 
-  const toggleStepExpanded = (stepId: number) => {
-    setExpandedSteps((prev) => {
-      const next = new Set(prev);
-      if (next.has(stepId)) {
-        next.delete(stepId);
-      } else {
-        next.add(stepId);
-      }
-      return next;
-    });
-  };
+  // Calculate timeline range
+  const timelineConfig = useMemo(() => {
+    const allDates: Date[] = [];
 
-  // Calculate the timeline range
-  const timelineRange = useMemo(() => {
-    const dates: Date[] = [];
     steps.forEach((step) => {
-      if (step.startedAt) dates.push(new Date(step.startedAt));
-      if (step.completedAt) dates.push(new Date(step.completedAt));
-      // Also include activity dates
+      if (step.startedAt) allDates.push(new Date(step.startedAt));
+      if (step.completedAt) allDates.push(new Date(step.completedAt));
       step.timeline?.forEach((activity) => {
-        if (activity.createdAt) dates.push(new Date(activity.createdAt));
+        if (activity.createdAt) allDates.push(new Date(activity.createdAt));
       });
     });
 
-    if (dates.length === 0) {
-      const now = new Date();
-      return {
-        start: now,
-        end: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-        totalDays: 7,
-      };
+    const today = new Date();
+    allDates.push(today);
+
+    if (allDates.length <= 1) {
+      const start = new Date(today);
+      start.setDate(start.getDate() - 3);
+      const end = new Date(today);
+      end.setDate(end.getDate() + 4);
+      return { startDate: start, endDate: end, totalDays: 7, today };
     }
 
-    const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
-    const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+    let minDate = new Date(Math.min(...allDates.map((d) => d.getTime())));
+    let maxDate = new Date(Math.max(...allDates.map((d) => d.getTime())));
 
-    minDate.setHours(0, 0, 0, 0);
-    maxDate.setDate(maxDate.getDate() + 1);
-    maxDate.setHours(23, 59, 59, 999);
+    // Add padding
+    minDate.setDate(minDate.getDate() - 1);
+    maxDate.setDate(maxDate.getDate() + 2);
 
-    const totalDays = Math.max(
-      1,
-      Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24))
-    );
+    // Ensure minimum 7 days range
+    const daysDiff = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff < 7) {
+      maxDate.setDate(minDate.getDate() + 7);
+    }
 
-    return { start: minDate, end: maxDate, totalDays };
+    const totalDays = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    return { startDate: minDate, endDate: maxDate, totalDays, today };
   }, [steps]);
 
-  // Calculate bar position and width for each step
-  const calculateBarStyle = (step: StepWithTimeline) => {
-    if (!step.startedAt) {
-      return { left: '0%', width: '0%', opacity: 0.3 };
+  // Generate date columns for header
+  const dateColumns = useMemo(() => {
+    const columns: Date[] = [];
+    const current = new Date(timelineConfig.startDate);
+
+    while (current <= timelineConfig.endDate) {
+      columns.push(new Date(current));
+      current.setDate(current.getDate() + 1);
     }
 
-    const startDate = new Date(step.startedAt);
-    const endDate = step.completedAt ? new Date(step.completedAt) : new Date();
+    return columns;
+  }, [timelineConfig]);
 
-    const totalMs = timelineRange.end.getTime() - timelineRange.start.getTime();
-    const startOffset = startDate.getTime() - timelineRange.start.getTime();
-    const duration = endDate.getTime() - startDate.getTime();
+  // Calculate bar position
+  const getBarPosition = (startDate?: string, endDate?: string) => {
+    if (!startDate) return null;
+
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+    const totalMs = timelineConfig.endDate.getTime() - timelineConfig.startDate.getTime();
+
+    const startOffset = start.getTime() - timelineConfig.startDate.getTime();
+    const duration = end.getTime() - start.getTime();
 
     const left = Math.max(0, (startOffset / totalMs) * 100);
-    const width = Math.max(2, (duration / totalMs) * 100);
+    const width = Math.max(1.5, Math.min((duration / totalMs) * 100, 100 - left));
 
-    return {
-      left: `${left}%`,
-      width: `${Math.min(width, 100 - left)}%`,
-      opacity: 1,
-    };
+    return { left: `${left}%`, width: `${width}%` };
   };
 
-  // Generate date markers
-  const dateMarkers = useMemo(() => {
-    const markers: Date[] = [];
-    const currentDate = new Date(timelineRange.start);
+  // Get today line position
+  const todayPosition = useMemo(() => {
+    const totalMs = timelineConfig.endDate.getTime() - timelineConfig.startDate.getTime();
+    const todayOffset = timelineConfig.today.getTime() - timelineConfig.startDate.getTime();
+    return `${(todayOffset / totalMs) * 100}%`;
+  }, [timelineConfig]);
 
-    while (currentDate <= timelineRange.end) {
-      markers.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    if (markers.length > 7) {
-      const step = Math.ceil(markers.length / 7);
-      return markers.filter((_, index) => index % step === 0);
-    }
-
-    return markers;
-  }, [timelineRange]);
-
-  // Calculate completion percentage
-  const completionStats = useMemo(() => {
+  // Stats
+  const stats = useMemo(() => {
     const total = steps.length;
     const completed = steps.filter((s) => s.status === 'COMPLETED').length;
-    const inProgress = steps.filter((s) => s.status === 'ONGOING' || s.status === 'STARTED' || s.status === 'INITIATED').length;
     const totalActivities = steps.reduce((sum, s) => sum + (s.timeline?.length || 0), 0);
-    return {
-      total,
-      completed,
-      inProgress,
-      totalActivities,
-      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-    };
+    return { total, completed, totalActivities, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
   }, [steps]);
 
   if (loading) {
@@ -351,221 +232,202 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => 
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Header Stats */}
-      <S.GanttHeader>
-        <S.GanttTitle>
-          <TimelineIcon sx={{ fontSize: 24, color: '#6366F1' }} />
-          <span>Workflow Activity Timeline</span>
-        </S.GanttTitle>
-        <S.GanttStats>
-          <S.GanttStatItem>
-            <span className="label">Progress</span>
-            <S.GanttProgressBar>
-              <S.GanttProgressFill style={{ width: `${completionStats.percentage}%` }} />
-            </S.GanttProgressBar>
-            <span className="value">{completionStats.percentage}%</span>
-          </S.GanttStatItem>
-          <S.GanttStatItem>
-            <span className="label">Completed</span>
-            <span className="value completed">{completionStats.completed}/{completionStats.total}</span>
-          </S.GanttStatItem>
-          <S.GanttStatItem>
-            <span className="label">In Progress</span>
-            <span className="value in-progress">{completionStats.inProgress}</span>
-          </S.GanttStatItem>
-          <S.GanttStatItem>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Header */}
+      <S.GanttChartHeader>
+        <S.GanttChartTitle>
+          <TimelineIcon sx={{ fontSize: 22, color: '#1E3A5F' }} />
+          <span>Activity Log</span>
+        </S.GanttChartTitle>
+        <S.GanttChartStats>
+          <S.GanttChartStatBox>
+            <span className="value">{stats.percentage}%</span>
+            <span className="label">Complete</span>
+          </S.GanttChartStatBox>
+          <S.GanttChartStatBox>
+            <span className="value">{stats.completed}/{stats.total}</span>
+            <span className="label">Steps</span>
+          </S.GanttChartStatBox>
+          <S.GanttChartStatBox>
+            <span className="value">{stats.totalActivities}</span>
             <span className="label">Activities</span>
-            <span className="value">{completionStats.totalActivities}</span>
-          </S.GanttStatItem>
-        </S.GanttStats>
-      </S.GanttHeader>
+          </S.GanttChartStatBox>
+        </S.GanttChartStats>
+      </S.GanttChartHeader>
 
       {/* Gantt Chart */}
-      <S.GanttContainer>
-        {/* Date Header */}
-        <S.GanttDateHeader>
-          <S.GanttTaskColumn>Step</S.GanttTaskColumn>
-          <S.GanttTimelineColumn>
-            {dateMarkers.map((date, index) => (
-              <S.GanttDateMarker
-                key={index}
-                style={{ left: `${(index / (dateMarkers.length - 1 || 1)) * 100}%` }}
-              >
-                {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </S.GanttDateMarker>
-            ))}
-          </S.GanttTimelineColumn>
-        </S.GanttDateHeader>
+      <S.GanttChartWrapper>
+        {/* Date Header Row */}
+        <S.GanttChartGrid>
+          <S.GanttChartTaskHeader>Task Name</S.GanttChartTaskHeader>
+          <S.GanttChartTimelineHeader>
+            {dateColumns.map((date, idx) => {
+              const isToday = date.toDateString() === timelineConfig.today.toDateString();
+              const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+              return (
+                <S.GanttChartDateCell key={idx} isToday={isToday} isWeekend={isWeekend}>
+                  <span className="day">{date.getDate()}</span>
+                  <span className="month">{date.toLocaleDateString('en-US', { month: 'short' })}</span>
+                </S.GanttChartDateCell>
+              );
+            })}
+          </S.GanttChartTimelineHeader>
+        </S.GanttChartGrid>
 
-        {/* Step Rows */}
-        <S.GanttBody>
-          {steps.map((step, index) => {
-            const statusColor = getStatusColor(step.status);
-            const barStyle = calculateBarStyle(step);
-            const activityCount = step.timeline?.length || 0;
-            const isExpanded = step.id ? expandedSteps.has(step.id) : false;
+        {/* Task Rows */}
+        <S.GanttChartBody>
+          {steps.map((step, stepIdx) => {
+            const colorScheme = GANTT_COLORS[stepIdx % GANTT_COLORS.length];
+            const barPos = getBarPosition(
+              step.startedAt || step.timeline?.[0]?.createdAt,
+              step.completedAt || (step.timeline && step.timeline.length > 0 ? step.timeline[step.timeline.length - 1]?.createdAt : undefined)
+            );
+            const activities = step.timeline || [];
+            const isCompleted = step.status === 'COMPLETED';
 
             return (
-              <React.Fragment key={step.id || index}>
-                <S.GanttRow isEven={index % 2 === 0}>
-                  {/* Task Info */}
-                  <S.GanttTaskColumn>
-                    <S.GanttTaskInfo>
-                      <S.GanttTaskIndex style={{ backgroundColor: statusColor.light, color: statusColor.bg }}>
-                        {index + 1}
-                      </S.GanttTaskIndex>
-                      <S.GanttTaskDetails>
-                        <S.GanttTaskName>{step.name || 'Unnamed Step'}</S.GanttTaskName>
-                        <S.GanttTaskMeta>
-                          <S.GanttStatusBadge style={{ backgroundColor: statusColor.light, color: statusColor.bg }}>
-                            {getStatusIcon(step.status)}
-                            <span>{step.status?.replace('_', ' ') || 'Not Started'}</span>
-                          </S.GanttStatusBadge>
-                          {activityCount > 0 && (
-                            <Tooltip title={`${activityCount} activities - Click to ${isExpanded ? 'collapse' : 'expand'}`}>
-                              <IconButton
-                                size="small"
-                                onClick={() => step.id && toggleStepExpanded(step.id)}
-                                sx={{
-                                  padding: '2px',
-                                  backgroundColor: '#F3F4F6',
-                                  '&:hover': { backgroundColor: '#E5E7EB' }
-                                }}
-                              >
-                                <S.GanttActivityBadge sx={{ cursor: 'pointer' }}>
-                                  <TimelineIcon sx={{ fontSize: 12 }} />
-                                  <span>{activityCount}</span>
-                                  {isExpanded ?
-                                    <ExpandLessIcon sx={{ fontSize: 12, ml: 0.25 }} /> :
-                                    <ExpandMoreIcon sx={{ fontSize: 12, ml: 0.25 }} />
-                                  }
-                                </S.GanttActivityBadge>
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </S.GanttTaskMeta>
-                      </S.GanttTaskDetails>
-                    </S.GanttTaskInfo>
-                  </S.GanttTaskColumn>
+              <React.Fragment key={step.id || stepIdx}>
+                {/* Main Step Row */}
+                <S.GanttChartRow isMainTask>
+                  <S.GanttChartTaskCell>
+                    <S.GanttChartTaskName>
+                      <S.GanttChartTaskIcon style={{ backgroundColor: colorScheme.primary }}>
+                        {isCompleted ? (
+                          <CheckCircleIcon sx={{ fontSize: 14, color: '#fff' }} />
+                        ) : (
+                          <PlayArrowIcon sx={{ fontSize: 14, color: '#fff' }} />
+                        )}
+                      </S.GanttChartTaskIcon>
+                      <span className="name">{step.name || 'Unnamed Step'}</span>
+                      {activities.length > 0 && (
+                        <span className="count">({activities.length})</span>
+                      )}
+                    </S.GanttChartTaskName>
+                  </S.GanttChartTaskCell>
+                  <S.GanttChartTimelineCell>
+                    {/* Grid columns */}
+                    <S.GanttChartGridColumns>
+                      {dateColumns.map((date, idx) => {
+                        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                        return <S.GanttChartGridColumn key={idx} isWeekend={isWeekend} />;
+                      })}
+                    </S.GanttChartGridColumns>
 
-                  {/* Timeline Bar */}
-                  <S.GanttTimelineColumn>
-                    <S.GanttTimelineGrid>
-                      {dateMarkers.map((_, i) => (
-                        <S.GanttGridLine key={i} style={{ left: `${(i / (dateMarkers.length - 1 || 1)) * 100}%` }} />
-                      ))}
-                    </S.GanttTimelineGrid>
-                    {step.startedAt && (
+                    {/* Today marker */}
+                    <S.GanttChartTodayLine style={{ left: todayPosition }} />
+
+                    {/* Step bar */}
+                    {barPos && (
                       <Tooltip
                         title={
                           <Box sx={{ p: 0.5 }}>
                             <Box sx={{ fontWeight: 600, mb: 0.5 }}>{step.name}</Box>
-                            <Box sx={{ fontSize: '12px' }}>
-                              <Box>Start: {formatDate(step.startedAt)}</Box>
-                              {step.completedAt && <Box>End: {formatDate(step.completedAt)}</Box>}
-                              <Box>Duration: {formatDuration(step.startedAt, step.completedAt)}</Box>
+                            <Box sx={{ fontSize: 11 }}>
+                              {step.startedAt && <div>Start: {formatDate(step.startedAt)}</div>}
+                              {step.completedAt && <div>End: {formatDate(step.completedAt)}</div>}
+                              <div>Status: {step.status?.replace('_', ' ')}</div>
+                              <div>Activities: {activities.length}</div>
                             </Box>
                           </Box>
                         }
                         arrow
                         placement="top"
                       >
-                        <S.GanttBar
+                        <S.GanttChartBar
                           style={{
-                            ...barStyle,
-                            backgroundColor: statusColor.bg,
+                            left: barPos.left,
+                            width: barPos.width,
+                            backgroundColor: colorScheme.primary,
                           }}
-                          isCompleted={step.status === 'COMPLETED'}
+                          isCompleted={isCompleted}
                         >
-                          <S.GanttBarContent>
-                            {step.assignedWorkerIds && step.assignedWorkerIds.size > 0 && (
-                              <S.GanttBarWorkers>
-                                <PersonIcon sx={{ fontSize: 12 }} />
-                                <span>{step.assignedWorkerIds.size}</span>
-                              </S.GanttBarWorkers>
-                            )}
-                            <S.GanttBarDuration>{formatDuration(step.startedAt, step.completedAt)}</S.GanttBarDuration>
-                          </S.GanttBarContent>
-                        </S.GanttBar>
+                          <S.GanttChartBarLabel>{step.name}</S.GanttChartBarLabel>
+                        </S.GanttChartBar>
                       </Tooltip>
                     )}
-                  </S.GanttTimelineColumn>
-                </S.GanttRow>
+                  </S.GanttChartTimelineCell>
+                </S.GanttChartRow>
 
-                {/* Activity Timeline (Expandable) */}
-                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                  <S.ActivityTimelineContainer>
-                    <S.ActivityTimelineHeader>
-                      <TimelineIcon sx={{ fontSize: 16, color: '#6366F1' }} />
-                      <span>Activity History ({activityCount} events)</span>
-                    </S.ActivityTimelineHeader>
-                    <S.ActivityTimelineList>
-                      {step.timeline?.map((activity, actIndex) => {
-                        const config = getActivityConfig(activity.type);
-                        return (
-                          <S.ActivityTimelineItem key={activity.id || actIndex}>
-                            <S.ActivityTimelineConnector isFirst={actIndex === 0} isLast={actIndex === (step.timeline?.length || 0) - 1}>
-                              <S.ActivityTimelineDot style={{ backgroundColor: config.color }}>
-                                {config.icon}
-                              </S.ActivityTimelineDot>
-                            </S.ActivityTimelineConnector>
-                            <S.ActivityTimelineContent>
-                              <S.ActivityTimelineRow>
-                                <S.ActivityTypeBadge style={{ backgroundColor: config.lightColor, color: config.color }}>
-                                  {config.label}
-                                </S.ActivityTypeBadge>
-                                <S.ActivityTimelineTime>
+                {/* Activity Sub-rows */}
+                {activities.map((activity, actIdx) => {
+                  const config = getActivityConfig(activity.type);
+                  const activityPos = activity.createdAt ? getBarPosition(activity.createdAt, activity.createdAt) : null;
+
+                  return (
+                    <S.GanttChartRow key={activity.id || actIdx} isSubTask>
+                      <S.GanttChartTaskCell>
+                        <S.GanttChartSubTaskName>
+                          <S.GanttChartActivityIcon style={{ backgroundColor: config.color }}>
+                            {config.icon}
+                          </S.GanttChartActivityIcon>
+                          <span className="type">{config.label}</span>
+                          <span className="message">{activity.message}</span>
+                        </S.GanttChartSubTaskName>
+                      </S.GanttChartTaskCell>
+                      <S.GanttChartTimelineCell>
+                        <S.GanttChartGridColumns>
+                          {dateColumns.map((date, idx) => {
+                            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                            return <S.GanttChartGridColumn key={idx} isWeekend={isWeekend} />;
+                          })}
+                        </S.GanttChartGridColumns>
+
+                        <S.GanttChartTodayLine style={{ left: todayPosition }} />
+
+                        {activityPos && (
+                          <Tooltip
+                            title={
+                              <Box sx={{ p: 0.5 }}>
+                                <Box sx={{ fontWeight: 600, mb: 0.5 }}>{config.label}</Box>
+                                <Box sx={{ fontSize: 11 }}>{activity.message}</Box>
+                                <Box sx={{ fontSize: 10, mt: 0.5, opacity: 0.8 }}>
                                   {formatDate(activity.createdAt)}
-                                </S.ActivityTimelineTime>
-                              </S.ActivityTimelineRow>
-                              <S.ActivityTimelineMessage>
-                                {activity.message}
-                              </S.ActivityTimelineMessage>
-                              {activity.actorId && (
-                                <S.ActivityTimelineActor>
-                                  <PersonIcon sx={{ fontSize: 12 }} />
-                                  <span>User #{activity.actorId}</span>
-                                </S.ActivityTimelineActor>
-                              )}
-                            </S.ActivityTimelineContent>
-                          </S.ActivityTimelineItem>
-                        );
-                      })}
-                    </S.ActivityTimelineList>
-                  </S.ActivityTimelineContainer>
-                </Collapse>
+                                  {activity.actorId && ` • User #${activity.actorId}`}
+                                </Box>
+                              </Box>
+                            }
+                            arrow
+                            placement="top"
+                          >
+                            <S.GanttChartActivityBar
+                              style={{
+                                left: activityPos.left,
+                                backgroundColor: config.color,
+                              }}
+                            >
+                              {config.icon}
+                              <span>{formatShortDate(new Date(activity.createdAt!))}</span>
+                            </S.GanttChartActivityBar>
+                          </Tooltip>
+                        )}
+                      </S.GanttChartTimelineCell>
+                    </S.GanttChartRow>
+                  );
+                })}
               </React.Fragment>
             );
           })}
-        </S.GanttBody>
-      </S.GanttContainer>
+        </S.GanttChartBody>
+      </S.GanttChartWrapper>
 
-      {/* Activity Type Legend */}
-      <S.GanttLegend>
-        <S.GanttLegendTitle>Activity Types</S.GanttLegendTitle>
-        <S.GanttLegendItems>
-          {Object.entries(ACTIVITY_CONFIG).slice(0, 8).map(([type, config]) => (
-            <S.GanttLegendItem key={type}>
-              <S.GanttLegendColor style={{ backgroundColor: config.color }} />
+      {/* Legend */}
+      <S.GanttChartLegend>
+        <S.GanttChartLegendSection>
+          <span className="title">Activity Types:</span>
+          {Object.entries(ACTIVITY_CONFIG).slice(0, 6).map(([key, config]) => (
+            <S.GanttChartLegendItem key={key}>
+              <S.GanttChartLegendDot style={{ backgroundColor: config.color }} />
               <span>{config.label}</span>
-            </S.GanttLegendItem>
+            </S.GanttChartLegendItem>
           ))}
-        </S.GanttLegendItems>
-      </S.GanttLegend>
-
-      {/* Status Legend */}
-      <S.GanttLegend>
-        <S.GanttLegendTitle>Status Legend</S.GanttLegendTitle>
-        <S.GanttLegendItems>
-          {Object.entries(STATUS_COLORS).map(([status, colors]) => (
-            <S.GanttLegendItem key={status}>
-              <S.GanttLegendColor style={{ backgroundColor: colors.bg }} />
-              <span>{status.replace('_', ' ')}</span>
-            </S.GanttLegendItem>
-          ))}
-        </S.GanttLegendItems>
-      </S.GanttLegend>
+        </S.GanttChartLegendSection>
+        <S.GanttChartLegendSection>
+          <S.GanttChartLegendItem>
+            <S.GanttChartTodayIndicator />
+            <span>Today</span>
+          </S.GanttChartLegendItem>
+        </S.GanttChartLegendSection>
+      </S.GanttChartLegend>
     </Box>
   );
 };
