@@ -2269,3 +2269,50 @@ export const GanttChartTodayIndicator = styled(Box)(() => ({
   backgroundColor: '#EF4444',
   borderRadius: rem(2),
 }));
+
+// Step Name Edit Styles
+export const StepTitleContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  fontSize: rem(14),
+  color: theme.palette.text.primary,
+  marginBottom: rem(2),
+}));
+
+export const StepTitleText = styled('span')(() => ({
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+}));
+
+export const StepTitleEditButton = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.25),
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  opacity: 0.5,
+  transition: 'opacity 0.2s ease',
+  color: theme.palette.text.secondary,
+  borderRadius: '50%',
+  '&:hover': {
+    opacity: 1,
+    backgroundColor: theme.palette.colors.grey_100,
+  },
+}));
+
+export const StepTitleEditContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  flex: 1,
+}));
+
+export const StepTitleIndex = styled('span')(() => ({
+  flexShrink: 0,
+}));

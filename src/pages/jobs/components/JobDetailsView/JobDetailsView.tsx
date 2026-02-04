@@ -149,12 +149,12 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'complaints'} onClick={() => setActiveTab('complaints')}>
             Complaints
           </S.TabButton>
-          <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
+          {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
             History
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
+          </S.TabButton> */}
+          {/* <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
             Form
-          </S.TabButton>
+          </S.TabButton> */}
         </S.TabsContainer>
 
         {/* Main Content Layout */}
@@ -185,10 +185,7 @@ export const JobDetailsView: React.FC = () => {
                 />
 
                 {/* Additional Information Section - Description and Attachments */}
-                <AdditionalInformationSection
-                  job={job}
-                  defaultExpanded={false}
-                />
+                <AdditionalInformationSection job={job} defaultExpanded={false} />
               </>
             )}
           </S.MainContentPanel>
