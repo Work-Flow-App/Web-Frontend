@@ -30,6 +30,11 @@ export const JobDetailsView: React.FC = () => {
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [workflowUpdateTrigger, setWorkflowUpdateTrigger] = useState(0);
+
+  const handleWorkflowUpdate = useCallback(() => {
+    setWorkflowUpdateTrigger((prev) => prev + 1);
+  }, []);
 
   const fetchJobDetails = useCallback(async () => {
     if (!jobId) return;
@@ -154,7 +159,7 @@ export const JobDetailsView: React.FC = () => {
         {/* Main Content Layout */}
         <S.JobDetailsLayout>
           {/* Left Sidebar - Workflow */}
-          <JobWorkflowStages job={job} />
+          <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />
 
           {/* Right Content - Details */}
           <S.MainContentPanel>
@@ -164,7 +169,7 @@ export const JobDetailsView: React.FC = () => {
               </S.DetailsSection>
             ) : activeTab === 'activity-log' ? (
               <S.DetailsSection>
-                <JobActivityLogTab job={job} />
+                <JobActivityLogTab job={job} refreshTrigger={workflowUpdateTrigger} />
               </S.DetailsSection>
             ) : (
               <>

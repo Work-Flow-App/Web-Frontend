@@ -566,10 +566,10 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                     </S.EventNoteBox>
 
                     {/* Attachments section */}
-                    {step.id && <StepAttachmentsSection stepId={step.id} />}
+                    {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
 
                     {/* Comments section */}
-                    {step.id && <StepCommentsSection stepId={step.id} />}
+                    {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
                   </Box>
                 </Collapse>
               </Box>

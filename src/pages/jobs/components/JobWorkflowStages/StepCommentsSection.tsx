@@ -7,9 +7,10 @@ import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentsSectionProps {
   stepId: number;
+  onUpdate?: () => void;
 }
 
-export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId }) => {
+export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [comments, setComments] = useState<StepCommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
       setEditingCommentId(null);
       setEditingContent('');
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error updating comment:', error);
       showError('Failed to update comment');
@@ -74,6 +76,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
       showSuccess('Comment added successfully');
       setNewComment('');
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error adding comment:', error);
       showError('Failed to add comment');
@@ -87,6 +90,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
       await stepActivityService.deleteComment(commentId);
       showSuccess('Comment deleted successfully');
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error deleting comment:', error);
       showError('Failed to delete comment');

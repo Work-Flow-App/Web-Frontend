@@ -21,6 +21,7 @@ import * as S from '../../../JobDetailsPage.styles';
 
 interface JobActivityLogTabProps {
   job: JobResponse;
+  refreshTrigger?: number;
 }
 
 interface TimelineActivity {
@@ -81,7 +82,7 @@ const formatShortDate = (date: Date) => {
   return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 };
 
-export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => {
+export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refreshTrigger }) => {
   const [steps, setSteps] = useState<StepWithTimeline[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -125,7 +126,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job }) => 
 
   useEffect(() => {
     fetchActivityData();
-  }, [fetchActivityData]);
+  }, [fetchActivityData, refreshTrigger]);
 
   // Calculate timeline range
   const timelineConfig = useMemo(() => {
