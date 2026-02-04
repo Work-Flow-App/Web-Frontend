@@ -1137,6 +1137,83 @@ export const StyledTextField = styled('textarea')(({ theme }) => ({
   },
 }));
 
+// Additional Information Section Styles
+export const AdditionalInfoContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(3),
+}));
+
+export const FormLabel = styled('label')(({ theme }) => ({
+  display: 'block',
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(1),
+}));
+
+export const DescriptionTextArea = styled('textarea')(({ theme }) => ({
+  width: '100%',
+  padding: theme.spacing(1.5),
+  fontSize: rem(14),
+  fontFamily: 'inherit',
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(0.5),
+  backgroundColor: theme.palette.colors.grey_50,
+  resize: 'vertical',
+  minHeight: rem(120),
+  outline: 'none',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  color: theme.palette.text.primary,
+  lineHeight: 1.5,
+  '&:hover': {
+    borderColor: theme.palette.colors.grey_400,
+  },
+  '&:focus': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors.white,
+  },
+  '&::placeholder': {
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const UploadArea = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isDragging',
+})<{ isDragging?: boolean }>(({ theme, isDragging }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  cursor: 'pointer',
+  border: `2px dashed ${isDragging ? theme.palette.primary.main : theme.palette.colors.grey_300}`,
+  borderRadius: theme.spacing(1),
+  backgroundColor: isDragging ? theme.palette.primary.light + '10' : 'transparent',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors.grey_50,
+  },
+}));
+
+export const UploadText = styled(Box)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+}));
+
+export const UploadHighlight = styled('span')(({ theme }) => ({
+  color: theme.palette.primary.main,
+  fontWeight: theme.typography.fontWeightMedium,
+}));
+
+export const UploadSubtext = styled(Box)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  marginTop: theme.spacing(0.5),
+}));
+
 // Documents Tab Styles
 export const DocumentsGrid = styled(Box)(({ theme }) => ({
   display: 'grid',

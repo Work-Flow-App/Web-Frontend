@@ -16,6 +16,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
+import { AdditionalInformationSection } from '../AdditionalInformationSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 
@@ -183,17 +184,11 @@ export const JobDetailsView: React.FC = () => {
                   defaultExpanded={true}
                 />
 
-                {/* Policy Details Section - Shows custom fields from template */}
-                {templateFields.length > 0 && (
-                  <JobDetailsSection
-                    job={job}
-                    client={client}
-                    template={template}
-                    templateFields={templateFields}
-                    title="Policy Details"
-                    defaultExpanded={false}
-                  />
-                )}
+                {/* Additional Information Section - Description and Attachments */}
+                <AdditionalInformationSection
+                  job={job}
+                  defaultExpanded={false}
+                />
               </>
             )}
           </S.MainContentPanel>
