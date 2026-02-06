@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FloowLogo } from '../../UI/FloowLogo';
 import { FeatureCard } from '../../UI/FeatureCard';
 import { DEFAULT_AUTH_FEATURES, DEFAULT_AUTH_TAGLINE } from '../../../enums';
@@ -18,6 +18,45 @@ export const AuthRightSection: React.FC<AuthRightSectionProps> = ({
   enableAutoPlay = false,
 }) => {
   const [activeCardIndex, setActiveCardIndex] = useState(1); // Start with middle card active
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScrolling = useRef(false);
+
+  // Handle scroll to change cards
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+
+      if (isScrolling.current) return;
+
+      isScrolling.current = true;
+
+      if (e.deltaY > 0) {
+        // Scroll down - next card
+        setActiveCardIndex((prev) => (prev + 1) % features.length);
+      } else {
+        // Scroll up - previous card
+        setActiveCardIndex((prev) => (prev - 1 + features.length) % features.length);
+      }
+
+      // Throttle scrolling
+      setTimeout(() => {
+        isScrolling.current = false;
+      }, 500);
+    },
+    [features.length]
+  );
+
+  // Attach wheel event listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [handleWheel]);
 
   // Auto-play animation
   useEffect(() => {
@@ -40,7 +79,7 @@ export const AuthRightSection: React.FC<AuthRightSectionProps> = ({
   };
 
   return (
-    <RightSection>
+    <RightSection ref={containerRef}>
       <RightContent>
         <BrandSection>
           <FloowLogo variant="white" showText={true} />
