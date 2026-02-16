@@ -1,23 +1,53 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
 import { stepActivityService } from '../../../../services/api';
 import type { StepCommentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
+import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { rem } from '../../../../components/UI/Typography/utility';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentsSectionProps {
   stepId: number;
+  onUpdate?: () => void;
 }
 
-export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId }) => {
+interface NewCommentFormValues {
+  newComment: string;
+}
+
+interface EditCommentFormValues {
+  editContent: string;
+}
+
+const compactTextAreaStyles = {
+  input: {
+    minHeight: rem(60),
+    fontSize: rem(12),
+    padding: rem(8),
+  },
+};
+
+export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [comments, setComments] = useState<StepCommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState('');
-  const [newComment, setNewComment] = useState('');
   const [saving, setSaving] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
+
+  const newCommentMethods = useForm<NewCommentFormValues>({
+    defaultValues: {
+      newComment: '',
+    },
+  });
+
+  const editCommentMethods = useForm<EditCommentFormValues>({
+    defaultValues: {
+      editContent: '',
+    },
+  });
 
   const fetchComments = useCallback(async () => {
     try {
@@ -40,23 +70,25 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     e.stopPropagation();
     if (comment.id) {
       setEditingCommentId(comment.id);
-      setEditingContent(comment.content || '');
+      editCommentMethods.setValue('editContent', comment.content || '');
     }
   };
 
   const handleCancelEdit = () => {
     setEditingCommentId(null);
-    setEditingContent('');
+    editCommentMethods.reset();
   };
 
   const handleSaveComment = async (commentId: number) => {
+    const editContent = editCommentMethods.getValues('editContent');
     try {
       setSaving(true);
-      await stepActivityService.updateComment(commentId, { content: editingContent });
+      await stepActivityService.updateComment(commentId, { content: editContent });
       showSuccess('Comment updated successfully');
       setEditingCommentId(null);
-      setEditingContent('');
+      editCommentMethods.reset();
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error updating comment:', error);
       showError('Failed to update comment');
@@ -66,14 +98,16 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
   };
 
   const handleAddComment = async () => {
+    const newComment = newCommentMethods.getValues('newComment');
     if (!newComment.trim()) return;
 
     try {
       setAddingNew(true);
       await stepActivityService.addComment(stepId, { content: newComment.trim() });
       showSuccess('Comment added successfully');
-      setNewComment('');
+      newCommentMethods.reset();
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error adding comment:', error);
       showError('Failed to add comment');
@@ -87,11 +121,14 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
       await stepActivityService.deleteComment(commentId);
       showSuccess('Comment deleted successfully');
       fetchComments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error deleting comment:', error);
       showError('Failed to delete comment');
     }
   };
+
+  const newCommentValue = newCommentMethods.watch('newComment');
 
   if (loading) {
     return (
@@ -117,36 +154,28 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
           {comments.map((comment) => (
             <S.CommentItemBox key={comment.id}>
               {editingCommentId === comment.id ? (
-                <>
-                  <S.StyledTextField
-                    rows={2}
-                    value={editingContent}
-                    onChange={(e) => setEditingContent(e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <S.ButtonActionsRow>
-                    <S.EventNoteEditButton
-                      onClick={() => handleCancelEdit()}
-                      className="cancel"
-                    >
-                      Cancel
-                    </S.EventNoteEditButton>
-                    <S.EventNoteEditButton
-                      onClick={() => comment.id && handleSaveComment(comment.id)}
-                      disabled={saving}
-                    >
-                      {saving ? 'Saving...' : 'Save'}
-                    </S.EventNoteEditButton>
-                  </S.ButtonActionsRow>
-                </>
+                <FormProvider {...editCommentMethods}>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <TextArea name="editContent" rows={2} fullWidth styles={compactTextAreaStyles} />
+                    <S.ButtonActionsRow>
+                      <S.EventNoteEditButton onClick={() => handleCancelEdit()} className="cancel">
+                        Cancel
+                      </S.EventNoteEditButton>
+                      <S.EventNoteEditButton
+                        onClick={() => comment.id && handleSaveComment(comment.id)}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save'}
+                      </S.EventNoteEditButton>
+                    </S.ButtonActionsRow>
+                  </div>
+                </FormProvider>
               ) : (
                 <>
                   <S.CommentContentRow>
                     <S.EventNoteContent>{comment.content}</S.EventNoteContent>
                     <S.CommentActionsRow>
-                      <S.EventNoteEditButton onClick={(e) => handleEditComment(comment, e)}>
-                        Edit
-                      </S.EventNoteEditButton>
+                      <S.EventNoteEditButton onClick={(e) => handleEditComment(comment, e)}>Edit</S.EventNoteEditButton>
                       <S.EventNoteEditButton
                         onClick={() => comment.id && handleDeleteComment(comment.id)}
                         className="delete"
@@ -156,9 +185,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
                     </S.CommentActionsRow>
                   </S.CommentContentRow>
                   {comment.createdAt && (
-                    <S.CommentTimestamp>
-                      {new Date(comment.createdAt).toLocaleString()}
-                    </S.CommentTimestamp>
+                    <S.CommentTimestamp>{new Date(comment.createdAt).toLocaleString()}</S.CommentTimestamp>
                   )}
                 </>
               )}
@@ -168,21 +195,22 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
       )}
 
       <S.NewCommentBox>
-        <S.StyledTextField
-          rows={2}
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
-          onClick={(e) => e.stopPropagation()}
-        />
-        <S.ButtonActionsRow>
-          <S.EventNoteEditButton
-            onClick={handleAddComment}
-            disabled={!newComment.trim() || addingNew}
-          >
-            {addingNew ? 'Adding...' : 'Add Comment'}
-          </S.EventNoteEditButton>
-        </S.ButtonActionsRow>
+        <FormProvider {...newCommentMethods}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <TextArea
+              name="newComment"
+              rows={2}
+              placeholder="Add a comment..."
+              fullWidth
+              styles={compactTextAreaStyles}
+            />
+            <S.ButtonActionsRow>
+              <S.EventNoteEditButton onClick={handleAddComment} disabled={!newCommentValue?.trim() || addingNew}>
+                {addingNew ? 'Adding...' : 'Add Comment'}
+              </S.EventNoteEditButton>
+            </S.ButtonActionsRow>
+          </div>
+        </FormProvider>
       </S.NewCommentBox>
     </S.EventNoteBox>
   );

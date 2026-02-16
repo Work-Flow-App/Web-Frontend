@@ -333,6 +333,26 @@ export const JobWorkflowResponseStatusEnum = {
 
 export type JobWorkflowResponseStatusEnum = typeof JobWorkflowResponseStatusEnum[keyof typeof JobWorkflowResponseStatusEnum];
 
+export interface JobWorkflowStepCreateRequest {
+    'name'?: string;
+    'description'?: string;
+    'orderIndex'?: number;
+    'status'?: JobWorkflowStepCreateRequestStatusEnum;
+    'assignedWorkerIds'?: Set<number>;
+}
+
+export const JobWorkflowStepCreateRequestStatusEnum = {
+    Initiated: 'INITIATED',
+    NotStarted: 'NOT_STARTED',
+    Pending: 'PENDING',
+    Ongoing: 'ONGOING',
+    Started: 'STARTED',
+    Completed: 'COMPLETED',
+    Skipped: 'SKIPPED'
+} as const;
+
+export type JobWorkflowStepCreateRequestStatusEnum = typeof JobWorkflowStepCreateRequestStatusEnum[keyof typeof JobWorkflowStepCreateRequestStatusEnum];
+
 export interface JobWorkflowStepResponse {
     'id'?: number;
     'name'?: string;
@@ -415,10 +435,10 @@ export interface PageAssetResponse {
     'empty'?: boolean;
 }
 export interface PageableObject {
-    'unpaged'?: boolean;
+    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
-    'pageNumber'?: number;
+    'unpaged'?: boolean;
     'offset'?: number;
     'sort'?: SortObject;
 }
@@ -3548,6 +3568,49 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
         /**
          * 
          * @param {number} jobWorkflowId 
+         * @param {JobWorkflowStepCreateRequest} jobWorkflowStepCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addStep: async (jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'jobWorkflowId' is not null or undefined
+            assertParamExists('addStep', 'jobWorkflowId', jobWorkflowId)
+            // verify required parameter 'jobWorkflowStepCreateRequest' is not null or undefined
+            assertParamExists('addStep', 'jobWorkflowStepCreateRequest', jobWorkflowStepCreateRequest)
+            const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}/steps`
+                .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(jobWorkflowStepCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} jobWorkflowId 
          * @param {number} workerId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3873,6 +3936,19 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {number} jobWorkflowId 
+         * @param {JobWorkflowStepCreateRequest} jobWorkflowStepCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.addStep']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} jobWorkflowId 
          * @param {number} workerId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3982,6 +4058,16 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
         /**
          * 
          * @param {number} jobWorkflowId 
+         * @param {JobWorkflowStepCreateRequest} jobWorkflowStepCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} jobWorkflowId 
          * @param {number} workerId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4062,6 +4148,17 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
  * JobWorkflowsApi - object-oriented interface
  */
 export class JobWorkflowsApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} jobWorkflowId 
+     * @param {JobWorkflowStepCreateRequest} jobWorkflowStepCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {number} jobWorkflowId 
@@ -4793,6 +4890,82 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @summary Get all attachments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStepAttachments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'stepId' is not null or undefined
+            assertParamExists('getStepAttachments', 'stepId', stepId)
+            const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/attachments`
+                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get all comments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStepComments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'stepId' is not null or undefined
+            assertParamExists('getStepComments', 'stepId', stepId)
+            const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/comments`
+                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get discussion timeline (Comments & Attachments) for a step
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -4992,6 +5165,32 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Get all attachments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getStepAttachments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepAttachmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepAttachments(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepAttachments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get all comments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getStepComments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepCommentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepComments(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepComments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Get discussion timeline (Comments & Attachments) for a step
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -5091,6 +5290,26 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
         },
         /**
          * 
+         * @summary Get all attachments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStepAttachments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepAttachmentResponse>> {
+            return localVarFp.getStepAttachments(stepId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all comments for a step
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getStepComments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepCommentResponse>> {
+            return localVarFp.getStepComments(stepId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Get discussion timeline (Comments & Attachments) for a step
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -5180,6 +5399,28 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      */
     public getStep1(stepId: number, options?: RawAxiosRequestConfig) {
         return WorkerJobWorkflowsApiFp(this.configuration).getStep1(stepId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all attachments for a step
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getStepAttachments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).getStepAttachments(stepId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all comments for a step
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getStepComments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).getStepComments(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

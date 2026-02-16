@@ -16,6 +16,7 @@ import * as S from '../../JobDetailsPage.styles';
 
 interface StepAttachmentsSectionProps {
   stepId: number;
+  onUpdate?: () => void;
 }
 
 const getFileIcon = (fileType?: string) => {
@@ -33,7 +34,7 @@ const getFileIcon = (fileType?: string) => {
   return <InsertDriveFileIcon fontSize="small" sx={{ color: 'text.secondary' }} />;
 };
 
-export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId }) => {
+export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
       await stepActivityService.uploadAttachment(stepId, file);
       showSuccess('Attachment uploaded successfully');
       fetchAttachments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error uploading attachment:', error);
       showError('Failed to upload attachment');
@@ -88,6 +90,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
       await stepActivityService.deleteAttachment(attachmentId);
       showSuccess('Attachment deleted successfully');
       fetchAttachments();
+      onUpdate?.();
     } catch (error) {
       console.error('Error deleting attachment:', error);
       showError('Failed to delete attachment');

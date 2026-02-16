@@ -15,8 +15,9 @@ import CheckIcon from '@mui/icons-material/Check';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import type { JobResponse, WorkerResponse } from '../../../../services/api';
-import { jobWorkflowService, workerService } from '../../../../services/api';
+import SaveIcon from '@mui/icons-material/Save';
+import type { JobResponse, WorkerResponse, WorkflowResponse } from '../../../../services/api';
+import { jobWorkflowService, workerService, workflowService } from '../../../../services/api';
 import type { JobWorkflowResponse, JobWorkflowStepResponse } from '../../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -102,6 +103,7 @@ const getStatusInfo = (status?: string) => {
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
+  const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedStepId, setExpandedStepId] = useState<number | null>(null);
   const [workers, setWorkers] = useState<Map<number, WorkerResponse>>(new Map());
@@ -110,6 +112,11 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
   const [editingNotes, setEditingNotes] = useState<string>('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [updatingStep, setUpdatingStep] = useState<number | null>(null);
+  const [editingWorkflowName, setEditingWorkflowName] = useState(false);
+  const [workflowNameValue, setWorkflowNameValue] = useState('');
+  const [savingWorkflowName, setSavingWorkflowName] = useState(false);
+  const [editingStepNameId, setEditingStepNameId] = useState<number | null>(null);
+  const [stepNameValue, setStepNameValue] = useState('');
 
   const fetchJobWorkflow = useCallback(async () => {
     if (!job.id) {
@@ -121,6 +128,13 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       setLoading(true);
       const response = await jobWorkflowService.getJobWorkflowByJobId(job.id);
       setJobWorkflow(response.data);
+
+      // Fetch workflow details to get the name
+      if (job.workflowId) {
+        const workflowResponse = await workflowService.getWorkflowById(job.workflowId);
+        setWorkflow(workflowResponse.data);
+        setWorkflowNameValue(workflowResponse.data.name || '');
+      }
 
       // Fetch workers for assigned worker IDs
       const workerIds = new Set<number>();
@@ -159,7 +173,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     } finally {
       setLoading(false);
     }
-  }, [job.id]);
+  }, [job.id, job.workflowId]);
 
   useEffect(() => {
     fetchJobWorkflow();
@@ -243,6 +257,70 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
+  const handleEditWorkflowName = () => {
+    setEditingWorkflowName(true);
+  };
+
+  const handleEditStepName = (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (step.id) {
+      setEditingStepNameId(step.id);
+      setStepNameValue(step.name || '');
+    }
+  };
+
+  const handleCancelStepNameEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingStepNameId(null);
+    setStepNameValue('');
+  };
+
+  const handleSaveStepName = async (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!step.id || !jobWorkflow?.id || !stepNameValue.trim()) return;
+
+    try {
+      setUpdatingStep(step.id);
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
+        name: stepNameValue.trim(),
+      });
+      showSuccess('Step name updated successfully');
+      setEditingStepNameId(null);
+      setStepNameValue('');
+      fetchJobWorkflow();
+      onStepUpdate?.();
+    } catch (error) {
+      console.error('Error updating step name:', error);
+      showError('Failed to update step name');
+    } finally {
+      setUpdatingStep(null);
+    }
+  };
+
+  const handleCancelWorkflowNameEdit = () => {
+    setEditingWorkflowName(false);
+    setWorkflowNameValue(workflow?.name || '');
+  };
+
+  const handleSaveWorkflowName = async () => {
+    if (!job.workflowId || !workflowNameValue.trim()) return;
+
+    try {
+      setSavingWorkflowName(true);
+      await workflowService.updateWorkflow(job.workflowId, {
+        name: workflowNameValue.trim(),
+      });
+      showSuccess('Workflow name updated successfully');
+      setEditingWorkflowName(false);
+      fetchJobWorkflow();
+    } catch (error) {
+      console.error('Error updating workflow name:', error);
+      showError('Failed to update workflow name');
+    } finally {
+      setSavingWorkflowName(false);
+    }
+  };
+
   // Sort steps by orderIndex from API
   const sortedSteps = jobWorkflow?.steps
     ? [...jobWorkflow.steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
@@ -281,41 +359,73 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     <S.WorkflowSidebar>
       <S.WorkflowSidebarHeader>
         <S.WorkflowSidebarTitle>
-          Workflow Name
-          <Box
-            component="span"
-            sx={{
-              display: 'inline-flex',
-              gap: 0.5,
-              ml: 1,
-            }}
-          >
-            {Array.from(workers.values())
-              .slice(0, 2)
-              .map((worker) => (
-                <Box
-                  key={worker.id}
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 10,
-                    fontWeight: 600,
-                  }}
-                >
-                  {worker.initials || worker.name?.substring(0, 2).toUpperCase()}
-                </Box>
-              ))}
-          </Box>
+          {editingWorkflowName ? (
+            <TextField
+              size="small"
+              value={workflowNameValue}
+              onChange={(e) => setWorkflowNameValue(e.target.value)}
+              autoFocus
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontSize: 14,
+                  fontWeight: 600,
+                },
+                '& .MuiOutlinedInput-input': {
+                  py: 0.5,
+                  px: 1,
+                },
+              }}
+            />
+          ) : (
+            <>
+              {workflow?.name || 'Workflow Name'}
+              <Box
+                component="span"
+                sx={{
+                  display: 'inline-flex',
+                  gap: 0.5,
+                  ml: 1,
+                }}
+              >
+                {Array.from(workers.values())
+                  .slice(0, 2)
+                  .map((worker) => (
+                    <Box
+                      key={worker.id}
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {worker.initials || worker.name?.substring(0, 2).toUpperCase()}
+                    </Box>
+                  ))}
+              </Box>
+            </>
+          )}
         </S.WorkflowSidebarTitle>
-        <IconButton size="small">
-          <EditIcon fontSize="small" />
-        </IconButton>
+        {editingWorkflowName ? (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <IconButton size="small" onClick={handleCancelWorkflowNameEdit}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName}>
+              <SaveIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        ) : (
+          <IconButton size="small" onClick={handleEditWorkflowName}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        )}
       </S.WorkflowSidebarHeader>
 
       {/* Timeline List */}
@@ -397,16 +507,50 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
               {/* Step content */}
               <Box sx={{ ml: 1.5, flex: 1, pb: 2, minWidth: 0 }}>
                 {/* Step title */}
-                <Box
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: '#333',
-                    mb: 0.25,
-                  }}
-                >
-                  {index + 1}. {step.name || `Step ${index + 1}`}
-                </Box>
+                <S.StepTitleContainer>
+                  {editingStepNameId === step.id ? (
+                    <S.StepTitleEditContainer>
+                      <S.StepTitleIndex>{index + 1}.</S.StepTitleIndex>
+                      <TextField
+                        size="small"
+                        value={stepNameValue}
+                        onChange={(e) => setStepNameValue(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                        sx={{
+                          flex: 1,
+                          '& .MuiOutlinedInput-root': {
+                            fontSize: 14,
+                            fontWeight: 600,
+                          },
+                          '& .MuiOutlinedInput-input': {
+                            py: 0.25,
+                            px: 0.5,
+                          },
+                        }}
+                      />
+                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)}>
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleSaveStepName(step, e)}
+                        disabled={updatingStep === step.id}
+                      >
+                        <SaveIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </S.StepTitleEditContainer>
+                  ) : (
+                    <>
+                      <S.StepTitleText onClick={(e) => handleEditStepName(step, e)}>
+                        {index + 1}. {step.name || `Step ${index + 1}`}
+                      </S.StepTitleText>
+                      <S.StepTitleEditButton onClick={(e) => handleEditStepName(step, e)}>
+                        <EditIcon sx={{ fontSize: 14 }} />
+                      </S.StepTitleEditButton>
+                    </>
+                  )}
+                </S.StepTitleContainer>
 
                 {/* Step description */}
                 <Box
@@ -566,10 +710,10 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                     </S.EventNoteBox>
 
                     {/* Attachments section */}
-                    {step.id && <StepAttachmentsSection stepId={step.id} />}
+                    {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
 
                     {/* Comments section */}
-                    {step.id && <StepCommentsSection stepId={step.id} />}
+                    {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
                   </Box>
                 </Collapse>
               </Box>

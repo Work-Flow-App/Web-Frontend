@@ -1137,6 +1137,83 @@ export const StyledTextField = styled('textarea')(({ theme }) => ({
   },
 }));
 
+// Additional Information Section Styles
+export const AdditionalInfoContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(3),
+}));
+
+export const FormLabel = styled('label')(({ theme }) => ({
+  display: 'block',
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(1),
+}));
+
+export const DescriptionTextArea = styled('textarea')(({ theme }) => ({
+  width: '100%',
+  padding: theme.spacing(1.5),
+  fontSize: rem(14),
+  fontFamily: 'inherit',
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(0.5),
+  backgroundColor: theme.palette.colors.grey_50,
+  resize: 'vertical',
+  minHeight: rem(120),
+  outline: 'none',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  color: theme.palette.text.primary,
+  lineHeight: 1.5,
+  '&:hover': {
+    borderColor: theme.palette.colors.grey_400,
+  },
+  '&:focus': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors.white,
+  },
+  '&::placeholder': {
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const UploadArea = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isDragging',
+})<{ isDragging?: boolean }>(({ theme, isDragging }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  cursor: 'pointer',
+  border: `2px dashed ${isDragging ? theme.palette.primary.main : theme.palette.colors.grey_300}`,
+  borderRadius: theme.spacing(1),
+  backgroundColor: isDragging ? theme.palette.primary.light + '10' : 'transparent',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors.grey_50,
+  },
+}));
+
+export const UploadText = styled(Box)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+}));
+
+export const UploadHighlight = styled('span')(({ theme }) => ({
+  color: theme.palette.primary.main,
+  fontWeight: theme.typography.fontWeightMedium,
+}));
+
+export const UploadSubtext = styled(Box)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  marginTop: theme.spacing(0.5),
+}));
+
 // Documents Tab Styles
 export const DocumentsGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
@@ -1247,4 +1324,995 @@ export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
 export const DocumentsEmptySubtext = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
   color: theme.palette.text.secondary,
+}));
+
+// ============================================
+// Gantt Chart / Activity Log Styles
+// ============================================
+
+export const GanttHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: theme.spacing(2),
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const GanttTitle = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  '& span': {
+    fontSize: rem(18),
+    fontWeight: theme.typography.fontWeightBold,
+    color: theme.palette.text.primary,
+  },
+}));
+
+export const GanttStats = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(3),
+  flexWrap: 'wrap',
+}));
+
+export const GanttStatItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  '& .label': {
+    fontSize: rem(12),
+    color: theme.palette.text.secondary,
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+  '& .value': {
+    fontSize: rem(14),
+    fontWeight: theme.typography.fontWeightBold,
+    color: theme.palette.text.primary,
+    '&.completed': {
+      color: '#10B981',
+    },
+    '&.in-progress': {
+      color: '#3B82F6',
+    },
+  },
+}));
+
+export const GanttProgressBar = styled(Box)(({ theme }) => ({
+  width: rem(100),
+  height: rem(8),
+  backgroundColor: theme.palette.colors.grey_200,
+  borderRadius: rem(4),
+  overflow: 'hidden',
+}));
+
+export const GanttProgressFill = styled(Box)(() => ({
+  height: '100%',
+  background: 'linear-gradient(90deg, #10B981 0%, #34D399 100%)',
+  borderRadius: rem(4),
+  transition: 'width 0.3s ease',
+}));
+
+export const GanttContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  overflow: 'hidden',
+}));
+
+export const GanttDateHeader = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '280px 1fr',
+  backgroundColor: floowColors.grey[50],
+  borderBottom: `2px solid ${theme.palette.colors.grey_200}`,
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: '180px 1fr',
+  },
+}));
+
+export const GanttTaskColumn = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2),
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  borderRight: `1px solid ${theme.palette.colors.grey_200}`,
+  display: 'flex',
+  alignItems: 'center',
+}));
+
+export const GanttTimelineColumn = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  padding: theme.spacing(1.5, 2),
+  minHeight: rem(40),
+  display: 'flex',
+  alignItems: 'center',
+}));
+
+export const GanttDateMarker = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  fontSize: rem(11),
+  fontWeight: theme.typography.fontWeightMedium,
+  color: theme.palette.text.secondary,
+  transform: 'translateX(-50%)',
+  whiteSpace: 'nowrap',
+}));
+
+export const GanttBody = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+interface GanttRowProps {
+  isEven?: boolean;
+}
+
+export const GanttRow = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isEven',
+})<GanttRowProps>(({ theme, isEven }) => ({
+  display: 'grid',
+  gridTemplateColumns: '280px 1fr',
+  backgroundColor: isEven ? theme.palette.colors.grey_50 : theme.palette.colors.white,
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  transition: 'background-color 0.2s ease',
+  '&:hover': {
+    backgroundColor: floowColors.blue[50],
+  },
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: '180px 1fr',
+  },
+}));
+
+export const GanttTaskInfo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(1.5, 0),
+}));
+
+export const GanttTaskIndex = styled(Box)(() => ({
+  width: rem(28),
+  height: rem(28),
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: rem(12),
+  fontWeight: Bold._700,
+  flexShrink: 0,
+}));
+
+export const GanttTaskDetails = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(4),
+}));
+
+export const GanttTaskName = styled(Box)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}));
+
+export const GanttTaskMeta = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  flexWrap: 'wrap',
+}));
+
+export const GanttStatusBadge = styled(Box)(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(4),
+  padding: `${rem(2)} ${rem(8)}`,
+  borderRadius: rem(12),
+  fontSize: rem(10),
+  fontWeight: Bold._600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.3px',
+  '& span': {
+    whiteSpace: 'nowrap',
+  },
+}));
+
+export const GanttActivityIndicators = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+}));
+
+export const GanttActivityBadge = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(2),
+  padding: `${rem(2)} ${rem(6)}`,
+  borderRadius: rem(8),
+  backgroundColor: theme.palette.colors.grey_100,
+  fontSize: rem(10),
+  color: theme.palette.text.secondary,
+  cursor: 'default',
+  '& span': {
+    fontWeight: Bold._600,
+  },
+}));
+
+export const GanttTimelineGrid = styled(Box)(() => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  pointerEvents: 'none',
+}));
+
+export const GanttGridLine = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  width: '1px',
+  backgroundColor: theme.palette.colors.grey_100,
+}));
+
+interface GanttBarProps {
+  isCompleted?: boolean;
+}
+
+export const GanttBar = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isCompleted',
+})<GanttBarProps>(({ isCompleted }) => ({
+  position: 'absolute',
+  height: rem(32),
+  borderRadius: rem(6),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: `0 ${rem(8)}`,
+  cursor: 'pointer',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  overflow: 'hidden',
+  minWidth: rem(60),
+  ...(isCompleted && {
+    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px)',
+  }),
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    zIndex: 10,
+  },
+}));
+
+export const GanttBarContent = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  gap: rem(8),
+}));
+
+export const GanttBarWorkers = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(2),
+  color: 'rgba(255, 255, 255, 0.9)',
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+}));
+
+export const GanttBarDuration = styled(Box)(() => ({
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  color: 'rgba(255, 255, 255, 0.95)',
+  whiteSpace: 'nowrap',
+}));
+
+export const GanttLegend = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const GanttLegendTitle = styled(Box)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(1.5),
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+}));
+
+export const GanttLegendItems = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(2),
+}));
+
+export const GanttLegendItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.75),
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  fontWeight: theme.typography.fontWeightMedium,
+  textTransform: 'capitalize',
+}));
+
+export const GanttLegendColor = styled(Box)(() => ({
+  width: rem(12),
+  height: rem(12),
+  borderRadius: rem(3),
+  flexShrink: 0,
+}));
+
+// ============================================
+// Activity Timeline Styles (Expandable Section)
+// ============================================
+
+export const ActivityTimelineContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: floowColors.grey[50],
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  padding: theme.spacing(2, 2, 2, 3),
+}));
+
+export const ActivityTimelineHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(2),
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px dashed ${theme.palette.colors.grey_300}`,
+  '& span': {
+    fontSize: rem(13),
+    fontWeight: theme.typography.fontWeightSemiBold,
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const ActivityTimelineList = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+export const ActivityTimelineItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+  position: 'relative',
+}));
+
+interface ActivityTimelineConnectorProps {
+  isFirst?: boolean;
+  isLast?: boolean;
+}
+
+export const ActivityTimelineConnector = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isFirst' && prop !== 'isLast',
+})<ActivityTimelineConnectorProps>(({ theme, isFirst, isLast }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: isFirst ? '50%' : 0,
+    bottom: isLast ? '50%' : 0,
+    left: '50%',
+    width: '2px',
+    backgroundColor: theme.palette.colors.grey_300,
+    transform: 'translateX(-50%)',
+  },
+}));
+
+export const ActivityTimelineDot = styled(Box)(() => ({
+  width: rem(32),
+  height: rem(32),
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: floowColors.white,
+  flexShrink: 0,
+  position: 'relative',
+  zIndex: 1,
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+}));
+
+export const ActivityTimelineContent = styled(Box)(({ theme }) => ({
+  flex: 1,
+  paddingBottom: theme.spacing(2),
+  minWidth: 0,
+}));
+
+export const ActivityTimelineRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(2),
+  marginBottom: theme.spacing(0.5),
+  flexWrap: 'wrap',
+}));
+
+export const ActivityTypeBadge = styled(Box)(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: `${rem(4)} ${rem(10)}`,
+  borderRadius: rem(12),
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.3px',
+}));
+
+export const ActivityTimelineTime = styled(Box)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  whiteSpace: 'nowrap',
+}));
+
+export const ActivityTimelineMessage = styled(Box)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.primary,
+  lineHeight: 1.5,
+  padding: theme.spacing(1, 1.5),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(0.5),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  marginTop: theme.spacing(0.5),
+  wordBreak: 'break-word',
+}));
+
+export const ActivityTimelineActor = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  marginTop: theme.spacing(0.75),
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  '& span': {
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+}));
+
+// ============================================
+// Gantt Activity Row Styles (for individual activities)
+// ============================================
+
+export const ActivityMarker = styled(Box)(() => ({
+  position: 'absolute',
+  width: rem(24),
+  height: rem(24),
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: floowColors.white,
+  transform: 'translateX(-50%)',
+  cursor: 'pointer',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
+  border: `2px solid ${floowColors.white}`,
+  top: '50%',
+  marginTop: rem(-12),
+  '&:hover': {
+    transform: 'translateX(-50%) scale(1.2)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+    zIndex: 100,
+  },
+}));
+
+interface GanttActivityRowProps {
+  isEven?: boolean;
+}
+
+export const GanttActivityRow = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isEven',
+})<GanttActivityRowProps>(({ theme, isEven }) => ({
+  display: 'grid',
+  gridTemplateColumns: '280px 1fr',
+  backgroundColor: isEven ? floowColors.grey[50] : floowColors.white,
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  minHeight: rem(48),
+  '&:hover': {
+    backgroundColor: floowColors.blue[50],
+  },
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: '180px 1fr',
+  },
+}));
+
+export const GanttActivityTaskColumn = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1, 2),
+  paddingLeft: theme.spacing(6),
+  borderRight: `1px solid ${theme.palette.colors.grey_200}`,
+  display: 'flex',
+  alignItems: 'center',
+}));
+
+export const ActivityRowInfo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  width: '100%',
+}));
+
+export const ActivityRowIcon = styled(Box)(() => ({
+  width: rem(28),
+  height: rem(28),
+  borderRadius: rem(6),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+}));
+
+export const ActivityRowDetails = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(2),
+}));
+
+export const ActivityRowType = styled(Box)(() => ({
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.3px',
+}));
+
+export const ActivityRowMessage = styled(Box)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  maxWidth: '180px',
+}));
+
+export const ActivityBar = styled(Box)(() => ({
+  position: 'absolute',
+  height: rem(28),
+  minWidth: rem(80),
+  borderRadius: rem(14),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: `0 ${rem(12)}`,
+  cursor: 'pointer',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  '&:hover': {
+    transform: 'translateY(-50%) scale(1.05)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    zIndex: 10,
+  },
+}));
+
+export const ActivityBarContent = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(6),
+  color: floowColors.white,
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  whiteSpace: 'nowrap',
+}));
+
+// ============================================
+// Industry Standard Gantt Chart Styles
+// ============================================
+
+export const GanttChartHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: theme.spacing(2),
+  backgroundColor: floowColors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const GanttChartTitle = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  '& span': {
+    fontSize: rem(18),
+    fontWeight: Bold._700,
+    color: '#1E3A5F',
+  },
+}));
+
+export const GanttChartStats = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+}));
+
+export const GanttChartStatBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: theme.spacing(1, 2),
+  backgroundColor: floowColors.grey[50],
+  borderRadius: theme.spacing(0.5),
+  minWidth: rem(70),
+  '& .value': {
+    fontSize: rem(16),
+    fontWeight: Bold._700,
+    color: '#1E3A5F',
+  },
+  '& .label': {
+    fontSize: rem(10),
+    color: theme.palette.text.secondary,
+    textTransform: 'uppercase',
+  },
+}));
+
+export const GanttChartWrapper = styled(Box)(({ theme }) => ({
+  backgroundColor: floowColors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  overflow: 'hidden',
+}));
+
+export const GanttChartGrid = styled(Box)(() => ({
+  display: 'grid',
+  gridTemplateColumns: '250px 1fr',
+  borderBottom: `2px solid ${floowColors.grey[300]}`,
+}));
+
+export const GanttChartTaskHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2),
+  backgroundColor: floowColors.grey[100],
+  fontSize: rem(12),
+  fontWeight: Bold._600,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  borderRight: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const GanttChartTimelineHeader = styled(Box)(() => ({
+  display: 'flex',
+  backgroundColor: floowColors.grey[100],
+}));
+
+interface GanttChartDateCellProps {
+  isToday?: boolean;
+  isWeekend?: boolean;
+}
+
+export const GanttChartDateCell = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isToday' && prop !== 'isWeekend',
+})<GanttChartDateCellProps>(({ theme, isToday, isWeekend }) => ({
+  flex: 1,
+  minWidth: rem(40),
+  padding: theme.spacing(0.5),
+  textAlign: 'center',
+  borderRight: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: isToday ? '#EEF2FF' : isWeekend ? floowColors.grey[50] : 'transparent',
+  '& .day': {
+    display: 'block',
+    fontSize: rem(14),
+    fontWeight: isToday ? Bold._700 : Bold._500,
+    color: isToday ? '#4F46E5' : theme.palette.text.primary,
+  },
+  '& .month': {
+    display: 'block',
+    fontSize: rem(9),
+    color: theme.palette.text.secondary,
+    textTransform: 'uppercase',
+  },
+}));
+
+export const GanttChartBody = styled(Box)(() => ({
+  maxHeight: '500px',
+  overflowY: 'auto',
+}));
+
+interface GanttChartRowProps {
+  isMainTask?: boolean;
+  isSubTask?: boolean;
+}
+
+export const GanttChartRow = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isMainTask' && prop !== 'isSubTask',
+})<GanttChartRowProps>(({ theme, isMainTask, isSubTask }) => ({
+  display: 'grid',
+  gridTemplateColumns: '250px 1fr',
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  backgroundColor: isMainTask ? floowColors.white : floowColors.grey[50],
+  minHeight: isMainTask ? rem(44) : rem(36),
+  '&:hover': {
+    backgroundColor: isMainTask ? floowColors.blue[50] : '#F8FAFC',
+  },
+}));
+
+export const GanttChartTaskCell = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1, 1.5),
+  borderRight: `1px solid ${theme.palette.colors.grey_200}`,
+  display: 'flex',
+  alignItems: 'center',
+  overflow: 'hidden',
+}));
+
+export const GanttChartTaskName = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  width: '100%',
+  '& .name': {
+    fontSize: rem(13),
+    fontWeight: Bold._600,
+    color: theme.palette.text.primary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    flex: 1,
+  },
+  '& .count': {
+    fontSize: rem(11),
+    color: theme.palette.text.secondary,
+    flexShrink: 0,
+  },
+}));
+
+export const GanttChartTaskIcon = styled(Box)(() => ({
+  width: rem(22),
+  height: rem(22),
+  borderRadius: rem(4),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+}));
+
+export const GanttChartSubTaskName = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  paddingLeft: theme.spacing(3),
+  width: '100%',
+  '& .type': {
+    fontSize: rem(11),
+    fontWeight: Bold._600,
+    flexShrink: 0,
+    minWidth: rem(70),
+  },
+  '& .message': {
+    fontSize: rem(11),
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    flex: 1,
+  },
+}));
+
+export const GanttChartActivityIcon = styled(Box)(() => ({
+  width: rem(18),
+  height: rem(18),
+  borderRadius: rem(4),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: floowColors.white,
+  flexShrink: 0,
+}));
+
+export const GanttChartTimelineCell = styled(Box)(() => ({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  overflow: 'hidden',
+}));
+
+export const GanttChartGridColumns = styled(Box)(() => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  display: 'flex',
+  pointerEvents: 'none',
+}));
+
+interface GanttChartGridColumnProps {
+  isWeekend?: boolean;
+}
+
+export const GanttChartGridColumn = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isWeekend',
+})<GanttChartGridColumnProps>(({ theme, isWeekend }) => ({
+  flex: 1,
+  borderRight: `1px solid ${theme.palette.colors.grey_100}`,
+  backgroundColor: isWeekend ? 'rgba(0,0,0,0.02)' : 'transparent',
+}));
+
+export const GanttChartTodayLine = styled(Box)(() => ({
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  width: rem(2),
+  backgroundColor: '#EF4444',
+  zIndex: 5,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: 0,
+    height: 0,
+    borderLeft: '5px solid transparent',
+    borderRight: '5px solid transparent',
+    borderTop: '6px solid #EF4444',
+  },
+}));
+
+interface GanttChartBarProps {
+  isCompleted?: boolean;
+}
+
+export const GanttChartBar = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isCompleted',
+})<GanttChartBarProps>(({ isCompleted }) => ({
+  position: 'absolute',
+  height: rem(24),
+  borderRadius: rem(4),
+  display: 'flex',
+  alignItems: 'center',
+  padding: `0 ${rem(8)}`,
+  cursor: 'pointer',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+  zIndex: 2,
+  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+  overflow: 'hidden',
+  ...(isCompleted && {
+    backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.15) 4px, rgba(255,255,255,0.15) 8px)',
+  }),
+  '&:hover': {
+    transform: 'scaleY(1.1)',
+    boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
+    zIndex: 10,
+  },
+}));
+
+export const GanttChartBarLabel = styled(Box)(() => ({
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  color: floowColors.white,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+}));
+
+export const GanttChartActivityBar = styled(Box)(() => ({
+  position: 'absolute',
+  height: rem(20),
+  borderRadius: rem(10),
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(4),
+  padding: `0 ${rem(8)}`,
+  cursor: 'pointer',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+  zIndex: 2,
+  color: floowColors.white,
+  fontSize: rem(10),
+  fontWeight: Bold._600,
+  whiteSpace: 'nowrap',
+  transition: 'transform 0.15s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    zIndex: 10,
+  },
+}));
+
+export const GanttChartLegend = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: theme.spacing(1.5, 2),
+  backgroundColor: floowColors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const GanttChartLegendSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  flexWrap: 'wrap',
+  '& .title': {
+    fontSize: rem(11),
+    fontWeight: Bold._600,
+    color: theme.palette.text.secondary,
+    textTransform: 'uppercase',
+  },
+}));
+
+export const GanttChartLegendItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+}));
+
+export const GanttChartLegendDot = styled(Box)(() => ({
+  width: rem(10),
+  height: rem(10),
+  borderRadius: rem(2),
+}));
+
+export const GanttChartTodayIndicator = styled(Box)(() => ({
+  width: rem(10),
+  height: rem(10),
+  backgroundColor: '#EF4444',
+  borderRadius: rem(2),
+}));
+
+// Step Name Edit Styles
+export const StepTitleContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  fontSize: rem(14),
+  color: theme.palette.text.primary,
+  marginBottom: rem(2),
+}));
+
+export const StepTitleText = styled('span')(() => ({
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+}));
+
+export const StepTitleEditButton = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  padding: theme.spacing(0.25),
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  opacity: 0.5,
+  transition: 'opacity 0.2s ease',
+  color: theme.palette.text.secondary,
+  borderRadius: '50%',
+  '&:hover': {
+    opacity: 1,
+    backgroundColor: theme.palette.colors.grey_100,
+  },
+}));
+
+export const StepTitleEditContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  flex: 1,
+}));
+
+export const StepTitleIndex = styled('span')(() => ({
+  flexShrink: 0,
 }));

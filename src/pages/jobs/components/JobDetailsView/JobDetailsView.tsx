@@ -16,7 +16,9 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
+import { AdditionalInformationSection } from '../AdditionalInformationSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
+import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -29,6 +31,11 @@ export const JobDetailsView: React.FC = () => {
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [workflowUpdateTrigger, setWorkflowUpdateTrigger] = useState(0);
+
+  const handleWorkflowUpdate = useCallback(() => {
+    setWorkflowUpdateTrigger((prev) => prev + 1);
+  }, []);
 
   const fetchJobDetails = useCallback(async () => {
     if (!jobId) return;
@@ -127,8 +134,8 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
             Overview
           </S.TabButton>
-          <S.TabButton active={activeTab === 'visit-log'} onClick={() => setActiveTab('visit-log')}>
-            Visit Log
+          <S.TabButton active={activeTab === 'activity-log'} onClick={() => setActiveTab('activity-log')}>
+            Activity Log
           </S.TabButton>
           <S.TabButton active={activeTab === 'estimate'} onClick={() => setActiveTab('estimate')}>
             Estimate
@@ -142,24 +149,28 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'complaints'} onClick={() => setActiveTab('complaints')}>
             Complaints
           </S.TabButton>
-          <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
+          {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
             History
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
+          </S.TabButton> */}
+          {/* <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
             Form
-          </S.TabButton>
+          </S.TabButton> */}
         </S.TabsContainer>
 
         {/* Main Content Layout */}
         <S.JobDetailsLayout>
           {/* Left Sidebar - Workflow */}
-          <JobWorkflowStages job={job} />
+          <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />
 
           {/* Right Content - Details */}
           <S.MainContentPanel>
             {activeTab === 'documents' ? (
               <S.DetailsSection>
                 <JobDocumentsTab job={job} />
+              </S.DetailsSection>
+            ) : activeTab === 'activity-log' ? (
+              <S.DetailsSection>
+                <JobActivityLogTab job={job} refreshTrigger={workflowUpdateTrigger} />
               </S.DetailsSection>
             ) : (
               <>
@@ -173,17 +184,8 @@ export const JobDetailsView: React.FC = () => {
                   defaultExpanded={true}
                 />
 
-                {/* Policy Details Section - Shows custom fields from template */}
-                {templateFields.length > 0 && (
-                  <JobDetailsSection
-                    job={job}
-                    client={client}
-                    template={template}
-                    templateFields={templateFields}
-                    title="Policy Details"
-                    defaultExpanded={false}
-                  />
-                )}
+                {/* Additional Information Section - Description and Attachments */}
+                <AdditionalInformationSection job={job} defaultExpanded={false} />
               </>
             )}
           </S.MainContentPanel>
