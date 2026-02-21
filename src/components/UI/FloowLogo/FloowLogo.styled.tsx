@@ -16,8 +16,9 @@ export const Container = styled(Box)<ContainerProps>(() => ({
 }));
 
 export const LogoIcon = styled('img')(() => ({
-  width: '66px',
-  height: '66px',
+  height: '44px',
+  width: 'auto',
+  maxWidth: '100%',
   flexShrink: 0,
 }));
 
