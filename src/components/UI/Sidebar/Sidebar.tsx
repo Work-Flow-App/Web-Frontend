@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isItemOrChildActive = (item: SidebarItem): boolean => {
     if (isItemActive(item)) return true;
     if (item.children) {
-      return item.children.some(child => isItemOrChildActive(child));
+      return item.children.some((child) => isItemOrChildActive(child));
     }
     return false;
   };
@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Toggle submenu expansion
   const toggleExpanded = (itemId: string) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
@@ -88,207 +88,206 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Mobile backdrop - click to close sidebar */}
-      <SidebarBackdrop
-        isVisible={!isCollapsed}
-        onClick={onToggleCollapse}
-        role="presentation"
-      />
+      <SidebarBackdrop isVisible={!isCollapsed} onClick={onToggleCollapse} role="presentation" />
 
       <SidebarWrapper isCollapsed={isCollapsed} className={className} sx={sx}>
-      {/* Logo Section - Desktop (without toggle button) */}
-      {!isCollapsed && (
-        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-          <SidebarLogoSection sx={{ flex: 1, margin: 0, padding: 0, border: 'none' }}>
-            <FloowLogo variant="light" showText={true} />
-          </SidebarLogoSection>
-        </Box>
-      )}
-
-      {/* Mobile Close Button - Top Right */}
-      {!isCollapsed && (
-        <Box sx={{
-          display: { xs: 'flex', sm: 'none' },
-          width: '100%',
-          justifyContent: 'flex-end',
-          marginBottom: rem(8),
-        }}>
-          <IconButton
-            onClick={onToggleCollapse}
-            sx={{
-              padding: rem(4),
-              minWidth: rem(40),
-              minHeight: rem(40),
-              color: floowColors.grey[700],
-              '&:hover': {
-                backgroundColor: floowColors.grey[100],
-                color: floowColors.grey[800],
-              },
-            }}
-            title="Close Sidebar"
-            aria-label="Close sidebar"
+        {/* Logo Section - Desktop (without toggle button) */}
+        {!isCollapsed && (
+          <Box
+            sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', width: '100%' }}
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      )}
+            <SidebarLogoSection sx={{ flex: 1, margin: 0, padding: 0, border: 'none' }}>
+              <FloowLogo variant="light" />
+            </SidebarLogoSection>
+          </Box>
+        )}
 
-      {/* Collapsed State - Show Logo Only */}
-      {isCollapsed && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: rem(16) }}>
-          <SidebarLogoSection sx={{ margin: 0, padding: 0, border: 'none' }}>
-            <FloowLogo variant="light" showText={false} />
-          </SidebarLogoSection>
-        </Box>
-      )}
+        {/* Mobile Close Button - Top Right */}
+        {!isCollapsed && (
+          <Box
+            sx={{
+              display: { xs: 'flex', sm: 'none' },
+              width: '100%',
+              justifyContent: 'flex-end',
+              marginBottom: rem(8),
+            }}
+          >
+            <IconButton
+              onClick={onToggleCollapse}
+              sx={{
+                padding: rem(4),
+                minWidth: rem(40),
+                minHeight: rem(40),
+                color: floowColors.grey[700],
+                '&:hover': {
+                  backgroundColor: floowColors.grey[100],
+                  color: floowColors.grey[800],
+                },
+              }}
+              title="Close Sidebar"
+              aria-label="Close sidebar"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        )}
 
-      {/* Navigation Items */}
-      {items.map((item) => {
-        const active = isItemActive(item);
-        const hasChildren = item.children && item.children.length > 0;
-        const isExpanded = expandedItems.has(item.id);
-        const isActiveOrChildActive = isItemOrChildActive(item);
+        {/* Collapsed State - Show Logo Only */}
+        {isCollapsed && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: rem(16) }}>
+            <SidebarLogoSection sx={{ margin: 0, padding: 0, border: 'none' }}>
+              <FloowLogo variant="light" showText={false} />
+            </SidebarLogoSection>
+          </Box>
+        )}
 
-        // Item with children (parent menu)
-        if (hasChildren) {
-          return (
-            <Box key={item.id} sx={{ width: '100%' }}>
-              {/* Parent item - only toggle expansion, no navigation */}
-              <SidebarItemButton
-                className={isActiveOrChildActive ? 'active' : ''}
-                onClick={() => {
-                  handleItemClick(item.id);
-                  item.onClick?.();
-                  toggleExpanded(item.id);
-                }}
-                role="menuitem"
-                aria-label={item.label}
-                title={isCollapsed ? item.label : undefined}
-                tabIndex={0}
-                sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
-                  {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-                  {!isCollapsed && <span>{item.label}</span>}
-                </Box>
+        {/* Navigation Items */}
+        {items.map((item) => {
+          const active = isItemActive(item);
+          const hasChildren = item.children && item.children.length > 0;
+          const isExpanded = expandedItems.has(item.id);
+          const isActiveOrChildActive = isItemOrChildActive(item);
+
+          // Item with children (parent menu)
+          if (hasChildren) {
+            return (
+              <Box key={item.id} sx={{ width: '100%' }}>
+                {/* Parent item - only toggle expansion, no navigation */}
+                <SidebarItemButton
+                  className={isActiveOrChildActive ? 'active' : ''}
+                  onClick={() => {
+                    handleItemClick(item.id);
+                    item.onClick?.();
+                    toggleExpanded(item.id);
+                  }}
+                  role="menuitem"
+                  aria-label={item.label}
+                  title={isCollapsed ? item.label : undefined}
+                  tabIndex={0}
+                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+                    {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Box>
+                  {!isCollapsed &&
+                    (isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />)}
+                </SidebarItemButton>
+
+                {/* Child items */}
                 {!isCollapsed && (
-                  isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />
-                )}
-              </SidebarItemButton>
-
-              {/* Child items */}
-              {!isCollapsed && (
-                <Collapse in={isExpanded}>
-                  <Box sx={{ pl: rem(32), pt: rem(8) }}>
-                    {item.children?.map((child) => {
-                      const childActive = isItemActive(child);
-                      if (child.href) {
+                  <Collapse in={isExpanded}>
+                    <Box sx={{ pl: rem(32), pt: rem(8) }}>
+                      {item.children?.map((child) => {
+                        const childActive = isItemActive(child);
+                        if (child.href) {
+                          return (
+                            <Link
+                              key={child.id}
+                              to={child.href}
+                              onClick={() => {
+                                handleItemClick(child.id);
+                                child.onClick?.();
+                              }}
+                              style={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                display: 'block',
+                                width: '100%',
+                              }}
+                            >
+                              <SidebarItemButton
+                                className={childActive ? 'active' : ''}
+                                role="menuitem"
+                                aria-label={child.label}
+                                aria-current={childActive ? 'page' : undefined}
+                                tabIndex={0}
+                                sx={{ fontSize: rem(13) }}
+                              >
+                                {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
+                                <span>{child.label}</span>
+                              </SidebarItemButton>
+                            </Link>
+                          );
+                        }
                         return (
-                          <Link
+                          <SidebarItemButton
                             key={child.id}
-                            to={child.href}
+                            className={childActive ? 'active' : ''}
                             onClick={() => {
                               handleItemClick(child.id);
                               child.onClick?.();
                             }}
-                            style={{
-                              textDecoration: 'none',
-                              color: 'inherit',
-                              display: 'block',
-                              width: '100%',
-                            }}
+                            role="menuitem"
+                            aria-label={child.label}
+                            aria-current={childActive ? 'page' : undefined}
+                            tabIndex={0}
+                            sx={{ fontSize: rem(13) }}
                           >
-                            <SidebarItemButton
-                              className={childActive ? 'active' : ''}
-                              role="menuitem"
-                              aria-label={child.label}
-                              aria-current={childActive ? 'page' : undefined}
-                              tabIndex={0}
-                              sx={{ fontSize: rem(13) }}
-                            >
-                              {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
-                              <span>{child.label}</span>
-                            </SidebarItemButton>
-                          </Link>
+                            {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
+                            <span>{child.label}</span>
+                          </SidebarItemButton>
                         );
-                      }
-                      return (
-                        <SidebarItemButton
-                          key={child.id}
-                          className={childActive ? 'active' : ''}
-                          onClick={() => {
-                            handleItemClick(child.id);
-                            child.onClick?.();
-                          }}
-                          role="menuitem"
-                          aria-label={child.label}
-                          aria-current={childActive ? 'page' : undefined}
-                          tabIndex={0}
-                          sx={{ fontSize: rem(13) }}
-                        >
-                          {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
-                          <span>{child.label}</span>
-                        </SidebarItemButton>
-                      );
-                    })}
-                  </Box>
-                </Collapse>
-              )}
-            </Box>
-          );
-        }
+                      })}
+                    </Box>
+                  </Collapse>
+                )}
+              </Box>
+            );
+          }
 
-        // Regular item without children
-        if (item.href) {
+          // Regular item without children
+          if (item.href) {
+            return (
+              <Link
+                key={item.id}
+                to={item.href}
+                onClick={() => {
+                  handleItemClick(item.id);
+                  item.onClick?.();
+                }}
+                style={{
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  display: 'block',
+                  width: '100%',
+                }}
+              >
+                <SidebarItemButton
+                  className={active ? 'active' : ''}
+                  role="menuitem"
+                  aria-label={item.label}
+                  aria-current={active ? 'page' : undefined}
+                  title={isCollapsed ? item.label : undefined}
+                  tabIndex={0}
+                >
+                  {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+                  {!isCollapsed && <span>{item.label}</span>}
+                </SidebarItemButton>
+              </Link>
+            );
+          }
+
+          // Fallback for items without href
           return (
-            <Link
+            <SidebarItemButton
               key={item.id}
-              to={item.href}
+              className={active ? 'active' : ''}
               onClick={() => {
                 handleItemClick(item.id);
                 item.onClick?.();
               }}
-              style={{
-                textDecoration: 'none',
-                color: 'inherit',
-                display: 'block',
-                width: '100%',
-              }}
+              role="menuitem"
+              aria-label={item.label}
+              aria-current={active ? 'page' : undefined}
+              title={isCollapsed ? item.label : undefined}
+              tabIndex={0}
             >
-              <SidebarItemButton
-                className={active ? 'active' : ''}
-                role="menuitem"
-                aria-label={item.label}
-                aria-current={active ? 'page' : undefined}
-                title={isCollapsed ? item.label : undefined}
-                tabIndex={0}
-              >
-                {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-                {!isCollapsed && <span>{item.label}</span>}
-              </SidebarItemButton>
-            </Link>
+              {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
+              {!isCollapsed && <span>{item.label}</span>}
+            </SidebarItemButton>
           );
-        }
-
-        // Fallback for items without href
-        return (
-          <SidebarItemButton
-            key={item.id}
-            className={active ? 'active' : ''}
-            onClick={() => {
-              handleItemClick(item.id);
-              item.onClick?.();
-            }}
-            role="menuitem"
-            aria-label={item.label}
-            aria-current={active ? 'page' : undefined}
-            title={isCollapsed ? item.label : undefined}
-            tabIndex={0}
-          >
-            {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
-            {!isCollapsed && <span>{item.label}</span>}
-          </SidebarItemButton>
-        );
-      })}
+        })}
       </SidebarWrapper>
     </>
   );
