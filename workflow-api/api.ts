@@ -435,9 +435,9 @@ export interface PageAssetResponse {
     'empty'?: boolean;
 }
 export interface PageableObject {
-    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
+    'pageNumber'?: number;
     'unpaged'?: boolean;
     'offset'?: number;
     'sort'?: SortObject;
@@ -485,27 +485,98 @@ export interface StepAttachmentResponse {
     'fileName'?: string;
     'fileType'?: string;
     'fileUrl'?: string;
+    'description'?: string;
+    'type'?: StepAttachmentResponseTypeEnum;
     'uploadedBy'?: number;
     'createdAt'?: string;
 }
+
+export const StepAttachmentResponseTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+
+export type StepAttachmentResponseTypeEnum = typeof StepAttachmentResponseTypeEnum[keyof typeof StepAttachmentResponseTypeEnum];
+
+export interface StepAttachmentUpdateRequest {
+    'fileName'?: string;
+    'description'?: string;
+    'type'?: StepAttachmentUpdateRequestTypeEnum;
+}
+
+export const StepAttachmentUpdateRequestTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+
+export type StepAttachmentUpdateRequestTypeEnum = typeof StepAttachmentUpdateRequestTypeEnum[keyof typeof StepAttachmentUpdateRequestTypeEnum];
+
 export interface StepCommentCreateRequest {
     'content'?: string;
+    'type'?: StepCommentCreateRequestTypeEnum;
 }
+
+export const StepCommentCreateRequestTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+
+export type StepCommentCreateRequestTypeEnum = typeof StepCommentCreateRequestTypeEnum[keyof typeof StepCommentCreateRequestTypeEnum];
+
 export interface StepCommentResponse {
     'id'?: number;
     'content'?: string;
+    'type'?: StepCommentResponseTypeEnum;
     'authorId'?: number;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
+
+export const StepCommentResponseTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+
+export type StepCommentResponseTypeEnum = typeof StepCommentResponseTypeEnum[keyof typeof StepCommentResponseTypeEnum];
+
 export interface StepTimelineItemResponse {
     'id'?: number;
     'itemType'?: string;
     'content'?: string;
     'fileUrl'?: string;
+    'discussionType'?: StepTimelineItemResponseDiscussionTypeEnum;
+    'description'?: string;
     'actorId'?: number;
     'createdAt'?: string;
 }
+
+export const StepTimelineItemResponseDiscussionTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+
+export type StepTimelineItemResponseDiscussionTypeEnum = typeof StepTimelineItemResponseDiscussionTypeEnum[keyof typeof StepTimelineItemResponseDiscussionTypeEnum];
+
 export interface WorkerCreateRequest {
     'name': string;
     'initials'?: string;
@@ -4818,6 +4889,40 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @summary Get all job workflow steps assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyAssignedSteps: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/job-workflow-steps`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get all job workflows assigned to the current worker
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5044,13 +5149,17 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
+         * @param {UploadAttachmentTypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment: async (stepId: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadAttachment: async (stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
             assertParamExists('uploadAttachment', 'stepId', stepId)
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('uploadAttachment', 'type', type)
             // verify required parameter 'file' is not null or undefined
             assertParamExists('uploadAttachment', 'file', file)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/attachments`
@@ -5070,6 +5179,14 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
             // authentication bearerAuth required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (description !== undefined) {
+                localVarQueryParameter['description'] = description;
+            }
 
 
             if (file !== undefined) { 
@@ -5136,6 +5253,18 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getJobWorkflow(jobWorkflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getJobWorkflow']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get all job workflow steps assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMyAssignedSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowStepResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyAssignedSteps(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getMyAssignedSteps']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5219,12 +5348,14 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
+         * @param {UploadAttachmentTypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadAttachment(stepId: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment(stepId, file, options);
+        async uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment(stepId, type, file, description, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.uploadAttachment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -5268,6 +5399,15 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          */
         getJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
             return localVarFp.getJobWorkflow(jobWorkflowId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all job workflow steps assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyAssignedSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowStepResponse>> {
+            return localVarFp.getMyAssignedSteps(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5332,12 +5472,14 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
+         * @param {UploadAttachmentTypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment(stepId: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.uploadAttachment(stepId, file, options).then((request) => request(axios, basePath));
+        uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.uploadAttachment(stepId, type, file, description, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5378,6 +5520,16 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      */
     public getJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig) {
         return WorkerJobWorkflowsApiFp(this.configuration).getJobWorkflow(jobWorkflowId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all job workflow steps assigned to the current worker
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getMyAssignedSteps(options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).getMyAssignedSteps(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5449,15 +5601,26 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * 
      * @summary Upload an attachment to a step
      * @param {number} stepId 
+     * @param {UploadAttachmentTypeEnum} type 
      * @param {File} file 
+     * @param {string} [description] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadAttachment(stepId: number, file: File, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).uploadAttachment(stepId, file, options).then((request) => request(this.axios, this.basePath));
+    public uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).uploadAttachment(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
+export const UploadAttachmentTypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+export type UploadAttachmentTypeEnum = typeof UploadAttachmentTypeEnum[keyof typeof UploadAttachmentTypeEnum];
 
 
 /**
@@ -6386,15 +6549,15 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
         /**
          * 
          * @param {number} attachmentId 
-         * @param {string} fileName 
+         * @param {StepAttachmentUpdateRequest} stepAttachmentUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        renameAttachment: async (attachmentId: number, fileName: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        updateAttachment: async (attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'attachmentId' is not null or undefined
-            assertParamExists('renameAttachment', 'attachmentId', attachmentId)
-            // verify required parameter 'fileName' is not null or undefined
-            assertParamExists('renameAttachment', 'fileName', fileName)
+            assertParamExists('updateAttachment', 'attachmentId', attachmentId)
+            // verify required parameter 'stepAttachmentUpdateRequest' is not null or undefined
+            assertParamExists('updateAttachment', 'stepAttachmentUpdateRequest', stepAttachmentUpdateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/attachments/{attachmentId}`
                 .replace(`{${"attachmentId"}}`, encodeURIComponent(String(attachmentId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6412,15 +6575,14 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
 
-            if (fileName !== undefined) {
-                localVarQueryParameter['fileName'] = fileName;
-            }
-
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(stepAttachmentUpdateRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -6473,13 +6635,17 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
         /**
          * 
          * @param {number} stepId 
+         * @param {UploadAttachment1TypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment1: async (stepId: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        uploadAttachment1: async (stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
             assertParamExists('uploadAttachment1', 'stepId', stepId)
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('uploadAttachment1', 'type', type)
             // verify required parameter 'file' is not null or undefined
             assertParamExists('uploadAttachment1', 'file', file)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/attachments`
@@ -6499,6 +6665,14 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
             // authentication bearerAuth required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (description !== undefined) {
+                localVarQueryParameter['description'] = description;
+            }
 
 
             if (file !== undefined) { 
@@ -6615,14 +6789,14 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
         /**
          * 
          * @param {number} attachmentId 
-         * @param {string} fileName 
+         * @param {StepAttachmentUpdateRequest} stepAttachmentUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async renameAttachment(attachmentId: number, fileName: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.renameAttachment(attachmentId, fileName, options);
+        async updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAttachment(attachmentId, stepAttachmentUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.renameAttachment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.updateAttachment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6641,12 +6815,14 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
         /**
          * 
          * @param {number} stepId 
+         * @param {UploadAttachment1TypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadAttachment1(stepId: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment1(stepId, file, options);
+        async uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment1(stepId, type, file, description, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.uploadAttachment1']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -6727,12 +6903,12 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
         /**
          * 
          * @param {number} attachmentId 
-         * @param {string} fileName 
+         * @param {StepAttachmentUpdateRequest} stepAttachmentUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        renameAttachment(attachmentId: number, fileName: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.renameAttachment(attachmentId, fileName, options).then((request) => request(axios, basePath));
+        updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.updateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6747,12 +6923,14 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
         /**
          * 
          * @param {number} stepId 
+         * @param {UploadAttachment1TypeEnum} type 
          * @param {File} file 
+         * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment1(stepId: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.uploadAttachment1(stepId, file, options).then((request) => request(axios, basePath));
+        uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.uploadAttachment1(stepId, type, file, description, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6835,12 +7013,12 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
     /**
      * 
      * @param {number} attachmentId 
-     * @param {string} fileName 
+     * @param {StepAttachmentUpdateRequest} stepAttachmentUpdateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public renameAttachment(attachmentId: number, fileName: string, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).renameAttachment(attachmentId, fileName, options).then((request) => request(this.axios, this.basePath));
+    public updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).updateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6857,15 +7035,26 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
     /**
      * 
      * @param {number} stepId 
+     * @param {UploadAttachment1TypeEnum} type 
      * @param {File} file 
+     * @param {string} [description] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadAttachment1(stepId: number, file: File, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).uploadAttachment1(stepId, file, options).then((request) => request(this.axios, this.basePath));
+    public uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).uploadAttachment1(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
+export const UploadAttachment1TypeEnum = {
+    General: 'GENERAL',
+    Additional: 'ADDITIONAL',
+    Complaint: 'COMPLAINT',
+    InternalNote: 'INTERNAL_NOTE',
+    Approval: 'APPROVAL',
+    Rejection: 'REJECTION'
+} as const;
+export type UploadAttachment1TypeEnum = typeof UploadAttachment1TypeEnum[keyof typeof UploadAttachment1TypeEnum];
 
 
 /**

@@ -1,10 +1,10 @@
 import React from 'react';
 import * as S from './FloowLogo.styled';
-import floowLogoLightSvg from '../../../assets/logo/floow/floow_logo.svg';
-import floowLogoWhiteSvg from '../../../assets/logo/floow/floow_logo_white.svg';
+import floowLogoLightSvg from '../../../assets/logo/workflowwLogo/2687_floow_SR-02.svg';
+import floowLogoWhiteSvg from '../../../assets/logo/workflowwLogo/2687_floow_SR-01.svg';
 import type { FloowLogoProps } from './FloowLogo.types';
 
-function FloowLogo({ showText = true, width, height, variant = 'light' }: FloowLogoProps): React.ReactElement {
+function FloowLogo({ width, height, variant = 'light' }: FloowLogoProps): React.ReactElement {
   const logoStyle = {
     ...(width && { width }),
     ...(height && { height }),
@@ -14,8 +14,7 @@ function FloowLogo({ showText = true, width, height, variant = 'light' }: FloowL
 
   return (
     <S.Container variant={variant}>
-      <S.LogoIcon src={logoSrc} alt="Floow Logo" style={logoStyle} />
-      {showText && <S.LogoText variant={variant}>Floow</S.LogoText>}
+      <S.LogoIcon src={logoSrc} alt="Workfloww Logo" style={logoStyle} />
     </S.Container>
   );
 }
