@@ -62,7 +62,7 @@ export type {
   JobWorkflowStepUpdateRequest,
 } from './jobWorkflow';
 
-export { stepActivityService } from './stepActivity';
+export { stepActivityService, UploadAttachment1TypeEnum } from './stepActivity';
 export type {
   StepCommentCreateRequest,
   StepCommentResponse,

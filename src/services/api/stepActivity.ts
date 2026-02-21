@@ -1,4 +1,4 @@
-import { WorkflowStepActivitiesApi, Configuration } from '../../../workflow-api';
+import { WorkflowStepActivitiesApi, Configuration, UploadAttachment1TypeEnum } from '../../../workflow-api';
 import type {
   StepCommentCreateRequest,
   StepCommentResponse,
@@ -8,6 +8,7 @@ import type {
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
+export { UploadAttachment1TypeEnum };
 export type {
   StepCommentCreateRequest,
   StepCommentResponse,
@@ -83,8 +84,13 @@ export const stepActivityService = {
   /**
    * Upload an attachment to a step
    */
-  async uploadAttachment(stepId: number, file: File) {
-    return await getStepActivityApi().uploadAttachment1(stepId, file);
+  async uploadAttachment(
+    stepId: number,
+    file: File,
+    type: UploadAttachment1TypeEnum = UploadAttachment1TypeEnum.General,
+    description?: string
+  ) {
+    return await getStepActivityApi().uploadAttachment1(stepId, type, file, description);
   },
 
   /**
