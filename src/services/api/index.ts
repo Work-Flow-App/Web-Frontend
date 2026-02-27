@@ -25,6 +25,9 @@ export type {
 export { companyClientService } from './companyClient';
 export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest } from './companyClient';
 
+export { customerService } from './customer';
+export type { CustomerResponse, CustomerCreateRequest, CustomerUpdateRequest } from './customer';
+
 export { jobTemplateService } from './jobTemplate';
 export type { JobTemplateResponse, JobTemplateCreateRequest, JobTemplateFieldResponse, JobTemplateFieldCreateRequest, JobTemplateWithFieldsResponse } from './jobTemplate';
 export { JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../workflow-api';
