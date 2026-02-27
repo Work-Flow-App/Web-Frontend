@@ -20,7 +20,7 @@ import {
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Button } from '../../../../components/UI/Button';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
-import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { RichTextEditor } from '../../../../components/UI/Forms/RichTextEditor';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import * as S from '../../JobDetailsPage.styles';
 
@@ -235,7 +235,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
                 <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
                   {item.itemType === 'COMMENT' ? (
                     <>
-                      <S.EventNoteContent>{item.content}</S.EventNoteContent>
+                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: item.content || '' }} />
                       {item.createdAt && (
                         <S.CommentTimestamp>
                           {new Date(item.createdAt).toLocaleString()}
@@ -279,12 +279,10 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(handleSave)}>
               <S.AdditionalInfoContainer>
-                <TextArea
+                <RichTextEditor
                   name="description"
                   label="Description"
                   placeholder="Enter additional information or notes about this job..."
-                  rows={4}
-                  fullWidth
                 />
 
                 <div>
