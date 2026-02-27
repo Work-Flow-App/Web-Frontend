@@ -21,6 +21,7 @@ import { ComplaintsSection } from '../ComplaintsSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
+import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -154,6 +155,9 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'step-activity'} onClick={() => setActiveTab('step-activity')}>
             Step Activity
           </S.TabButton>
+          <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
+            Assets
+          </S.TabButton>
           {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
             History
           </S.TabButton> */}
@@ -182,6 +186,10 @@ export const JobDetailsView: React.FC = () => {
             ) : activeTab === 'step-activity' ? (
               <S.DetailsSection>
                 <StepActivityTab job={job} />
+              </S.DetailsSection>
+            ) : activeTab === 'assets' ? (
+              <S.DetailsSection>
+                <JobAssetsSection jobId={job.id!} />
               </S.DetailsSection>
             ) : (
               <>

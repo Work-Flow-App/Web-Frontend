@@ -429,7 +429,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       </S.WorkflowSidebarHeader>
 
       {/* Timeline List */}
-      <Box sx={{ px: 2, py: 1 }}>
+      <Box sx={{ px: 2, py: 1, overflowY: 'auto', flex: 1 }}>
         {sortedSteps.map((step, index) => {
           const statusInfo = getStatusInfo(step.status);
           const isLast = index === sortedSteps.length - 1;

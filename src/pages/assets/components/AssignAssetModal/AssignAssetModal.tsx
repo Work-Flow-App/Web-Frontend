@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useForm, FormProvider } from 'react-hook-form';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 import { assetService, workerService } from '../../../../services/api';
@@ -15,6 +16,7 @@ export interface AssignAssetModalProps {
 }
 
 export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuccess }) => {
+  const methods = useForm();
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, triggerSubmit } = useGlobalModalInnerContext();
   const [assets, setAssets] = useState<AssetResponse[]>([]);
@@ -132,49 +134,51 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <FormField label="Select Asset" required>
-        <Dropdown
-          name="assetId"
-          preFetchedOptions={assetOptions}
-          placeHolder="Select an asset"
-          value={selectedAssetId ? { label: '', value: selectedAssetId.toString() } : null}
-          onChange={(value) => {
-            const assetId = typeof value === 'object' && value && 'value' in value ? parseInt(value.value) : null;
-            setSelectedAssetId(assetId);
-          }}
-          disablePortal={true}
-          fullWidth={true}
-          disabled={submitting}
-        />
-      </FormField>
+    <FormProvider {...methods}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <FormField label="Select Asset" required>
+          <Dropdown
+            name="assetId"
+            preFetchedOptions={assetOptions}
+            placeHolder="Select an asset"
+            value={selectedAssetId ? { label: '', value: selectedAssetId.toString() } : null}
+            onChange={(value) => {
+              const assetId = value ? parseInt(value as string) : null;
+              setSelectedAssetId(assetId);
+            }}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={submitting}
+          />
+        </FormField>
 
-      <FormField label="Assign to Worker (Optional)">
-        <Dropdown
-          name="workerId"
-          preFetchedOptions={workerOptions}
-          placeHolder="Select a worker (optional)"
-          value={selectedWorkerId ? { label: '', value: selectedWorkerId.toString() } : null}
-          onChange={(value) => {
-            const workerId = typeof value === 'object' && value && 'value' in value ? parseInt(value.value) : null;
-            setSelectedWorkerId(workerId);
-          }}
-          disablePortal={true}
-          fullWidth={true}
-          disabled={submitting}
-        />
-      </FormField>
+        <FormField label="Assign to Worker (Optional)">
+          <Dropdown
+            name="workerId"
+            preFetchedOptions={workerOptions}
+            placeHolder="Select a worker (optional)"
+            value={selectedWorkerId ? { label: '', value: selectedWorkerId.toString() } : null}
+            onChange={(value) => {
+              const workerId = value ? parseInt(value as string) : null;
+              setSelectedWorkerId(workerId);
+            }}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={submitting}
+          />
+        </FormField>
 
-      <FormField label="Notes (Optional)">
-        <TextArea
-          name="notes"
-          placeholder="Add any notes about this assignment..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          disabled={submitting}
-        />
-      </FormField>
-    </Box>
+        <FormField label="Notes (Optional)">
+          <TextArea
+            name="notes"
+            placeholder="Add any notes about this assignment..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            disabled={submitting}
+          />
+        </FormField>
+      </Box>
+    </FormProvider>
   );
 };

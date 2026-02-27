@@ -111,6 +111,7 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
           startIcon={<AddIcon />}
           onClick={handleAssignAsset}
           size="small"
+          disabled={assignments.length > 0}
         >
           Assign Asset
         </Button>
