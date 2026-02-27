@@ -17,6 +17,7 @@ import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
 import { AdditionalInformationSection } from '../AdditionalInformationSection';
+import { ComplaintsSection } from '../ComplaintsSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 
@@ -172,6 +173,8 @@ export const JobDetailsView: React.FC = () => {
               <S.DetailsSection>
                 <JobActivityLogTab job={job} refreshTrigger={workflowUpdateTrigger} />
               </S.DetailsSection>
+            ) : activeTab === 'complaints' ? (
+              <ComplaintsSection job={job} defaultExpanded={true} />
             ) : (
               <>
                 {/* Job Details Section */}
