@@ -80,6 +80,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             const formData: Partial<JobFormData> = {
               templateId: job.templateId,
               status: job.status,
+              customerId: job.customerId,
               clientId: job.clientId,
               assignedWorkerId: job.assignedWorkerId,
               assetIds: assetIdsFormatted,
@@ -119,7 +120,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, clientId, assignedWorkerId, assetIds, workflowId, ...dynamicFields } = data;
+        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -155,7 +156,12 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           ? (status as { value: string }).value
           : status;
 
-        // Convert clientId and assignedWorkerId to numbers or undefined
+        // Convert customerId, clientId and assignedWorkerId to numbers or undefined
+        const customerIdValue = typeof customerId === 'object' && customerId !== null
+          ? (customerId as { value: string }).value
+          : customerId;
+        const customerIdNumber = customerIdValue ? Number(customerIdValue) : undefined;
+
         const clientIdValue = typeof clientId === 'object' && clientId !== null
           ? (clientId as { value: string }).value
           : clientId;
@@ -191,6 +197,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             fieldValues,
           };
           if (statusValue) updatePayload.status = statusValue as JobUpdateRequestStatusEnum;
+          if (customerIdNumber) updatePayload.customerId = customerIdNumber;
           if (clientIdNumber) updatePayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) updatePayload.assetIds = assetIdsArray;
@@ -201,6 +208,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           // Create new job - only include fields that have values
           const createPayload: JobCreateRequest = {
             templateId: templateIdNumber,
+            customerId: customerIdNumber!,
             fieldValues,
           };
           if (statusValue) createPayload.status = statusValue as JobCreateRequestStatusEnum;

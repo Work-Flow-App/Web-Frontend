@@ -6,7 +6,7 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { RadioGroup } from '../../../../components/UI/Forms/Radio';
 import { FormField, FormRow } from '../../../../components/UI/FormComponents';
-import { jobTemplateService, companyClientService, workerService, assetService, workflowService } from '../../../../services/api';
+import { jobTemplateService, companyClientService, workerService, assetService, workflowService, customerService } from '../../../../services/api';
 import type {
   JobTemplateResponse,
   JobTemplateFieldResponse,
@@ -14,6 +14,7 @@ import type {
   WorkerResponse,
   AssetResponse,
   WorkflowResponse,
+  CustomerResponse,
 } from '../../../../services/api';
 import { FieldType, JOB_STATUS_OPTIONS } from '../../../../enums';
 
@@ -26,10 +27,12 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
   const [loadingAssets, setLoadingAssets] = useState(true);
@@ -50,6 +53,19 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         console.error('Error fetching templates:', error);
       } finally {
         setLoadingTemplates(false);
+      }
+    };
+
+    const fetchCustomers = async () => {
+      try {
+        setLoadingCustomers(true);
+        const response = await customerService.getAllCustomers();
+        const customersData = Array.isArray(response.data) ? response.data : [];
+        setCustomers(customersData);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      } finally {
+        setLoadingCustomers(false);
       }
     };
 
@@ -108,6 +124,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     };
 
     fetchTemplates();
+    fetchCustomers();
     fetchClients();
     fetchWorkers();
     fetchAssets();
@@ -155,6 +172,13 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       value: template.id?.toString() || '',
     }));
   }, [templates]);
+
+  const customerOptions = useMemo(() => {
+    return customers.map((customer) => ({
+      label: customer.name || '',
+      value: customer.id?.toString() || '',
+    }));
+  }, [customers]);
 
   const clientOptions = useMemo(() => {
     return clients.map((client) => ({
@@ -291,6 +315,17 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       </FormRow>
 
       <FormRow>
+        <FormField label={fieldLabels.customerId} required={isRequireds.customerId}>
+          <Dropdown
+            name={fieldTitles.customerId}
+            preFetchedOptions={customerOptions}
+            placeHolder={placeHolders.customerId}
+            isPreFetchLoading={loadingCustomers}
+            disablePortal={true}
+            fullWidth={true}
+          />
+        </FormField>
+
         <FormField label={fieldLabels.clientId} required={isRequireds.clientId}>
           <Dropdown
             name={fieldTitles.clientId}
@@ -302,7 +337,9 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             disabled={clientOptions.length === 0}
           />
         </FormField>
+      </FormRow>
 
+      <FormRow>
         <FormField label={fieldLabels.assignedWorkerId} required={isRequireds.assignedWorkerId}>
           <Dropdown
             name={fieldTitles.assignedWorkerId}
@@ -312,6 +349,18 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
             disablePortal={true}
             fullWidth={true}
             disabled={workerOptions.length === 0}
+          />
+        </FormField>
+
+        <FormField label={fieldLabels.workflowId} required={isRequireds.workflowId}>
+          <Dropdown
+            name={fieldTitles.workflowId}
+            preFetchedOptions={workflowOptions}
+            placeHolder={placeHolders.workflowId}
+            isPreFetchLoading={loadingWorkflows}
+            disablePortal={true}
+            fullWidth={true}
+            disabled={workflowOptions.length === 0}
           />
         </FormField>
       </FormRow>
@@ -336,18 +385,6 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
                 ? 'All assets are currently assigned to other jobs. Please wait for assets to become available or create new assets.'
                 : undefined
             }
-          />
-        </FormField>
-
-        <FormField label={fieldLabels.workflowId} required={isRequireds.workflowId}>
-          <Dropdown
-            name={fieldTitles.workflowId}
-            preFetchedOptions={workflowOptions}
-            placeHolder={placeHolders.workflowId}
-            isPreFetchLoading={loadingWorkflows}
-            disablePortal={true}
-            fullWidth={true}
-            disabled={workflowOptions.length === 0}
           />
         </FormField>
       </FormRow>
