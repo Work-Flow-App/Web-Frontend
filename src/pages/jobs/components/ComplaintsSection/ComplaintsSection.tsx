@@ -24,7 +24,7 @@ import { RichTextEditor } from '../../../../components/UI/Forms/RichTextEditor';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import * as S from '../../JobDetailsPage.styles';
 
-interface AdditionalInformationSectionProps {
+interface ComplaintsSectionProps {
   job: JobResponse;
   defaultExpanded?: boolean;
 }
@@ -37,7 +37,7 @@ interface PendingFile {
   file: File;
 }
 
-interface AdditionalInfoFormValues {
+interface ComplaintsFormValues {
   description: string;
 }
 
@@ -76,7 +76,7 @@ const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export const AdditionalInformationSection: React.FC<AdditionalInformationSectionProps> = ({
+export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
   job,
   defaultExpanded = false,
 }) => {
@@ -90,7 +90,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const methods = useForm<AdditionalInfoFormValues>({
+  const methods = useForm<ComplaintsFormValues>({
     defaultValues: { description: '' },
   });
 
@@ -108,9 +108,9 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
 
       const discussionResponse = await stepActivityService.getDiscussionTimeline(stepId);
       const allItems = discussionResponse.data || [];
-      setExistingItems(allItems.filter((item) => item.discussionType === 'ADDITIONAL'));
+      setExistingItems(allItems.filter((item) => item.discussionType === 'COMPLAINT'));
     } catch (error) {
-      console.error('Error fetching additional information:', error);
+      console.error('Error fetching complaints:', error);
     } finally {
       setLoadingItems(false);
     }
@@ -160,13 +160,13 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
-  const handleSave = async (data: AdditionalInfoFormValues) => {
+  const handleSave = async (data: ComplaintsFormValues) => {
     if (!firstStepId) {
       showError('No workflow step found for this job');
       return;
     }
     if (!data.description.trim() && pendingFiles.length === 0) {
-      showError('Please add a description or attachment');
+      showError('Please add a complaint description or attachment');
       return;
     }
 
@@ -176,7 +176,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
       if (data.description.trim()) {
         await stepActivityService.addComment(firstStepId, {
           content: data.description.trim(),
-          type: 'ADDITIONAL',
+          type: 'COMPLAINT',
         });
       }
 
@@ -184,17 +184,17 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
         await stepActivityService.uploadAttachment(
           firstStepId,
           pending.file,
-          UploadAttachment1TypeEnum.Additional
+          UploadAttachment1TypeEnum.Complaint
         );
       }
 
-      showSuccess('Additional information saved successfully');
+      showSuccess('Complaint saved successfully');
       methods.reset();
       setPendingFiles([]);
       fetchWorkflowAndItems();
     } catch (error) {
-      console.error('Error saving additional information:', error);
-      showError('Failed to save additional information');
+      console.error('Error saving complaint:', error);
+      showError('Failed to save complaint');
     } finally {
       setSaving(false);
     }
@@ -207,7 +207,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
   return (
     <S.CollapsibleSection>
       <S.CollapsibleSectionHeader onClick={toggleExpanded}>
-        <S.CollapsibleSectionTitle>Additional Information</S.CollapsibleSectionTitle>
+        <S.CollapsibleSectionTitle>Complaints</S.CollapsibleSectionTitle>
         <S.CollapsibleSectionActions>
           <MuiIconButton
             size="small"
@@ -223,13 +223,13 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
 
       <Collapse in={isExpanded}>
         <S.CollapsibleSectionContent>
-          {/* Existing saved ADDITIONAL items */}
+          {/* Existing saved COMPLAINT items */}
           {loadingItems ? (
             <Loader size={20} centered minHeight="60px" />
           ) : existingItems.length > 0 ? (
             <S.EventNoteBox>
               <S.EventNoteHeader>
-                <S.EventNoteTitle>Saved Information</S.EventNoteTitle>
+                <S.EventNoteTitle>Saved Complaints</S.EventNoteTitle>
               </S.EventNoteHeader>
               {existingItems.map((item) => (
                 <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
@@ -275,14 +275,14 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
             </S.EventNoteBox>
           ) : null}
 
-          {/* Add new information form */}
+          {/* Add new complaint form */}
           <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(handleSave)}>
               <S.AdditionalInfoContainer>
                 <RichTextEditor
                   name="description"
                   label="Description"
-                  placeholder="Enter additional information or notes about this job..."
+                  placeholder="Describe the complaint..."
                 />
 
                 <div>

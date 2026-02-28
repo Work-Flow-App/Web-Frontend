@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { stepActivityService } from '../../../../services/api';
 import type { StepCommentResponse } from '../../../../services/api';
+import { StepCommentCreateRequestTypeEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
@@ -69,8 +70,8 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
   const handleEditComment = (comment: StepCommentResponse, e: React.MouseEvent) => {
     e.stopPropagation();
     if (comment.id) {
+      editCommentMethods.reset({ editContent: comment.content || '' });
       setEditingCommentId(comment.id);
-      editCommentMethods.setValue('editContent', comment.content || '');
     }
   };
 
@@ -83,7 +84,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     const editContent = editCommentMethods.getValues('editContent');
     try {
       setSaving(true);
-      await stepActivityService.updateComment(commentId, { content: editContent });
+      await stepActivityService.updateComment(commentId, { content: editContent, type: StepCommentCreateRequestTypeEnum.InternalNote });
       showSuccess('Comment updated successfully');
       setEditingCommentId(null);
       editCommentMethods.reset();
@@ -103,7 +104,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
 
     try {
       setAddingNew(true);
-      await stepActivityService.addComment(stepId, { content: newComment.trim() });
+      await stepActivityService.addComment(stepId, { content: newComment.trim(), type: StepCommentCreateRequestTypeEnum.InternalNote });
       showSuccess('Comment added successfully');
       newCommentMethods.reset();
       fetchComments();

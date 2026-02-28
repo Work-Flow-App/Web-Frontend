@@ -1747,16 +1747,6 @@ export const ActivityTimelineRow = styled(Box)(({ theme }) => ({
   flexWrap: 'wrap',
 }));
 
-export const ActivityTypeBadge = styled(Box)(() => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: `${rem(4)} ${rem(10)}`,
-  borderRadius: rem(12),
-  fontSize: rem(11),
-  fontWeight: Bold._600,
-  textTransform: 'uppercase',
-  letterSpacing: '0.3px',
-}));
 
 export const ActivityTimelineTime = styled(Box)(({ theme }) => ({
   fontSize: rem(11),
@@ -2315,4 +2305,174 @@ export const StepTitleEditContainer = styled(Box)(({ theme }) => ({
 
 export const StepTitleIndex = styled('span')(() => ({
   flexShrink: 0,
+}));
+
+// ============================================
+// Step Activity Tab Styles
+// ============================================
+
+export const StepChipsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(2),
+  flexWrap: 'wrap',
+}));
+
+interface StepChipProps {
+  active?: boolean;
+}
+
+export const StepChip = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<StepChipProps>(({ theme, active = false }) => ({
+  padding: `${theme.spacing(0.75)} ${theme.spacing(2)}`,
+  borderRadius: rem(20),
+  cursor: 'pointer',
+  fontSize: rem(13),
+  fontWeight: theme.typography.fontWeightMedium,
+  border: `1px solid ${active ? theme.palette.primary.main : theme.palette.colors.grey_200}`,
+  backgroundColor: active ? theme.palette.primary.main : theme.palette.colors.white,
+  color: active ? theme.palette.colors.white : theme.palette.text.primary,
+  transition: 'all 0.15s ease',
+  userSelect: 'none',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: active ? theme.palette.primary.dark : theme.palette.colors.grey_100,
+  },
+}));
+
+export const ActivityChatContainer = styled(Box)(({ theme }) => ({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(1),
+  overflow: 'hidden',
+  backgroundColor: floowColors.grey[50],
+  minHeight: rem(500),
+}));
+
+export const ActivityChatHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2),
+  backgroundColor: theme.palette.colors.white,
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const ActivityChatHeaderTitle = styled('span')(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.primary,
+}));
+
+export const ActivityFeed = styled(Box)(({ theme }) => ({
+  flex: 1,
+  overflowY: 'auto',
+  padding: theme.spacing(2),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1.5),
+  minHeight: rem(350),
+  maxHeight: rem(450),
+}));
+
+export const ActivityFeedEmpty = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: 1,
+  gap: theme.spacing(1),
+  padding: theme.spacing(6, 0),
+  color: theme.palette.text.secondary,
+  fontSize: rem(14),
+}));
+
+export const ActivityMessageRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1.5),
+  alignItems: 'flex-start',
+}));
+
+export const ActivityAvatar = styled(Box)(({ theme }) => ({
+  width: rem(34),
+  height: rem(34),
+  borderRadius: '50%',
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.colors.white,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: rem(11),
+  fontWeight: theme.typography.fontWeightBold,
+  flexShrink: 0,
+}));
+
+export const ActivityMessageContent = styled(Box)(() => ({
+  flex: 1,
+  maxWidth: 'calc(100% - 46px)',
+}));
+
+export const ActivityTypeBadge = styled(Box)(() => ({
+  display: 'inline-block',
+  padding: `${rem(2)} ${rem(8)}`,
+  borderRadius: rem(4),
+  fontSize: rem(10),
+  fontWeight: Bold._700,
+  letterSpacing: '0.5px',
+  marginBottom: rem(4),
+  textTransform: 'uppercase' as const,
+}));
+
+export const ActivityBubble = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: `0 ${rem(8)} ${rem(8)} ${rem(8)}`,
+  padding: theme.spacing(1, 1.5),
+  fontSize: rem(13),
+  color: theme.palette.text.primary,
+  lineHeight: 1.6,
+  wordBreak: 'break-word',
+}));
+
+export const ActivityBubbleHtml = styled(Box)(() => ({
+  '& p': { margin: 0 },
+  '& ul, & ol': { margin: `${rem(4)} 0`, paddingLeft: rem(20) },
+  '& strong': { fontWeight: Bold._700 },
+  '& em': { fontStyle: 'italic' },
+  '& u': { textDecoration: 'underline' },
+}));
+
+export const ActivityAttachmentRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const ActivityAttachmentName = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  fontSize: rem(13),
+}));
+
+export const ActivityTimestamp = styled(Box)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  marginTop: rem(4),
+  paddingLeft: rem(2),
+}));
+
+export const ActivityInputBar = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2),
+  borderTop: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  flexWrap: 'wrap',
 }));

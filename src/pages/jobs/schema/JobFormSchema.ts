@@ -16,6 +16,14 @@ export const JobFormSchema: IFields = {
     label: 'Status',
     isRequired: false,
   },
+  customerId: {
+    title: 'customerId',
+    rule: InputValidationRules.DropDownRequired(),
+    defaultValue: null,
+    placeHolder: 'Select customer',
+    label: 'Customer',
+    isRequired: true,
+  },
   clientId: {
     title: 'clientId',
     defaultValue: null,
@@ -49,6 +57,7 @@ export const JobFormSchema: IFields = {
 export interface JobFormData {
   templateId: number | string | { label: string; value: string } | null;
   status?: string | { label: string; value: string } | null;
+  customerId: number | string | { label: string; value: string } | null;
   clientId?: number | string | { label: string; value: string } | null;
   assignedWorkerId?: number | string | { label: string; value: string } | null;
   assetIds?: Array<number | string | { label: string; value: string }> | null;
