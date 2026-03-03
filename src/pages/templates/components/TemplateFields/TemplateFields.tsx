@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import Table from '../../../../components/UI/Table/Table';
-import type { ITableAction } from '../../../../components/UI/Table/ITable';
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobTemplateService } from '../../../../services/api';
+import { jobTemplateService, JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { fieldColumns, type FieldTableRow } from './FieldsDataColumn';
-import { FieldForm } from '../FieldForm/FieldForm';
+import { FIELD_TYPE_OPTIONS } from '../../../../enums';
+import type { FieldTableRow } from './FieldsDataColumn';
+import { FieldTypeToolbar } from './FieldTypeToolbar';
+import { TemplateFieldPanel } from './TemplateFieldPanel';
+import { EditableFieldsTable } from './EditableFieldsTable';
+import type { FieldFormData } from '../../schema/FieldFormSchema';
+import * as S from './TemplateFieldPanel.styles';
 
 interface TemplateFieldsProps {
   templateId: number;
@@ -21,17 +24,20 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
   ({ templateId, onFieldsChange }, ref) => {
   const [fields, setFields] = useState<FieldTableRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [editFieldId, setEditFieldId] = useState<number | null>(null);
+  const [panelLoading, setPanelLoading] = useState(false);
+  const [panelDefaultValues, setPanelDefaultValues] = useState<Partial<FieldFormData> | undefined>(undefined);
+
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Fetch fields for the template
   const fetchFields = useCallback(async () => {
     try {
       setLoading(true);
       const response = await jobTemplateService.getTemplateFields(templateId);
       const fieldsData = Array.isArray(response.data) ? response.data : [];
 
-      // Transform to table format
       const transformedData: FieldTableRow[] = fieldsData.map((field: JobTemplateFieldResponse) => ({
         id: field.id || 0,
         templateId: field.templateId,
@@ -52,128 +58,177 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
     }
   }, [templateId, showError]);
 
-  // Load fields on mount
   useEffect(() => {
     fetchFields();
   }, [fetchFields]);
 
-  // Handle add field
-  const handleAddField = useCallback(() => {
+  const openAddPanel = useCallback((initialFieldType?: string) => {
+    setEditFieldId(null);
+    const preSelected = initialFieldType
+      ? FIELD_TYPE_OPTIONS.find(ft => ft.value === initialFieldType) ?? null
+      : null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setPanelDefaultValues(preSelected ? { jobFieldType: preSelected as any } : undefined);
+    setPanelOpen(true);
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    handleAddField: () => openAddPanel(),
+  }), [openAddPanel]);
+
+  const openEditPanel = useCallback(async (field: FieldTableRow) => {
+    setEditFieldId(field.id);
+    setPanelDefaultValues(undefined);
+    setPanelLoading(true);
+    setPanelOpen(true);
+
+    try {
+      const response = await jobTemplateService.getFieldById(field.id);
+      const data = response.data;
+      const selectedFieldType = FIELD_TYPE_OPTIONS.find(ft => ft.value === data.jobFieldType) ?? null;
+
+      setPanelDefaultValues({
+        name: data.name || '',
+        label: data.label || '',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        jobFieldType: selectedFieldType as any,
+        required: String(data.required) as any,
+        options: data.options || '',
+        orderIndex: data.orderIndex || 0,
+      });
+    } catch (error) {
+      showError('Failed to load field data');
+      setPanelOpen(false);
+      setEditFieldId(null);
+    } finally {
+      setPanelLoading(false);
+    }
+  }, [showError]);
+
+  const closePanel = useCallback(() => {
+    setPanelOpen(false);
+    setEditFieldId(null);
+    setPanelDefaultValues(undefined);
+  }, []);
+
+  const handlePanelSubmit = useCallback(async (data: FieldFormData) => {
+    try {
+      const required = typeof data.required === 'string'
+        ? data.required === 'true'
+        : Boolean(data.required);
+
+      const jobFieldType = typeof data.jobFieldType === 'object' && data.jobFieldType !== null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ? (data.jobFieldType as any).value
+        : data.jobFieldType;
+
+      const fieldPayload = {
+        templateId,
+        name: data.name,
+        label: data.label,
+        jobFieldType: jobFieldType as JobTemplateFieldCreateRequestJobFieldTypeEnum,
+        required,
+        options: data.options,
+        orderIndex: Number(data.orderIndex),
+      };
+
+      if (editFieldId) {
+        await jobTemplateService.updateField(editFieldId, fieldPayload);
+        showSuccess('Field updated successfully');
+      } else {
+        await jobTemplateService.createField(fieldPayload);
+        showSuccess('Field created successfully');
+      }
+
+      closePanel();
+      fetchFields();
+      onFieldsChange?.();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save field';
+      showError(errorMessage);
+    }
+  }, [templateId, editFieldId, showSuccess, showError, closePanel, fetchFields, onFieldsChange]);
+
+  const handleDeleteField = useCallback((field: FieldTableRow) => {
     setGlobalModalOuterProps({
       isOpen: true,
-      size: ModalSizes.MEDIUM,
-      fieldName: 'addField',
+      size: ModalSizes.SMALL,
+      fieldName: 'deleteField',
       children: (
-        <FieldForm
-          isModal={true}
-          templateId={templateId}
-          onSuccess={() => {
-            resetGlobalModalOuterProps();
-            fetchFields();
-            onFieldsChange?.(); // Notify parent to refresh columns
+        <ConfirmationModal
+          title="Delete Field"
+          message={`Are you sure you want to delete "${field.label}"?`}
+          description="This action cannot be undone."
+          variant="danger"
+          confirmButtonText="Delete"
+          cancelButtonText="Cancel"
+          onConfirm={async () => {
+            try {
+              await jobTemplateService.deleteField(field.id);
+              showSuccess(`Field "${field.label}" deleted successfully`);
+              resetGlobalModalOuterProps();
+              fetchFields();
+              onFieldsChange?.();
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
+              showError(errorMessage);
+              resetGlobalModalOuterProps();
+            }
           }}
+          onCancel={() => resetGlobalModalOuterProps()}
         />
       ),
     });
-  }, [templateId, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchFields, onFieldsChange]);
+  }, [showSuccess, showError, fetchFields, onFieldsChange, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
-  // Expose handleAddField via ref
-  useImperativeHandle(ref, () => ({
-    handleAddField,
-  }), [handleAddField]);
+  const handleCellSave = useCallback(async (fieldId: number, updates: Partial<FieldTableRow>) => {
+    const row = fields.find(f => f.id === fieldId);
+    if (!row) return;
 
-  // Handle edit field
-  const handleEditField = useCallback(
-    (field: FieldTableRow) => {
-      setGlobalModalOuterProps({
-        isOpen: true,
-        size: ModalSizes.MEDIUM,
-        fieldName: 'editField',
-        children: (
-          <FieldForm
-            isModal={true}
-            templateId={templateId}
-            fieldId={field.id}
-            onSuccess={() => {
-              resetGlobalModalOuterProps();
-              fetchFields();
-              onFieldsChange?.(); 
-            }}
-          />
-        ),
+    // Optimistically update local state so the UI reflects instantly
+    setFields(prev => prev.map(f => f.id === fieldId ? { ...f, ...updates } : f));
+
+    try {
+      const jobFieldType = (updates.jobFieldType ?? row.jobFieldType) as JobTemplateFieldCreateRequestJobFieldTypeEnum;
+      await jobTemplateService.updateField(fieldId, {
+        templateId,
+        name: updates.name ?? row.name,
+        label: updates.label ?? row.label,
+        jobFieldType,
+        required: updates.required ?? row.required,
+        options: updates.options ?? row.options,
+        orderIndex: updates.orderIndex ?? row.orderIndex,
       });
-    },
-    [templateId, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchFields, onFieldsChange]
-  );
-
-  // Handle delete field
-  const handleDeleteField = useCallback(
-    (field: FieldTableRow) => {
-      setGlobalModalOuterProps({
-        isOpen: true,
-        size: ModalSizes.SMALL,
-        fieldName: 'deleteField',
-        children: (
-          <ConfirmationModal
-            title="Delete Field"
-            message={`Are you sure you want to delete field "${field.label}"?`}
-            description="This action cannot be undone."
-            variant="danger"
-            confirmButtonText="Delete"
-            cancelButtonText="Cancel"
-            onConfirm={async () => {
-              try {
-                await jobTemplateService.deleteField(field.id);
-                showSuccess(`Field "${field.label}" deleted successfully`);
-                resetGlobalModalOuterProps();
-                fetchFields();
-                onFieldsChange?.(); // Notify parent to refresh columns
-              } catch (error) {
-                console.error('Error deleting field:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
-                showError(errorMessage);
-                resetGlobalModalOuterProps();
-              }
-            }}
-            onCancel={() => {
-              resetGlobalModalOuterProps();
-            }}
-          />
-        ),
-      });
-    },
-    [showSuccess, showError, fetchFields, onFieldsChange, setGlobalModalOuterProps, resetGlobalModalOuterProps]
-  );
-
-  // Define table actions
-  const tableActions: ITableAction<FieldTableRow>[] = useMemo(
-    () => [
-      {
-        id: 'edit',
-        label: 'Edit',
-        onClick: handleEditField,
-      },
-      {
-        id: 'delete',
-        label: 'Delete',
-        onClick: handleDeleteField,
-        color: 'error' as const,
-      },
-    ],
-    [handleEditField, handleDeleteField]
-  );
+      onFieldsChange?.();
+    } catch (error) {
+      // Revert on failure
+      setFields(prev => prev.map(f => f.id === fieldId ? row : f));
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save change';
+      showError(errorMessage);
+    }
+  }, [fields, templateId, showError, onFieldsChange]);
 
   return (
-    <Table<FieldTableRow>
-      columns={fieldColumns}
-      data={fields}
-      showActions
-      actions={tableActions}
-      loading={loading}
-      emptyMessage="No fields found. Add your first field to get started."
-      rowsPerPage={10}
-      showPagination={true}
-    />
+    <>
+      <FieldTypeToolbar onSelectType={openAddPanel} />
+      <S.LayoutContainer>
+        <EditableFieldsTable
+          fields={fields}
+          loading={loading}
+          onCellSave={handleCellSave}
+          onOpenPanel={openEditPanel}
+          onDelete={handleDeleteField}
+        />
+        <TemplateFieldPanel
+          open={panelOpen}
+          isEdit={!!editFieldId}
+          defaultValues={panelDefaultValues}
+          isLoading={panelLoading}
+          onSubmit={handlePanelSubmit}
+          onClose={closePanel}
+        />
+      </S.LayoutContainer>
+    </>
   );
 });
 

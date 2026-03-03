@@ -4,6 +4,7 @@ import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { FieldFormFields } from '../FieldFormFields/FieldFormFields';
 import { Loader } from '../../../../components/UI';
 import { jobTemplateService, JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../../services/api';
+import { FIELD_TYPE_OPTIONS } from '../../../../enums';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -11,13 +12,21 @@ export interface FieldFormProps {
   isModal?: boolean;
   templateId: number;
   fieldId?: number;
+  initialFieldType?: string;
   onSuccess?: () => void;
 }
 
-export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateId, fieldId, onSuccess }) => {
+export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateId, fieldId, initialFieldType, onSuccess }) => {
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig } = useGlobalModalInnerContext();
-  const [fieldData, setFieldData] = useState<Partial<FieldFormData> | undefined>(undefined);
+
+  const getInitialData = (): Partial<FieldFormData> | undefined => {
+    if (fieldId || !initialFieldType) return undefined;
+    const selectedType = FIELD_TYPE_OPTIONS.find(ft => ft.value === initialFieldType) || null;
+    return selectedType ? { jobFieldType: selectedType as any } : undefined;
+  };
+
+  const [fieldData, setFieldData] = useState<Partial<FieldFormData> | undefined>(getInitialData);
   const [isLoading, setIsLoading] = useState(false);
 
   const isEditMode = !!fieldId;
@@ -42,14 +51,7 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
           const field = response.data;
 
           // Convert jobFieldType to dropdown option format
-          const FIELD_TYPES = [
-            { label: 'Text', value: 'TEXT' },
-            { label: 'Number', value: 'NUMBER' },
-            { label: 'Date', value: 'DATE' },
-            { label: 'Boolean', value: 'BOOLEAN' },
-            { label: 'Dropdown', value: 'DROPDOWN' },
-          ];
-          const selectedFieldType = FIELD_TYPES.find(ft => ft.value === field.jobFieldType) || null;
+          const selectedFieldType = FIELD_TYPE_OPTIONS.find(ft => ft.value === field.jobFieldType) || null;
 
           setFieldData({
             name: field.name || '',
