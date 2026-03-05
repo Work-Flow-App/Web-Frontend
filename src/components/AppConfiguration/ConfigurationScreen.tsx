@@ -21,7 +21,7 @@ const ENVIRONMENT_OPTIONS = [
   {
     label: 'Production',
     value: import.meta.env.VITE_API_PRODUCTION_URL ||
-           (import.meta.env.PROD ? import.meta.env.VITE_API_BASE_URL : 'https://api.dev.workfloow.app')
+           (import.meta.env.PROD ? import.meta.env.VITE_API_BASE_URL : 'https://api.dev2.workfloow.app')
   },
 ];
 

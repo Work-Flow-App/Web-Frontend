@@ -12,7 +12,7 @@ const getValidUrls = (): string[] => {
   const localUrl = import.meta.env.VITE_API_LOCAL_URL ||
                    (import.meta.env.DEV ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:5173');
   const prodUrl = import.meta.env.VITE_API_PRODUCTION_URL ||
-                  (import.meta.env.PROD ? import.meta.env.VITE_API_BASE_URL : 'https://api.dev.workfloow.app');
+                  (import.meta.env.PROD ? import.meta.env.VITE_API_BASE_URL : 'https://api.dev2.workfloow.app');
   return [localUrl, prodUrl];
 };
 
@@ -23,7 +23,7 @@ const getApiBaseUrl = (): string => {
   // Default to local URL in development mode, production URL in production mode
   const defaultUrl = import.meta.env.DEV
     ? (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173')
-    : (import.meta.env.VITE_API_BASE_URL || 'https://api.dev.workfloow.app');
+    : (import.meta.env.VITE_API_BASE_URL || 'https://api.dev2.workfloow.app');
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
