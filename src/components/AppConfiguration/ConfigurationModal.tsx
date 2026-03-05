@@ -11,7 +11,7 @@ const STORAGE_KEY = 'app_environment_config';
 
 const ENVIRONMENT_OPTIONS = [
   { label: 'Local', value: 'http://localhost:3000' },
-  { label: 'Production', value: 'https://api.dev.workfloow.app' },
+  { label: 'Production', value: 'https://api.dev2.workfloow.app' },
 ];
 
 const getStoredConfig = (): EnvironmentConfig => {

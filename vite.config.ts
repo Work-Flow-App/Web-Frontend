@@ -15,7 +15,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api.dev.workfloow.app',
+        target: 'https://api.dev2.workfloow.app',
         changeOrigin: true,
         secure: false,
       },
