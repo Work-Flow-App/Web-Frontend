@@ -98,6 +98,11 @@ export const env = {
    * Is production mode
    */
   isProd: import.meta.env.PROD,
+
+  /**
+   * Google OAuth Client ID for Sign In with Google
+   */
+  googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
 };
 
 export default env;
