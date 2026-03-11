@@ -45,6 +45,7 @@ class ApiClient {
    */
   private readonly PUBLIC_AUTH_ENDPOINTS = [
     '/auth/login',
+    '/auth/google',
     '/auth/signup',
     '/auth/signup/worker',
     '/auth/refresh',

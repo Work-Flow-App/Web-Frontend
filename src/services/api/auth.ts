@@ -57,6 +57,20 @@ export const authService = {
   },
 
   /**
+   * Sign in with Google using the ID token from Google Identity Services
+   */
+  async loginWithGoogle(idToken: string): Promise<ApiResponse<AuthResponse>> {
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/google', { idToken });
+
+    if (response.data.accessToken) {
+      apiClient.setAuthToken(response.data.accessToken);
+      apiClient.setRefreshToken(response.data.refreshToken);
+    }
+
+    return response;
+  },
+
+  /**
    * Refresh access token using refresh token
    */
   async refreshToken(refreshToken: string): Promise<ApiResponse<AuthResponse>> {
