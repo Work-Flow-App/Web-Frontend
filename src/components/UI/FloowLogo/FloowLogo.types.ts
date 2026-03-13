@@ -6,4 +6,5 @@ export interface FloowLogoProps {
   width?: string | number;
   height?: string | number;
   variant?: FloowLogoVariant;
+  iconOnly?: boolean;
 }

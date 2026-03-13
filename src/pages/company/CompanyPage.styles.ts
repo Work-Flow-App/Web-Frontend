@@ -47,12 +47,12 @@ export const StatCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
   borderRadius: rem(12),
   padding: rem(24),
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+  boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.08)',
   border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+    boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.12)',
   },
   '@media (max-width: 1366px)': {
     padding: rem(20),
@@ -63,7 +63,7 @@ export const ChartCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
   borderRadius: rem(12),
   padding: rem(24),
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+  boxShadow: theme.palette.mode === 'dark' ? 'none' : '0 2px 8px rgba(0, 0, 0, 0.08)',
   border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
   '@media (max-width: 1366px)': {
     padding: rem(20),

@@ -43,14 +43,19 @@ const ColorCircle = styled(Box)<{ color: string; selected?: boolean }>(({ theme,
 }));
 
 const PREDEFINED_COLORS = [
-  { name: 'Default Black', color: floowColors.black },
-  { name: 'Blue', color: floowColors.blue.main },
-  { name: 'Indigo', color: floowColors.indigo.main },
-  { name: 'Green', color: floowColors.success.main },
-  { name: 'Red', color: floowColors.error.main },
-  { name: 'Orange', color: floowColors.warning.main },
+  { name: 'Default', color: floowColors.navy },
+  { name: 'Ocean Blue', color: '#0ea5e9' },
+  { name: 'Indigo', color: '#4f46e5' },
+  { name: 'Violet', color: '#7c3aed' },
   { name: 'Purple', color: '#9c27b0' },
-  { name: 'Teal', color: '#009688' },
+  { name: 'Emerald', color: '#059669' },
+  { name: 'Teal', color: '#0d9488' },
+  { name: 'Sky', color: '#0284c7' },
+  { name: 'Navy', color: '#1e3a5f' },
+  { name: 'Slate', color: '#475569' },
+  { name: 'Amber', color: '#d97706' },
+  { name: 'Rose', color: '#f43f5e' },
+  { name: 'Crimson', color: '#dc2626' },
 ];
 
 export const ThemeSettings: React.FC = () => {
@@ -127,7 +132,7 @@ export const ThemeSettings: React.FC = () => {
                     height: 40, 
                     borderRadius: 1, 
                     bgcolor: customColor,
-                    border: '1px solid #ccc'
+                    border: (theme) => `1px solid ${theme.palette.divider}`
                 }} 
             />
         </Box>

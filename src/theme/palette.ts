@@ -3,7 +3,7 @@ import { floowColors } from './colors';
 import type { PaletteMode } from '@mui/material';
 
 // Use colors from design system
-const PRIMARY = floowColors.black;
+const PRIMARY = floowColors.navy;
 const SECONDARY = floowColors.grey[900];
 const SUCCESS = floowColors.success.main;
 const ERROR = floowColors.error.main;

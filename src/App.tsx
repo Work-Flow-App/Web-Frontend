@@ -7,6 +7,7 @@ import { ResetPassword } from './pages/auth/ResetPassword'
 import { VerifyEmail } from './pages/auth/VerifyEmail'
 import { ResendVerification } from './pages/auth/ResendVerification'
 import { CompanyPage } from './pages/company/CompanyPage'
+import { CompanyProfile } from './pages/company/CompanyProfile'
 import { WorkerPage } from './pages/worker/WorkerPage'
 import { InvitationsPage } from './pages/invitations'
 import { ClientPage } from './pages/client/ClientPage'
@@ -47,6 +48,7 @@ function App() {
             {/* Protected routes - With Layout (Sidebar + TopNav) */}
             <Route element={<Layout />}>
               <Route path="/company" element={<CompanyPage />} />
+              <Route path="/company/profile" element={<CompanyProfile />} />
               <Route path="/company/workers" element={<WorkerPage />} />
               <Route path="/company/invitations" element={<InvitationsPage />} />
               <Route path="/company/clients" element={<ClientPage />} />
