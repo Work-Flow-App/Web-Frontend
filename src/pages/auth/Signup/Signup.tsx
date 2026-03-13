@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
-import { RadioGroup } from '../../../components/UI/Forms/Radio';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { authService } from '../../../services/api';
@@ -64,13 +63,12 @@ export const Signup: React.FC = () => {
 
   const {
     handleSubmit,
-    control,
     formState: { errors },
     trigger,
   } = methods;
 
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -86,32 +84,14 @@ export const Signup: React.FC = () => {
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      const response = await authService.signup({
+      await authService.signup({
         username: data.username,
         email: data.email,
         password: data.password,
-        role: data.role,
+        role: UserRole.COMPANY,
       });
 
-      console.log('Signup successful:', response);
-
-      // Store user role temporarily for the login flow
-      localStorage.setItem('pending_user_role', data.role);
-
-      // Clear tokens after signup - user needs to login
-      await authService.logout();
-
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: 'Account created successfully! Redirecting to login...',
-        variant: 'success',
-      });
-
-      // Redirect to login page after 2 seconds
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setSignupSuccess(true);
     } catch (error: unknown) {
       console.error('Signup failed:', error);
       const errorMessage = extractErrorMessage(error, 'Failed to create account. Please try again.');
@@ -130,6 +110,28 @@ export const Signup: React.FC = () => {
   //   console.log('Google signup clicked');
   //   // Handle Google OAuth here
   // };
+
+  if (signupSuccess) {
+    return (
+      <SignupContainer>
+        <LeftSection>
+          <FormContainer>
+            <HeaderSection>
+              <FloowLogo variant="light" showText={true} />
+              <Title>Check your email</Title>
+              <Subtitle>
+                We've sent you a verification link. Please check your inbox and click the link to activate your account.
+              </Subtitle>
+            </HeaderSection>
+            <SignInLink>
+              Already verified? <Link to="/login">Sign in</Link>
+            </SignInLink>
+          </FormContainer>
+        </LeftSection>
+        <AuthRightSection />
+      </SignupContainer>
+    );
+  }
 
   return (
     <FormProvider {...methods}>
@@ -181,33 +183,6 @@ export const Signup: React.FC = () => {
                 placeholder={placeHolders.confirmPassword}
                 fullWidth
                 error={errors.confirmPassword}
-              />
-
-              <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                  <RadioGroup
-                    name="role"
-                    label={fieldLabels.role}
-                    options={[
-                      {
-                        label: 'Company',
-                        value: UserRole.COMPANY,
-                        description: 'Register as a company to post jobs and hire workers',
-                      },
-                      {
-                        label: 'Worker',
-                        value: UserRole.WORKER,
-                        description: 'Register as a worker to find and apply for jobs',
-                      },
-                    ]}
-                    value={field.value}
-                    onChange={field.onChange}
-                    error={errors.role}
-                    orientation="vertical"
-                  />
-                )}
               />
 
               <Button

@@ -47,6 +47,7 @@ export const Login: React.FC = () => {
 
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendLink, setShowResendLink] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -103,11 +104,21 @@ export const Login: React.FC = () => {
       console.error('Login failed:', error);
       const errorMessage = extractErrorMessage(error, 'Failed to sign in. Please try again.');
 
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        variant: 'error',
-      });
+      if (errorMessage === 'User is disabled') {
+        setShowResendLink(true);
+        setSnackbar({
+          open: true,
+          message: 'Please verify your email before logging in.',
+          variant: 'warning',
+        });
+      } else {
+        setShowResendLink(false);
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          variant: 'error',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -221,8 +232,14 @@ export const Login: React.FC = () => {
                 theme="outline"
               />
 
+              {showResendLink && (
+                <SignUpLink>
+                  <Link to="/resend-verification">Resend verification email</Link>
+                </SignUpLink>
+              )}
+
               <SignUpLink>
-                <Link to="/signup">Create an account</Link>
+                Don't have an account? <Link to="/signup">Create an account</Link>
               </SignUpLink>
             </FormWrapper>
 

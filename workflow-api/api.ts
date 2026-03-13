@@ -542,8 +542,8 @@ export interface PageAssetResponse {
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'numberOfElements'?: number;
     'pageable'?: PageableObject;
+    'numberOfElements'?: number;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -551,8 +551,8 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'pageNumber'?: number;
     'unpaged'?: boolean;
+    'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
 }
@@ -561,6 +561,9 @@ export interface PasswordResetResponse {
 }
 export interface RefreshTokenRequest {
     'refreshToken': string;
+}
+export interface ResendVerificationRequest {
+    'email': string;
 }
 export interface ResetPasswordRequest {
     'email': string;
@@ -582,6 +585,9 @@ export const SignupRequestRoleEnum = {
 
 export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof SignupRequestRoleEnum];
 
+export interface SignupResponse {
+    'message'?: string;
+}
 export interface SortObject {
     'empty'?: boolean;
     'unsorted'?: boolean;
@@ -712,6 +718,15 @@ export interface StepVisitLogResponse {
 export interface StepVisitLogSummaryResponse {
     'visitLogs'?: Array<StepVisitLogResponse>;
     'totalWorkedMinutes'?: number;
+}
+export interface VerifyEmailRequest {
+    'token': string;
+}
+export interface WorkerAssignedStepResponse {
+    'step'?: JobWorkflowStepResponse;
+    'jobId'?: number;
+    'customer'?: CustomerResponse;
+    'assignedAssets'?: Array<AssetAssignmentResponse>;
 }
 export interface WorkerCreateRequest {
     'name': string;
@@ -1959,6 +1974,45 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
         },
         /**
          * 
+         * @param {ResendVerificationRequest} resendVerificationRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resendVerification: async (resendVerificationRequest: ResendVerificationRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'resendVerificationRequest' is not null or undefined
+            assertParamExists('resendVerification', 'resendVerificationRequest', resendVerificationRequest)
+            const localVarPath = `/api/v1/auth/resend-verification`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(resendVerificationRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {ResetPasswordRequest} resetPasswordRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2074,6 +2128,45 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {VerifyEmailRequest} verifyEmailRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyEmail: async (verifyEmailRequest: VerifyEmailRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'verifyEmailRequest' is not null or undefined
+            assertParamExists('verifyEmail', 'verifyEmailRequest', verifyEmailRequest)
+            const localVarPath = `/api/v1/auth/verify-email`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(verifyEmailRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2156,6 +2249,18 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {ResendVerificationRequest} resendVerificationRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resendVerification(resendVerificationRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.resendVerification']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {ResetPasswordRequest} resetPasswordRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2172,7 +2277,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+        async signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.signup(signupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.signup']?.[localVarOperationServerIndex]?.url;
@@ -2188,6 +2293,18 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.signupWorker(workerSignupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.signupWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {VerifyEmailRequest} verifyEmailRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.verifyEmail(verifyEmailRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.verifyEmail']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2254,6 +2371,15 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
         },
         /**
          * 
+         * @param {ResendVerificationRequest} resendVerificationRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
+            return localVarFp.resendVerification(resendVerificationRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {ResetPasswordRequest} resetPasswordRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2267,7 +2393,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+        signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
             return localVarFp.signup(signupRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -2278,6 +2404,15 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          */
         signupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerSignupResponse> {
             return localVarFp.signupWorker(workerSignupRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {VerifyEmailRequest} verifyEmailRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+            return localVarFp.verifyEmail(verifyEmailRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2347,6 +2482,16 @@ export class AuthenticationApi extends BaseAPI {
 
     /**
      * 
+     * @param {ResendVerificationRequest} resendVerificationRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).resendVerification(resendVerificationRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @param {ResetPasswordRequest} resetPasswordRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -2373,6 +2518,16 @@ export class AuthenticationApi extends BaseAPI {
      */
     public signupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig) {
         return AuthenticationApiFp(this.configuration).signupWorker(workerSignupRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {VerifyEmailRequest} verifyEmailRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).verifyEmail(verifyEmailRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -6858,7 +7013,7 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMyAssignedSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowStepResponse>>> {
+        async getMyAssignedSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerAssignedStepResponse>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getMyAssignedSteps(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getMyAssignedSteps']?.[localVarOperationServerIndex]?.url;
@@ -7027,7 +7182,7 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyAssignedSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowStepResponse>> {
+        getMyAssignedSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerAssignedStepResponse>> {
             return localVarFp.getMyAssignedSteps(options).then((request) => request(axios, basePath));
         },
         /**
