@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { Box, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
@@ -15,10 +15,12 @@ import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { authService } from '../services/api/auth';
+import { companyService } from '../services/api/company';
 import { getRoleFromToken } from '../utils/jwt';
 import { useSessionRestore } from '../hooks/useSessionRestore';
 import * as S from './Layout.styles';
@@ -27,7 +29,17 @@ import { Place } from '@mui/icons-material';
 /**
  * Right actions component with profile menu
  */
-const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string; onLogout: () => void }) => {
+const RightActions = ({
+  userInitials = 'U',
+  onLogout,
+  onViewProfile,
+  onViewSettings,
+}: {
+  userInitials?: string;
+  onLogout: () => void;
+  onViewProfile: () => void;
+  onViewSettings: () => void;
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -37,6 +49,11 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleViewProfile = () => {
+    handleClose();
+    onViewProfile();
   };
 
   const handleLogout = () => {
@@ -52,7 +69,7 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
 
       <S.ActionDivider aria-hidden={true} />
 
-      <S.ActionButton role="button" aria-label="Settings" tabIndex={0}>
+      <S.ActionButton role="button" aria-label="Settings" tabIndex={0} onClick={onViewSettings}>
         <SettingsIcon />
       </S.ActionButton>
 
@@ -83,6 +100,12 @@ const RightActions = ({ userInitials = 'U', onLogout }: { userInitials?: string;
         }}
         sx={S.menuSx}
       >
+        <MenuItem onClick={handleViewProfile}>
+          <ListItemIcon>
+            <AccountCircleIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Company Profile</ListItemText>
+        </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
@@ -125,17 +148,44 @@ export const Layout: React.FC = () => {
   // Wait for session restoration before rendering protected content
   const { isRestoring, hasSession } = useSessionRestore();
 
-  // Get user initials from in-memory token
-  const userInitials = useMemo(() => {
+  // Get initial fallback from JWT role (e.g., ROLE_COMPANY -> CO)
+  const roleInitials = useMemo(() => {
     const token = authService.getAccessToken();
     if (!token) return 'U';
-
     const role = getRoleFromToken(token);
     if (!role) return 'U';
-
-    // Extract initials from role (e.g., ROLE_COMPANY -> CO, ROLE_WORKER -> WO)
     return role.replace('ROLE_', '').substring(0, 2).toUpperCase();
   }, []);
+
+  const [userInitials, setUserInitials] = useState(roleInitials);
+
+  // Update initials from company name once profile loads
+  useEffect(() => {
+    companyService.getProfile()
+      .then((response) => {
+        const name = response.data.name;
+        if (name) {
+          const words = name.trim().split(/\s+/);
+          const initials = words.length >= 2
+            ? (words[0][0] + words[1][0]).toUpperCase()
+            : name.substring(0, 2).toUpperCase();
+          setUserInitials(initials);
+        }
+      })
+      .catch(() => {
+        // Keep role-based initials if profile fetch fails
+      });
+  }, []);
+
+  // Navigate to company profile
+  const handleViewProfile = () => {
+    navigate('/company/profile');
+  };
+
+  // Navigate to settings
+  const handleViewSettings = () => {
+    navigate('/company/settings');
+  };
 
   // Handle logout
   const handleLogout = async () => {
@@ -229,7 +279,7 @@ export const Layout: React.FC = () => {
               />
             </Box>
           }
-          rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} />}
+          rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
           onToggleSidebar={handleToggleSidebar}
         />
 

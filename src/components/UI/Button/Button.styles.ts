@@ -167,9 +167,10 @@ export const StyledButton = styled(MuiButton, {
       // Contained variant
       ...(buttonVariant === 'contained' && {
         backgroundColor: color,
-        color: palette.primary.contrastText,
+        color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
         '&:hover': {
           backgroundColor: hoverColor,
+          color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {
@@ -186,7 +187,7 @@ export const StyledButton = styled(MuiButton, {
         '&:hover': {
           backgroundColor: hoverColor,
           borderColor: color,
-          color: palette.primary.contrastText,
+          color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {

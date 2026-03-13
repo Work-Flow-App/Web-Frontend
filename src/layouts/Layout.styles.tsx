@@ -67,14 +67,18 @@ export const RightActionsContainer = styled(Box)(({ theme }) => ({
  */
 export const ActionButton = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
-  color: theme.palette.colors.grey_300,
+  color: theme.palette.mode === 'dark'
+    ? theme.palette.text.secondary
+    : theme.palette.colors.grey_300,
   fontSize: rem(20),
   display: 'flex',
   alignItems: 'center',
   transition: 'color 0.2s ease',
 
   '&:hover': {
-    color: theme.palette.colors.grey_100,
+    color: theme.palette.mode === 'dark'
+      ? theme.palette.text.primary
+      : theme.palette.colors.grey_100,
   },
 
   [theme.breakpoints.down('sm')]: {
@@ -88,7 +92,9 @@ export const ActionButton = styled(Box)(({ theme }) => ({
 export const ActionDivider = styled(Box)(({ theme }) => ({
   width: rem(1),
   height: rem(24),
-  backgroundColor: theme.palette.colors.grey_600,
+  backgroundColor: theme.palette.mode === 'dark'
+    ? theme.palette.text.disabled
+    : theme.palette.colors.grey_600,
 }));
 
 /**

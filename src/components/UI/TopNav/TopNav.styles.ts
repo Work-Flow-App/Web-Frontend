@@ -37,8 +37,9 @@ export const TopNavWrapper = styled(Box)(({ theme }) => ({
   gap: rem(12),
   width: '100%',
   height: rem(48),
-  // Use primary main so it follows the custom theme color
-  background: theme.palette.primary.main, 
+  background: theme.palette.mode === 'dark'
+    ? theme.palette.background.paper
+    : theme.palette.primary.main,
   borderRadius: 0,
   borderBottom: `${rem(1)} solid ${theme.palette.colors?.grey_200 || 'rgba(0,0,0,0.1)'}`,
   boxSizing: 'border-box',

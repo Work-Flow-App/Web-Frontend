@@ -5,6 +5,7 @@ export const floowColors = {
   // Primary Colors
   black: '#000000',
   darkBlack: '#0A0A0A',
+  navy: '#101a32',
   white: '#FFFFFF',
 
   // Grey Scale

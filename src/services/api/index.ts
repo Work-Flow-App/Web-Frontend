@@ -22,6 +22,9 @@ export type {
   WorkerSignupResponse
 } from './worker';
 
+export { companyService } from './company';
+export type { CompanyProfileResponse, CompanyProfileUpdateRequest, CompanyDashboardResponse } from './company';
+
 export { companyClientService } from './companyClient';
 export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest } from './companyClient';
 
