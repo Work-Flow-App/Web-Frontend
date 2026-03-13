@@ -51,6 +51,8 @@ class ApiClient {
     '/auth/refresh',
     '/auth/forgot-password',
     '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/resend-verification',
     '/workers/invites/check',
   ];
 

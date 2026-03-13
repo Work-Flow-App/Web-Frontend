@@ -2,11 +2,14 @@ import { apiClient } from './client';
 import type { ApiResponse } from './client';
 import type {
   SignupRequest as WorkflowSignupRequest,
+  SignupResponse,
   LoginRequest,
   RefreshTokenRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   PasswordResetResponse,
+  VerifyEmailRequest,
+  ResendVerificationRequest,
 } from '../../../workflow-api';
 import type { UserRole, AuthTokens, User } from '../../types/auth';
 import type { WorkerSignupRequest, WorkerSignupResponse } from './worker';
@@ -20,25 +23,43 @@ export type SignupRequest = Omit<WorkflowSignupRequest, 'role'> & {
   role: UserRole;
 };
 
-// Re-export other types with original names
-export type { LoginRequest, RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse };
+// Re-export types
+export type { SignupResponse, LoginRequest, RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse, VerifyEmailRequest, ResendVerificationRequest };
 
 export type AuthResponse = AuthTokens;
 
 export const authService = {
   /**
    * Sign up a new user
+   * Returns a message asking the user to verify their email — no tokens are issued yet.
    */
-  async signup(data: SignupRequest): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/signup', data);
+  async signup(data: SignupRequest): Promise<ApiResponse<SignupResponse>> {
+    return await apiClient.post<SignupResponse>('/api/v1/auth/signup', data);
+  },
 
-    // Store auth tokens in memory
+  /**
+   * Verify email address using token from the verification link
+   * On success, returns tokens and logs the user in automatically
+   */
+  async verifyEmail(token: string): Promise<ApiResponse<AuthResponse>> {
+    const body: VerifyEmailRequest = { token };
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/verify-email', body);
+
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
       apiClient.setRefreshToken(response.data.refreshToken);
     }
 
     return response;
+  },
+
+  /**
+   * Resend verification email
+   * Always returns 200 — does not reveal whether the email exists
+   */
+  async resendVerification(email: string): Promise<ApiResponse<SignupResponse>> {
+    const body: ResendVerificationRequest = { email };
+    return await apiClient.post<SignupResponse>('/api/v1/auth/resend-verification', body);
   },
 
   /**
@@ -60,7 +81,7 @@ export const authService = {
    * Sign in with Google using the ID token from Google Identity Services
    */
   async loginWithGoogle(idToken: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/google', { idToken });
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/google', { idToken, role: 'COMPANY' });
 
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);

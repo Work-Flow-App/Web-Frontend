@@ -4,6 +4,8 @@ import { WorkerSignup } from './pages/auth/WorkerSignup'
 import { Login } from './pages/auth/Login'
 import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
+import { VerifyEmail } from './pages/auth/VerifyEmail'
+import { ResendVerification } from './pages/auth/ResendVerification'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { WorkerPage } from './pages/worker/WorkerPage'
 import { InvitationsPage } from './pages/invitations'
@@ -39,6 +41,8 @@ function App() {
             <Route path="/signin" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/resend-verification" element={<ResendVerification />} />
 
             {/* Protected routes - With Layout (Sidebar + TopNav) */}
             <Route element={<Layout />}>
