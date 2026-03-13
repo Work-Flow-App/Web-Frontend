@@ -106,6 +106,12 @@ const RightActions = ({
           </ListItemIcon>
           <ListItemText>Company Profile</ListItemText>
         </MenuItem>
+        <MenuItem onClick={() => { handleClose(); onViewSettings(); }}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Settings</ListItemText>
+        </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
@@ -210,8 +216,8 @@ export const Layout: React.FC = () => {
       label: 'Workers',
       icon: <PeopleIcon />,
       children: [
-        { id: 'workers-list', label: 'All Workers', href: '/company/workers' },
-        { id: 'invitations', label: 'Invitations', href: '/company/invitations' },
+        { id: 'workers-list', label: 'All Workers', icon: <PeopleIcon />, href: '/company/workers' },
+        { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
       ],
     },
     {
@@ -219,25 +225,14 @@ export const Layout: React.FC = () => {
       label: 'Jobs',
       icon: <WorkIcon />,
       children: [
-        { id: 'jobs-list', label: 'All Jobs', href: '/company/jobs' },
-        { id: 'templates', label: 'Templates', href: '/company/jobs/templates' },
-        { id: 'workflows', label: 'Workflows', href: '/company/workflows' },
+        { id: 'jobs-list', label: 'All Jobs', icon: <WorkIcon />, href: '/company/jobs' },
+        { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
+        { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
-    {
-      id: 'assets',
-      label: 'Assets',
-      icon: <BuildIcon />,
-      children: [
-        { id: 'assets-list', label: 'All Assets', href: '/company/assets' },
-        {
-          id: 'maps',
-          label: 'Maps',
-          href: '/company/assets/maps',
-        },
-      ],
-    },
+    { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
+    { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
     { id: 'settings', label: 'Settings', icon: <SettingsIcon />, href: '/company/settings' },
   ];

@@ -34,7 +34,7 @@ export const jobService = {
    * Get all jobs
    */
   async getAllJobs() {
-    return await getJobApi().getAll1();
+    return await getJobApi().getAll2();
   },
 
   /**
@@ -48,28 +48,28 @@ export const jobService = {
    * Get job by ID
    */
   async getJobById(id: number) {
-    return await getJobApi().get(id);
+    return await getJobApi().get1(id);
   },
 
   /**
    * Create a new job
    */
   async createJob(data: JobCreateRequest) {
-    return await getJobApi().create1(data);
+    return await getJobApi().create2(data);
   },
 
   /**
    * Update an existing job
    */
   async updateJob(id: number, data: JobUpdateRequest) {
-    return await getJobApi().update1(id, data);
+    return await getJobApi().update2(id, data);
   },
 
   /**
    * Delete a job
    */
   async deleteJob(id: number) {
-    return await getJobApi().delete1(id);
+    return await getJobApi().delete2(id);
   },
 };
 

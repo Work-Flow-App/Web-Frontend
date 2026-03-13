@@ -67,21 +67,21 @@ export const assetService = {
    * Get asset by ID
    */
   async getAssetById(id: number) {
-    return await getAssetApi().get1(id);
+    return await getAssetApi().get3(id);
   },
 
   /**
    * Create a new asset
    */
   async createAsset(data: AssetCreateRequest) {
-    return await getAssetApi().create2(data);
+    return await getAssetApi().create3(data);
   },
 
   /**
    * Update an existing asset
    */
   async updateAsset(id: number, data: AssetUpdateRequest) {
-    return await getAssetApi().update2(id, data);
+    return await getAssetApi().update4(id, data);
   },
 
   /**

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Box, IconButton, Collapse } from '@mui/material';
+import { Box, IconButton, Collapse, Popover, List, ListItemButton, ListItemText, ListItemIcon, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -21,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [popoverAnchor, setPopoverAnchor] = useState<{ el: HTMLElement; item: SidebarItem } | null>(null);
 
   // Auto-expand parent items when child is active (but allow manual collapse)
   React.useEffect(() => {
@@ -83,6 +84,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
       return newSet;
     });
+  };
+
+  const handleCollapsedParentClick = (event: React.MouseEvent<HTMLElement>, item: SidebarItem) => {
+    setPopoverAnchor({ el: event.currentTarget, item });
+  };
+
+  const handlePopoverClose = () => {
+    setPopoverAnchor(null);
   };
 
   return (
@@ -155,10 +164,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* Parent item - only toggle expansion, no navigation */}
                 <SidebarItemButton
                   className={isActiveOrChildActive ? 'active' : ''}
-                  onClick={() => {
+                  onClick={(e: React.MouseEvent<HTMLElement>) => {
                     handleItemClick(item.id);
                     item.onClick?.();
-                    toggleExpanded(item.id);
+                    if (isCollapsed) {
+                      handleCollapsedParentClick(e, item);
+                    } else {
+                      toggleExpanded(item.id);
+                    }
                   }}
                   role="menuitem"
                   aria-label={item.label}
@@ -289,6 +302,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </SidebarWrapper>
+
+      {/* Collapsed sub-items popover */}
+      <Popover
+        open={Boolean(popoverAnchor)}
+        anchorEl={popoverAnchor?.el}
+        onClose={handlePopoverClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { ml: rem(4), borderRadius: rem(8), minWidth: rem(180) } } }}
+      >
+        {popoverAnchor?.item && (
+          <Box sx={{ py: rem(8) }}>
+            <Typography
+              sx={{ px: rem(16), pb: rem(6), fontSize: rem(11), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}
+            >
+              {popoverAnchor.item.label}
+            </Typography>
+            <List disablePadding>
+              {popoverAnchor.item.children?.map((child) => {
+                const childActive = isItemActive(child);
+                return (
+                  <ListItemButton
+                    key={child.id}
+                    component={child.href ? Link : 'div'}
+                    {...(child.href ? { to: child.href } : {})}
+                    selected={childActive}
+                    onClick={() => {
+                      handleItemClick(child.id);
+                      child.onClick?.();
+                      handlePopoverClose();
+                    }}
+                    sx={{ px: rem(16), py: rem(8), gap: rem(4) }}
+                  >
+                    {child.icon && (
+                      <ListItemIcon sx={{ minWidth: rem(32), '& svg': { fontSize: rem(16) } }}>
+                        {child.icon}
+                      </ListItemIcon>
+                    )}
+                    <ListItemText primary={child.label} slotProps={{ primary: { fontSize: rem(13), fontWeight: childActive ? 600 : 400 } }} />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Box>
+        )}
+      </Popover>
     </>
   );
 };
