@@ -132,11 +132,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Box>
         )}
 
-        {/* Collapsed State - Show Logo Only */}
+        {/* Collapsed State - Show Icon Only */}
         {isCollapsed && (
           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: rem(16) }}>
             <SidebarLogoSection sx={{ margin: 0, padding: 0, border: 'none' }}>
-              <FloowLogo variant="light" showText={false} />
+              <FloowLogo iconOnly />
             </SidebarLogoSection>
           </Box>
         )}
