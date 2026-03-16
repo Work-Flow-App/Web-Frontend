@@ -1327,6 +1327,51 @@ export const DocumentsEmptySubtext = styled(Typography)(({ theme }) => ({
 }));
 
 // ============================================
+// Estimate Tab Styles
+// ============================================
+
+export const EstimateTotalsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  flexWrap: 'wrap',
+}));
+
+export const EstimateTotalCard = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(2, 3),
+  minWidth: rem(140),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const EstimateTotalValue = styled(Typography)(({ theme }) => ({
+  fontSize: rem(20),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+}));
+
+export const EstimateTableHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(2),
+}));
+
+export const EstimateEmptyState = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(4),
+  gap: theme.spacing(1),
+  color: theme.palette.text.secondary,
+}));
+
+// ============================================
 // Gantt Chart / Activity Log Styles
 // ============================================
 

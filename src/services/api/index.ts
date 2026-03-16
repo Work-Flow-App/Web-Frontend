@@ -76,5 +76,13 @@ export type {
   StepAttachmentResponse,
 } from './stepActivity';
 
+export { estimateService } from './estimate';
+export type {
+  EstimateResponse,
+  EstimateUpdateRequest,
+  LineItemResponse,
+  LineItemCreateRequest,
+} from './estimate';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';
