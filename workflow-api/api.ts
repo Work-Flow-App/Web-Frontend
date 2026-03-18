@@ -551,10 +551,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'unpaged'?: boolean;
     'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;

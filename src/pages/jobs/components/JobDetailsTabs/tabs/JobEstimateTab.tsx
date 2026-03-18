@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Chip } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -12,6 +12,7 @@ import { Button } from '../../../../../components/UI/Button';
 import { Table } from '../../../../../components/UI/Table';
 import type { ITableColumn, ITableAction, ITableRow } from '../../../../../components/UI/Table';
 import { AddLineItemModal } from './AddLineItemModal';
+import { CreateInvoiceModal } from './CreateInvoiceModal';
 import * as S from '../../../JobDetailsPage.styles';
 
 interface JobEstimateTabProps {
@@ -53,6 +54,21 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     },
     [estimate?.id, showError]
   );
+
+  const handleCreateInvoice = useCallback(() => {
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.LARGE,
+      fieldName: 'createInvoice',
+      children: (
+        <CreateInvoiceModal
+          job={job}
+          lineItems={estimate?.lineItems || []}
+          onSuccess={() => resetGlobalModalOuterProps()}
+        />
+      ),
+    });
+  }, [job, estimate?.lineItems, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
   const handleAddLineItem = useCallback(() => {
     if (!estimate?.id) return;
@@ -153,9 +169,14 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
       <S.EstimateTableHeader>
         <S.DetailsSectionTitle>Line Items ({lineItems.length})</S.DetailsSectionTitle>
-        <Button variant="contained" color="primary" onClick={handleAddLineItem} startIcon={<AddIcon />}>
-          Add Line Item
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button variant="outlined" color="primary" onClick={handleCreateInvoice}>
+            Create Invoice
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleAddLineItem} startIcon={<AddIcon />}>
+            Add Line Item
+          </Button>
+        </Box>
       </S.EstimateTableHeader>
 
       <Table
