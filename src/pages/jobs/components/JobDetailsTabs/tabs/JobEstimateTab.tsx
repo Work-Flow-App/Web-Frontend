@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Chip, Tooltip } from '@mui/material';
+import { Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -9,7 +9,8 @@ import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../../components/UI/GlobalModal';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
-import { IconButton } from '../../../../../components/UI/Button/IconButton';
+import { Table } from '../../../../../components/UI/Table';
+import type { ITableColumn, ITableAction, ITableRow } from '../../../../../components/UI/Table';
 import { AddLineItemModal } from './AddLineItemModal';
 import * as S from '../../../JobDetailsPage.styles';
 
@@ -86,6 +87,53 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const lineItems: LineItemResponse[] = estimate.lineItems || [];
 
+  const columns: ITableColumn[] = [
+    { id: 'productCode', label: 'Code', accessor: 'productCode' },
+    {
+      id: 'productDescription',
+      label: 'Description',
+      render: (item) => (
+        <>
+          <div>{item.productDescription}</div>
+          {item.additionalDetails && <S.DocumentMeta>{item.additionalDetails}</S.DocumentMeta>}
+        </>
+      ),
+    },
+    {
+      id: 'coreOrSub',
+      label: 'Type',
+      render: (item) => (
+        <Chip
+          label={item.coreOrSub}
+          size="small"
+          color={item.coreOrSub === 'CORE' ? 'primary' : 'default'}
+          variant="outlined"
+        />
+      ),
+    },
+    { id: 'unitPrice', label: 'Unit Price', align: 'right', render: (item) => fmt(item.unitPrice) },
+    { id: 'quantity', label: 'Qty', align: 'right', accessor: 'quantity' },
+    {
+      id: 'vatRate',
+      label: 'VAT %',
+      align: 'right',
+      render: (item) => (item.vatRate !== undefined ? `${item.vatRate}%` : '—'),
+    },
+    { id: 'netAmount', label: 'Net', align: 'right', render: (item) => fmt(item.netAmount) },
+    { id: 'vatAmount', label: 'VAT', align: 'right', render: (item) => fmt(item.vatAmount) },
+    { id: 'totalAmount', label: 'Total', align: 'right', render: (item) => fmt(item.totalAmount) },
+  ];
+
+  const actions: ITableAction[] = [
+    {
+      id: 'unlink',
+      label: 'Unlink from estimate',
+      icon: <LinkOffIcon fontSize="small" />,
+      color: 'error',
+      onClick: handleUnlink as unknown as (row: ITableRow) => void,
+    },
+  ];
+
   return (
     <>
       <S.EstimateTotalsRow>
@@ -110,73 +158,13 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         </Button>
       </S.EstimateTableHeader>
 
-      {lineItems.length === 0 ? (
-        <S.EstimateEmptyState>
-          <ReceiptLongIcon />
-          <S.InfoValue>No line items yet</S.InfoValue>
-        </S.EstimateEmptyState>
-      ) : (
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Code</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell align="right">Unit Price</TableCell>
-              <TableCell align="right">Qty</TableCell>
-              <TableCell align="right">VAT %</TableCell>
-              <TableCell align="right">Net</TableCell>
-              <TableCell align="right">VAT</TableCell>
-              <TableCell align="right">Total</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {lineItems.map((item) => (
-              <TableRow key={item.id} hover>
-                <TableCell>{item.productCode}</TableCell>
-                <TableCell>
-                  <div>{item.productDescription}</div>
-                  {item.additionalDetails && (
-                    <S.DocumentMeta>{item.additionalDetails}</S.DocumentMeta>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={item.coreOrSub}
-                    size="small"
-                    color={item.coreOrSub === 'CORE' ? 'primary' : 'default'}
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell align="right">{fmt(item.unitPrice)}</TableCell>
-                <TableCell align="right">{item.quantity}</TableCell>
-                <TableCell align="right">
-                  {item.vatRate !== undefined ? `${item.vatRate}%` : '—'}
-                </TableCell>
-                <TableCell align="right">{fmt(item.netAmount)}</TableCell>
-                <TableCell align="right">{fmt(item.vatAmount)}</TableCell>
-                <TableCell align="right">{fmt(item.totalAmount)}</TableCell>
-                <TableCell align="right">
-                  <Tooltip title="Unlink from estimate">
-                    <span>
-                      <IconButton
-                        size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleUnlink(item)}
-                        aria-label="Unlink line item"
-                      >
-                        <LinkOffIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <Table
+        columns={columns}
+        data={lineItems as unknown as ITableRow[]}
+        showActions
+        actions={actions}
+        emptyMessage="No line items yet"
+      />
     </>
   );
 };
