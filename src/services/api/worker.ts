@@ -72,42 +72,42 @@ export const workerService = {
    * Get all workers
    */
   async getAllWorkers() {
-    return await getWorkerApi().getAllWorkers();
+    return await getWorkerApi().workerGetAllWorkers();
   },
 
   /**
    * Get worker by ID
    */
   async getWorkerById(id: number) {
-    return await getWorkerApi().getWorkerById(id);
+    return await getWorkerApi().workerGetWorkerById(id);
   },
 
   /**
    * Create a new worker
    */
   async createWorker(data: WorkerCreateRequest) {
-    return await getWorkerApi().createWorker(data);
+    return await getWorkerApi().workerCreateWorker(data);
   },
 
   /**
    * Update an existing worker
    */
   async updateWorker(id: number, data: WorkerUpdateRequest) {
-    return await getWorkerApi().updateWorker(id, data);
+    return await getWorkerApi().workerUpdateWorker(id, data);
   },
 
   /**
    * Delete a worker
    */
   async deleteWorker(id: number) {
-    return await getWorkerApi().deleteWorker(id);
+    return await getWorkerApi().workerDeleteWorker(id);
   },
 
   /**
    * Send invitation email to worker (using generated API)
    */
   async sendInvitation(data: WorkerInvitationRequest) {
-    return await getWorkerApi().sendInvitation(data);
+    return await getWorkerApi().workerSendInvitation(data);
   },
 
   /**
@@ -135,7 +135,7 @@ export const workerService = {
    * Check invitation token validity and get invitation details
    */
   async checkInvitation(token: string) {
-    return await getWorkerApi().checkInvitation(token);
+    return await getWorkerApi().workerCheckInvitation(token);
   },
 };
 

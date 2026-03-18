@@ -15,7 +15,7 @@ import type { JobResponse, StepTimelineItemResponse } from '../../../../services
 import {
   jobWorkflowService,
   stepActivityService,
-  UploadAttachment1TypeEnum,
+  UploadAttachmentTypeEnum,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Button } from '../../../../components/UI/Button';
@@ -184,7 +184,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
         await stepActivityService.uploadAttachment(
           firstStepId,
           pending.file,
-          UploadAttachment1TypeEnum.Complaint
+          UploadAttachmentTypeEnum.Complaint
         );
       }
 
