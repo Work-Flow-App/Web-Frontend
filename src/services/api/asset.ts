@@ -23,116 +23,59 @@ export type {
   PageAssetResponse,
 };
 
-/**
- * Asset API Service
- * Provides CRUD operations for asset management
- */
-
-/**
- * Get a configured AssetsApi instance
- */
 function getAssetApi(): AssetsApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new AssetsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
-/**
- * Get a configured AssetAssignmentsApi instance
- */
 function getAssetAssignmentApi(): AssetAssignmentsApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new AssetAssignmentsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const assetService = {
-  /**
-   * Get all assets with pagination and filters
-   */
-  async getAllAssets(
-    page: number = 0,
-    size: number = 20,
-    archived?: boolean,
-    available?: boolean,
-    sort?: string,
-    dir?: string
-  ) {
-    return await getAssetApi().list(page, size, archived, available, sort, dir);
+  async getAllAssets(page = 0, size = 20, archived?: boolean, available?: boolean, sort?: string, dir?: string) {
+    return await getAssetApi().assetList(page, size, archived, available, sort, dir);
   },
 
-  /**
-   * Get asset by ID
-   */
   async getAssetById(id: number) {
-    return await getAssetApi().get3(id);
+    return await getAssetApi().assetGet(id);
   },
 
-  /**
-   * Create a new asset
-   */
   async createAsset(data: AssetCreateRequest) {
-    return await getAssetApi().create3(data);
+    return await getAssetApi().assetCreate(data);
   },
 
-  /**
-   * Update an existing asset
-   */
   async updateAsset(id: number, data: AssetUpdateRequest) {
-    return await getAssetApi().update4(id, data);
+    return await getAssetApi().assetUpdate(id, data);
   },
 
-  /**
-   * Archive an asset (only if not assigned)
-   */
   async archiveAsset(id: number) {
-    return await getAssetApi().archive(id);
+    return await getAssetApi().assetArchive(id);
   },
 
-  /**
-   * Get asset's current depreciated value
-   */
   async getAssetValue(id: number, asOfDate?: string) {
-    return await getAssetApi().value(id, asOfDate);
+    return await getAssetApi().assetValue(id, asOfDate);
   },
 
-  /**
-   * Get asset statistics (total, available, in-use counts, etc.)
-   */
   async getAssetStatistics() {
-    return await getAssetApi().stats();
+    return await getAssetApi().assetStats();
   },
 
-  // Asset Assignment Methods
-
-  /**
-   * Assign asset to job/worker
-   */
   async assignAsset(data: AssetAssignmentCreateRequest) {
-    return await getAssetAssignmentApi().assign(data);
+    return await getAssetAssignmentApi().assetAssignmentAssign(data);
   },
 
-  /**
-   * Return an assigned asset
-   */
   async returnAsset(data: AssetAssignmentReturnRequest) {
-    return await getAssetAssignmentApi().returnAsset(data);
+    return await getAssetAssignmentApi().assetAssignmentReturnAsset(data);
   },
 
-  /**
-   * Get assignment history for an asset
-   */
   async getAssetHistory(assetId: number) {
-    return await getAssetAssignmentApi().history(assetId);
+    return await getAssetAssignmentApi().assetAssignmentHistory(assetId);
   },
 
-  /**
-   * Get all assets assigned to a job
-   */
-  async getJobAssignments(jobId: number, onlyActive: boolean = false) {
-    return await getAssetAssignmentApi().jobAssignments(jobId, onlyActive);
+  async getJobAssignments(jobId: number, onlyActive = false) {
+    return await getAssetAssignmentApi().assetAssignmentJobAssignments(jobId, onlyActive);
   },
 };
 

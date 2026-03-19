@@ -5,6 +5,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { fieldColumns, type FieldTableRow } from './FieldsDataColumn';
 import { FieldForm } from '../FieldForm/FieldForm';
 
@@ -130,8 +131,7 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
                 onFieldsChange?.(); // Notify parent to refresh columns
               } catch (error) {
                 console.error('Error deleting field:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete field';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete field'));
                 resetGlobalModalOuterProps();
               }
             }}

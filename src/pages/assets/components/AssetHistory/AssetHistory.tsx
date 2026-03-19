@@ -8,6 +8,7 @@ import { Button } from '../../../../components/UI/Button';
 import { assetService } from '../../../../services/api';
 import type { AssetResponse, AssetAssignmentResponse, AssetValueResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Loader } from '../../../../components/UI';
 import { assetHistoryColumns, type AssetHistoryRow } from './DataColumn';
 import { AssetArchiveTab } from './AssetArchiveTab';
@@ -64,8 +65,7 @@ export const AssetHistory: React.FC = () => {
       setHistory(transformedData);
     } catch (error) {
       console.error('Error fetching asset data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load asset details';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load asset details'));
     } finally {
       setLoading(false);
     }

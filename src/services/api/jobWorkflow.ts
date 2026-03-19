@@ -15,77 +15,42 @@ export type {
   JobWorkflowStepUpdateRequest,
 };
 
-/**
- * Job Workflow API Service
- * Provides operations for managing job workflows and their execution
- */
-
-/**
- * Get a configured JobWorkflowsApi instance
- * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
- */
 function getJobWorkflowApi(): JobWorkflowsApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new JobWorkflowsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobWorkflowService = {
-  /**
-   * Get all job workflows
-   */
   async getAllJobWorkflows() {
-    return await getJobWorkflowApi().getAllJobWorkflows();
+    return await getJobWorkflowApi().jobWorkflowGetAllJobWorkflows();
   },
 
-  /**
-   * Get job workflow by job ID
-   */
   async getJobWorkflowByJobId(jobId: number) {
-    return await getJobWorkflowApi().getJobWorkflow1(jobId);
+    return await getJobWorkflowApi().jobWorkflowGetJobWorkflow(jobId);
   },
 
-  /**
-   * Get job workflow by ID
-   */
   async getJobWorkflowById(jobWorkflowId: number) {
-    return await getJobWorkflowApi().getJobWorkflowById(jobWorkflowId);
+    return await getJobWorkflowApi().jobWorkflowGetJobWorkflowById(jobWorkflowId);
   },
 
-  /**
-   * Start a workflow for a job
-   */
   async startWorkflow(jobId: number, workflowId: number) {
-    return await getJobWorkflowApi().startWorkflow(jobId, workflowId);
+    return await getJobWorkflowApi().jobWorkflowStartWorkflow(jobId, workflowId);
   },
 
-  /**
-   * Update job workflow
-   */
   async updateJobWorkflow(jobWorkflowId: number, data: JobWorkflowUpdateRequest) {
-    return await getJobWorkflowApi().updateJobWorkflow(jobWorkflowId, data);
+    return await getJobWorkflowApi().jobWorkflowUpdateJobWorkflow(jobWorkflowId, data);
   },
 
-  /**
-   * Update a specific step in the job workflow
-   */
-  async updateStep(jobId: number, stepId: number, data: JobWorkflowStepUpdateRequest) {
-    return await getJobWorkflowApi().updateStep1(jobId, stepId, data);
+  async updateStep(jobWorkflowId: number, stepId: number, data: JobWorkflowStepUpdateRequest) {
+    return await getJobWorkflowApi().jobWorkflowUpdateStep(jobWorkflowId, stepId, data);
   },
 
-  /**
-   * Assign a worker to all steps in the job workflow
-   */
   async assignWorkerToAllSteps(jobWorkflowId: number, workerId: number) {
-    return await getJobWorkflowApi().assignWorkerToAllSteps(jobWorkflowId, workerId);
+    return await getJobWorkflowApi().jobWorkflowAssignWorkerToAllSteps(jobWorkflowId, workerId);
   },
 
-  /**
-   * Delete job workflow by job ID
-   */
   async deleteJobWorkflow(jobId: number) {
-    return await getJobWorkflowApi().deleteByJobId(jobId);
+    return await getJobWorkflowApi().jobWorkflowDeleteByJobId(jobId);
   },
 };
 

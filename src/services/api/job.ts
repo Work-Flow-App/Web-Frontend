@@ -7,69 +7,36 @@ import type {
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
-export type {
-  JobResponse,
-  JobCreateRequest,
-  JobUpdateRequest,
-};
+export type { JobResponse, JobCreateRequest, JobUpdateRequest };
 
-/**
- * Job API Service
- * Provides CRUD operations for job management
- */
-
-/**
- * Get a configured JobsApi instance with the access token
- * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
- */
 function getJobApi(): JobsApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new JobsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const jobService = {
-  /**
-   * Get all jobs
-   */
   async getAllJobs() {
-    return await getJobApi().getAll2();
+    return await getJobApi().jobGetAll();
   },
 
-  /**
-   * Get jobs by template ID
-   */
   async getJobsByTemplate(templateId: number) {
-    return await getJobApi().getJobsByTemplate(templateId);
+    return await getJobApi().jobGetJobsByTemplate(templateId);
   },
 
-  /**
-   * Get job by ID
-   */
   async getJobById(id: number) {
-    return await getJobApi().get1(id);
+    return await getJobApi().jobGet(id);
   },
 
-  /**
-   * Create a new job
-   */
   async createJob(data: JobCreateRequest) {
-    return await getJobApi().create2(data);
+    return await getJobApi().jobCreate(data);
   },
 
-  /**
-   * Update an existing job
-   */
   async updateJob(id: number, data: JobUpdateRequest) {
-    return await getJobApi().update2(id, data);
+    return await getJobApi().jobUpdate(id, data);
   },
 
-  /**
-   * Delete a job
-   */
   async deleteJob(id: number) {
-    return await getJobApi().delete2(id);
+    return await getJobApi().jobDelete(id);
   },
 };
 

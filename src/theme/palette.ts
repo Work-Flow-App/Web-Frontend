@@ -121,6 +121,14 @@ declare module '@mui/material/styles' {
     dropDownListShadow: string;
     authCard: string;
   }
+  interface ButtonPaletteColors {
+    /** Background color for contained primary buttons */
+    primary: string;
+    /** Background color on hover for contained primary buttons */
+    primaryHover: string;
+    /** Text/border color for outlined primary buttons, and text variant */
+    primaryContrast: string;
+  }
   interface Palette {
     icon?: DynamicValues;
     colors: CustomColors;
@@ -128,6 +136,10 @@ declare module '@mui/material/styles' {
     border?: DynamicValues;
     tertiary: PaletteColor;
     boxShadow: BoxShadow;
+    buttonColors: ButtonPaletteColors;
+  }
+  interface PaletteOptions {
+    buttonColors?: ButtonPaletteColors;
   }
 }
 
@@ -136,12 +148,38 @@ export interface CustomThemeColors {
   secondary?: string;
   background?: string;
   paper?: string;
+  /**
+   * Optional explicit button color for this theme.
+   * When omitted, falls back to `primary` so buttons always have a sensible color.
+   * Use this to set a slightly darker/different shade that looks better on white
+   * backgrounds while keeping the brand color for navigation/headers.
+   */
+  buttonPrimary?: string;
 }
+
+// Default dark mode accent — vivid indigo-400 that reads well on dark surfaces.
+// Used when no custom theme is active in dark mode.
+const DARK_MODE_ACCENT = '#818cf8';
 
 export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) => {
   const isDark = mode === 'dark';
 
-  const primaryMain = customColors?.primary || (isDark ? WHITE : PRIMARY);
+  // In dark mode, raw brand colors (e.g. navy #101a32) are too dark to serve as
+  // accents on dark surfaces. Lighten custom colors by 15% for visibility, or fall
+  // back to the universal dark-mode accent when no custom theme is active.
+  const primaryMain = (() => {
+    if (customColors?.primary) {
+      return isDark ? lighten(customColors.primary, 0.15) : customColors.primary;
+    }
+    return isDark ? DARK_MODE_ACCENT : PRIMARY;
+  })();
+
+  // Button color follows primaryMain in dark mode (already dark-mode-optimised above).
+  // In light mode, use the preset's explicit buttonPrimary when provided.
+  const buttonPrimaryMain = isDark
+    ? primaryMain
+    : (customColors?.buttonPrimary || primaryMain);
+
   const secondaryMain = customColors?.secondary || (isDark ? GREY_400 : SECONDARY);
   const backgroundDefault = customColors?.background || (isDark ? BLACK_DARK : BACKGROUND);
   const backgroundPaper = customColors?.paper || (isDark ? GREY_900 : BACKGROUND_PAPER);
@@ -151,17 +189,17 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
   return {
     mode,
     primary: {
-      light: BLACK_LIGHT,
+      light: isDark ? lighten(primaryMain, 0.2) : lighten(PRIMARY, 0.1),
       main: primaryMain,
-      dark: BLACK_DARK,
-      contrastText: isDark ? BLACK : WHITE,
-      alert: floowColors.blackAlpha[10],
+      dark: isDark ? darken(primaryMain, 0.15) : BLACK_DARK,
+      contrastText: WHITE,
+      alert: isDark ? floowColors.whiteAlpha[8] : floowColors.blackAlpha[10],
     },
     secondary: {
-      light: GREY_800,
+      light: isDark ? GREY_700 : GREY_800,
       main: secondaryMain,
-      dark: floowColors.dark.primary,
-      contrastText: isDark ? BLACK : WHITE,
+      dark: isDark ? GREY_600 : floowColors.dark.primary,
+      contrastText: WHITE,
     },
     tertiary: {
       light: lighten(textSecondary, 0.6),
@@ -199,9 +237,9 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
     text: {
       primary: textPrimary,
       secondary: textSecondary,
-      disabled: DISABLED_TEXT,
+      disabled: isDark ? GREY_600 : DISABLED_TEXT,
       success: SUCCESS_TEXT,
-      dark: darken(textPrimary, 0.1), // Adjusted for dark mode?
+      dark: isDark ? lighten(textPrimary, 0.1) : darken(textPrimary, 0.1),
     },
     background: {
       mainHeader: isDark ? GREY_900 : MAIN_HEADER_BG,
@@ -209,15 +247,17 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
       dark: BLACK,
       default: backgroundDefault,
       paper: backgroundPaper,
-      disabled: DISABLE_BG,
-      authGradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      disabled: isDark ? GREY_800 : DISABLE_BG,
+      authGradient: isDark
+        ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+        : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
     },
     border: {
-      light: lighten(FIELD_BORDER, 0.5),
-      main: FIELD_BORDER,
-      dark: darken(FIELD_BORDER, 0.1),
-      secondary: TABLE_BORDER,
-      subtle: floowColors.blackAlpha[5],
+      light: isDark ? GREY_700 : lighten(FIELD_BORDER, 0.5),
+      main: isDark ? GREY_600 : FIELD_BORDER,
+      dark: isDark ? GREY_500 : darken(FIELD_BORDER, 0.1),
+      secondary: isDark ? GREY_800 : TABLE_BORDER,
+      subtle: isDark ? floowColors.whiteAlpha[8] : floowColors.blackAlpha[5],
     },
 
     // Animation
@@ -365,6 +405,15 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
       // Scrollbar
       scrollbar_thumb: floowColors.scrollbar.thumb,
       scrollbar_track: floowColors.scrollbar.track,
+    },
+    buttonColors: {
+      primary: buttonPrimaryMain,
+      // Darken on hover in light mode (button gets deeper); lighten in dark mode
+      // (button brightens slightly, which feels natural on a dark surface).
+      primaryHover: isDark
+        ? lighten(buttonPrimaryMain, 0.1)
+        : darken(buttonPrimaryMain, 0.1),
+      primaryContrast: WHITE,
     },
     boxShadow: {
       buttonShadow: `0px 1px 5px 0px ${floowColors.shadow.xxl}, 0px 2px 2px 0px ${floowColors.blackAlpha[14]}, 0px 3px 1px -2px ${floowColors.blackAlpha[20]}`,

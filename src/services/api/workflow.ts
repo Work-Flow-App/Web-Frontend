@@ -19,112 +19,62 @@ export type {
   WorkflowBulkUpdateRequest,
 };
 
-/**
- * Workflow API Service
- * Provides CRUD operations for workflow template management
- */
-
-/**
- * Get a configured WorkflowsApi instance
- * Note: Don't pass accessToken to Configuration - the axios interceptor handles it
- */
 function getWorkflowApi(): WorkflowsApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new WorkflowsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const workflowService = {
-  /**
-   * Get all workflows
-   */
   async getAllWorkflows() {
-    return await getWorkflowApi().getAll();
+    return await getWorkflowApi().workflowGetAll();
   },
 
-  /**
-   * Get workflow by ID
-   */
   async getWorkflowById(id: number) {
-    return await getWorkflowApi().getOne(id);
+    return await getWorkflowApi().workflowGetOne(id);
   },
 
-  /**
-   * Get workflow with steps
-   */
   async getWorkflowWithSteps(workflowId: number) {
-    return await getWorkflowApi().getWorkflowWithSteps(workflowId);
+    return await getWorkflowApi().workflowGetWorkflowWithSteps(workflowId);
   },
 
-  /**
-   * Create a new workflow
-   */
   async createWorkflow(data: WorkflowCreateRequest) {
-    return await getWorkflowApi().create(data);
+    return await getWorkflowApi().workflowCreate(data);
   },
 
-  /**
-   * Update an existing workflow
-   */
   async updateWorkflow(id: number, data: WorkflowCreateRequest) {
-    return await getWorkflowApi().update(id, data);
+    return await getWorkflowApi().workflowUpdate(id, data);
   },
 
-  /**
-   * Bulk update workflow with steps
-   */
   async bulkUpdateWorkflow(workflowId: number, data: WorkflowBulkUpdateRequest) {
-    return await getWorkflowApi().bulkUpdate(workflowId, data);
+    return await getWorkflowApi().workflowBulkUpdate(workflowId, data);
   },
 
-  /**
-   * Delete a workflow
-   */
   async deleteWorkflow(id: number) {
-    return await getWorkflowApi()._delete(id);
+    return await getWorkflowApi().workflowDelete(id);
   },
 
-  /**
-   * Get all workflow steps
-   */
   async getAllSteps() {
-    return await getWorkflowApi().getAllSteps();
+    return await getWorkflowApi().workflowGetAllSteps();
   },
 
-  /**
-   * Get steps for a specific workflow
-   */
   async getWorkflowSteps(workflowId: number) {
-    return await getWorkflowApi().getSteps(workflowId);
+    return await getWorkflowApi().workflowGetSteps(workflowId);
   },
 
-  /**
-   * Get a specific step
-   */
   async getStepById(stepId: number) {
-    return await getWorkflowApi().getStep(stepId);
+    return await getWorkflowApi().workflowGetStep(stepId);
   },
 
-  /**
-   * Create a new workflow step
-   */
   async createStep(data: WorkflowStepCreateRequest) {
-    return await getWorkflowApi().createStep(data);
+    return await getWorkflowApi().workflowCreateStep(data);
   },
 
-  /**
-   * Update a workflow step
-   */
   async updateStep(stepId: number, data: WorkflowStepCreateRequest) {
-    return await getWorkflowApi().updateStep(stepId, data);
+    return await getWorkflowApi().workflowUpdateStep(stepId, data);
   },
 
-  /**
-   * Delete a workflow step
-   */
   async deleteStep(stepId: number) {
-    return await getWorkflowApi().deleteStep(stepId);
+    return await getWorkflowApi().workflowDeleteStep(stepId);
   },
 };
 

@@ -1,6 +1,5 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
-import { Link } from '../../../../components/UI/Link';
 import { FieldsBadgeList } from '../../../../components/UI/FieldsBadgeList';
 import { FieldsContainer } from '../../../../components/UI/FieldsBadgeList/FieldsBadgeList.styles';
 import { Badge } from '../../../../components/UI/Badge';
@@ -18,9 +17,7 @@ export interface TemplateTableRow {
 /**
  * Generate template columns with a single Fields column showing badges
  */
-export const generateTemplateColumns = (
-  onTemplateNameClick?: (templateId: number) => void
-): ITableColumn<TemplateTableRow>[] => {
+export const generateTemplateColumns = (): ITableColumn<TemplateTableRow>[] => {
   const columns: ITableColumn<TemplateTableRow>[] = [
     {
       id: 'name',
@@ -30,9 +27,7 @@ export const generateTemplateColumns = (
       width: 'auto',
       render: (row) => (
         <FieldsContainer>
-          <Link onClick={() => onTemplateNameClick?.(row.id)}>
-            {row.name}
-          </Link>
+          {row.name}
           {row.isDefault && (
             <Badge variant="success" size="small">
               Default

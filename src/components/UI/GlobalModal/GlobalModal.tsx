@@ -27,6 +27,7 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
       cancelButtonOnly,
       cancelButtonText,
       isConfirmDisabled,
+      confirmButtonColor,
     },
     modalTitle,
     activeScreen,
@@ -69,13 +70,7 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
     <S.ModalContentWrapper>
       <S.ModalHeaderWrapper>
         <S.ModalHeaderContent>
-          {!isFirstScreen && (
-            <S.ModalBackWrapper onClick={handleBackButtonClick}>
-              <S.ModalBackIcon />
-              <S.ModalBackText>Back</S.ModalBackText>
-            </S.ModalBackWrapper>
-          )}
-          <S.ModalTitle className={modalTitleClass}>{modalTitle}</S.ModalTitle>
+          <S.ModalTitle>{modalTitle}</S.ModalTitle>
 
           {!!headerActionButton && <S.ModalHeaderButton>{headerActionButton}</S.ModalHeaderButton>}
         </S.ModalHeaderContent>
@@ -84,19 +79,24 @@ export const BaseGlobalModal = (props: IGlobalModal) => {
       {!hideFooter && (
         <S.ModalFooterWrapper>
           {confirmButtonOnly ? (
-            <Button variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
+            <Button size="small" variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
               {confirmModalButtonText}
             </Button>
           ) : cancelButtonOnly ? (
-            <Button variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
+            <Button size="small" variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
               {cancelButtonText || 'Cancel'}
             </Button>
           ) : (
             <>
-              <Button variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
+              <Button size="small" variant="outlined" color="secondary" onClick={handleCancelButtonClick}>
                 {cancelButtonText || 'Cancel'}
               </Button>
-              <Button variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
+              {!isFirstScreen && (
+                <Button size="small" variant="outlined" color="secondary" onClick={handleBackButtonClick}>
+                  Back
+                </Button>
+              )}
+              <Button size="small" variant="contained" color="primary" onClick={handleConfirmButtonClick} disabled={isConfirmDisabled}>
                 {confirmModalButtonText}
               </Button>
             </>

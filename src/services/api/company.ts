@@ -10,32 +10,21 @@ import { axiosInstance } from './axiosConfig';
 export type { CompanyProfileResponse, CompanyProfileUpdateRequest, CompanyDashboardResponse };
 
 function getCompanyApi(): CompanyApi {
-  const config = new Configuration({
-    basePath: env.apiBaseUrl,
-  });
+  const config = new Configuration({ basePath: env.apiBaseUrl });
   return new CompanyApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const companyService = {
-  /**
-   * Get company profile
-   */
   async getProfile() {
-    return await getCompanyApi().getProfile();
+    return await getCompanyApi().companyGetProfile();
   },
 
-  /**
-   * Update company profile
-   */
   async updateProfile(data: CompanyProfileUpdateRequest) {
-    return await getCompanyApi().updateProfile(data);
+    return await getCompanyApi().companyUpdateProfile(data);
   },
 
-  /**
-   * Get company dashboard stats
-   */
   async getDashboard() {
-    return await getCompanyApi().getDashboard();
+    return await getCompanyApi().companyGetDashboard();
   },
 };
 
