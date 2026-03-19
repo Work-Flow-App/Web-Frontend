@@ -1,20 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { CircularProgress } from '@mui/material';
+import React, { useEffect, useState, useCallback } from 'react';
+import { CircularProgress, Select, MenuItem, FormControl, Box } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../../../components/UI/Button';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
+import { AddJobWizard } from '../../jobs/components/AddJobWizard';
 import {
   jobService,
   jobWorkflowService,
   workflowService,
+  jobTemplateService,
 } from '../../../services/api';
 import type {
   JobResponse,
   JobWorkflowResponse,
   JobWorkflowStepResponse,
   WorkflowStepResponse,
+  WorkflowResponse,
 } from '../../../services/api';
 import { floowColors } from '../../../theme/colors';
 import { JobStepDetailDrawer } from './JobStepDetailDrawer';
@@ -269,42 +275,42 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
 export const JobEventsSection: React.FC = () => {
   const navigate = useNavigate();
+  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<StepEventGroup[]>([]);
   const [jobsMap, setJobsMap] = useState<Map<number, JobResponse>>(new Map());
+  const [templates, setTemplates] = useState<{ id?: number }[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
+  const [allJobs, setAllJobs] = useState<JobResponse[]>([]);
+  const [allJobWorkflows, setAllJobWorkflows] = useState<JobWorkflowResponse[]>([]);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [jobsRes, jobWorkflowsRes, workflowsRes] = await Promise.all([
+        const [jobsRes, jobWorkflowsRes, workflowsRes, templatesRes] = await Promise.all([
           jobService.getAllJobs(),
           jobWorkflowService.getAllJobWorkflows(),
           workflowService.getAllWorkflows(),
+          jobTemplateService.getAllTemplates(),
         ]);
+        setTemplates(Array.isArray(templatesRes.data) ? templatesRes.data : []);
 
         const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
         const jobWorkflows: JobWorkflowResponse[] = Array.isArray(jobWorkflowsRes.data) ? jobWorkflowsRes.data : [];
-        const workflows = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
+        const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
 
-        // Build jobs lookup
         const map = new Map<number, JobResponse>();
         jobs.forEach((j) => { if (j.id != null) map.set(j.id, j); });
         setJobsMap(map);
+        setAllJobs(jobs);
+        setAllJobWorkflows(jobWorkflows);
+        setWorkflows(wfs);
 
-        // Fetch steps from the first workflow template (to seed the pipeline)
-        let templateSteps: WorkflowStepResponse[] = [];
-        if (workflows.length > 0) {
-          try {
-            const stepsRes = await workflowService.getWorkflowSteps(workflows[0].id!);
-            templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
-          } catch {
-            // ignore
-          }
-        }
-
-        setGroups(buildGroups(templateSteps, jobWorkflows));
+        const defaultId = wfs[0]?.id ?? null;
+        setSelectedWorkflowId(defaultId);
       } catch (err) {
         console.error('Failed to load job events:', err);
       } finally {
@@ -313,6 +319,70 @@ export const JobEventsSection: React.FC = () => {
     };
     load();
   }, []);
+
+  // Recompute groups whenever selected workflow changes
+  const recomputeGroups = useCallback(async (workflowId: number | null) => {
+    if (workflowId == null) { setGroups([]); return; }
+
+    // Jobs that belong to this workflow
+    const filteredJobIds = new Set(
+      allJobs.filter((j) => j.workflowId === workflowId).map((j) => j.id!)
+    );
+
+    // Job workflows whose job is in the filtered set
+    const filteredJobWorkflows = allJobWorkflows.filter((jw) => filteredJobIds.has(jw.jobId!));
+
+    // Template steps for this workflow
+    let templateSteps: WorkflowStepResponse[] = [];
+    try {
+      const stepsRes = await workflowService.getWorkflowSteps(workflowId);
+      templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
+    } catch { /* ignore */ }
+
+    setGroups(buildGroups(templateSteps, filteredJobWorkflows));
+  }, [allJobs, allJobWorkflows]);
+
+  useEffect(() => {
+    if (!loading) recomputeGroups(selectedWorkflowId);
+  }, [selectedWorkflowId, loading, recomputeGroups]);
+
+  const handleAddJob = () => {
+    if (templates.length === 0) {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'noTemplateWarning',
+        children: (
+          <ConfirmationModal
+            title="No Templates Available"
+            message="You need to create a job template before creating a job."
+            description="Job templates define the structure and fields for your jobs. Would you like to create a template now?"
+            variant="default"
+            confirmButtonText="Create Template"
+            cancelButtonText="Cancel"
+            onConfirm={() => {
+              resetGlobalModalOuterProps();
+              navigate('/company/jobs/templates?openAddModal=true');
+            }}
+            onCancel={() => resetGlobalModalOuterProps()}
+          />
+        ),
+      });
+      return;
+    }
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.LARGE,
+      fieldName: 'addJob',
+      children: (
+        <AddJobWizard
+          onSuccess={() => {
+            resetGlobalModalOuterProps();
+          }}
+        />
+      ),
+    });
+  };
 
   const handleSelectStep = (stepName: string) => {
     setActiveStep(stepName);
@@ -330,14 +400,47 @@ export const JobEventsSection: React.FC = () => {
     <S.SectionWrapper>
       {/* Header */}
       <S.SectionHeader>
-        <S.SectionTitle>Job Events</S.SectionTitle>
-        <S.NewJobButton
+        {/* Left: title + workflow dropdown side by side */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <S.SectionTitle>Workflow Event</S.SectionTitle>
+
+          {workflows.length > 0 && (
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <Select
+                value={selectedWorkflowId ?? ''}
+                onChange={(e) => setSelectedWorkflowId(Number(e.target.value))}
+                displayEmpty
+                startAdornment={
+                  <AccountTreeOutlinedIcon sx={{ fontSize: 16, mr: 0.5, color: floowColors.text.muted }} />
+                }
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: floowColors.text.primary,
+                  bgcolor: floowColors.white,
+                  borderRadius: '8px',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: floowColors.border.medium },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: floowColors.blue.main },
+                }}
+              >
+                {workflows.map((wf) => (
+                  <MenuItem key={wf.id} value={wf.id} sx={{ fontSize: 13 }}>
+                    {wf.name ?? `Workflow #${wf.id}`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+
+        {/* Right: New Job button */}
+        <Button
           startIcon={<AddIcon />}
           endIcon={<KeyboardArrowDownIcon />}
-          onClick={() => navigate('/company/jobs')}
+          onClick={handleAddJob}
         >
           New Job
-        </S.NewJobButton>
+        </Button>
       </S.SectionHeader>
 
       {/* Pipeline bar */}

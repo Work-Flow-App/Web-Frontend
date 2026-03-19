@@ -1,10 +1,12 @@
 import React from 'react';
-import { Drawer, Box, IconButton, Typography, Divider, Chip } from '@mui/material';
+import { Drawer, Box, IconButton, Typography, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import { useNavigate } from 'react-router-dom';
 import type { JobResponse } from '../../../services/api';
 import { rem } from '../../../components/UI/Typography/utility';
+import { floowColors } from '../../../theme/colors';
 import type { StepEventGroup } from './JobEventsSection';
 
 interface JobStepDetailDrawerProps {
@@ -14,14 +16,14 @@ interface JobStepDetailDrawerProps {
   jobsMap: Map<number, JobResponse>;
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  STARTED:     { bg: '#EBF5FF', text: '#2563EB' },
-  ONGOING:     { bg: '#EBF5FF', text: '#2563EB' },
-  INITIATED:   { bg: '#FFF7ED', text: '#D97706' },
-  PENDING:     { bg: '#FFF7ED', text: '#D97706' },
-  NOT_STARTED: { bg: '#F5F5F5', text: '#6B7280' },
-  COMPLETED:   { bg: '#F0FDF4', text: '#16A34A' },
-  SKIPPED:     { bg: '#FEF2F2', text: '#DC2626' },
+const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  STARTED:     { bg: floowColors.info.light,    text: floowColors.info.dark,    border: floowColors.info.main },
+  ONGOING:     { bg: floowColors.info.light,    text: floowColors.info.dark,    border: floowColors.info.main },
+  INITIATED:   { bg: floowColors.warning.light, text: floowColors.warning.dark, border: floowColors.warning.main },
+  PENDING:     { bg: floowColors.warning.light, text: floowColors.warning.dark, border: floowColors.warning.main },
+  NOT_STARTED: { bg: floowColors.grey[100],     text: floowColors.grey[500],    border: floowColors.grey[300] },
+  COMPLETED:   { bg: floowColors.success.light, text: floowColors.green.main,   border: floowColors.success.main },
+  SKIPPED:     { bg: floowColors.error.bgLight, text: floowColors.error.main,   border: floowColors.error.main },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -40,11 +42,13 @@ function getJobTitle(job: JobResponse | undefined, jobId: number): string {
     const titleField = Object.entries(job.fieldValues).find(
       ([key]) => key.toLowerCase().includes('title') || key.toLowerCase().includes('name')
     );
-    if (titleField && titleField[1]?.value) {
-      return String(titleField[1].value);
-    }
+    if (titleField && titleField[1]?.value) return String(titleField[1].value);
   }
   return `Job #${jobId}`;
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
@@ -60,6 +64,12 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
   ).length;
   const waitingCount = stepGroup.count - activeCount;
 
+  const statusBreakdown = stepGroup.jobWorkflows.reduce<Record<string, number>>((acc, { currentStep }) => {
+    const s = currentStep.status ?? 'UNKNOWN';
+    acc[s] = (acc[s] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const handleGoToJob = (jobId: number) => {
     navigate(`/company/jobs/${jobId}/details`);
     onClose();
@@ -70,54 +80,100 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: '100vw', sm: 600 },
-          display: 'flex',
-          flexDirection: 'column',
+      slotProps={{
+        paper: {
+          sx: {
+            width: { xs: '100vw', sm: 680 },
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: floowColors.grey[50],
+            boxShadow: `-4px 0 24px ${floowColors.shadow.xxl}`,
+          },
         },
       }}
     >
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────── */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           px: rem(24),
-          py: rem(16),
-          borderBottom: '1px solid',
-          borderColor: 'divider',
+          py: rem(18),
+          bgcolor: floowColors.white,
+          borderBottom: `1px solid ${floowColors.border.light}`,
           flexShrink: 0,
         }}
       >
-        <Box>
-          <Typography sx={{ fontWeight: 700, fontSize: rem(18) }}>
-            {stepGroup.stepName}
-          </Typography>
-          <Typography sx={{ fontSize: rem(13), color: 'text.secondary', mt: rem(2) }}>
-            {stepGroup.count} job{stepGroup.count !== 1 ? 's' : ''} at this step
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+          <Box
+            sx={{
+              width: rem(40),
+              height: rem(40),
+              borderRadius: rem(10),
+              bgcolor: `${stepGroup.color}18`,
+              border: `1.5px solid ${stepGroup.color}40`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: stepGroup.color,
+            }}
+          >
+            <WorkOutlineIcon sx={{ fontSize: rem(20) }} />
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 700, fontSize: rem(17), color: floowColors.text.heading, lineHeight: 1.2 }}>
+              {stepGroup.stepName}
+            </Typography>
+            <Typography sx={{ fontSize: rem(12), color: floowColors.text.muted, mt: rem(2) }}>
+              {stepGroup.count} job{stepGroup.count !== 1 ? 's' : ''} at this step
+            </Typography>
+          </Box>
         </Box>
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
+
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{
+            bgcolor: floowColors.grey[100],
+            '&:hover': { bgcolor: floowColors.grey[200] },
+            width: rem(32),
+            height: rem(32),
+          }}
+        >
+          <CloseIcon sx={{ fontSize: rem(16) }} />
         </IconButton>
       </Box>
 
-      {/* Two-column content area */}
+      {/* ── Body ───────────────────────────────────────────────────── */}
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Left — Job Details List */}
+
+        {/* Left — Job List */}
         <Box
           sx={{
             flex: 1,
             overflowY: 'auto',
-            borderRight: '1px solid',
-            borderColor: 'divider',
+            p: rem(16),
+            display: 'flex',
+            flexDirection: 'column',
+            gap: rem(8),
           }}
         >
           {stepGroup.jobWorkflows.length === 0 ? (
-            <Box sx={{ p: rem(32), textAlign: 'center', color: 'text.secondary', fontSize: rem(14) }}>
-              No jobs at this step
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: floowColors.text.muted,
+                gap: rem(8),
+                py: rem(64),
+              }}
+            >
+              <WorkOutlineIcon sx={{ fontSize: rem(36), opacity: 0.4 }} />
+              <Typography sx={{ fontSize: rem(14) }}>No jobs at this step</Typography>
             </Box>
           ) : (
             stepGroup.jobWorkflows.map(({ jobWorkflow, currentStep }, index) => {
@@ -128,25 +184,37 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
               const title = getJobTitle(job, jobId);
 
               return (
-                <Box key={`${jobId}-${index}`}>
-                  <Box
-                    sx={{
-                      px: rem(20),
-                      py: rem(14),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: rem(12),
-                      cursor: 'pointer',
-                      '&:hover': { bgcolor: 'action.hover' },
-                    }}
-                    onClick={() => handleGoToJob(jobId)}
-                  >
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box
+                  key={`${jobId}-${index}`}
+                  onClick={() => handleGoToJob(jobId)}
+                  sx={{
+                    bgcolor: floowColors.white,
+                    borderRadius: rem(10),
+                    border: `1px solid ${floowColors.border.light}`,
+                    borderLeft: `3px solid ${statusStyle.border}`,
+                    px: rem(16),
+                    py: rem(14),
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: rem(12),
+                    cursor: 'pointer',
+                    transition: 'box-shadow 0.15s, border-color 0.15s',
+                    '&:hover': {
+                      boxShadow: `0 2px 12px ${floowColors.shadow.md}`,
+                      borderColor: floowColors.border.medium,
+                      borderLeftColor: statusStyle.border,
+                    },
+                  }}
+                >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {/* Title row */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(8), mb: rem(6) }}>
                       <Typography
                         sx={{
                           fontWeight: 600,
                           fontSize: rem(14),
+                          color: floowColors.text.heading,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -154,145 +222,246 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                       >
                         {title}
                       </Typography>
-
-                      <Box sx={{ display: 'flex', gap: rem(8), mt: rem(4), flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Chip
-                          label={statusLabel}
-                          size="small"
-                          sx={{
-                            backgroundColor: statusStyle.bg,
-                            color: statusStyle.text,
-                            fontWeight: 600,
-                            fontSize: rem(11),
-                            height: rem(20),
-                          }}
-                        />
-                        {job?.status && (
-                          <Typography sx={{ fontSize: rem(12), color: 'text.secondary' }}>
-                            {job.status.replace('_', ' ')}
-                          </Typography>
-                        )}
-                        {job?.createdAt && (
-                          <Typography sx={{ fontSize: rem(11), color: 'text.disabled' }}>
-                            Created {new Date(job.createdAt).toLocaleDateString()}
-                          </Typography>
-                        )}
+                      {/* Step status badge */}
+                      <Box
+                        sx={{
+                          px: rem(8),
+                          py: rem(2),
+                          borderRadius: rem(20),
+                          bgcolor: statusStyle.bg,
+                          color: statusStyle.text,
+                          fontSize: rem(11),
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {statusLabel}
                       </Box>
                     </Box>
 
-                    <IconButton
-                      size="small"
-                      onClick={(e) => { e.stopPropagation(); handleGoToJob(jobId); }}
-                      sx={{ flexShrink: 0, color: 'text.secondary' }}
-                    >
-                      <OpenInNewIcon fontSize="small" />
-                    </IconButton>
+                    {/* Meta row */}
+                    <Box sx={{ display: 'flex', gap: rem(12), alignItems: 'center' }}>
+                      {job?.status && (
+                        <Typography
+                          sx={{
+                            fontSize: rem(11),
+                            color: floowColors.text.muted,
+                            bgcolor: floowColors.grey[100],
+                            px: rem(6),
+                            py: rem(1),
+                            borderRadius: rem(4),
+                            fontWeight: 500,
+                          }}
+                        >
+                          {job.status.replace(/_/g, ' ')}
+                        </Typography>
+                      )}
+                      {job?.createdAt && (
+                        <Typography sx={{ fontSize: rem(11), color: floowColors.text.disabled }}>
+                          {formatDate(job.createdAt)}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                  <Divider />
+
+                  <IconButton
+                    size="small"
+                    onClick={(e) => { e.stopPropagation(); handleGoToJob(jobId); }}
+                    sx={{
+                      flexShrink: 0,
+                      color: floowColors.text.muted,
+                      opacity: 0,
+                      '.MuiBox-root:hover &': { opacity: 1 },
+                      transition: 'opacity 0.15s',
+                      '&:hover': { color: floowColors.blue.main },
+                    }}
+                  >
+                    <OpenInNewIcon sx={{ fontSize: rem(16) }} />
+                  </IconButton>
                 </Box>
               );
             })
           )}
         </Box>
 
-        {/* Right — Ongoing Summary Card */}
+        {/* Right — Summary Panel */}
         <Box
           sx={{
-            width: rem(180),
+            width: rem(200),
             flexShrink: 0,
-            p: rem(16),
+            bgcolor: floowColors.white,
+            borderLeft: `1px solid ${floowColors.border.light}`,
             display: 'flex',
             flexDirection: 'column',
-            gap: rem(16),
             overflowY: 'auto',
           }}
         >
-          <Typography sx={{ fontWeight: 700, fontSize: rem(13) }}>
-            Ongoing Total Jobs
-          </Typography>
-
-          {/* A / O bubbles */}
-          <Box sx={{ display: 'flex', gap: rem(10) }}>
-            <Box
+          {/* Active / Waiting */}
+          <Box sx={{ p: rem(20) }}>
+            <Typography
               sx={{
-                width: rem(48),
-                height: rem(48),
-                borderRadius: '50%',
-                border: '2px solid #4A90D9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                color: '#4A90D9',
+                fontSize: rem(11),
                 fontWeight: 700,
-                fontSize: rem(16),
+                color: floowColors.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                mb: rem(14),
               }}
-              title="Active"
             >
-              {activeCount}
-            </Box>
-            <Box
-              sx={{
-                width: rem(48),
-                height: rem(48),
-                borderRadius: '50%',
-                border: '2px solid #2BAE66',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                color: '#2BAE66',
-                fontWeight: 700,
-                fontSize: rem(16),
-              }}
-              title="Waiting"
-            >
-              {waitingCount}
-            </Box>
-          </Box>
-
-          <Typography sx={{ fontSize: rem(11), color: 'text.disabled' }}>
-            Active / Waiting
-          </Typography>
-
-          <Divider />
-
-          {/* Step info */}
-          <Box>
-            <Typography sx={{ fontSize: rem(11), fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', mb: rem(8) }}>
-              Step Info
+              Ongoing Total Jobs
             </Typography>
-            <Typography sx={{ fontSize: rem(12), color: 'text.secondary', mb: rem(4) }}>
-              Order: #{stepGroup.orderIndex + 1}
-            </Typography>
-            <Typography sx={{ fontSize: rem(12), color: 'text.secondary' }}>
-              Total: {stepGroup.count} job{stepGroup.count !== 1 ? 's' : ''}
-            </Typography>
-          </Box>
 
-          <Divider />
-
-          {/* Status breakdown */}
-          <Box>
-            <Typography sx={{ fontSize: rem(11), fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', mb: rem(8) }}>
-              By Status
-            </Typography>
-            {Object.entries(
-              stepGroup.jobWorkflows.reduce<Record<string, number>>((acc, { currentStep }) => {
-                const s = currentStep.status ?? 'UNKNOWN';
-                acc[s] = (acc[s] ?? 0) + 1;
-                return acc;
-              }, {})
-            ).map(([status, count]) => (
-              <Box key={status} sx={{ display: 'flex', justifyContent: 'space-between', mb: rem(4) }}>
-                <Typography sx={{ fontSize: rem(12), color: 'text.secondary' }}>
-                  {STATUS_LABELS[status] ?? status}
-                </Typography>
-                <Typography sx={{ fontSize: rem(12), fontWeight: 600, color: STATUS_COLORS[status]?.text ?? 'text.primary' }}>
-                  {count}
+            <Box sx={{ display: 'flex', gap: rem(10), mb: rem(10) }}>
+              {/* Active bubble */}
+              <Box sx={{ textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    width: rem(52),
+                    height: rem(52),
+                    borderRadius: '50%',
+                    border: `2.5px solid ${floowColors.info.main}`,
+                    bgcolor: floowColors.info.light,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: floowColors.info.dark,
+                    fontWeight: 800,
+                    fontSize: rem(18),
+                    mx: 'auto',
+                  }}
+                >
+                  {activeCount}
+                </Box>
+                <Typography sx={{ fontSize: rem(10), color: floowColors.text.muted, mt: rem(4), fontWeight: 500 }}>
+                  Active
                 </Typography>
               </Box>
-            ))}
+
+              {/* Waiting bubble */}
+              <Box sx={{ textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    width: rem(52),
+                    height: rem(52),
+                    borderRadius: '50%',
+                    border: `2.5px solid ${floowColors.success.main}`,
+                    bgcolor: floowColors.success.light,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: floowColors.green.main,
+                    fontWeight: 800,
+                    fontSize: rem(18),
+                    mx: 'auto',
+                  }}
+                >
+                  {waitingCount}
+                </Box>
+                <Typography sx={{ fontSize: rem(10), color: floowColors.text.muted, mt: rem(4), fontWeight: 500 }}>
+                  Waiting
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Divider sx={{ borderColor: floowColors.border.light }} />
+
+          {/* Step Info */}
+          <Box sx={{ p: rem(20) }}>
+            <Typography
+              sx={{
+                fontSize: rem(11),
+                fontWeight: 700,
+                color: floowColors.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                mb: rem(12),
+              }}
+            >
+              Step Info
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: rem(8) }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ fontSize: rem(12), color: floowColors.text.muted }}>Order</Typography>
+                <Typography
+                  sx={{
+                    fontSize: rem(12),
+                    fontWeight: 600,
+                    color: floowColors.text.primary,
+                    bgcolor: floowColors.grey[100],
+                    px: rem(8),
+                    py: rem(2),
+                    borderRadius: rem(4),
+                  }}
+                >
+                  #{stepGroup.orderIndex + 1}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ fontSize: rem(12), color: floowColors.text.muted }}>Total</Typography>
+                <Typography sx={{ fontSize: rem(12), fontWeight: 600, color: floowColors.text.primary }}>
+                  {stepGroup.count} job{stepGroup.count !== 1 ? 's' : ''}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Divider sx={{ borderColor: floowColors.border.light }} />
+
+          {/* By Status */}
+          <Box sx={{ p: rem(20) }}>
+            <Typography
+              sx={{
+                fontSize: rem(11),
+                fontWeight: 700,
+                color: floowColors.text.muted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                mb: rem(12),
+              }}
+            >
+              By Status
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: rem(8) }}>
+              {Object.entries(statusBreakdown).map(([status, count]) => {
+                const style = STATUS_COLORS[status] ?? STATUS_COLORS.NOT_STARTED;
+                return (
+                  <Box
+                    key={status}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      py: rem(4),
+                      px: rem(8),
+                      borderRadius: rem(6),
+                      bgcolor: style.bg,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(6) }}>
+                      <Box
+                        sx={{
+                          width: rem(6),
+                          height: rem(6),
+                          borderRadius: '50%',
+                          bgcolor: style.border,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Typography sx={{ fontSize: rem(12), color: style.text, fontWeight: 500 }}>
+                        {STATUS_LABELS[status] ?? status}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: rem(12), fontWeight: 700, color: style.text }}>
+                      {count}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
           </Box>
         </Box>
       </Box>
