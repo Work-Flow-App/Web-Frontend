@@ -11,236 +11,232 @@ interface StyledButtonProps {
 
 export const StyledButton = styled(MuiButton, {
   shouldForwardProp: (prop) => !['buttonColor', 'buttonVariant', 'buttonSize'].includes(prop as string),
-})<StyledButtonProps>(
-  ({ theme, buttonColor, buttonVariant, buttonSize, fullWidth }) => {
-    const { palette, shadows } = theme;
+})<StyledButtonProps>(({ theme, buttonColor, buttonVariant, buttonSize, fullWidth }) => {
+  const { palette, shadows } = theme;
 
-    // Get color based on buttonColor prop.
-    // For 'primary', we use palette.buttonColors.primary which is driven by the
-    // active theme preset's buttonPrimary value — keeping buttons on-brand while
-    // allowing each theme to specify an optimal button shade independently.
-    const getColor = () => {
-      switch (buttonColor) {
-        case 'primary':
-          return palette.buttonColors.primary;
-        case 'secondary':
-          return palette.secondary.main;
-        case 'tertiary':
-          return palette.tertiary.main;
-        case 'success':
-          return palette.success.main;
-        case 'error':
-          return palette.error.main;
-        case 'warning':
-          return palette.warning.main;
-        default:
-          return palette.buttonColors.primary;
-      }
-    };
+  // Get color based on buttonColor prop.
+  // For 'primary', we use palette.buttonColors.primary which is driven by the
+  // active theme preset's buttonPrimary value — keeping buttons on-brand while
+  // allowing each theme to specify an optimal button shade independently.
+  const getColor = () => {
+    switch (buttonColor) {
+      case 'primary':
+        return palette.buttonColors.primary;
+      case 'secondary':
+        return palette.secondary.main;
+      case 'tertiary':
+        return palette.tertiary.main;
+      case 'success':
+        return palette.success.main;
+      case 'error':
+        return palette.error.main;
+      case 'warning':
+        return palette.warning.main;
+      default:
+        return palette.buttonColors.primary;
+    }
+  };
 
-    // Light background color for soft/tonal contained style on non-primary buttons
-    const getLightBgColor = () => {
-      switch (buttonColor) {
-        case 'secondary':
-          return palette.secondary.light;
-        case 'tertiary':
-          return palette.tertiary.light;
-        case 'success':
-          return palette.success.light;
-        case 'error':
-          return palette.error.bgLight || palette.error.light;
-        case 'warning':
-          return palette.warning.light;
-        default:
-          return null;
-      }
-    };
+  // Light background color for soft/tonal contained style on non-primary buttons
+  const getLightBgColor = () => {
+    switch (buttonColor) {
+      case 'secondary':
+        return palette.secondary.light;
+      case 'tertiary':
+        return palette.tertiary.light;
+      case 'success':
+        return palette.success.light;
+      case 'error':
+        return palette.error.bgLight || palette.error.light;
+      case 'warning':
+        return palette.warning.light;
+      default:
+        return null;
+    }
+  };
 
-    const getHoverColor = () => {
-      switch (buttonColor) {
-        case 'primary':
-          return palette.buttonColors.primaryHover;
-        case 'secondary':
-          return palette.secondary.main;
-        case 'tertiary':
-          return palette.tertiary.main;
-        case 'success':
-          return palette.success.main;
-        case 'error':
-          return palette.error.main;
-        case 'warning':
-          return palette.warning.main;
-        default:
-          return palette.buttonColors.primaryHover;
-      }
-    };
+  const getHoverColor = () => {
+    switch (buttonColor) {
+      case 'primary':
+        return palette.buttonColors.primaryHover;
+      case 'secondary':
+        return palette.secondary.main;
+      case 'tertiary':
+        return palette.tertiary.main;
+      case 'success':
+        return palette.success.main;
+      case 'error':
+        return palette.error.main;
+      case 'warning':
+        return palette.warning.main;
+      default:
+        return palette.buttonColors.primaryHover;
+    }
+  };
 
-    const color = getColor();
-    const lightBgColor = getLightBgColor();
-    const hoverColor = getHoverColor();
-    const isNonPrimary = buttonColor !== 'primary' && lightBgColor !== null;
+  const color = getColor();
+  const lightBgColor = getLightBgColor();
+  const hoverColor = getHoverColor();
+  const isNonPrimary = buttonColor !== 'primary' && lightBgColor !== null;
 
-    // Size styles
-    const getSizeStyles = () => {
-      switch (buttonSize) {
-        case 'small':
-          return {
-            height: rem(36),
-            padding: `${rem(8)} ${rem(16)}`,
-            fontSize: rem(12),
-            borderRadius: rem(8),
-            gap: rem(8),
-            minWidth: fullWidth ? 'unset' : 'auto',
-          };
-        case 'large':
-          return {
-            height: rem(51),
-            padding: `${rem(12)} ${rem(24)}`,
-            fontSize: rem(20), // From Figma
-            lineHeight: rem(27), // From Figma
-            borderRadius: rem(8),
-            gap: rem(10),
-            minWidth: fullWidth ? 'unset' : rem(451), // 28.1875rem from Figma
-            fontWeight: 700, // Bold from Figma, overrides base _800
-            letterSpacing: em(0.005), // From Figma
-          };
-        case 'medium':
-        default:
-          return {
-            height: rem(51),
-            padding: `${rem(12)} ${rem(24)}`,
-            fontSize: rem(14),
-            borderRadius: rem(8),
-            gap: rem(10),
-            minWidth: fullWidth ? 'unset' : 'auto',
-          };
-      }
-    };
-
-    return {
-      ...getSizeStyles(),
-      display: 'flex',
-      flexDirection: 'row' as const,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: fullWidth ? '100%' : 'auto',
-      fontWeight: Bold._800,
-      textTransform: 'none' as const,
-      boxShadow: shadows[0],
-      letterSpacing: em(0.08),
-      transition: 'all 0.2s ease-in-out',
-      position: 'relative',
-
-      // Responsive styles for large size button
-      ...(buttonSize === 'large' && {
-        '@media (max-width: 1536px)': {
-          height: rem(46),
-          padding: `${rem(11)} ${rem(22)}`,
-          fontSize: rem(18),
-          lineHeight: rem(24),
-          minWidth: fullWidth ? 'unset' : rem(400),
-        },
-        '@media (max-width: 1366px)': {
-          height: rem(42),
-          padding: `${rem(10)} ${rem(20)}`,
-          fontSize: rem(16),
-          lineHeight: rem(22),
-          minWidth: fullWidth ? 'unset' : rem(350),
-        },
-      }),
-
-      // Responsive styles for medium size button
-      ...(buttonSize === 'medium' && {
-        '@media (min-width: 1921px)': {
-          height: rem(54),
-          padding: `${rem(13)} ${rem(26)}`,
-          fontSize: rem(15),
-        },
-        '@media (max-width: 1536px)': {
-          height: rem(46),
-          padding: `${rem(11)} ${rem(22)}`,
-          fontSize: rem(13),
-        },
-        '@media (max-width: 1366px)': {
-          height: rem(42),
-          padding: `${rem(10)} ${rem(20)}`,
+  // Size styles
+  const getSizeStyles = () => {
+    switch (buttonSize) {
+      case 'small':
+        return {
+          height: rem(36),
+          padding: `${rem(8)} ${rem(16)}`,
           fontSize: rem(12),
-        },
-      }),
+          borderRadius: rem(8),
+          gap: rem(8),
+          minWidth: fullWidth ? 'unset' : 'auto',
+        };
+      case 'large':
+        return {
+          height: rem(51),
+          padding: `${rem(12)} ${rem(24)}`,
+          fontSize: rem(20), // From Figma
+          lineHeight: rem(27), // From Figma
+          borderRadius: rem(8),
+          gap: rem(10),
+          minWidth: fullWidth ? 'unset' : rem(451), // 28.1875rem from Figma
+          fontWeight: 700, // Bold from Figma, overrides base _800
+          letterSpacing: em(0.005), // From Figma
+        };
+      case 'medium':
+      default:
+        return {
+          height: rem(51),
+          padding: `${rem(12)} ${rem(24)}`,
+          fontSize: rem(14),
+          borderRadius: rem(8),
+          gap: rem(10),
+          minWidth: fullWidth ? 'unset' : 'auto',
+        };
+    }
+  };
 
-      // Responsive styles for small size button
-      ...(buttonSize === 'small' && {
-        '@media (min-width: 1921px)': {
-          height: rem(40),
-          padding: `${rem(9)} ${rem(18)}`,
-          fontSize: rem(13),
-        },
-        '@media (max-width: 1536px)': {
-          height: rem(32),
-          padding: `${rem(7)} ${rem(14)}`,
-          fontSize: rem(11),
-        },
-        '@media (max-width: 1366px)': {
-          height: rem(30),
-          padding: `${rem(6)} ${rem(12)}`,
-          fontSize: rem(10),
-        },
-      }),
+  return {
+    ...getSizeStyles(),
+    display: 'flex',
+    flexDirection: 'row' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: fullWidth ? '100%' : 'auto',
+    fontWeight: Bold._800,
+    textTransform: 'none' as const,
+    boxShadow: shadows[0],
+    letterSpacing: em(0.08),
+    transition: 'all 0.2s ease-in-out',
+    position: 'relative',
 
-      // Contained variant
-      ...(buttonVariant === 'contained' && {
-        // Non-primary colors use a soft/tonal style: light bg + colored text
-        // Primary keeps the solid saturated background with white text
-        backgroundColor: isNonPrimary ? lightBgColor! : color,
-        color: isNonPrimary ? color : palette.buttonColors.primaryContrast,
-        '&:hover': {
-          backgroundColor: hoverColor,
-          color: palette.buttonColors.primaryContrast,
-          boxShadow: palette.boxShadow.buttonShadow,
-        },
-        '&.Mui-disabled': {
-          backgroundColor: palette.mode === 'dark'
-            ? palette.grey[800]
-            : palette.colors.black_25,
-          color: palette.text.disabled,
-        },
-      }),
+    // Responsive styles for large size button
+    ...(buttonSize === 'large' && {
+      '@media (max-width: 1536px)': {
+        height: rem(46),
+        padding: `${rem(11)} ${rem(22)}`,
+        fontSize: rem(18),
+        lineHeight: rem(24),
+        minWidth: fullWidth ? 'unset' : rem(400),
+      },
+      '@media (max-width: 1366px)': {
+        height: rem(42),
+        padding: `${rem(10)} ${rem(20)}`,
+        fontSize: rem(16),
+        lineHeight: rem(22),
+        minWidth: fullWidth ? 'unset' : rem(350),
+      },
+    }),
 
-      // Outlined variant
-      ...(buttonVariant === 'outlined' && {
-        // Use the surface background so the button sits on the current surface
+    // Responsive styles for medium size button
+    ...(buttonSize === 'medium' && {
+      '@media (min-width: 1921px)': {
+        height: rem(54),
+        padding: `${rem(13)} ${rem(26)}`,
+        fontSize: rem(15),
+      },
+      '@media (max-width: 1536px)': {
+        height: rem(46),
+        padding: `${rem(11)} ${rem(22)}`,
+        fontSize: rem(13),
+      },
+      '@media (max-width: 1366px)': {
+        height: rem(42),
+        padding: `${rem(10)} ${rem(20)}`,
+        fontSize: rem(12),
+      },
+    }),
+
+    // Responsive styles for small size button
+    ...(buttonSize === 'small' && {
+      '@media (min-width: 1921px)': {
+        height: rem(40),
+        padding: `${rem(9)} ${rem(18)}`,
+        fontSize: rem(13),
+      },
+      '@media (max-width: 1536px)': {
+        height: rem(32),
+        padding: `${rem(7)} ${rem(14)}`,
+        fontSize: rem(11),
+      },
+      '@media (max-width: 1366px)': {
+        height: rem(30),
+        padding: `${rem(6)} ${rem(12)}`,
+        fontSize: rem(10),
+      },
+    }),
+
+    // Contained variant
+    ...(buttonVariant === 'contained' && {
+      // Non-primary colors use a soft/tonal style: light bg + colored text
+      // Primary keeps the solid saturated background with white text
+      backgroundColor: isNonPrimary ? lightBgColor! : color,
+      color: isNonPrimary ? color : palette.buttonColors.primaryContrast,
+      '&:hover': {
+        backgroundColor: hoverColor,
+        color: palette.buttonColors.primaryContrast,
+        boxShadow: palette.boxShadow.buttonShadow,
+      },
+      '&.Mui-disabled': {
+        backgroundColor: palette.mode === 'dark' ? palette.grey[800] : palette.colors.black_25,
+        color: palette.text.disabled,
+      },
+    }),
+
+    // Outlined variant
+    ...(buttonVariant === 'outlined' && {
+      // Use the surface background so the button sits on the current surface
+      backgroundColor: 'transparent',
+      color: color,
+      border: `${rem(1)} solid ${color}`,
+      '&:hover': {
+        backgroundColor: palette.primary.alert,
+        borderColor: color,
+        color: palette.primary.contrastText,
+        boxShadow: palette.boxShadow.buttonShadow,
+      },
+      '&.Mui-disabled': {
+        borderColor: palette.text.disabled,
+        color: palette.text.disabled,
+      },
+    }),
+
+    // Text variant
+    ...(buttonVariant === 'text' && {
+      backgroundColor: 'transparent',
+      color: color,
+      fontSize: '90%',
+      fontWeight: theme.typography.fontWeightRegular,
+      '&:hover': {
         backgroundColor: 'transparent',
-        color: color,
-        border: `${rem(1)} solid ${color}`,
-        '&:hover': {
-          backgroundColor: palette.primary.alert,
-          borderColor: color,
-          color: color,
-          boxShadow: palette.boxShadow.buttonShadow,
-        },
-        '&.Mui-disabled': {
-          borderColor: palette.text.disabled,
-          color: palette.text.disabled,
-        },
-      }),
-
-      // Text variant
-      ...(buttonVariant === 'text' && {
-        backgroundColor: 'transparent',
-        color: color,
-        fontSize: '90%',
-        fontWeight: theme.typography.fontWeightRegular,
-        '&:hover': {
-          backgroundColor: 'transparent',
-          color: hoverColor,
-        },
-        '&.Mui-disabled': {
-          color: palette.text.disabled,
-        },
-      }),
-    };
-  }
-);
+        color: hoverColor,
+      },
+      '&.Mui-disabled': {
+        color: palette.text.disabled,
+      },
+    }),
+  };
+});
 
 export const ButtonLoader = styled(MuiLinearProgress)(({ theme }) => {
   const { palette, spacing } = theme;
