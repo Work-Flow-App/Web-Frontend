@@ -15,11 +15,14 @@ export const StyledButton = styled(MuiButton, {
   ({ theme, buttonColor, buttonVariant, buttonSize, fullWidth }) => {
     const { palette, shadows } = theme;
 
-    // Get color based on buttonColor prop
+    // Get color based on buttonColor prop.
+    // For 'primary', we use palette.buttonColors.primary which is driven by the
+    // active theme preset's buttonPrimary value — keeping buttons on-brand while
+    // allowing each theme to specify an optimal button shade independently.
     const getColor = () => {
       switch (buttonColor) {
         case 'primary':
-          return palette.primary.main;
+          return palette.buttonColors.primary;
         case 'secondary':
           return palette.secondary.main;
         case 'tertiary':
@@ -31,14 +34,14 @@ export const StyledButton = styled(MuiButton, {
         case 'warning':
           return palette.warning.main;
         default:
-          return palette.primary.main;
+          return palette.buttonColors.primary;
       }
     };
 
     const getHoverColor = () => {
       switch (buttonColor) {
         case 'primary':
-          return palette.primary.light;
+          return palette.buttonColors.primaryHover;
         case 'secondary':
           return palette.secondary.light;
         case 'tertiary':
@@ -50,7 +53,7 @@ export const StyledButton = styled(MuiButton, {
         case 'warning':
           return palette.warning.light;
         default:
-          return palette.primary.light;
+          return palette.buttonColors.primaryHover;
       }
     };
 
@@ -167,27 +170,32 @@ export const StyledButton = styled(MuiButton, {
       // Contained variant
       ...(buttonVariant === 'contained' && {
         backgroundColor: color,
-        color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
+        // Always use white text — all palette button colors (primary, error, success…)
+        // are sufficiently saturated for white text, in both light and dark modes.
+        color: palette.buttonColors.primaryContrast,
         '&:hover': {
           backgroundColor: hoverColor,
-          color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
+          color: palette.buttonColors.primaryContrast,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {
-          backgroundColor: palette.colors.black_25,
+          backgroundColor: palette.mode === 'dark'
+            ? palette.grey[800]
+            : palette.colors.black_25,
           color: palette.text.disabled,
         },
       }),
 
       // Outlined variant
       ...(buttonVariant === 'outlined' && {
-        backgroundColor: palette.background.default,
+        // Use the surface background so the button sits on the current surface
+        backgroundColor: 'transparent',
         color: color,
         border: `${rem(1)} solid ${color}`,
         '&:hover': {
-          backgroundColor: hoverColor,
+          backgroundColor: palette.primary.alert,
           borderColor: color,
-          color: palette.mode === 'dark' ? palette.common.white : palette.primary.contrastText,
+          color: color,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {

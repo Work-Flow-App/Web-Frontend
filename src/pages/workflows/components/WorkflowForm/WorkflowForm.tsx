@@ -6,6 +6,7 @@ import { Loader } from '../../../../components/UI';
 import { workflowService } from '../../../../services/api';
 import type { WorkflowCreateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
 export interface WorkflowFormProps {
@@ -49,8 +50,7 @@ export const WorkflowForm: React.FC<WorkflowFormProps> = ({ isModal = false, wor
           });
         } catch (error) {
           console.error('Error fetching workflow:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load workflow data';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load workflow data'));
         } finally {
           setIsLoading(false);
         }
@@ -81,8 +81,7 @@ export const WorkflowForm: React.FC<WorkflowFormProps> = ({ isModal = false, wor
         }
       } catch (error) {
         console.error('Error saving workflow:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to save workflow';
-        showError(errorMessage);
+        showError(extractErrorMessage(error, 'Failed to save workflow'));
       }
     },
     [workflowId, isEditMode, showSuccess, showError, onSuccess]

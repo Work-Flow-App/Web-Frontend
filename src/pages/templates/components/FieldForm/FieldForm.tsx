@@ -5,6 +5,7 @@ import { FieldFormFields } from '../FieldFormFields/FieldFormFields';
 import { Loader } from '../../../../components/UI';
 import { jobTemplateService, JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
 export interface FieldFormProps {
@@ -52,17 +53,14 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
           const selectedFieldType = FIELD_TYPES.find(ft => ft.value === field.jobFieldType) || null;
 
           setFieldData({
-            name: field.name || '',
             label: field.label || '',
             jobFieldType: selectedFieldType as any,
-            required: String(field.required) as any, // Convert boolean to string for RadioGroup
+            required: field.required ?? false,
             options: field.options || '',
-            orderIndex: field.orderIndex || 0,
           });
         } catch (error) {
           console.error('Error fetching field:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load field';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load field'));
         } finally {
           setIsLoading(false);
         }
@@ -75,24 +73,27 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
   const handleSubmit = useCallback(
     async (data: FieldFormData) => {
       try {
-        // Convert 'true'/'false' string to boolean
-        const required = typeof data.required === 'string'
-          ? data.required === 'true'
-          : Boolean(data.required);
+        const required = Boolean(data.required);
 
         // Extract value from dropdown option object if it's an object
         const jobFieldType = typeof data.jobFieldType === 'object' && data.jobFieldType !== null
           ? (data.jobFieldType as any).value
           : data.jobFieldType;
 
+        // Auto-generate field name from label: lowercase, spaces → underscores, strip special chars
+        const generatedName = data.label
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_]/g, '');
+
         const fieldPayload = {
           templateId,
-          name: data.name,
+          name: generatedName,
           label: data.label,
           jobFieldType: jobFieldType as JobTemplateFieldCreateRequestJobFieldTypeEnum,
           required,
           options: data.options,
-          orderIndex: Number(data.orderIndex),
         };
 
         if (isEditMode) {
@@ -108,8 +109,7 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
         }
       } catch (error) {
         console.error('Error saving field:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to save field';
-        showError(errorMessage);
+        showError(extractErrorMessage(error, 'Failed to save field'));
       }
     },
     [templateId, fieldId, isEditMode, showSuccess, showError, onSuccess]

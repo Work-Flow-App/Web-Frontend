@@ -7,8 +7,10 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { jobService, jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
 import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse, AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { JobForm } from '../JobForm/JobForm';
+import { AddJobWizard } from '../AddJobWizard';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
@@ -154,8 +156,7 @@ export const JobsList: React.FC = () => {
       setJobs(transformedData);
     } catch (error) {
       console.error('Error fetching jobs:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load jobs';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load jobs'));
     } finally {
       setLoading(false);
     }
@@ -229,11 +230,10 @@ export const JobsList: React.FC = () => {
 
     setGlobalModalOuterProps({
       isOpen: true,
-      size: ModalSizes.MEDIUM,
+      size: ModalSizes.LARGE,
       fieldName: 'addJob',
       children: (
-        <JobForm
-          isModal={true}
+        <AddJobWizard
           onSuccess={() => {
             resetGlobalModalOuterProps();
             fetchJobs();
@@ -296,8 +296,7 @@ export const JobsList: React.FC = () => {
                 fetchJobs();
               } catch (error) {
                 console.error('Error deleting job:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete job';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete job'));
                 resetGlobalModalOuterProps();
               }
             }}

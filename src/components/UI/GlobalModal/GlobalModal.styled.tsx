@@ -124,7 +124,7 @@ export const ModalFooterWrapper = styled(Box)(({ theme: { palette, breakpoints }
   backgroundColor: palette.background.paper,
   borderTop: `1px solid ${palette.divider}`,
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-end',
   gap: rem(12),
   borderBottomLeftRadius: rem(16),
   borderBottomRightRadius: rem(16),
@@ -138,8 +138,8 @@ export const ModalFooterWrapper = styled(Box)(({ theme: { palette, breakpoints }
   },
 
   '& button': {
-    flex: '1 1 0',
-    minWidth: rem(120),
+    flex: '0 0 auto',
+    minWidth: rem(100),
   },
 }));
 

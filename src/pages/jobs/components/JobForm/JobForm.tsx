@@ -7,6 +7,7 @@ import { jobService, jobTemplateService, assetService, workflowService } from '.
 import type { JobCreateRequest, JobUpdateRequest } from '../../../../services/api';
 import { JobCreateRequestStatusEnum, JobUpdateRequestStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
 export interface JobFormProps {
@@ -105,8 +106,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           }
         } catch (error) {
           console.error('Error fetching job:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load job data';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load job data'));
         } finally {
           setIsLoading(false);
         }
@@ -227,8 +227,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
         }
       } catch (error) {
         console.error('Error saving job:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to save job';
-        showError(errorMessage);
+        showError(extractErrorMessage(error, 'Failed to save job'));
       }
     },
     [jobId, isEditMode, showSuccess, showError, onSuccess]

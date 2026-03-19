@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Switch, 
-  FormControlLabel, 
-  Divider, 
+import {
+  Box,
+  Typography,
+  Button,
+  Switch,
+  FormControlLabel,
   TextField,
   Paper,
   Grid
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useThemeContext } from '../../contexts/ThemeContext';
-import { floowColors } from '../../theme/colors';
+import { THEME_PRESETS } from '../../theme/presets';
 
 const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -42,39 +41,25 @@ const ColorCircle = styled(Box)<{ color: string; selected?: boolean }>(({ theme,
   },
 }));
 
-const PREDEFINED_COLORS = [
-  { name: 'Default', color: floowColors.navy },
-  { name: 'Ocean Blue', color: '#0ea5e9' },
-  { name: 'Indigo', color: '#4f46e5' },
-  { name: 'Violet', color: '#7c3aed' },
-  { name: 'Purple', color: '#9c27b0' },
-  { name: 'Emerald', color: '#059669' },
-  { name: 'Teal', color: '#0d9488' },
-  { name: 'Sky', color: '#0284c7' },
-  { name: 'Navy', color: '#1e3a5f' },
-  { name: 'Slate', color: '#475569' },
-  { name: 'Amber', color: '#d97706' },
-  { name: 'Rose', color: '#f43f5e' },
-  { name: 'Crimson', color: '#dc2626' },
-];
 
 export const ThemeSettings: React.FC = () => {
   const { mode, toggleColorMode, addTheme, activeThemeId, customThemes, switchTheme } = useThemeContext();
-  const [customColor, setCustomColor] = useState('#000000');
+  const defaultPreset = THEME_PRESETS[0];
+  const [customColor, setCustomColor] = useState(defaultPreset.colors.primary);
+  const [customButtonColor, setCustomButtonColor] = useState(defaultPreset.colors.buttonPrimary ?? defaultPreset.colors.primary);
   const [themeName, setThemeName] = useState('');
 
-  const handleColorSelect = (color: string) => {
-    // If it's one of the predefined, we can treat it as a new theme or just switch if we had IDs for them.
-    // For simplicity, let's just create a new theme for any selection for now, or check if one exists.
-    // Actually, to keep it simple and powerful:
-    // 1. Show existing custom themes.
-    // 2. Allow creating a new one from these presets or custom hex.
-    setCustomColor(color);
+  const handlePresetSelect = (preset: (typeof THEME_PRESETS)[number]) => {
+    setCustomColor(preset.colors.primary);
+    setCustomButtonColor(preset.colors.buttonPrimary ?? preset.colors.primary);
   };
 
   const handleCreateTheme = () => {
     if (themeName && customColor) {
-      addTheme(themeName, { primary: customColor });
+      addTheme(themeName, {
+        primary: customColor,
+        buttonPrimary: customButtonColor || undefined,
+      });
       setThemeName('');
     }
   };
@@ -104,16 +89,16 @@ export const ThemeSettings: React.FC = () => {
         </Typography>
         
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          {PREDEFINED_COLORS.map((item) => (
-            <Grid item key={item.name}>
-                <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-                  <ColorCircle 
-                    color={item.color} 
-                    onClick={() => handleColorSelect(item.color)}
-                    selected={customColor === item.color}
-                  />
-                  <Typography variant="caption">{item.name}</Typography>
-                </Box>
+          {THEME_PRESETS.map((preset) => (
+            <Grid item key={preset.id}>
+              <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+                <ColorCircle
+                  color={preset.colors.primary}
+                  onClick={() => handlePresetSelect(preset)}
+                  selected={customColor === preset.colors.primary}
+                />
+                <Typography variant="caption">{preset.name}</Typography>
+              </Box>
             </Grid>
           ))}
         </Grid>
@@ -122,7 +107,10 @@ export const ThemeSettings: React.FC = () => {
             <TextField
                 label="Custom Hex Color"
                 value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
+                onChange={(e) => {
+                  setCustomColor(e.target.value);
+                  setCustomButtonColor(e.target.value);
+                }}
                 size="small"
                 sx={{ width: 150 }}
             />

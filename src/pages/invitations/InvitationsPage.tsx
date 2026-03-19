@@ -3,6 +3,7 @@ import { PageWrapper } from '../../components/UI/PageWrapper';
 import Table from '../../components/UI/Table/Table';
 import { workerService, type WorkerInvitationStatus } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../utils/errorHandler';
 import { IconButton, Tooltip, useTheme } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { InvitationsContainer } from './InvitationsPage.styles';
@@ -35,8 +36,7 @@ export const InvitationsPage: React.FC = () => {
       setInvitations(transformedData);
     } catch (error) {
       console.error('Error fetching invitations:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load invitations';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load invitations'));
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import { TemplateFormFields } from '../TemplateFormFields/TemplateFormFields';
 import { Loader } from '../../../../components/UI';
 import { jobTemplateService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
 export interface TemplateFormProps {
@@ -50,8 +51,7 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ isModal = false, tem
           });
         } catch (error) {
           console.error('Error fetching template:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load template';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load template'));
         } finally {
           setIsLoading(false);
         }
@@ -77,8 +77,7 @@ export const TemplateForm: React.FC<TemplateFormProps> = ({ isModal = false, tem
         }
       } catch (error) {
         console.error('Error saving template:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to save template';
-        showError(errorMessage);
+        showError(extractErrorMessage(error, 'Failed to save template'));
       }
     },
     [templateId, isEditMode, showSuccess, showError, onSuccess]

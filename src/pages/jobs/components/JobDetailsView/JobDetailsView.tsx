@@ -5,11 +5,12 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import EditIcon from '@mui/icons-material/Edit';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import { jobService, jobTemplateService, companyClientService } from '../../../../services/api';
+import { jobService, jobTemplateService, companyClientService, customerService } from '../../../../services/api';
 import type {
   JobResponse,
   JobTemplateResponse,
   ClientResponse,
+  CustomerResponse,
   JobTemplateFieldResponse,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -32,6 +33,7 @@ export const JobDetailsView: React.FC = () => {
   const [template, setTemplate] = useState<JobTemplateResponse | null>(null);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [client, setClient] = useState<ClientResponse | null>(null);
+  const [customer, setCustomer] = useState<CustomerResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [workflowUpdateTrigger, setWorkflowUpdateTrigger] = useState(0);
@@ -65,6 +67,10 @@ export const JobDetailsView: React.FC = () => {
 
       if (jobData.clientId) {
         promises.push(companyClientService.getClientById(jobData.clientId).then((res) => setClient(res.data)));
+      }
+
+      if (jobData.customerId) {
+        promises.push(customerService.getCustomerById(jobData.customerId).then((res) => setCustomer(res.data)));
       }
 
       await Promise.all(promises);
@@ -114,7 +120,7 @@ export const JobDetailsView: React.FC = () => {
               <ArrowBackIcon />
             </S.BackButton>
             <S.JobHeaderInfo>
-              <S.JobHeaderTitle>{client?.name || 'No Client'}</S.JobHeaderTitle>
+              <S.JobHeaderTitle>{customer?.name || 'No Customer'}</S.JobHeaderTitle>
               <S.JobHeaderMeta>
                 {job.id}-{template?.name || 'Mayday Resources'}
               </S.JobHeaderMeta>
