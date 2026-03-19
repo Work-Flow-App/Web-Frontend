@@ -179,6 +179,14 @@ export const TemplatesList: React.FC = () => {
     [showSuccess, showError, fetchTemplates, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
+  // Handle row click - navigate to template fields
+  const handleRowClick = useCallback(
+    (template: TemplateTableRow) => {
+      navigate(`/company/jobs/templates/${template.id}/fields`);
+    },
+    [navigate]
+  );
+
   // Handle manage fields
   const handleManageFields = useCallback(
     (template: TemplateTableRow) => {
@@ -260,18 +268,7 @@ export const TemplatesList: React.FC = () => {
     [handleManageFields, handleEditTemplate, handleDeleteTemplate, handleSetAsDefault]
   );
 
-  // Handle template name click
-  const handleTemplateNameClick = useCallback(
-    (templateId: number) => {
-      navigate(`/company/jobs/templates/${templateId}/fields`);
-    },
-    [navigate]
-  );
-
-  // Memoize columns to ensure they update when templateFields changes
-  const tableColumns = useMemo(() => {
-    return generateTemplateColumns(handleTemplateNameClick);
-  }, [handleTemplateNameClick]);
+  const tableColumns = useMemo(() => generateTemplateColumns(), []);
 
   return (
     <PageWrapper
@@ -294,6 +291,7 @@ export const TemplatesList: React.FC = () => {
         selectable
         showActions
         actions={tableActions}
+        onRowClick={handleRowClick}
         loading={loading}
         emptyMessage="No templates found. Add your first template to get started."
         rowsPerPage={10}

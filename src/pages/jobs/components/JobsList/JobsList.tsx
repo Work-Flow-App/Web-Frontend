@@ -347,7 +347,7 @@ export const JobsList: React.FC = () => {
       description="Manage jobs, assign workers, and track progress."
       actions={[
         {
-          label: 'Add Job',
+          label: 'Create Job',
           onClick: handleAddJob,
           variant: 'contained',
           color: 'primary',

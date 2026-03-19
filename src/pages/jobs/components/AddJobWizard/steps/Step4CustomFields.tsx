@@ -7,7 +7,7 @@ import { Dropdown } from '../../../../../components/UI/Forms/Dropdown';
 import { Input } from '../../../../../components/UI/Forms/Input';
 import { RadioGroup } from '../../../../../components/UI/Forms/Radio';
 import { Loader } from '../../../../../components/UI';
-import { jobTemplateService, jobService, customerService } from '../../../../../services/api';
+import { jobTemplateService, jobService, customerService, companyClientService } from '../../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../../services/api';
 import { FieldType } from '../../../../../enums';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
@@ -179,6 +179,20 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
             return;
           }
 
+          // Resolve or create client
+          let clientId = wizardData.clientId;
+          if (!clientId && wizardData.newClientData) {
+            const { name, email, telephone, mobile, address } = wizardData.newClientData;
+            const clientResp = await companyClientService.createClient({
+              name,
+              ...(email && { email }),
+              ...(telephone && { telephone }),
+              ...(mobile && { mobile }),
+              ...(address && { address }),
+            });
+            clientId = clientResp.data.id;
+          }
+
           // Build create payload
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const createPayload: any = {
@@ -186,7 +200,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
             customerId,
             fieldValues,
           };
-          if (wizardData.clientId) createPayload.clientId = wizardData.clientId;
+          if (clientId) createPayload.clientId = clientId;
           if (wizardData.assignedWorkerId) createPayload.assignedWorkerId = wizardData.assignedWorkerId;
           if (wizardData.workflowId) createPayload.workflowId = wizardData.workflowId;
           if (wizardData.assetIds && wizardData.assetIds.length > 0) {
@@ -209,7 +223,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
 
   useEffect(() => {
     updateModalTitle('Custom Fields');
-    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Add Job' });
+    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Create Job' });
     setSkipResetModal?.(true);
     updateOnConfirm(() => onConfirmRef.current());
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,7 +238,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
         {templateFields.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
-            No custom fields defined for this template. Click &quot;Add Job&quot; to create the job.
+            No custom fields defined for this template. Click &quot;Create Job&quot; to create the job.
           </Typography>
         ) : (
           templateFields

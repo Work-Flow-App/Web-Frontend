@@ -38,10 +38,9 @@ export const StyledButton = styled(MuiButton, {
       }
     };
 
-    const getHoverColor = () => {
+    // Light background color for soft/tonal contained style on non-primary buttons
+    const getLightBgColor = () => {
       switch (buttonColor) {
-        case 'primary':
-          return palette.buttonColors.primaryHover;
         case 'secondary':
           return palette.secondary.light;
         case 'tertiary':
@@ -49,16 +48,37 @@ export const StyledButton = styled(MuiButton, {
         case 'success':
           return palette.success.light;
         case 'error':
-          return palette.error.light;
+          return palette.error.bgLight || palette.error.light;
         case 'warning':
           return palette.warning.light;
+        default:
+          return null;
+      }
+    };
+
+    const getHoverColor = () => {
+      switch (buttonColor) {
+        case 'primary':
+          return palette.buttonColors.primaryHover;
+        case 'secondary':
+          return palette.secondary.main;
+        case 'tertiary':
+          return palette.tertiary.main;
+        case 'success':
+          return palette.success.main;
+        case 'error':
+          return palette.error.main;
+        case 'warning':
+          return palette.warning.main;
         default:
           return palette.buttonColors.primaryHover;
       }
     };
 
     const color = getColor();
+    const lightBgColor = getLightBgColor();
     const hoverColor = getHoverColor();
+    const isNonPrimary = buttonColor !== 'primary' && lightBgColor !== null;
 
     // Size styles
     const getSizeStyles = () => {
@@ -169,13 +189,13 @@ export const StyledButton = styled(MuiButton, {
 
       // Contained variant
       ...(buttonVariant === 'contained' && {
-        backgroundColor: color,
-        // Always use white text — all palette button colors (primary, error, success…)
-        // are sufficiently saturated for white text, in both light and dark modes.
-        color: palette.buttonColors.primaryContrast,
+        // Non-primary colors use a soft/tonal style: light bg + colored text
+        // Primary keeps the solid saturated background with white text
+        backgroundColor: isNonPrimary ? lightBgColor! : color,
+        color: isNonPrimary ? color : palette.buttonColors.primaryContrast,
         '&:hover': {
-          backgroundColor: hoverColor,
-          color: palette.buttonColors.primaryContrast,
+          backgroundColor: isNonPrimary ? hoverColor : hoverColor,
+          color: isNonPrimary ? palette.buttonColors.primaryContrast : palette.buttonColors.primaryContrast,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {

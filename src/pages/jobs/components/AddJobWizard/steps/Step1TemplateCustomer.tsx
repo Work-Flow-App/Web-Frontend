@@ -127,7 +127,10 @@ export const Step1TemplateCustomer: React.FC<Step1Props> = ({ onStepComplete, in
   }, []);
 
   const templateOptions = useMemo(
-    () => templates.map((t) => ({ label: t.name || '', value: t.id?.toString() || '' })),
+    () => templates.map((t) => ({
+      label: t.default ? `${t.name || ''} (Default)` : (t.name || ''),
+      value: t.id?.toString() || '',
+    })),
     [templates]
   );
 
@@ -241,16 +244,22 @@ export const Step1TemplateCustomer: React.FC<Step1Props> = ({ onStepComplete, in
 
           {customerMode === 'select' && (
             <FormField label="Customer" required>
-              <Dropdown
-                name="customerId"
-                preFetchedOptions={customerOptions}
-                placeHolder="Select customer"
-                isPreFetchLoading={loadingCustomers}
-                disablePortal={true}
-                fullWidth={true}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                error={errors.customerId as any}
-              />
+              {!loadingCustomers && customerOptions.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                  No customers available. Switch to <strong>Create New</strong> to add one.
+                </Typography>
+              ) : (
+                <Dropdown
+                  name="customerId"
+                  preFetchedOptions={customerOptions}
+                  placeHolder="Select customer"
+                  isPreFetchLoading={loadingCustomers}
+                  disablePortal={true}
+                  fullWidth={true}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  error={errors.customerId as any}
+                />
+              )}
             </FormField>
           )}
 

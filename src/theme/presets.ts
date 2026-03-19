@@ -25,37 +25,37 @@ export const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'ocean-blue',
     name: 'Ocean Blue',
-    colors: { primary: '#0ea5e9', buttonPrimary: '#0284c7' },
+    colors: { primary: '#0ea5e9', buttonPrimary: '#38bdf8' },
   },
   {
     id: 'indigo',
     name: 'Indigo',
-    colors: { primary: '#4f46e5', buttonPrimary: '#4338ca' },
+    colors: { primary: '#4f46e5', buttonPrimary: '#6366f1' },
   },
   {
     id: 'violet',
     name: 'Violet',
-    colors: { primary: '#7c3aed', buttonPrimary: '#6d28d9' },
+    colors: { primary: '#7c3aed', buttonPrimary: '#8b5cf6' },
   },
   {
     id: 'purple',
     name: 'Purple',
-    colors: { primary: '#9c27b0', buttonPrimary: '#7b1fa2' },
+    colors: { primary: '#9c27b0', buttonPrimary: '#ba68c8' },
   },
   {
     id: 'emerald',
     name: 'Emerald',
-    colors: { primary: '#059669', buttonPrimary: '#047857' },
+    colors: { primary: '#059669', buttonPrimary: '#10b981' },
   },
   {
     id: 'teal',
     name: 'Teal',
-    colors: { primary: '#0d9488', buttonPrimary: '#0f766e' },
+    colors: { primary: '#0d9488', buttonPrimary: '#14b8a6' },
   },
   {
     id: 'sky',
     name: 'Sky',
-    colors: { primary: '#0284c7', buttonPrimary: '#0369a1' },
+    colors: { primary: '#0284c7', buttonPrimary: '#0ea5e9' },
   },
   {
     id: 'navy',
@@ -65,21 +65,21 @@ export const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'slate',
     name: 'Slate',
-    colors: { primary: '#475569', buttonPrimary: '#334155' },
+    colors: { primary: '#475569', buttonPrimary: '#64748b' },
   },
   {
     id: 'amber',
     name: 'Amber',
-    colors: { primary: '#d97706', buttonPrimary: '#b45309' },
+    colors: { primary: '#d97706', buttonPrimary: '#f59e0b' },
   },
   {
     id: 'rose',
     name: 'Rose',
-    colors: { primary: '#f43f5e', buttonPrimary: '#e11d48' },
+    colors: { primary: '#f43f5e', buttonPrimary: '#fb7185' },
   },
   {
     id: 'crimson',
     name: 'Crimson',
-    colors: { primary: '#dc2626', buttonPrimary: '#b91c1c' },
+    colors: { primary: '#dc2626', buttonPrimary: '#ef4444' },
   },
 ];

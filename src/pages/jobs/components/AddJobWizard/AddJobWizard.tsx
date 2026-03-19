@@ -20,6 +20,13 @@ export interface WizardData {
     country?: string;
   };
   clientId?: number;
+  newClientData?: {
+    name: string;
+    email?: string;
+    telephone?: string;
+    mobile?: string;
+    address?: string;
+  };
   assignedWorkerId?: number;
   workflowId?: number;
   assetIds?: number[];
