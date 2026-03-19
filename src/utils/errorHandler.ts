@@ -6,57 +6,63 @@ interface ApiErrorResponse {
   response?: {
     data?: {
       message?: string;
+      validationErrors?: Record<string, string> | string[];
     };
   };
   message?: string;
 }
 
 /**
- * Extracts a user-friendly error message from various error types
- * @param error - The error object (can be any type)
- * @param defaultMessage - Default message to return if no specific message is found
- * @returns A user-friendly error message string
+ * Extracts a user-friendly error message from various error types.
+ * Handles API message, validationErrors, and generic Error instances.
  */
 export const extractErrorMessage = (
   error: unknown,
   defaultMessage: string = 'An unexpected error occurred. Please try again.'
 ): string => {
-  // Handle null or undefined
-  if (!error) {
-    return defaultMessage;
-  }
+  if (!error) return defaultMessage;
 
-  // Type guard for object type
   if (typeof error === 'object') {
     const apiError = error as ApiErrorResponse;
 
-    // Check for API error response structure (axios-style)
     if (
       apiError.response &&
       typeof apiError.response === 'object' &&
       apiError.response.data &&
-      typeof apiError.response.data === 'object' &&
-      typeof apiError.response.data.message === 'string'
+      typeof apiError.response.data === 'object'
     ) {
-      return apiError.response.data.message;
+      const { message, validationErrors } = apiError.response.data;
+      const baseMessage = message || defaultMessage;
+
+      if (validationErrors) {
+        let errors: string[] = [];
+
+        if (Array.isArray(validationErrors)) {
+          errors = validationErrors.filter(Boolean);
+        } else if (typeof validationErrors === 'object') {
+          errors = Object.values(validationErrors).filter(Boolean) as string[];
+        }
+
+        if (errors.length > 0) {
+          // Deduplicate errors that are the same as the base message
+          const unique = errors.filter((e) => e !== baseMessage);
+          return unique.length > 0 ? `${baseMessage}\n${unique.join('\n')}` : baseMessage;
+        }
+      }
+
+      if (typeof message === 'string') return message;
     }
 
-    // Check for direct message property
     if ('message' in apiError && typeof apiError.message === 'string') {
       return apiError.message;
     }
 
-    // Check for Error instance
     if (error instanceof Error) {
       return error.message;
     }
   }
 
-  // Handle string errors
-  if (typeof error === 'string') {
-    return error;
-  }
+  if (typeof error === 'string') return error;
 
-  // Return default message if no specific message found
   return defaultMessage;
 };

@@ -7,6 +7,7 @@ import { SetupForm } from '../SetupForm';
 import { InviteWorkerForm } from '../InviteWorkerForm';
 import { workerService, type Worker } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { columns, type WorkerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
@@ -42,8 +43,7 @@ export const PageList: React.FC = () => {
     } catch (error) {
       console.error('Error fetching workers:', error);
 
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load workers';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load workers'));
     } finally {
       setLoading(false);
     }
@@ -136,8 +136,7 @@ export const PageList: React.FC = () => {
                 fetchWorkers();
               } catch (error) {
                 console.error('Error deleting worker:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete worker';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete worker'));
                 resetGlobalModalOuterProps();
               }
             }}

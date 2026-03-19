@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Switch, 
-  FormControlLabel, 
-  Divider, 
-  TextField,
-  Paper,
-  Grid
-} from '@mui/material';
+import { Box, Typography, Button, Switch, FormControlLabel, TextField, Paper, Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useThemeContext } from '../../contexts/ThemeContext';
-import { floowColors } from '../../theme/colors';
+import { THEME_PRESETS } from '../../theme/presets';
 
 const Container = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -43,38 +33,36 @@ const ColorCircle = styled(Box)<{ color: string; selected?: boolean }>(({ theme,
 }));
 
 const PREDEFINED_COLORS = [
-  { name: 'Default', color: floowColors.navy },
-  { name: 'Ocean Blue', color: '#0ea5e9' },
-  { name: 'Indigo', color: '#4f46e5' },
-  { name: 'Violet', color: '#7c3aed' },
+  { name: 'Default Black', color: floowColors.black },
+  { name: 'Blue', color: floowColors.blue.main },
+  { name: 'Indigo', color: floowColors.indigo.main },
+  { name: 'Green', color: floowColors.success.main },
+  { name: 'Red', color: floowColors.error.main },
+  { name: 'Orange', color: floowColors.warning.main },
   { name: 'Purple', color: '#9c27b0' },
-  { name: 'Emerald', color: '#059669' },
-  { name: 'Teal', color: '#0d9488' },
-  { name: 'Sky', color: '#0284c7' },
-  { name: 'Navy', color: '#1e3a5f' },
-  { name: 'Slate', color: '#475569' },
-  { name: 'Amber', color: '#d97706' },
-  { name: 'Rose', color: '#f43f5e' },
-  { name: 'Crimson', color: '#dc2626' },
+  { name: 'Teal', color: '#009688' },
 ];
 
 export const ThemeSettings: React.FC = () => {
   const { mode, toggleColorMode, addTheme, activeThemeId, customThemes, switchTheme } = useThemeContext();
-  const [customColor, setCustomColor] = useState('#000000');
+  const defaultPreset = THEME_PRESETS[0];
+  const [customColor, setCustomColor] = useState(defaultPreset.colors.primary);
+  const [customButtonColor, setCustomButtonColor] = useState(
+    defaultPreset.colors.buttonPrimary ?? defaultPreset.colors.primary
+  );
   const [themeName, setThemeName] = useState('');
 
-  const handleColorSelect = (color: string) => {
-    // If it's one of the predefined, we can treat it as a new theme or just switch if we had IDs for them.
-    // For simplicity, let's just create a new theme for any selection for now, or check if one exists.
-    // Actually, to keep it simple and powerful:
-    // 1. Show existing custom themes.
-    // 2. Allow creating a new one from these presets or custom hex.
-    setCustomColor(color);
+  const handlePresetSelect = (preset: (typeof THEME_PRESETS)[number]) => {
+    setCustomColor(preset.colors.primary);
+    setCustomButtonColor(preset.colors.buttonPrimary ?? preset.colors.primary);
   };
 
   const handleCreateTheme = () => {
     if (themeName && customColor) {
-      addTheme(themeName, { primary: customColor });
+      addTheme(themeName, {
+        primary: customColor,
+        buttonPrimary: customButtonColor || undefined,
+      });
       setThemeName('');
     }
   };
@@ -102,85 +90,88 @@ export const ThemeSettings: React.FC = () => {
         <Typography variant="body2" color="textSecondary" paragraph>
           Select a predefined color or enter a custom hex code.
         </Typography>
-        
+
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          {PREDEFINED_COLORS.map((item) => (
-            <Grid item key={item.name}>
-                <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
-                  <ColorCircle 
-                    color={item.color} 
-                    onClick={() => handleColorSelect(item.color)}
-                    selected={customColor === item.color}
-                  />
-                  <Typography variant="caption">{item.name}</Typography>
-                </Box>
+          {THEME_PRESETS.map((preset) => (
+            <Grid item key={preset.id}>
+              <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+                <ColorCircle
+                  color={preset.colors.primary}
+                  onClick={() => handlePresetSelect(preset)}
+                  selected={customColor === preset.colors.primary}
+                />
+                <Typography variant="caption">{preset.name}</Typography>
+              </Box>
             </Grid>
           ))}
         </Grid>
 
         <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
-            <TextField
-                label="Custom Hex Color"
-                value={customColor}
-                onChange={(e) => setCustomColor(e.target.value)}
-                size="small"
-                sx={{ width: 150 }}
-            />
-            <Box 
-                sx={{ 
-                    width: 40, 
-                    height: 40, 
-                    borderRadius: 1, 
-                    bgcolor: customColor,
-                    border: (theme) => `1px solid ${theme.palette.divider}`
-                }} 
-            />
+          <TextField
+            label="Custom Hex Color"
+            value={customColor}
+            onChange={(e) => {
+              setCustomColor(e.target.value);
+              setCustomButtonColor(e.target.value);
+            }}
+            size="small"
+            sx={{ width: 150 }}
+          />
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 1,
+              bgcolor: customColor,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+            }}
+          />
         </Box>
 
         <Box display="flex" gap={2} alignItems="flex-end">
-             <TextField
-                label="Theme Name"
-                value={themeName}
-                onChange={(e) => setThemeName(e.target.value)}
-                size="small"
-                placeholder="e.g. My Purple Theme"
-            />
-            <Button variant="contained" onClick={handleCreateTheme} disabled={!themeName || !customColor}>
-                Save & Apply Theme
-            </Button>
+          <TextField
+            label="Theme Name"
+            value={themeName}
+            onChange={(e) => setThemeName(e.target.value)}
+            size="small"
+            placeholder="e.g. My Purple Theme"
+          />
+          <Button variant="contained" onClick={handleCreateTheme} disabled={!themeName || !customColor}>
+            Save & Apply Theme
+          </Button>
         </Box>
       </Section>
 
       {customThemes.length > 0 && (
         <Section elevation={0}>
-            <Typography variant="h6" gutterBottom>
-                Saved Themes
-            </Typography>
-            <Grid container spacing={2}>
-                <Grid item>
-                     <Button 
-                        variant={activeThemeId === 'default' ? "contained" : "outlined"} 
-                        onClick={() => switchTheme('default')}
-                    >
-                        Default Theme
-                    </Button>
-                </Grid>
-                {customThemes.map(theme => (
-                    <Grid item key={theme.id}>
-                        <Button 
-                            variant={activeThemeId === theme.id ? "contained" : "outlined"} 
-                            onClick={() => switchTheme(theme.id)}
-                            sx={{ 
-                                borderColor: activeThemeId === theme.id ? 'primary.main' : undefined,
-                                // Dynamically color the button border/text if not active to show hint? 
-                                // Or just let the text be the name.
-                            }}
-                        >
-                            {theme.name}
-                        </Button>
-                    </Grid>
-                ))}
+          <Typography variant="h6" gutterBottom>
+            Saved Themes
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item>
+              <Button
+                variant={activeThemeId === 'default' ? 'contained' : 'outlined'}
+                onClick={() => switchTheme('default')}
+              >
+                Default Theme
+              </Button>
             </Grid>
+            {customThemes.map((theme) => (
+              <Grid item key={theme.id}>
+                <Button
+                  variant={activeThemeId === theme.id ? 'contained' : 'outlined'}
+                  onClick={() => switchTheme(theme.id)}
+                  sx={{
+                    borderColor: activeThemeId === theme.id ? 'primary.main' : undefined,
+                    // Dynamically color the button border/text if not active to show hint?
+                    // Or just let the text be the name.
+                  }}
+                >
+                  {theme.name}
+                </Button>
+              </Grid>
+            ))}
+          </Grid>
         </Section>
       )}
     </Container>
