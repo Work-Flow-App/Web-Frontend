@@ -194,8 +194,8 @@ export const StyledButton = styled(MuiButton, {
         backgroundColor: isNonPrimary ? lightBgColor! : color,
         color: isNonPrimary ? color : palette.buttonColors.primaryContrast,
         '&:hover': {
-          backgroundColor: isNonPrimary ? hoverColor : hoverColor,
-          color: isNonPrimary ? palette.buttonColors.primaryContrast : palette.buttonColors.primaryContrast,
+          backgroundColor: hoverColor,
+          color: palette.buttonColors.primaryContrast,
           boxShadow: palette.boxShadow.buttonShadow,
         },
         '&.Mui-disabled': {
