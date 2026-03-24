@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 import { assetService, workerService } from '../../../../services/api';
 import type { AssetResponse, WorkerResponse } from '../../../../services/api';
@@ -87,8 +88,7 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
         }
       } catch (error) {
         console.error('Error assigning asset:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to assign asset';
-        showError(errorMessage);
+        showError(extractErrorMessage(error, 'Failed to assign asset'));
       } finally {
         setSubmitting(false);
       }

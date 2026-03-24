@@ -4,6 +4,7 @@ import Table from '../../../../components/UI/Table/Table';
 import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { assetArchiveColumns, type AssetArchiveRow } from './AssetArchiveDataColumn';
 import * as S from './AssetHistory.styles';
 
@@ -38,8 +39,7 @@ export const AssetArchiveTab: React.FC = () => {
       setArchivedAssets(transformedData);
     } catch (error) {
       console.error('Error fetching archived assets:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load archived assets';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load archived assets'));
     } finally {
       setLoading(false);
     }

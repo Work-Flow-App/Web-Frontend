@@ -31,35 +31,35 @@ export const companyClientService = {
    * Get all clients
    */
   async getAllClients() {
-    return await getClientApi().getAllClients();
+    return await getClientApi().clientGetAllClients();
   },
 
   /**
    * Get client by ID
    */
   async getClientById(id: number) {
-    return await getClientApi().getClientById(id);
+    return await getClientApi().clientGetClientById(id);
   },
 
   /**
    * Create a new client
    */
   async createClient(data: ClientCreateRequest) {
-    return await getClientApi().createClient(data);
+    return await getClientApi().clientCreateClient(data);
   },
 
   /**
    * Update an existing client
    */
   async updateClient(id: number, data: ClientUpdateRequest) {
-    return await getClientApi().updateClient(id, data);
+    return await getClientApi().clientUpdateClient(id, data);
   },
 
   /**
    * Delete a client
    */
   async deleteClient(id: number) {
-    return await getClientApi().deleteClient(id);
+    return await getClientApi().clientDeleteClient(id);
   },
 };
 

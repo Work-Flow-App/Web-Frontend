@@ -6,6 +6,7 @@ import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { workflowService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { workflowColumns } from './DataColumn';
 import type { WorkflowTableRow } from '../../../../types/workflow';
 import { WorkflowForm } from '../WorkflowForm/WorkflowForm';
@@ -47,8 +48,7 @@ export const WorkflowsList: React.FC = () => {
       setWorkflows(transformedData);
     } catch (error) {
       console.error('Error fetching workflows:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load workflows';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load workflows'));
     } finally {
       setLoading(false);
     }
@@ -130,8 +130,7 @@ export const WorkflowsList: React.FC = () => {
                 fetchWorkflows();
               } catch (error) {
                 console.error('Error deleting workflow:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete workflow';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete workflow'));
                 resetGlobalModalOuterProps();
               }
             }}

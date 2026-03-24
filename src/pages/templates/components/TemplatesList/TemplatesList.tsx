@@ -7,6 +7,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { jobTemplateService, jobService } from '../../../../services/api';
 import type { JobTemplateResponse, JobResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateTemplateColumns, type TemplateTableRow } from './DataColumn';
 import { TemplateForm } from '../TemplateForm/TemplateForm';
 
@@ -66,8 +67,7 @@ export const TemplatesList: React.FC = () => {
       setTemplates(transformedData);
     } catch (error) {
       console.error('Error fetching templates:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load templates';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load templates'));
     } finally {
       setLoading(false);
     }
@@ -165,8 +165,7 @@ export const TemplatesList: React.FC = () => {
                 fetchTemplates();
               } catch (error) {
                 console.error('Error deleting template:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete template';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete template'));
                 resetGlobalModalOuterProps();
               }
             }}
@@ -178,6 +177,14 @@ export const TemplatesList: React.FC = () => {
       });
     },
     [showSuccess, showError, fetchTemplates, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
+  // Handle row click - navigate to template fields
+  const handleRowClick = useCallback(
+    (template: TemplateTableRow) => {
+      navigate(`/company/jobs/templates/${template.id}/fields`);
+    },
+    [navigate]
   );
 
   // Handle manage fields
@@ -215,8 +222,7 @@ export const TemplatesList: React.FC = () => {
                 fetchTemplates();
               } catch (error) {
                 console.error('Error setting default template:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to set default template';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to set default template'));
                 resetGlobalModalOuterProps();
               }
             }}
@@ -262,18 +268,7 @@ export const TemplatesList: React.FC = () => {
     [handleManageFields, handleEditTemplate, handleDeleteTemplate, handleSetAsDefault]
   );
 
-  // Handle template name click
-  const handleTemplateNameClick = useCallback(
-    (templateId: number) => {
-      navigate(`/company/jobs/templates/${templateId}/fields`);
-    },
-    [navigate]
-  );
-
-  // Memoize columns to ensure they update when templateFields changes
-  const tableColumns = useMemo(() => {
-    return generateTemplateColumns(handleTemplateNameClick);
-  }, [handleTemplateNameClick]);
+  const tableColumns = useMemo(() => generateTemplateColumns(), []);
 
   return (
     <PageWrapper
@@ -296,6 +291,7 @@ export const TemplatesList: React.FC = () => {
         selectable
         showActions
         actions={tableActions}
+        onRowClick={handleRowClick}
         loading={loading}
         emptyMessage="No templates found. Add your first template to get started."
         rowsPerPage={10}

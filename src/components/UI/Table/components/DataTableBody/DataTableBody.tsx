@@ -136,10 +136,12 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               {/* Sticky Left Section: Checkbox */}
               {selectable && (
                 <CheckboxCell
+                  onClick={(e) => { e.stopPropagation(); toggleRowSelection(row.id); }}
                   sx={{
                     position: 'sticky',
                     left: 0,
                     zIndex: 10,
+                    cursor: 'pointer',
                     backgroundColor: bodyBg,
                     transition: 'background-color 0.2s ease',
                     'tr:hover &': {
@@ -149,7 +151,6 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                 >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
-                    onClick={() => toggleRowSelection(row.id)}
                   />
                 </CheckboxCell>
               )}
@@ -226,7 +227,9 @@ const DataTableBody: React.FC<IDataTableBody> = ({
             <>
               {selectable && (
                 <CheckboxCell
+                  onClick={(e) => { e.stopPropagation(); toggleRowSelection(row.id); }}
                   sx={{
+                    cursor: 'pointer',
                     backgroundColor: bodyBg,
                     'tr:hover &': {
                       backgroundColor: bodyHoverBg,
@@ -235,7 +238,6 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                 >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
-                    onClick={() => toggleRowSelection(row.id)}
                   />
                 </CheckboxCell>
               )}

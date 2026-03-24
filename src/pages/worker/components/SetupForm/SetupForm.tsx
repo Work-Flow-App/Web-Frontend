@@ -5,6 +5,7 @@ import { WorkerFormFields } from '../WorkerFormFields';
 import { Loader } from '../../../../components/UI';
 import { workerService, type WorkerCreateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -52,8 +53,7 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
           });
         } catch (error) {
           console.error('Error fetching worker:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load worker data';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load worker data'));
         } finally {
           setIsLoading(false);
         }
@@ -101,8 +101,7 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
         }
       } catch (error) {
         console.error('Error saving worker:', error);
-        const errorMessage = error instanceof Error ? error.message : `Failed to ${workerId ? 'update' : 'add'} worker`;
-        showError(errorMessage);
+        showError(extractErrorMessage(error, `Failed to ${workerId ? 'update' : 'add'} worker`));
         throw error;
       }
       return { success: true };

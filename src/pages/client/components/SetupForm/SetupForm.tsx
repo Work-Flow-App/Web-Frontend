@@ -5,6 +5,7 @@ import { ClientFormFields } from '../ClientFormFields';
 import { Loader } from '../../../../components/UI';
 import { companyClientService, type ClientCreateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -50,8 +51,7 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, clientId,
           });
         } catch (error) {
           console.error('Error fetching client:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load client data';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load client data'));
         } finally {
           setIsLoading(false);
         }
@@ -97,8 +97,7 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, clientId,
         }
       } catch (error) {
         console.error('Error saving client:', error);
-        const errorMessage = error instanceof Error ? error.message : `Failed to ${clientId ? 'update' : 'add'} client`;
-        showError(errorMessage);
+        showError(extractErrorMessage(error, `Failed to ${clientId ? 'update' : 'add'} client`));
         throw error;
       }
       return { success: true };

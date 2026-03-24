@@ -47,6 +47,12 @@ export interface IGlobalModalInnerContextConfigProps {
    * Whether the confirm button should be disabled
    */
   isConfirmDisabled?: boolean;
+
+  /**
+   * The color of the confirm button
+   * @default 'primary'
+   */
+  confirmButtonColor?: 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error';
 }
 
 export interface IGlobalModalInnerContentState {

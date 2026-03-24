@@ -7,6 +7,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
 
@@ -69,8 +70,7 @@ export const AssetsList: React.FC = () => {
       setAssets(transformedData);
     } catch (error) {
       console.error('Error fetching assets:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load assets';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load assets'));
     } finally {
       setLoading(false);
     }
@@ -150,8 +150,7 @@ export const AssetsList: React.FC = () => {
                 fetchAssets();
               } catch (error) {
                 console.error('Error archiving asset:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to archive asset';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to archive asset'));
                 resetGlobalModalOuterProps();
               }
             }}

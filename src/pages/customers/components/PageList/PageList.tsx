@@ -6,6 +6,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { SetupForm } from '../SetupForm';
 import { customerService, type CustomerResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { columns, type CustomerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
@@ -37,8 +38,7 @@ export const PageList: React.FC = () => {
       setCustomers(transformedData);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load customers';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load customers'));
     } finally {
       setLoading(false);
     }
@@ -108,8 +108,7 @@ export const PageList: React.FC = () => {
                 fetchCustomers();
               } catch (error) {
                 console.error('Error deleting customer:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to delete customer';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to delete customer'));
                 resetGlobalModalOuterProps();
               }
             }}

@@ -542,8 +542,8 @@ export interface PageAssetResponse {
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'pageable'?: PageableObject;
     'numberOfElements'?: number;
+    'pageable'?: PageableObject;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -551,8 +551,9 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'pageNumber'?: number;
+    'unpaged'?: boolean;
     'paged'?: boolean;
+    'pageNumber'?: number;
     'pageSize'?: number;
     'unpaged'?: boolean;
 }
@@ -871,9 +872,9 @@ export const AssetAssignmentsApiAxiosParamCreator = function (configuration?: Co
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assign: async (assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetAssignmentAssign: async (assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetAssignmentCreateRequest' is not null or undefined
-            assertParamExists('assign', 'assetAssignmentCreateRequest', assetAssignmentCreateRequest)
+            assertParamExists('assetAssignmentAssign', 'assetAssignmentCreateRequest', assetAssignmentCreateRequest)
             const localVarPath = `/api/v1/asset-assignments/assign`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -910,9 +911,9 @@ export const AssetAssignmentsApiAxiosParamCreator = function (configuration?: Co
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        history: async (assetId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetAssignmentHistory: async (assetId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetId' is not null or undefined
-            assertParamExists('history', 'assetId', assetId)
+            assertParamExists('assetAssignmentHistory', 'assetId', assetId)
             const localVarPath = `/api/v1/asset-assignments/asset/{assetId}/history`
                 .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -948,9 +949,9 @@ export const AssetAssignmentsApiAxiosParamCreator = function (configuration?: Co
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        jobAssignments: async (jobId: number, onlyActive?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetAssignmentJobAssignments: async (jobId: number, onlyActive?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('jobAssignments', 'jobId', jobId)
+            assertParamExists('assetAssignmentJobAssignments', 'jobId', jobId)
             const localVarPath = `/api/v1/asset-assignments/job/{jobId}`
                 .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -989,9 +990,9 @@ export const AssetAssignmentsApiAxiosParamCreator = function (configuration?: Co
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        returnAsset: async (assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetAssignmentReturnAsset: async (assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetAssignmentReturnRequest' is not null or undefined
-            assertParamExists('returnAsset', 'assetAssignmentReturnRequest', assetAssignmentReturnRequest)
+            assertParamExists('assetAssignmentReturnAsset', 'assetAssignmentReturnRequest', assetAssignmentReturnRequest)
             const localVarPath = `/api/v1/asset-assignments/return`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1037,10 +1038,10 @@ export const AssetAssignmentsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assign(assetAssignmentCreateRequest, options);
+        async assetAssignmentAssign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAssignmentAssign(assetAssignmentCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assign']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentAssign']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1049,10 +1050,10 @@ export const AssetAssignmentsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async history(assetId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.history(assetId, options);
+        async assetAssignmentHistory(assetId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAssignmentHistory(assetId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.history']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentHistory']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1062,10 +1063,10 @@ export const AssetAssignmentsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.jobAssignments(jobId, onlyActive, options);
+        async assetAssignmentJobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAssignmentJobAssignments(jobId, onlyActive, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.jobAssignments']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentJobAssignments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1074,10 +1075,10 @@ export const AssetAssignmentsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.returnAsset(assetAssignmentReturnRequest, options);
+        async assetAssignmentReturnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAssignmentReturnAsset(assetAssignmentReturnRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.returnAsset']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentReturnAsset']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1095,8 +1096,8 @@ export const AssetAssignmentsApiFactory = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
-            return localVarFp.assign(assetAssignmentCreateRequest, options).then((request) => request(axios, basePath));
+        assetAssignmentAssign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.assetAssignmentAssign(assetAssignmentCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1104,8 +1105,8 @@ export const AssetAssignmentsApiFactory = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        history(assetId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
-            return localVarFp.history(assetId, options).then((request) => request(axios, basePath));
+        assetAssignmentHistory(assetId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
+            return localVarFp.assetAssignmentHistory(assetId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1114,8 +1115,8 @@ export const AssetAssignmentsApiFactory = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
-            return localVarFp.jobAssignments(jobId, onlyActive, options).then((request) => request(axios, basePath));
+        assetAssignmentJobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
+            return localVarFp.assetAssignmentJobAssignments(jobId, onlyActive, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1123,8 +1124,8 @@ export const AssetAssignmentsApiFactory = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
-            return localVarFp.returnAsset(assetAssignmentReturnRequest, options).then((request) => request(axios, basePath));
+        assetAssignmentReturnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.assetAssignmentReturnAsset(assetAssignmentReturnRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1139,8 +1140,8 @@ export class AssetAssignmentsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public assign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig) {
-        return AssetAssignmentsApiFp(this.configuration).assign(assetAssignmentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public assetAssignmentAssign(assetAssignmentCreateRequest: AssetAssignmentCreateRequest, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentsApiFp(this.configuration).assetAssignmentAssign(assetAssignmentCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1149,8 +1150,8 @@ export class AssetAssignmentsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public history(assetId: number, options?: RawAxiosRequestConfig) {
-        return AssetAssignmentsApiFp(this.configuration).history(assetId, options).then((request) => request(this.axios, this.basePath));
+    public assetAssignmentHistory(assetId: number, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentsApiFp(this.configuration).assetAssignmentHistory(assetId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1160,8 +1161,8 @@ export class AssetAssignmentsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public jobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig) {
-        return AssetAssignmentsApiFp(this.configuration).jobAssignments(jobId, onlyActive, options).then((request) => request(this.axios, this.basePath));
+    public assetAssignmentJobAssignments(jobId: number, onlyActive?: boolean, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentsApiFp(this.configuration).assetAssignmentJobAssignments(jobId, onlyActive, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1170,8 +1171,8 @@ export class AssetAssignmentsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public returnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig) {
-        return AssetAssignmentsApiFp(this.configuration).returnAsset(assetAssignmentReturnRequest, options).then((request) => request(this.axios, this.basePath));
+    public assetAssignmentReturnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentsApiFp(this.configuration).assetAssignmentReturnAsset(assetAssignmentReturnRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1188,9 +1189,9 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        archive: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetArchive: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('archive', 'id', id)
+            assertParamExists('assetArchive', 'id', id)
             const localVarPath = `/api/v1/assets/{id}/archive`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1225,9 +1226,9 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create3: async (assetCreateRequest: AssetCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetCreate: async (assetCreateRequest: AssetCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'assetCreateRequest' is not null or undefined
-            assertParamExists('create3', 'assetCreateRequest', assetCreateRequest)
+            assertParamExists('assetCreate', 'assetCreateRequest', assetCreateRequest)
             const localVarPath = `/api/v1/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1264,9 +1265,9 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get3: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('get3', 'id', id)
+            assertParamExists('assetGet', 'id', id)
             const localVarPath = `/api/v1/assets/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1306,7 +1307,7 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list: async (page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetList: async (page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1363,7 +1364,7 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        stats: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetStats: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/assets/statistics`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1398,11 +1399,11 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update4: async (id: number, assetUpdateRequest: AssetUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetUpdate: async (id: number, assetUpdateRequest: AssetUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update4', 'id', id)
+            assertParamExists('assetUpdate', 'id', id)
             // verify required parameter 'assetUpdateRequest' is not null or undefined
-            assertParamExists('update4', 'assetUpdateRequest', assetUpdateRequest)
+            assertParamExists('assetUpdate', 'assetUpdateRequest', assetUpdateRequest)
             const localVarPath = `/api/v1/assets/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1441,9 +1442,9 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        value: async (id: number, asOf?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetValue: async (id: number, asOf?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('value', 'id', id)
+            assertParamExists('assetValue', 'id', id)
             const localVarPath = `/api/v1/assets/{id}/value`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1491,10 +1492,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async archive(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.archive(id, options);
+        async assetArchive(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetArchive(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.archive']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetArchive']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1503,10 +1504,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create3(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.create3(assetCreateRequest, options);
+        async assetCreate(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetCreate(assetCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.create3']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetCreate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1515,10 +1516,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async get3(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.get3(id, options);
+        async assetGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.get3']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1532,10 +1533,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageAssetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list(page, size, archived, available, sort, dir, options);
+        async assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageAssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetList(page, size, archived, available, sort, dir, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.list']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetList']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1543,10 +1544,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async stats(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.stats(options);
+        async assetStats(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetStats(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.stats']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetStats']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1556,10 +1557,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update4(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update4(id, assetUpdateRequest, options);
+        async assetUpdate(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetUpdate(id, assetUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.update4']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1569,10 +1570,10 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async value(id: number, asOf?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetValueResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.value(id, asOf, options);
+        async assetValue(id: number, asOf?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetValueResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetValue(id, asOf, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetsApi.value']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetValue']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1590,8 +1591,8 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        archive(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.archive(id, options).then((request) => request(axios, basePath));
+        assetArchive(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.assetArchive(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1599,8 +1600,8 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create3(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
-            return localVarFp.create3(assetCreateRequest, options).then((request) => request(axios, basePath));
+        assetCreate(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.assetCreate(assetCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1608,8 +1609,8 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get3(id: number, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
-            return localVarFp.get3(id, options).then((request) => request(axios, basePath));
+        assetGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.assetGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1622,16 +1623,16 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageAssetResponse> {
-            return localVarFp.list(page, size, archived, available, sort, dir, options).then((request) => request(axios, basePath));
+        assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageAssetResponse> {
+            return localVarFp.assetList(page, size, archived, available, sort, dir, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        stats(options?: RawAxiosRequestConfig): AxiosPromise<object> {
-            return localVarFp.stats(options).then((request) => request(axios, basePath));
+        assetStats(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.assetStats(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1640,8 +1641,8 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update4(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
-            return localVarFp.update4(id, assetUpdateRequest, options).then((request) => request(axios, basePath));
+        assetUpdate(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.assetUpdate(id, assetUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1650,8 +1651,8 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        value(id: number, asOf?: string, options?: RawAxiosRequestConfig): AxiosPromise<AssetValueResponse> {
-            return localVarFp.value(id, asOf, options).then((request) => request(axios, basePath));
+        assetValue(id: number, asOf?: string, options?: RawAxiosRequestConfig): AxiosPromise<AssetValueResponse> {
+            return localVarFp.assetValue(id, asOf, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1666,8 +1667,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public archive(id: number, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).archive(id, options).then((request) => request(this.axios, this.basePath));
+    public assetArchive(id: number, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetArchive(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1676,8 +1677,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public create3(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).create3(assetCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public assetCreate(assetCreateRequest: AssetCreateRequest, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetCreate(assetCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1686,8 +1687,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public get3(id: number, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).get3(id, options).then((request) => request(this.axios, this.basePath));
+    public assetGet(id: number, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1701,8 +1702,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public list(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).list(page, size, archived, available, sort, dir, options).then((request) => request(this.axios, this.basePath));
+    public assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetList(page, size, archived, available, sort, dir, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1710,8 +1711,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public stats(options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).stats(options).then((request) => request(this.axios, this.basePath));
+    public assetStats(options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetStats(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1721,8 +1722,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public update4(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).update4(id, assetUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public assetUpdate(id: number, assetUpdateRequest: AssetUpdateRequest, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetUpdate(id, assetUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1732,8 +1733,8 @@ export class AssetsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public value(id: number, asOf?: string, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).value(id, asOf, options).then((request) => request(this.axios, this.basePath));
+    public assetValue(id: number, asOf?: string, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetValue(id, asOf, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1750,9 +1751,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        forgotPassword: async (forgotPasswordRequest: ForgotPasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authForgotPassword: async (forgotPasswordRequest: ForgotPasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'forgotPasswordRequest' is not null or undefined
-            assertParamExists('forgotPassword', 'forgotPasswordRequest', forgotPasswordRequest)
+            assertParamExists('authForgotPassword', 'forgotPasswordRequest', forgotPasswordRequest)
             const localVarPath = `/api/v1/auth/forgot-password`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1789,9 +1790,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        googleLogin: async (googleAuthRequest: GoogleAuthRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authGoogleLogin: async (googleAuthRequest: GoogleAuthRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'googleAuthRequest' is not null or undefined
-            assertParamExists('googleLogin', 'googleAuthRequest', googleAuthRequest)
+            assertParamExists('authGoogleLogin', 'googleAuthRequest', googleAuthRequest)
             const localVarPath = `/api/v1/auth/google`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1828,9 +1829,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        login: async (loginRequest: LoginRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authLogin: async (loginRequest: LoginRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'loginRequest' is not null or undefined
-            assertParamExists('login', 'loginRequest', loginRequest)
+            assertParamExists('authLogin', 'loginRequest', loginRequest)
             const localVarPath = `/api/v1/auth/login`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1867,9 +1868,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        logout: async (logoutRequest: LogoutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authLogout: async (logoutRequest: LogoutRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'logoutRequest' is not null or undefined
-            assertParamExists('logout', 'logoutRequest', logoutRequest)
+            assertParamExists('authLogout', 'logoutRequest', logoutRequest)
             const localVarPath = `/api/v1/auth/logout`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1905,7 +1906,7 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        logoutFromAllDevices: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authLogoutFromAllDevices: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/auth/logout-all`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1939,9 +1940,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken: async (refreshTokenRequest: RefreshTokenRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authRefreshToken: async (refreshTokenRequest: RefreshTokenRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'refreshTokenRequest' is not null or undefined
-            assertParamExists('refreshToken', 'refreshTokenRequest', refreshTokenRequest)
+            assertParamExists('authRefreshToken', 'refreshTokenRequest', refreshTokenRequest)
             const localVarPath = `/api/v1/auth/refresh`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1978,9 +1979,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resendVerification: async (resendVerificationRequest: ResendVerificationRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authResendVerification: async (resendVerificationRequest: ResendVerificationRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'resendVerificationRequest' is not null or undefined
-            assertParamExists('resendVerification', 'resendVerificationRequest', resendVerificationRequest)
+            assertParamExists('authResendVerification', 'resendVerificationRequest', resendVerificationRequest)
             const localVarPath = `/api/v1/auth/resend-verification`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2017,9 +2018,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resetPassword: async (resetPasswordRequest: ResetPasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authResetPassword: async (resetPasswordRequest: ResetPasswordRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'resetPasswordRequest' is not null or undefined
-            assertParamExists('resetPassword', 'resetPasswordRequest', resetPasswordRequest)
+            assertParamExists('authResetPassword', 'resetPasswordRequest', resetPasswordRequest)
             const localVarPath = `/api/v1/auth/reset-password`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2056,9 +2057,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signup: async (signupRequest: SignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authSignup: async (signupRequest: SignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'signupRequest' is not null or undefined
-            assertParamExists('signup', 'signupRequest', signupRequest)
+            assertParamExists('authSignup', 'signupRequest', signupRequest)
             const localVarPath = `/api/v1/auth/signup`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2095,9 +2096,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signupWorker: async (workerSignupRequest: WorkerSignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authSignupWorker: async (workerSignupRequest: WorkerSignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workerSignupRequest' is not null or undefined
-            assertParamExists('signupWorker', 'workerSignupRequest', workerSignupRequest)
+            assertParamExists('authSignupWorker', 'workerSignupRequest', workerSignupRequest)
             const localVarPath = `/api/v1/auth/signup/worker`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2134,9 +2135,9 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        verifyEmail: async (verifyEmailRequest: VerifyEmailRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authVerifyEmail: async (verifyEmailRequest: VerifyEmailRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'verifyEmailRequest' is not null or undefined
-            assertParamExists('verifyEmail', 'verifyEmailRequest', verifyEmailRequest)
+            assertParamExists('authVerifyEmail', 'verifyEmailRequest', verifyEmailRequest)
             const localVarPath = `/api/v1/auth/verify-email`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2182,10 +2183,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async forgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PasswordResetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.forgotPassword(forgotPasswordRequest, options);
+        async authForgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PasswordResetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authForgotPassword(forgotPasswordRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.forgotPassword']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authForgotPassword']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2194,10 +2195,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async googleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.googleLogin(googleAuthRequest, options);
+        async authGoogleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authGoogleLogin(googleAuthRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.googleLogin']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authGoogleLogin']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2206,10 +2207,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async login(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.login(loginRequest, options);
+        async authLogin(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authLogin(loginRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.login']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authLogin']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2218,10 +2219,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async logout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.logout(logoutRequest, options);
+        async authLogout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authLogout(logoutRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.logout']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authLogout']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2229,10 +2230,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async logoutFromAllDevices(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.logoutFromAllDevices(options);
+        async authLogoutFromAllDevices(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authLogoutFromAllDevices(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.logoutFromAllDevices']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authLogoutFromAllDevices']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2241,10 +2242,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(refreshTokenRequest, options);
+        async authRefreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authRefreshToken(refreshTokenRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.refreshToken']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authRefreshToken']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2253,10 +2254,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.resendVerification(resendVerificationRequest, options);
+        async authResendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authResendVerification(resendVerificationRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.resendVerification']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authResendVerification']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2265,10 +2266,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async resetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PasswordResetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.resetPassword(resetPasswordRequest, options);
+        async authResetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PasswordResetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authResetPassword(resetPasswordRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.resetPassword']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authResetPassword']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2277,10 +2278,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.signup(signupRequest, options);
+        async authSignup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authSignup(signupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.signup']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authSignup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2289,10 +2290,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async signupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerSignupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.signupWorker(workerSignupRequest, options);
+        async authSignupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerSignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authSignupWorker(workerSignupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.signupWorker']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authSignupWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2301,10 +2302,10 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.verifyEmail(verifyEmailRequest, options);
+        async authVerifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AuthenticationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authVerifyEmail(verifyEmailRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.verifyEmail']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authVerifyEmail']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2322,8 +2323,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        forgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<PasswordResetResponse> {
-            return localVarFp.forgotPassword(forgotPasswordRequest, options).then((request) => request(axios, basePath));
+        authForgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<PasswordResetResponse> {
+            return localVarFp.authForgotPassword(forgotPasswordRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2331,8 +2332,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        googleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
-            return localVarFp.googleLogin(googleAuthRequest, options).then((request) => request(axios, basePath));
+        authGoogleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+            return localVarFp.authGoogleLogin(googleAuthRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2340,8 +2341,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        login(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
-            return localVarFp.login(loginRequest, options).then((request) => request(axios, basePath));
+        authLogin(loginRequest: LoginRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+            return localVarFp.authLogin(loginRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2349,16 +2350,16 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        logout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.logout(logoutRequest, options).then((request) => request(axios, basePath));
+        authLogout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.authLogout(logoutRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        logoutFromAllDevices(options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.logoutFromAllDevices(options).then((request) => request(axios, basePath));
+        authLogoutFromAllDevices(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.authLogoutFromAllDevices(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2366,8 +2367,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
-            return localVarFp.refreshToken(refreshTokenRequest, options).then((request) => request(axios, basePath));
+        authRefreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+            return localVarFp.authRefreshToken(refreshTokenRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2375,8 +2376,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
-            return localVarFp.resendVerification(resendVerificationRequest, options).then((request) => request(axios, basePath));
+        authResendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
+            return localVarFp.authResendVerification(resendVerificationRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2384,8 +2385,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<PasswordResetResponse> {
-            return localVarFp.resetPassword(resetPasswordRequest, options).then((request) => request(axios, basePath));
+        authResetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<PasswordResetResponse> {
+            return localVarFp.authResetPassword(resetPasswordRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2393,8 +2394,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
-            return localVarFp.signup(signupRequest, options).then((request) => request(axios, basePath));
+        authSignup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<SignupResponse> {
+            return localVarFp.authSignup(signupRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2402,8 +2403,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerSignupResponse> {
-            return localVarFp.signupWorker(workerSignupRequest, options).then((request) => request(axios, basePath));
+        authSignupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerSignupResponse> {
+            return localVarFp.authSignupWorker(workerSignupRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2411,8 +2412,8 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
-            return localVarFp.verifyEmail(verifyEmailRequest, options).then((request) => request(axios, basePath));
+        authVerifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig): AxiosPromise<AuthenticationResponse> {
+            return localVarFp.authVerifyEmail(verifyEmailRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2427,8 +2428,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public forgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).forgotPassword(forgotPasswordRequest, options).then((request) => request(this.axios, this.basePath));
+    public authForgotPassword(forgotPasswordRequest: ForgotPasswordRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authForgotPassword(forgotPasswordRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2437,8 +2438,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public googleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).googleLogin(googleAuthRequest, options).then((request) => request(this.axios, this.basePath));
+    public authGoogleLogin(googleAuthRequest: GoogleAuthRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authGoogleLogin(googleAuthRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2447,8 +2448,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public login(loginRequest: LoginRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).login(loginRequest, options).then((request) => request(this.axios, this.basePath));
+    public authLogin(loginRequest: LoginRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authLogin(loginRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2457,8 +2458,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public logout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).logout(logoutRequest, options).then((request) => request(this.axios, this.basePath));
+    public authLogout(logoutRequest: LogoutRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authLogout(logoutRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2466,8 +2467,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public logoutFromAllDevices(options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).logoutFromAllDevices(options).then((request) => request(this.axios, this.basePath));
+    public authLogoutFromAllDevices(options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authLogoutFromAllDevices(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2476,8 +2477,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public refreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).refreshToken(refreshTokenRequest, options).then((request) => request(this.axios, this.basePath));
+    public authRefreshToken(refreshTokenRequest: RefreshTokenRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authRefreshToken(refreshTokenRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2486,8 +2487,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public resendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).resendVerification(resendVerificationRequest, options).then((request) => request(this.axios, this.basePath));
+    public authResendVerification(resendVerificationRequest: ResendVerificationRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authResendVerification(resendVerificationRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2496,8 +2497,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public resetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).resetPassword(resetPasswordRequest, options).then((request) => request(this.axios, this.basePath));
+    public authResetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authResetPassword(resetPasswordRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2506,8 +2507,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public signup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).signup(signupRequest, options).then((request) => request(this.axios, this.basePath));
+    public authSignup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authSignup(signupRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2516,8 +2517,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public signupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).signupWorker(workerSignupRequest, options).then((request) => request(this.axios, this.basePath));
+    public authSignupWorker(workerSignupRequest: WorkerSignupRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authSignupWorker(workerSignupRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2526,8 +2527,8 @@ export class AuthenticationApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public verifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig) {
-        return AuthenticationApiFp(this.configuration).verifyEmail(verifyEmailRequest, options).then((request) => request(this.axios, this.basePath));
+    public authVerifyEmail(verifyEmailRequest: VerifyEmailRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authVerifyEmail(verifyEmailRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2544,9 +2545,9 @@ export const ClientsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createClient: async (clientCreateRequest: ClientCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        clientCreateClient: async (clientCreateRequest: ClientCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'clientCreateRequest' is not null or undefined
-            assertParamExists('createClient', 'clientCreateRequest', clientCreateRequest)
+            assertParamExists('clientCreateClient', 'clientCreateRequest', clientCreateRequest)
             const localVarPath = `/api/v1/clients`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2583,9 +2584,9 @@ export const ClientsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteClient: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        clientDeleteClient: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteClient', 'id', id)
+            assertParamExists('clientDeleteClient', 'id', id)
             const localVarPath = `/api/v1/clients/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2619,7 +2620,7 @@ export const ClientsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllClients: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        clientGetAllClients: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/clients`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2653,9 +2654,9 @@ export const ClientsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getClientById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        clientGetClientById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getClientById', 'id', id)
+            assertParamExists('clientGetClientById', 'id', id)
             const localVarPath = `/api/v1/clients/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2691,11 +2692,11 @@ export const ClientsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateClient: async (id: number, clientUpdateRequest: ClientUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        clientUpdateClient: async (id: number, clientUpdateRequest: ClientUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateClient', 'id', id)
+            assertParamExists('clientUpdateClient', 'id', id)
             // verify required parameter 'clientUpdateRequest' is not null or undefined
-            assertParamExists('updateClient', 'clientUpdateRequest', clientUpdateRequest)
+            assertParamExists('clientUpdateClient', 'clientUpdateRequest', clientUpdateRequest)
             const localVarPath = `/api/v1/clients/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2742,10 +2743,10 @@ export const ClientsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createClient(clientCreateRequest, options);
+        async clientCreateClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clientCreateClient(clientCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ClientsApi.createClient']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ClientsApi.clientCreateClient']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2754,10 +2755,10 @@ export const ClientsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteClient(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteClient(id, options);
+        async clientDeleteClient(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clientDeleteClient(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ClientsApi.deleteClient']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ClientsApi.clientDeleteClient']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2765,10 +2766,10 @@ export const ClientsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllClients(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ClientResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllClients(options);
+        async clientGetAllClients(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ClientResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clientGetAllClients(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ClientsApi.getAllClients']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ClientsApi.clientGetAllClients']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2777,10 +2778,10 @@ export const ClientsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getClientById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getClientById(id, options);
+        async clientGetClientById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clientGetClientById(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ClientsApi.getClientById']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ClientsApi.clientGetClientById']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -2790,10 +2791,10 @@ export const ClientsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateClient(id, clientUpdateRequest, options);
+        async clientUpdateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ClientResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.clientUpdateClient(id, clientUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ClientsApi.updateClient']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ClientsApi.clientUpdateClient']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -2811,8 +2812,8 @@ export const ClientsApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
-            return localVarFp.createClient(clientCreateRequest, options).then((request) => request(axios, basePath));
+        clientCreateClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
+            return localVarFp.clientCreateClient(clientCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2820,16 +2821,16 @@ export const ClientsApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteClient(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteClient(id, options).then((request) => request(axios, basePath));
+        clientDeleteClient(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.clientDeleteClient(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllClients(options?: RawAxiosRequestConfig): AxiosPromise<Array<ClientResponse>> {
-            return localVarFp.getAllClients(options).then((request) => request(axios, basePath));
+        clientGetAllClients(options?: RawAxiosRequestConfig): AxiosPromise<Array<ClientResponse>> {
+            return localVarFp.clientGetAllClients(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2837,8 +2838,8 @@ export const ClientsApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getClientById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
-            return localVarFp.getClientById(id, options).then((request) => request(axios, basePath));
+        clientGetClientById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
+            return localVarFp.clientGetClientById(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2847,8 +2848,8 @@ export const ClientsApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
-            return localVarFp.updateClient(id, clientUpdateRequest, options).then((request) => request(axios, basePath));
+        clientUpdateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<ClientResponse> {
+            return localVarFp.clientUpdateClient(id, clientUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2863,8 +2864,8 @@ export class ClientsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig) {
-        return ClientsApiFp(this.configuration).createClient(clientCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public clientCreateClient(clientCreateRequest: ClientCreateRequest, options?: RawAxiosRequestConfig) {
+        return ClientsApiFp(this.configuration).clientCreateClient(clientCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2873,8 +2874,8 @@ export class ClientsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteClient(id: number, options?: RawAxiosRequestConfig) {
-        return ClientsApiFp(this.configuration).deleteClient(id, options).then((request) => request(this.axios, this.basePath));
+    public clientDeleteClient(id: number, options?: RawAxiosRequestConfig) {
+        return ClientsApiFp(this.configuration).clientDeleteClient(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2882,8 +2883,8 @@ export class ClientsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAllClients(options?: RawAxiosRequestConfig) {
-        return ClientsApiFp(this.configuration).getAllClients(options).then((request) => request(this.axios, this.basePath));
+    public clientGetAllClients(options?: RawAxiosRequestConfig) {
+        return ClientsApiFp(this.configuration).clientGetAllClients(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2892,8 +2893,8 @@ export class ClientsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getClientById(id: number, options?: RawAxiosRequestConfig) {
-        return ClientsApiFp(this.configuration).getClientById(id, options).then((request) => request(this.axios, this.basePath));
+    public clientGetClientById(id: number, options?: RawAxiosRequestConfig) {
+        return ClientsApiFp(this.configuration).clientGetClientById(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2903,8 +2904,8 @@ export class ClientsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig) {
-        return ClientsApiFp(this.configuration).updateClient(id, clientUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public clientUpdateClient(id: number, clientUpdateRequest: ClientUpdateRequest, options?: RawAxiosRequestConfig) {
+        return ClientsApiFp(this.configuration).clientUpdateClient(id, clientUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2920,7 +2921,7 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDashboard: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        companyGetDashboard: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/companies/dashboard`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2953,7 +2954,7 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfile: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        companyGetProfile: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/companies/profile`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2987,9 +2988,9 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateProfile: async (companyProfileUpdateRequest: CompanyProfileUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        companyUpdateProfile: async (companyProfileUpdateRequest: CompanyProfileUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'companyProfileUpdateRequest' is not null or undefined
-            assertParamExists('updateProfile', 'companyProfileUpdateRequest', companyProfileUpdateRequest)
+            assertParamExists('companyUpdateProfile', 'companyProfileUpdateRequest', companyProfileUpdateRequest)
             const localVarPath = `/api/v1/companies/profile`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3034,10 +3035,10 @@ export const CompanyApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDashboard(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyDashboardResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDashboard(options);
+        async companyGetDashboard(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyDashboardResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyGetDashboard(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompanyApi.getDashboard']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyGetDashboard']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3045,10 +3046,10 @@ export const CompanyApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProfile(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyProfileResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getProfile(options);
+        async companyGetProfile(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyGetProfile(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompanyApi.getProfile']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyGetProfile']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3057,10 +3058,10 @@ export const CompanyApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyProfileResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateProfile(companyProfileUpdateRequest, options);
+        async companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyUpdateProfile(companyProfileUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompanyApi.updateProfile']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUpdateProfile']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -3077,16 +3078,16 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDashboard(options?: RawAxiosRequestConfig): AxiosPromise<CompanyDashboardResponse> {
-            return localVarFp.getDashboard(options).then((request) => request(axios, basePath));
+        companyGetDashboard(options?: RawAxiosRequestConfig): AxiosPromise<CompanyDashboardResponse> {
+            return localVarFp.companyGetDashboard(options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProfile(options?: RawAxiosRequestConfig): AxiosPromise<CompanyProfileResponse> {
-            return localVarFp.getProfile(options).then((request) => request(axios, basePath));
+        companyGetProfile(options?: RawAxiosRequestConfig): AxiosPromise<CompanyProfileResponse> {
+            return localVarFp.companyGetProfile(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3094,8 +3095,8 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyProfileResponse> {
-            return localVarFp.updateProfile(companyProfileUpdateRequest, options).then((request) => request(axios, basePath));
+        companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyProfileResponse> {
+            return localVarFp.companyUpdateProfile(companyProfileUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3109,8 +3110,8 @@ export class CompanyApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getDashboard(options?: RawAxiosRequestConfig) {
-        return CompanyApiFp(this.configuration).getDashboard(options).then((request) => request(this.axios, this.basePath));
+    public companyGetDashboard(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyGetDashboard(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3118,8 +3119,8 @@ export class CompanyApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getProfile(options?: RawAxiosRequestConfig) {
-        return CompanyApiFp(this.configuration).getProfile(options).then((request) => request(this.axios, this.basePath));
+    public companyGetProfile(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyGetProfile(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3128,8 +3129,8 @@ export class CompanyApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig) {
-        return CompanyApiFp(this.configuration).updateProfile(companyProfileUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyUpdateProfile(companyProfileUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -3146,9 +3147,9 @@ export const CustomersApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createCustomer: async (customerCreateRequest: CustomerCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        customerCreateCustomer: async (customerCreateRequest: CustomerCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'customerCreateRequest' is not null or undefined
-            assertParamExists('createCustomer', 'customerCreateRequest', customerCreateRequest)
+            assertParamExists('customerCreateCustomer', 'customerCreateRequest', customerCreateRequest)
             const localVarPath = `/api/v1/customers`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3185,9 +3186,9 @@ export const CustomersApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteCustomer: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        customerDeleteCustomer: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteCustomer', 'id', id)
+            assertParamExists('customerDeleteCustomer', 'id', id)
             const localVarPath = `/api/v1/customers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3221,7 +3222,7 @@ export const CustomersApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllCustomers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        customerGetAllCustomers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/customers`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3255,9 +3256,9 @@ export const CustomersApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCustomerById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        customerGetCustomerById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getCustomerById', 'id', id)
+            assertParamExists('customerGetCustomerById', 'id', id)
             const localVarPath = `/api/v1/customers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3293,11 +3294,11 @@ export const CustomersApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateCustomer: async (id: number, customerUpdateRequest: CustomerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        customerUpdateCustomer: async (id: number, customerUpdateRequest: CustomerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateCustomer', 'id', id)
+            assertParamExists('customerUpdateCustomer', 'id', id)
             // verify required parameter 'customerUpdateRequest' is not null or undefined
-            assertParamExists('updateCustomer', 'customerUpdateRequest', customerUpdateRequest)
+            assertParamExists('customerUpdateCustomer', 'customerUpdateRequest', customerUpdateRequest)
             const localVarPath = `/api/v1/customers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3344,10 +3345,10 @@ export const CustomersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createCustomer(customerCreateRequest, options);
+        async customerCreateCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.customerCreateCustomer(customerCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CustomersApi.createCustomer']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CustomersApi.customerCreateCustomer']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3356,10 +3357,10 @@ export const CustomersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteCustomer(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteCustomer(id, options);
+        async customerDeleteCustomer(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.customerDeleteCustomer(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CustomersApi.deleteCustomer']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CustomersApi.customerDeleteCustomer']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3367,10 +3368,10 @@ export const CustomersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllCustomers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CustomerResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllCustomers(options);
+        async customerGetAllCustomers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CustomerResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.customerGetAllCustomers(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CustomersApi.getAllCustomers']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CustomersApi.customerGetAllCustomers']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3379,10 +3380,10 @@ export const CustomersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getCustomerById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getCustomerById(id, options);
+        async customerGetCustomerById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.customerGetCustomerById(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CustomersApi.getCustomerById']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CustomersApi.customerGetCustomerById']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3392,10 +3393,10 @@ export const CustomersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateCustomer(id, customerUpdateRequest, options);
+        async customerUpdateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CustomerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.customerUpdateCustomer(id, customerUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CustomersApi.updateCustomer']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CustomersApi.customerUpdateCustomer']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -3413,8 +3414,8 @@ export const CustomersApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
-            return localVarFp.createCustomer(customerCreateRequest, options).then((request) => request(axios, basePath));
+        customerCreateCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
+            return localVarFp.customerCreateCustomer(customerCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3422,16 +3423,16 @@ export const CustomersApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteCustomer(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteCustomer(id, options).then((request) => request(axios, basePath));
+        customerDeleteCustomer(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.customerDeleteCustomer(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllCustomers(options?: RawAxiosRequestConfig): AxiosPromise<Array<CustomerResponse>> {
-            return localVarFp.getAllCustomers(options).then((request) => request(axios, basePath));
+        customerGetAllCustomers(options?: RawAxiosRequestConfig): AxiosPromise<Array<CustomerResponse>> {
+            return localVarFp.customerGetAllCustomers(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3439,8 +3440,8 @@ export const CustomersApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCustomerById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
-            return localVarFp.getCustomerById(id, options).then((request) => request(axios, basePath));
+        customerGetCustomerById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
+            return localVarFp.customerGetCustomerById(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3449,8 +3450,8 @@ export const CustomersApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
-            return localVarFp.updateCustomer(id, customerUpdateRequest, options).then((request) => request(axios, basePath));
+        customerUpdateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CustomerResponse> {
+            return localVarFp.customerUpdateCustomer(id, customerUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3465,8 +3466,8 @@ export class CustomersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig) {
-        return CustomersApiFp(this.configuration).createCustomer(customerCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public customerCreateCustomer(customerCreateRequest: CustomerCreateRequest, options?: RawAxiosRequestConfig) {
+        return CustomersApiFp(this.configuration).customerCreateCustomer(customerCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3475,8 +3476,8 @@ export class CustomersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteCustomer(id: number, options?: RawAxiosRequestConfig) {
-        return CustomersApiFp(this.configuration).deleteCustomer(id, options).then((request) => request(this.axios, this.basePath));
+    public customerDeleteCustomer(id: number, options?: RawAxiosRequestConfig) {
+        return CustomersApiFp(this.configuration).customerDeleteCustomer(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3484,8 +3485,8 @@ export class CustomersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAllCustomers(options?: RawAxiosRequestConfig) {
-        return CustomersApiFp(this.configuration).getAllCustomers(options).then((request) => request(this.axios, this.basePath));
+    public customerGetAllCustomers(options?: RawAxiosRequestConfig) {
+        return CustomersApiFp(this.configuration).customerGetAllCustomers(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3494,8 +3495,8 @@ export class CustomersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getCustomerById(id: number, options?: RawAxiosRequestConfig) {
-        return CustomersApiFp(this.configuration).getCustomerById(id, options).then((request) => request(this.axios, this.basePath));
+    public customerGetCustomerById(id: number, options?: RawAxiosRequestConfig) {
+        return CustomersApiFp(this.configuration).customerGetCustomerById(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3505,8 +3506,8 @@ export class CustomersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig) {
-        return CustomersApiFp(this.configuration).updateCustomer(id, customerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public customerUpdateCustomer(id: number, customerUpdateRequest: CustomerUpdateRequest, options?: RawAxiosRequestConfig) {
+        return CustomersApiFp(this.configuration).customerUpdateCustomer(id, customerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -3524,11 +3525,11 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createAndLink: async (estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateCreateAndLink: async (estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'estimateId' is not null or undefined
-            assertParamExists('createAndLink', 'estimateId', estimateId)
+            assertParamExists('estimateCreateAndLink', 'estimateId', estimateId)
             // verify required parameter 'lineItemCreateRequest' is not null or undefined
-            assertParamExists('createAndLink', 'lineItemCreateRequest', lineItemCreateRequest)
+            assertParamExists('estimateCreateAndLink', 'lineItemCreateRequest', lineItemCreateRequest)
             const localVarPath = `/api/v1/estimates/{estimateId}/line-items`
                 .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3566,9 +3567,9 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete3: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('delete3', 'id', id)
+            assertParamExists('estimateDelete', 'id', id)
             const localVarPath = `/api/v1/estimates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3603,9 +3604,9 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get2: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('get2', 'id', id)
+            assertParamExists('estimateGet', 'id', id)
             const localVarPath = `/api/v1/estimates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3640,9 +3641,9 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getByJob: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateGetByJob: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('getByJob', 'jobId', jobId)
+            assertParamExists('estimateGetByJob', 'jobId', jobId)
             const localVarPath = `/api/v1/estimates/job/{jobId}`
                 .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3678,11 +3679,11 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        linkExisting: async (estimateId: number, lineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateLinkExisting: async (estimateId: number, lineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'estimateId' is not null or undefined
-            assertParamExists('linkExisting', 'estimateId', estimateId)
+            assertParamExists('estimateLinkExisting', 'estimateId', estimateId)
             // verify required parameter 'lineItemId' is not null or undefined
-            assertParamExists('linkExisting', 'lineItemId', lineItemId)
+            assertParamExists('estimateLinkExisting', 'lineItemId', lineItemId)
             const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{lineItemId}`
                 .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)))
                 .replace(`{${"lineItemId"}}`, encodeURIComponent(String(lineItemId)));
@@ -3719,11 +3720,11 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        unlink: async (estimateId: number, lineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateUnlink: async (estimateId: number, lineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'estimateId' is not null or undefined
-            assertParamExists('unlink', 'estimateId', estimateId)
+            assertParamExists('estimateUnlink', 'estimateId', estimateId)
             // verify required parameter 'lineItemId' is not null or undefined
-            assertParamExists('unlink', 'lineItemId', lineItemId)
+            assertParamExists('estimateUnlink', 'lineItemId', lineItemId)
             const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{lineItemId}`
                 .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)))
                 .replace(`{${"lineItemId"}}`, encodeURIComponent(String(lineItemId)));
@@ -3760,11 +3761,11 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update3: async (id: number, estimateUpdateRequest: EstimateUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateUpdate: async (id: number, estimateUpdateRequest: EstimateUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update3', 'id', id)
+            assertParamExists('estimateUpdate', 'id', id)
             // verify required parameter 'estimateUpdateRequest' is not null or undefined
-            assertParamExists('update3', 'estimateUpdateRequest', estimateUpdateRequest)
+            assertParamExists('estimateUpdate', 'estimateUpdateRequest', estimateUpdateRequest)
             const localVarPath = `/api/v1/estimates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -3812,10 +3813,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createAndLink(estimateId, lineItemCreateRequest, options);
+        async estimateCreateAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateCreateAndLink(estimateId, lineItemCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.createAndLink']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateCreateAndLink']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3824,10 +3825,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async delete3(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.delete3(id, options);
+        async estimateDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.delete3']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3836,10 +3837,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async get2(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.get2(id, options);
+        async estimateGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.get2']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3848,10 +3849,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getByJob(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getByJob(jobId, options);
+        async estimateGetByJob(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateGetByJob(jobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.getByJob']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateGetByJob']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3861,10 +3862,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async linkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.linkExisting(estimateId, lineItemId, options);
+        async estimateLinkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateLinkExisting(estimateId, lineItemId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.linkExisting']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateLinkExisting']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3874,10 +3875,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async unlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.unlink(estimateId, lineItemId, options);
+        async estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUnlink(estimateId, lineItemId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.unlink']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUnlink']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -3887,10 +3888,10 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update3(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update3(id, estimateUpdateRequest, options);
+        async estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUpdate(id, estimateUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.update3']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -3909,8 +3910,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.createAndLink(estimateId, lineItemCreateRequest, options).then((request) => request(axios, basePath));
+        estimateCreateAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateCreateAndLink(estimateId, lineItemCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3918,8 +3919,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete3(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.delete3(id, options).then((request) => request(axios, basePath));
+        estimateDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.estimateDelete(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3927,8 +3928,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get2(id: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.get2(id, options).then((request) => request(axios, basePath));
+        estimateGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3936,8 +3937,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getByJob(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.getByJob(jobId, options).then((request) => request(axios, basePath));
+        estimateGetByJob(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateGetByJob(jobId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3946,8 +3947,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        linkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.linkExisting(estimateId, lineItemId, options).then((request) => request(axios, basePath));
+        estimateLinkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateLinkExisting(estimateId, lineItemId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3956,8 +3957,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        unlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.unlink(estimateId, lineItemId, options).then((request) => request(axios, basePath));
+        estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateUnlink(estimateId, lineItemId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3966,8 +3967,8 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update3(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.update3(id, estimateUpdateRequest, options).then((request) => request(axios, basePath));
+        estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateUpdate(id, estimateUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3983,8 +3984,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).createAndLink(estimateId, lineItemCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public estimateCreateAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateCreateAndLink(estimateId, lineItemCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3993,8 +3994,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public delete3(id: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).delete3(id, options).then((request) => request(this.axios, this.basePath));
+    public estimateDelete(id: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4003,8 +4004,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public get2(id: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).get2(id, options).then((request) => request(this.axios, this.basePath));
+    public estimateGet(id: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4013,8 +4014,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getByJob(jobId: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).getByJob(jobId, options).then((request) => request(this.axios, this.basePath));
+    public estimateGetByJob(jobId: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateGetByJob(jobId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4024,8 +4025,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public linkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).linkExisting(estimateId, lineItemId, options).then((request) => request(this.axios, this.basePath));
+    public estimateLinkExisting(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateLinkExisting(estimateId, lineItemId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4035,8 +4036,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public unlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).unlink(estimateId, lineItemId, options).then((request) => request(this.axios, this.basePath));
+    public estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateUnlink(estimateId, lineItemId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4046,8 +4047,8 @@ export class EstimatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public update3(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).update3(id, estimateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateUpdate(id, estimateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -4064,9 +4065,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createTemplate: async (jobTemplateCreateRequest: JobTemplateCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateCreateTemplate: async (jobTemplateCreateRequest: JobTemplateCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobTemplateCreateRequest' is not null or undefined
-            assertParamExists('createTemplate', 'jobTemplateCreateRequest', jobTemplateCreateRequest)
+            assertParamExists('jobTemplateCreateTemplate', 'jobTemplateCreateRequest', jobTemplateCreateRequest)
             const localVarPath = `/api/v1/job-templates`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4103,9 +4104,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createTemplateField: async (jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateCreateTemplateField: async (jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobTemplateFieldCreateRequest' is not null or undefined
-            assertParamExists('createTemplateField', 'jobTemplateFieldCreateRequest', jobTemplateFieldCreateRequest)
+            assertParamExists('jobTemplateCreateTemplateField', 'jobTemplateFieldCreateRequest', jobTemplateFieldCreateRequest)
             const localVarPath = `/api/v1/job-templates/fields`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4142,9 +4143,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteTemplate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateDeleteTemplate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteTemplate', 'id', id)
+            assertParamExists('jobTemplateDeleteTemplate', 'id', id)
             const localVarPath = `/api/v1/job-templates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4179,9 +4180,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteTemplateField: async (fieldId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateDeleteTemplateField: async (fieldId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'fieldId' is not null or undefined
-            assertParamExists('deleteTemplateField', 'fieldId', fieldId)
+            assertParamExists('jobTemplateDeleteTemplateField', 'fieldId', fieldId)
             const localVarPath = `/api/v1/job-templates/fields/{fieldId}`
                 .replace(`{${"fieldId"}}`, encodeURIComponent(String(fieldId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4215,7 +4216,7 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllTemplates: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetAllTemplates: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/job-templates`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4248,7 +4249,7 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDefaultTemplate: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetDefaultTemplate: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/job-templates/default`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4282,9 +4283,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetTemplate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getTemplate', 'id', id)
+            assertParamExists('jobTemplateGetTemplate', 'id', id)
             const localVarPath = `/api/v1/job-templates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4319,9 +4320,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateField: async (fieldId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetTemplateField: async (fieldId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'fieldId' is not null or undefined
-            assertParamExists('getTemplateField', 'fieldId', fieldId)
+            assertParamExists('jobTemplateGetTemplateField', 'fieldId', fieldId)
             const localVarPath = `/api/v1/job-templates/fields/{fieldId}`
                 .replace(`{${"fieldId"}}`, encodeURIComponent(String(fieldId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4356,9 +4357,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateFields: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetTemplateFields: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getTemplateFields', 'id', id)
+            assertParamExists('jobTemplateGetTemplateFields', 'id', id)
             const localVarPath = `/api/v1/job-templates/{id}/fields`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4393,9 +4394,9 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateWithFields: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateGetTemplateWithFields: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getTemplateWithFields', 'id', id)
+            assertParamExists('jobTemplateGetTemplateWithFields', 'id', id)
             const localVarPath = `/api/v1/job-templates/{id}/with-fields`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4431,11 +4432,11 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateTemplate: async (id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateUpdateTemplate: async (id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateTemplate', 'id', id)
+            assertParamExists('jobTemplateUpdateTemplate', 'id', id)
             // verify required parameter 'jobTemplateCreateRequest' is not null or undefined
-            assertParamExists('updateTemplate', 'jobTemplateCreateRequest', jobTemplateCreateRequest)
+            assertParamExists('jobTemplateUpdateTemplate', 'jobTemplateCreateRequest', jobTemplateCreateRequest)
             const localVarPath = `/api/v1/job-templates/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4474,11 +4475,11 @@ export const JobTemplatesApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateTemplateField: async (fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobTemplateUpdateTemplateField: async (fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'fieldId' is not null or undefined
-            assertParamExists('updateTemplateField', 'fieldId', fieldId)
+            assertParamExists('jobTemplateUpdateTemplateField', 'fieldId', fieldId)
             // verify required parameter 'jobTemplateFieldCreateRequest' is not null or undefined
-            assertParamExists('updateTemplateField', 'jobTemplateFieldCreateRequest', jobTemplateFieldCreateRequest)
+            assertParamExists('jobTemplateUpdateTemplateField', 'jobTemplateFieldCreateRequest', jobTemplateFieldCreateRequest)
             const localVarPath = `/api/v1/job-templates/fields/{fieldId}`
                 .replace(`{${"fieldId"}}`, encodeURIComponent(String(fieldId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4525,10 +4526,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createTemplate(jobTemplateCreateRequest, options);
+        async jobTemplateCreateTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateCreateTemplate(jobTemplateCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.createTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateCreateTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4537,10 +4538,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createTemplateField(jobTemplateFieldCreateRequest, options);
+        async jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.createTemplateField']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateCreateTemplateField']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4549,10 +4550,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteTemplate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteTemplate(id, options);
+        async jobTemplateDeleteTemplate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateDeleteTemplate(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.deleteTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateDeleteTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4561,10 +4562,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteTemplateField(fieldId, options);
+        async jobTemplateDeleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateDeleteTemplateField(fieldId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.deleteTemplateField']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateDeleteTemplateField']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4572,10 +4573,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllTemplates(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobTemplateResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllTemplates(options);
+        async jobTemplateGetAllTemplates(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobTemplateResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetAllTemplates(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getAllTemplates']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetAllTemplates']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4583,10 +4584,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDefaultTemplate(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDefaultTemplate(options);
+        async jobTemplateGetDefaultTemplate(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetDefaultTemplate(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getDefaultTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetDefaultTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4595,10 +4596,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTemplate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTemplate(id, options);
+        async jobTemplateGetTemplate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetTemplate(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4607,10 +4608,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTemplateField(fieldId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTemplateField(fieldId, options);
+        async jobTemplateGetTemplateField(fieldId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetTemplateField(fieldId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getTemplateField']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetTemplateField']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4619,10 +4620,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTemplateFields(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobTemplateFieldResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTemplateFields(id, options);
+        async jobTemplateGetTemplateFields(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobTemplateFieldResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetTemplateFields(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getTemplateFields']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetTemplateFields']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4631,10 +4632,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTemplateWithFields(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateWithFieldsResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTemplateWithFields(id, options);
+        async jobTemplateGetTemplateWithFields(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateWithFieldsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateGetTemplateWithFields(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.getTemplateWithFields']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateGetTemplateWithFields']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4644,10 +4645,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateTemplate(id, jobTemplateCreateRequest, options);
+        async jobTemplateUpdateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateUpdateTemplate(id, jobTemplateCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.updateTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateUpdateTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -4657,10 +4658,10 @@ export const JobTemplatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateTemplateField(fieldId, jobTemplateFieldCreateRequest, options);
+        async jobTemplateUpdateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobTemplateFieldResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobTemplateUpdateTemplateField(fieldId, jobTemplateFieldCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.updateTemplateField']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobTemplatesApi.jobTemplateUpdateTemplateField']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -4678,8 +4679,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
-            return localVarFp.createTemplate(jobTemplateCreateRequest, options).then((request) => request(axios, basePath));
+        jobTemplateCreateTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
+            return localVarFp.jobTemplateCreateTemplate(jobTemplateCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4687,8 +4688,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
-            return localVarFp.createTemplateField(jobTemplateFieldCreateRequest, options).then((request) => request(axios, basePath));
+        jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
+            return localVarFp.jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4696,8 +4697,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteTemplate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteTemplate(id, options).then((request) => request(axios, basePath));
+        jobTemplateDeleteTemplate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobTemplateDeleteTemplate(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4705,24 +4706,24 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteTemplateField(fieldId, options).then((request) => request(axios, basePath));
+        jobTemplateDeleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobTemplateDeleteTemplateField(fieldId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllTemplates(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobTemplateResponse>> {
-            return localVarFp.getAllTemplates(options).then((request) => request(axios, basePath));
+        jobTemplateGetAllTemplates(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobTemplateResponse>> {
+            return localVarFp.jobTemplateGetAllTemplates(options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDefaultTemplate(options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
-            return localVarFp.getDefaultTemplate(options).then((request) => request(axios, basePath));
+        jobTemplateGetDefaultTemplate(options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
+            return localVarFp.jobTemplateGetDefaultTemplate(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4730,8 +4731,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
-            return localVarFp.getTemplate(id, options).then((request) => request(axios, basePath));
+        jobTemplateGetTemplate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
+            return localVarFp.jobTemplateGetTemplate(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4739,8 +4740,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateField(fieldId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
-            return localVarFp.getTemplateField(fieldId, options).then((request) => request(axios, basePath));
+        jobTemplateGetTemplateField(fieldId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
+            return localVarFp.jobTemplateGetTemplateField(fieldId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4748,8 +4749,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateFields(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobTemplateFieldResponse>> {
-            return localVarFp.getTemplateFields(id, options).then((request) => request(axios, basePath));
+        jobTemplateGetTemplateFields(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobTemplateFieldResponse>> {
+            return localVarFp.jobTemplateGetTemplateFields(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4757,8 +4758,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplateWithFields(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateWithFieldsResponse> {
-            return localVarFp.getTemplateWithFields(id, options).then((request) => request(axios, basePath));
+        jobTemplateGetTemplateWithFields(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateWithFieldsResponse> {
+            return localVarFp.jobTemplateGetTemplateWithFields(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4767,8 +4768,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
-            return localVarFp.updateTemplate(id, jobTemplateCreateRequest, options).then((request) => request(axios, basePath));
+        jobTemplateUpdateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateResponse> {
+            return localVarFp.jobTemplateUpdateTemplate(id, jobTemplateCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4777,8 +4778,8 @@ export const JobTemplatesApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
-            return localVarFp.updateTemplateField(fieldId, jobTemplateFieldCreateRequest, options).then((request) => request(axios, basePath));
+        jobTemplateUpdateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobTemplateFieldResponse> {
+            return localVarFp.jobTemplateUpdateTemplateField(fieldId, jobTemplateFieldCreateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -4793,8 +4794,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).createTemplate(jobTemplateCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateCreateTemplate(jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateCreateTemplate(jobTemplateCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4803,8 +4804,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).createTemplateField(jobTemplateFieldCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateCreateTemplateField(jobTemplateFieldCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4813,8 +4814,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteTemplate(id: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).deleteTemplate(id, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateDeleteTemplate(id: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateDeleteTemplate(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4823,8 +4824,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).deleteTemplateField(fieldId, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateDeleteTemplateField(fieldId: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateDeleteTemplateField(fieldId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4832,8 +4833,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAllTemplates(options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getAllTemplates(options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetAllTemplates(options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetAllTemplates(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4841,8 +4842,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getDefaultTemplate(options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getDefaultTemplate(options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetDefaultTemplate(options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetDefaultTemplate(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4851,8 +4852,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getTemplate(id: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getTemplate(id, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetTemplate(id: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetTemplate(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4861,8 +4862,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getTemplateField(fieldId: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getTemplateField(fieldId, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetTemplateField(fieldId: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetTemplateField(fieldId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4871,8 +4872,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getTemplateFields(id: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getTemplateFields(id, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetTemplateFields(id: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetTemplateFields(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4881,8 +4882,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getTemplateWithFields(id: number, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).getTemplateWithFields(id, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateGetTemplateWithFields(id: number, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateGetTemplateWithFields(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4892,8 +4893,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).updateTemplate(id, jobTemplateCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateUpdateTemplate(id: number, jobTemplateCreateRequest: JobTemplateCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateUpdateTemplate(id, jobTemplateCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4903,8 +4904,8 @@ export class JobTemplatesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobTemplatesApiFp(this.configuration).updateTemplateField(fieldId, jobTemplateFieldCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobTemplateUpdateTemplateField(fieldId: number, jobTemplateFieldCreateRequest: JobTemplateFieldCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobTemplatesApiFp(this.configuration).jobTemplateUpdateTemplateField(fieldId, jobTemplateFieldCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -4922,11 +4923,11 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addStep: async (jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowAddStep: async (jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('addStep', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('jobWorkflowAddStep', 'jobWorkflowId', jobWorkflowId)
             // verify required parameter 'jobWorkflowStepCreateRequest' is not null or undefined
-            assertParamExists('addStep', 'jobWorkflowStepCreateRequest', jobWorkflowStepCreateRequest)
+            assertParamExists('jobWorkflowAddStep', 'jobWorkflowStepCreateRequest', jobWorkflowStepCreateRequest)
             const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}/steps`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4965,11 +4966,11 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assignWorkerToAllSteps: async (jobWorkflowId: number, workerId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowAssignWorkerToAllSteps: async (jobWorkflowId: number, workerId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('assignWorkerToAllSteps', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('jobWorkflowAssignWorkerToAllSteps', 'jobWorkflowId', jobWorkflowId)
             // verify required parameter 'workerId' is not null or undefined
-            assertParamExists('assignWorkerToAllSteps', 'workerId', workerId)
+            assertParamExists('jobWorkflowAssignWorkerToAllSteps', 'workerId', workerId)
             const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}/assign-worker/{workerId}`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)))
                 .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)));
@@ -5005,9 +5006,9 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteByJobId: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowDeleteByJobId: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('deleteByJobId', 'jobId', jobId)
+            assertParamExists('jobWorkflowDeleteByJobId', 'jobId', jobId)
             const localVarPath = `/api/v1/job-workflows/jobs/{jobId}`
                 .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5041,7 +5042,7 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllJobWorkflows: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowGetAllJobWorkflows: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/job-workflows`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5075,9 +5076,9 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflow1: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowGetJobWorkflow: async (jobId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('getJobWorkflow1', 'jobId', jobId)
+            assertParamExists('jobWorkflowGetJobWorkflow', 'jobId', jobId)
             const localVarPath = `/api/v1/job-workflows/jobs/{jobId}`
                 .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5112,9 +5113,9 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflowById: async (jobWorkflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowGetJobWorkflowById: async (jobWorkflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('getJobWorkflowById', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('jobWorkflowGetJobWorkflowById', 'jobWorkflowId', jobWorkflowId)
             const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5150,11 +5151,11 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startWorkflow: async (jobId: number, workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStartWorkflow: async (jobId: number, workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobId' is not null or undefined
-            assertParamExists('startWorkflow', 'jobId', jobId)
+            assertParamExists('jobWorkflowStartWorkflow', 'jobId', jobId)
             // verify required parameter 'workflowId' is not null or undefined
-            assertParamExists('startWorkflow', 'workflowId', workflowId)
+            assertParamExists('jobWorkflowStartWorkflow', 'workflowId', workflowId)
             const localVarPath = `/api/v1/job-workflows/jobs/{jobId}/workflows/{workflowId}/start`
                 .replace(`{${"jobId"}}`, encodeURIComponent(String(jobId)))
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
@@ -5191,11 +5192,11 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateJobWorkflow: async (jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowUpdateJobWorkflow: async (jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('updateJobWorkflow', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('jobWorkflowUpdateJobWorkflow', 'jobWorkflowId', jobWorkflowId)
             // verify required parameter 'jobWorkflowUpdateRequest' is not null or undefined
-            assertParamExists('updateJobWorkflow', 'jobWorkflowUpdateRequest', jobWorkflowUpdateRequest)
+            assertParamExists('jobWorkflowUpdateJobWorkflow', 'jobWorkflowUpdateRequest', jobWorkflowUpdateRequest)
             const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5235,13 +5236,13 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateStep1: async (jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowUpdateStep: async (jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('updateStep1', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('jobWorkflowUpdateStep', 'jobWorkflowId', jobWorkflowId)
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('updateStep1', 'stepId', stepId)
+            assertParamExists('jobWorkflowUpdateStep', 'stepId', stepId)
             // verify required parameter 'jobWorkflowStepUpdateRequest' is not null or undefined
-            assertParamExists('updateStep1', 'jobWorkflowStepUpdateRequest', jobWorkflowStepUpdateRequest)
+            assertParamExists('jobWorkflowUpdateStep', 'jobWorkflowStepUpdateRequest', jobWorkflowStepUpdateRequest)
             const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}/steps/{stepId}`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)))
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
@@ -5290,10 +5291,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options);
+        async jobWorkflowAddStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowAddStep(jobWorkflowId, jobWorkflowStepCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.addStep']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowAddStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5303,10 +5304,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async assignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assignWorkerToAllSteps(jobWorkflowId, workerId, options);
+        async jobWorkflowAssignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowAssignWorkerToAllSteps(jobWorkflowId, workerId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.assignWorkerToAllSteps']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowAssignWorkerToAllSteps']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5315,10 +5316,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteByJobId(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteByJobId(jobId, options);
+        async jobWorkflowDeleteByJobId(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowDeleteByJobId(jobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.deleteByJobId']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowDeleteByJobId']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5326,10 +5327,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllJobWorkflows(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllJobWorkflows(options);
+        async jobWorkflowGetAllJobWorkflows(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowGetAllJobWorkflows(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.getAllJobWorkflows']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowGetAllJobWorkflows']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5338,10 +5339,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getJobWorkflow1(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getJobWorkflow1(jobId, options);
+        async jobWorkflowGetJobWorkflow(jobId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowGetJobWorkflow(jobId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.getJobWorkflow1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowGetJobWorkflow']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5350,10 +5351,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getJobWorkflowById(jobWorkflowId, options);
+        async jobWorkflowGetJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowGetJobWorkflowById(jobWorkflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.getJobWorkflowById']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowGetJobWorkflowById']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5363,10 +5364,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async startWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.startWorkflow(jobId, workflowId, options);
+        async jobWorkflowStartWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStartWorkflow(jobId, workflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.startWorkflow']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowStartWorkflow']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5376,10 +5377,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options);
+        async jobWorkflowUpdateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowUpdateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.updateJobWorkflow']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowUpdateJobWorkflow']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5390,10 +5391,10 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateStep1(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateStep1(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options);
+        async jobWorkflowUpdateStep(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowUpdateStep(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.updateStep1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowUpdateStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -5412,8 +5413,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
-            return localVarFp.addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowAddStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.jobWorkflowAddStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5422,8 +5423,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.assignWorkerToAllSteps(jobWorkflowId, workerId, options).then((request) => request(axios, basePath));
+        jobWorkflowAssignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowAssignWorkerToAllSteps(jobWorkflowId, workerId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5431,16 +5432,16 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteByJobId(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteByJobId(jobId, options).then((request) => request(axios, basePath));
+        jobWorkflowDeleteByJobId(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobWorkflowDeleteByJobId(jobId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllJobWorkflows(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowResponse>> {
-            return localVarFp.getAllJobWorkflows(options).then((request) => request(axios, basePath));
+        jobWorkflowGetAllJobWorkflows(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowResponse>> {
+            return localVarFp.jobWorkflowGetAllJobWorkflows(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5448,8 +5449,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflow1(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.getJobWorkflow1(jobId, options).then((request) => request(axios, basePath));
+        jobWorkflowGetJobWorkflow(jobId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowGetJobWorkflow(jobId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5457,8 +5458,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.getJobWorkflowById(jobWorkflowId, options).then((request) => request(axios, basePath));
+        jobWorkflowGetJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowGetJobWorkflowById(jobWorkflowId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5467,8 +5468,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.startWorkflow(jobId, workflowId, options).then((request) => request(axios, basePath));
+        jobWorkflowStartWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowStartWorkflow(jobId, workflowId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5477,8 +5478,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.updateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowUpdateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowUpdateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5488,8 +5489,8 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateStep1(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
-            return localVarFp.updateStep1(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowUpdateStep(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.jobWorkflowUpdateStep(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5505,8 +5506,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public addStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).addStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowAddStep(jobWorkflowId: number, jobWorkflowStepCreateRequest: JobWorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowAddStep(jobWorkflowId, jobWorkflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5516,8 +5517,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public assignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).assignWorkerToAllSteps(jobWorkflowId, workerId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowAssignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowAssignWorkerToAllSteps(jobWorkflowId, workerId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5526,8 +5527,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteByJobId(jobId: number, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).deleteByJobId(jobId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowDeleteByJobId(jobId: number, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowDeleteByJobId(jobId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5535,8 +5536,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAllJobWorkflows(options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).getAllJobWorkflows(options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowGetAllJobWorkflows(options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowGetAllJobWorkflows(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5545,8 +5546,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getJobWorkflow1(jobId: number, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).getJobWorkflow1(jobId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowGetJobWorkflow(jobId: number, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowGetJobWorkflow(jobId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5555,8 +5556,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).getJobWorkflowById(jobWorkflowId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowGetJobWorkflowById(jobWorkflowId: number, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowGetJobWorkflowById(jobWorkflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5566,8 +5567,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public startWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).startWorkflow(jobId, workflowId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStartWorkflow(jobId: number, workflowId: number, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowStartWorkflow(jobId, workflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5577,8 +5578,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).updateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowUpdateJobWorkflow(jobWorkflowId: number, jobWorkflowUpdateRequest: JobWorkflowUpdateRequest, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowUpdateJobWorkflow(jobWorkflowId, jobWorkflowUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5589,8 +5590,8 @@ export class JobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateStep1(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig) {
-        return JobWorkflowsApiFp(this.configuration).updateStep1(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowUpdateStep(jobWorkflowId: number, stepId: number, jobWorkflowStepUpdateRequest: JobWorkflowStepUpdateRequest, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowUpdateStep(jobWorkflowId, stepId, jobWorkflowStepUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -5607,9 +5608,9 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create2: async (jobCreateRequest: JobCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobCreate: async (jobCreateRequest: JobCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobCreateRequest' is not null or undefined
-            assertParamExists('create2', 'jobCreateRequest', jobCreateRequest)
+            assertParamExists('jobCreate', 'jobCreateRequest', jobCreateRequest)
             const localVarPath = `/api/v1/jobs`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5646,9 +5647,9 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete2: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('delete2', 'id', id)
+            assertParamExists('jobDelete', 'id', id)
             const localVarPath = `/api/v1/jobs/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5683,9 +5684,9 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('get1', 'id', id)
+            assertParamExists('jobGet', 'id', id)
             const localVarPath = `/api/v1/jobs/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5719,7 +5720,7 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAll2: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobGetAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/jobs`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5753,9 +5754,9 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobsByTemplate: async (templateId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobGetJobsByTemplate: async (templateId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'templateId' is not null or undefined
-            assertParamExists('getJobsByTemplate', 'templateId', templateId)
+            assertParamExists('jobGetJobsByTemplate', 'templateId', templateId)
             const localVarPath = `/api/v1/jobs/templates/{templateId}`
                 .replace(`{${"templateId"}}`, encodeURIComponent(String(templateId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5791,11 +5792,11 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update2: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobUpdate: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update2', 'id', id)
+            assertParamExists('jobUpdate', 'id', id)
             // verify required parameter 'jobUpdateRequest' is not null or undefined
-            assertParamExists('update2', 'jobUpdateRequest', jobUpdateRequest)
+            assertParamExists('jobUpdate', 'jobUpdateRequest', jobUpdateRequest)
             const localVarPath = `/api/v1/jobs/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -5842,10 +5843,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create2(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.create2(jobCreateRequest, options);
+        async jobCreate(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobCreate(jobCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.create2']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobCreate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5854,10 +5855,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async delete2(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.delete2(id, options);
+        async jobDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.delete2']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5866,10 +5867,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async get1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.get1(id, options);
+        async jobGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.get1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5877,10 +5878,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAll2(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAll2(options);
+        async jobGetAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetAll(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.getAll2']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGetAll']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5889,10 +5890,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getJobsByTemplate(templateId, options);
+        async jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetJobsByTemplate(templateId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.getJobsByTemplate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGetJobsByTemplate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -5902,10 +5903,10 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update2(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update2(id, jobUpdateRequest, options);
+        async jobUpdate(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobUpdate(id, jobUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.update2']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -5923,8 +5924,8 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create2(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
-            return localVarFp.create2(jobCreateRequest, options).then((request) => request(axios, basePath));
+        jobCreate(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
+            return localVarFp.jobCreate(jobCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5932,8 +5933,8 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete2(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.delete2(id, options).then((request) => request(axios, basePath));
+        jobDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobDelete(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5941,16 +5942,16 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
-            return localVarFp.get1(id, options).then((request) => request(axios, basePath));
+        jobGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
+            return localVarFp.jobGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAll2(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
-            return localVarFp.getAll2(options).then((request) => request(axios, basePath));
+        jobGetAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
+            return localVarFp.jobGetAll(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5958,8 +5959,8 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
-            return localVarFp.getJobsByTemplate(templateId, options).then((request) => request(axios, basePath));
+        jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
+            return localVarFp.jobGetJobsByTemplate(templateId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5968,8 +5969,8 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update2(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
-            return localVarFp.update2(id, jobUpdateRequest, options).then((request) => request(axios, basePath));
+        jobUpdate(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
+            return localVarFp.jobUpdate(id, jobUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -5984,8 +5985,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public create2(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).create2(jobCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobCreate(jobCreateRequest: JobCreateRequest, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobCreate(jobCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5994,8 +5995,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public delete2(id: number, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).delete2(id, options).then((request) => request(this.axios, this.basePath));
+    public jobDelete(id: number, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6004,8 +6005,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public get1(id: number, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).get1(id, options).then((request) => request(this.axios, this.basePath));
+    public jobGet(id: number, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6013,8 +6014,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAll2(options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).getAll2(options).then((request) => request(this.axios, this.basePath));
+    public jobGetAll(options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobGetAll(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6023,8 +6024,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).getJobsByTemplate(templateId, options).then((request) => request(this.axios, this.basePath));
+    public jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobGetJobsByTemplate(templateId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6034,8 +6035,8 @@ export class JobsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public update2(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).update2(id, jobUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobUpdate(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobUpdate(id, jobUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -6052,9 +6053,9 @@ export const LineItemsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create1: async (lineItemCreateRequest: LineItemCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        lineItemCreate: async (lineItemCreateRequest: LineItemCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'lineItemCreateRequest' is not null or undefined
-            assertParamExists('create1', 'lineItemCreateRequest', lineItemCreateRequest)
+            assertParamExists('lineItemCreate', 'lineItemCreateRequest', lineItemCreateRequest)
             const localVarPath = `/api/v1/line-items`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6091,9 +6092,9 @@ export const LineItemsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        lineItemDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('delete1', 'id', id)
+            assertParamExists('lineItemDelete', 'id', id)
             const localVarPath = `/api/v1/line-items/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6128,9 +6129,9 @@ export const LineItemsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        lineItemGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('get', 'id', id)
+            assertParamExists('lineItemGet', 'id', id)
             const localVarPath = `/api/v1/line-items/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6164,7 +6165,7 @@ export const LineItemsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAll1: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        lineItemGetAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/line-items`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6199,11 +6200,11 @@ export const LineItemsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update1: async (id: number, lineItemUpdateRequest: LineItemUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        lineItemUpdate: async (id: number, lineItemUpdateRequest: LineItemUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update1', 'id', id)
+            assertParamExists('lineItemUpdate', 'id', id)
             // verify required parameter 'lineItemUpdateRequest' is not null or undefined
-            assertParamExists('update1', 'lineItemUpdateRequest', lineItemUpdateRequest)
+            assertParamExists('lineItemUpdate', 'lineItemUpdateRequest', lineItemUpdateRequest)
             const localVarPath = `/api/v1/line-items/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6250,10 +6251,10 @@ export const LineItemsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create1(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.create1(lineItemCreateRequest, options);
+        async lineItemCreate(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.lineItemCreate(lineItemCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.create1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.lineItemCreate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6262,10 +6263,10 @@ export const LineItemsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async delete1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.delete1(id, options);
+        async lineItemDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.lineItemDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.delete1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.lineItemDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6274,10 +6275,10 @@ export const LineItemsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async get(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.get(id, options);
+        async lineItemGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.lineItemGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.get']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.lineItemGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6285,10 +6286,10 @@ export const LineItemsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAll1(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LineItemResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAll1(options);
+        async lineItemGetAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LineItemResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.lineItemGetAll(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.getAll1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.lineItemGetAll']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6298,10 +6299,10 @@ export const LineItemsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update1(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update1(id, lineItemUpdateRequest, options);
+        async lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LineItemResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.lineItemUpdate(id, lineItemUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.update1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['LineItemsApi.lineItemUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -6319,8 +6320,8 @@ export const LineItemsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create1(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
-            return localVarFp.create1(lineItemCreateRequest, options).then((request) => request(axios, basePath));
+        lineItemCreate(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
+            return localVarFp.lineItemCreate(lineItemCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6328,8 +6329,8 @@ export const LineItemsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        delete1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.delete1(id, options).then((request) => request(axios, basePath));
+        lineItemDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.lineItemDelete(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6337,16 +6338,16 @@ export const LineItemsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        get(id: number, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
-            return localVarFp.get(id, options).then((request) => request(axios, basePath));
+        lineItemGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
+            return localVarFp.lineItemGet(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAll1(options?: RawAxiosRequestConfig): AxiosPromise<Array<LineItemResponse>> {
-            return localVarFp.getAll1(options).then((request) => request(axios, basePath));
+        lineItemGetAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<LineItemResponse>> {
+            return localVarFp.lineItemGetAll(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -6355,8 +6356,8 @@ export const LineItemsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update1(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
-            return localVarFp.update1(id, lineItemUpdateRequest, options).then((request) => request(axios, basePath));
+        lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LineItemResponse> {
+            return localVarFp.lineItemUpdate(id, lineItemUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -6371,8 +6372,8 @@ export class LineItemsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public create1(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig) {
-        return LineItemsApiFp(this.configuration).create1(lineItemCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public lineItemCreate(lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig) {
+        return LineItemsApiFp(this.configuration).lineItemCreate(lineItemCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6381,8 +6382,8 @@ export class LineItemsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public delete1(id: number, options?: RawAxiosRequestConfig) {
-        return LineItemsApiFp(this.configuration).delete1(id, options).then((request) => request(this.axios, this.basePath));
+    public lineItemDelete(id: number, options?: RawAxiosRequestConfig) {
+        return LineItemsApiFp(this.configuration).lineItemDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6391,8 +6392,8 @@ export class LineItemsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public get(id: number, options?: RawAxiosRequestConfig) {
-        return LineItemsApiFp(this.configuration).get(id, options).then((request) => request(this.axios, this.basePath));
+    public lineItemGet(id: number, options?: RawAxiosRequestConfig) {
+        return LineItemsApiFp(this.configuration).lineItemGet(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6400,8 +6401,8 @@ export class LineItemsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAll1(options?: RawAxiosRequestConfig) {
-        return LineItemsApiFp(this.configuration).getAll1(options).then((request) => request(this.axios, this.basePath));
+    public lineItemGetAll(options?: RawAxiosRequestConfig) {
+        return LineItemsApiFp(this.configuration).lineItemGetAll(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -6411,8 +6412,8 @@ export class LineItemsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public update1(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
-        return LineItemsApiFp(this.configuration).update1(id, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
+        return LineItemsApiFp(this.configuration).lineItemUpdate(id, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -6431,11 +6432,11 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment: async (stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowAddComment: async (stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('addComment', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowAddComment', 'stepId', stepId)
             // verify required parameter 'stepCommentCreateRequest' is not null or undefined
-            assertParamExists('addComment', 'stepCommentCreateRequest', stepCommentCreateRequest)
+            assertParamExists('workerJobWorkflowAddComment', 'stepCommentCreateRequest', stepCommentCreateRequest)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/comments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6475,11 +6476,11 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addVisitLog: async (stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowAddVisitLog: async (stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('addVisitLog', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowAddVisitLog', 'stepId', stepId)
             // verify required parameter 'stepVisitLogCreateRequest' is not null or undefined
-            assertParamExists('addVisitLog', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
+            assertParamExists('workerJobWorkflowAddVisitLog', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/visits`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6518,9 +6519,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        completeStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowCompleteStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('completeStep', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowCompleteStep', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/complete`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6556,9 +6557,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflow: async (jobWorkflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetJobWorkflow: async (jobWorkflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'jobWorkflowId' is not null or undefined
-            assertParamExists('getJobWorkflow', 'jobWorkflowId', jobWorkflowId)
+            assertParamExists('workerJobWorkflowGetJobWorkflow', 'jobWorkflowId', jobWorkflowId)
             const localVarPath = `/api/v1/worker/job-workflows/{jobWorkflowId}`
                 .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6593,7 +6594,7 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyAssignedSteps: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetMyAssignedSteps: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/worker/job-workflow-steps`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6627,7 +6628,7 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyJobWorkflows: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetMyJobWorkflows: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/worker/job-workflows`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -6662,9 +6663,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStep1: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStep1', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowGetStep', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6700,9 +6701,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepAttachments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetStepAttachments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStepAttachments', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowGetStepAttachments', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/attachments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6738,9 +6739,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepComments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetStepComments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStepComments', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowGetStepComments', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/comments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6776,9 +6777,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepDiscussion: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetStepDiscussion: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStepDiscussion', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowGetStepDiscussion', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/discussion`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6814,9 +6815,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepVisits: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowGetStepVisits: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStepVisits', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowGetStepVisits', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/visits`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6852,9 +6853,9 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowStartStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('startStep', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowStartStep', 'stepId', stepId)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/start`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6887,19 +6888,19 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
-         * @param {UploadAttachmentTypeEnum} type 
+         * @param {WorkerJobWorkflowUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment: async (stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerJobWorkflowUploadAttachment: async (stepId: number, type: WorkerJobWorkflowUploadAttachmentTypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('uploadAttachment', 'stepId', stepId)
+            assertParamExists('workerJobWorkflowUploadAttachment', 'stepId', stepId)
             // verify required parameter 'type' is not null or undefined
-            assertParamExists('uploadAttachment', 'type', type)
+            assertParamExists('workerJobWorkflowUploadAttachment', 'type', type)
             // verify required parameter 'file' is not null or undefined
-            assertParamExists('uploadAttachment', 'file', file)
+            assertParamExists('workerJobWorkflowUploadAttachment', 'file', file)
             const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/attachments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -6961,10 +6962,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addComment(stepId, stepCommentCreateRequest, options);
+        async workerJobWorkflowAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowAddComment(stepId, stepCommentCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.addComment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowAddComment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6975,10 +6976,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addVisitLog(stepId, stepVisitLogCreateRequest, options);
+        async workerJobWorkflowAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowAddVisitLog(stepId, stepVisitLogCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.addVisitLog']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowAddVisitLog']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -6988,10 +6989,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async completeStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.completeStep(stepId, options);
+        async workerJobWorkflowCompleteStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowCompleteStep(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.completeStep']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowCompleteStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7001,10 +7002,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getJobWorkflow(jobWorkflowId, options);
+        async workerJobWorkflowGetJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetJobWorkflow(jobWorkflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getJobWorkflow']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetJobWorkflow']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7013,10 +7014,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMyAssignedSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerAssignedStepResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyAssignedSteps(options);
+        async workerJobWorkflowGetMyAssignedSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerAssignedStepResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetMyAssignedSteps(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getMyAssignedSteps']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetMyAssignedSteps']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7025,10 +7026,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMyJobWorkflows(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyJobWorkflows(options);
+        async workerJobWorkflowGetMyJobWorkflows(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobWorkflowResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetMyJobWorkflows(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getMyJobWorkflows']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetMyJobWorkflows']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7038,10 +7039,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStep1(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStep1(stepId, options);
+        async workerJobWorkflowGetStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetStep(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStep1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7051,10 +7052,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStepAttachments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepAttachmentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepAttachments(stepId, options);
+        async workerJobWorkflowGetStepAttachments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepAttachmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetStepAttachments(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepAttachments']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetStepAttachments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7064,10 +7065,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStepComments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepCommentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepComments(stepId, options);
+        async workerJobWorkflowGetStepComments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepCommentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetStepComments(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepComments']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetStepComments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7077,10 +7078,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStepDiscussion(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepTimelineItemResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepDiscussion(stepId, options);
+        async workerJobWorkflowGetStepDiscussion(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepTimelineItemResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetStepDiscussion(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepDiscussion']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetStepDiscussion']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7090,10 +7091,10 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStepVisits(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogSummaryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStepVisits(stepId, options);
+        async workerJobWorkflowGetStepVisits(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowGetStepVisits(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.getStepVisits']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowGetStepVisits']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7103,26 +7104,26 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async startStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.startStep(stepId, options);
+        async workerJobWorkflowStartStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowStartStep(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.startStep']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowStartStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
-         * @param {UploadAttachmentTypeEnum} type 
+         * @param {WorkerJobWorkflowUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment(stepId, type, file, description, options);
+        async workerJobWorkflowUploadAttachment(stepId: number, type: WorkerJobWorkflowUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowUploadAttachment(stepId, type, file, description, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.uploadAttachment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowUploadAttachment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -7142,8 +7143,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
-            return localVarFp.addComment(stepId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
+        workerJobWorkflowAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
+            return localVarFp.workerJobWorkflowAddComment(stepId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7153,8 +7154,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
-            return localVarFp.addVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
+        workerJobWorkflowAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
+            return localVarFp.workerJobWorkflowAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7163,8 +7164,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        completeStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
-            return localVarFp.completeStep(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowCompleteStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.workerJobWorkflowCompleteStep(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7173,8 +7174,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
-            return localVarFp.getJobWorkflow(jobWorkflowId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.workerJobWorkflowGetJobWorkflow(jobWorkflowId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7182,8 +7183,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyAssignedSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerAssignedStepResponse>> {
-            return localVarFp.getMyAssignedSteps(options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetMyAssignedSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerAssignedStepResponse>> {
+            return localVarFp.workerJobWorkflowGetMyAssignedSteps(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7191,8 +7192,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyJobWorkflows(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowResponse>> {
-            return localVarFp.getMyJobWorkflows(options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetMyJobWorkflows(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobWorkflowResponse>> {
+            return localVarFp.workerJobWorkflowGetMyJobWorkflows(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7201,8 +7202,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStep1(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
-            return localVarFp.getStep1(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.workerJobWorkflowGetStep(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7211,8 +7212,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepAttachments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepAttachmentResponse>> {
-            return localVarFp.getStepAttachments(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetStepAttachments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepAttachmentResponse>> {
+            return localVarFp.workerJobWorkflowGetStepAttachments(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7221,8 +7222,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepComments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepCommentResponse>> {
-            return localVarFp.getStepComments(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetStepComments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepCommentResponse>> {
+            return localVarFp.workerJobWorkflowGetStepComments(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7231,8 +7232,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepDiscussion(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepTimelineItemResponse>> {
-            return localVarFp.getStepDiscussion(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetStepDiscussion(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepTimelineItemResponse>> {
+            return localVarFp.workerJobWorkflowGetStepDiscussion(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7241,8 +7242,8 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStepVisits(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogSummaryResponse> {
-            return localVarFp.getStepVisits(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowGetStepVisits(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogSummaryResponse> {
+            return localVarFp.workerJobWorkflowGetStepVisits(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7251,21 +7252,21 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
-            return localVarFp.startStep(stepId, options).then((request) => request(axios, basePath));
+        workerJobWorkflowStartStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.workerJobWorkflowStartStep(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @summary Upload an attachment to a step
          * @param {number} stepId 
-         * @param {UploadAttachmentTypeEnum} type 
+         * @param {WorkerJobWorkflowUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.uploadAttachment(stepId, type, file, description, options).then((request) => request(axios, basePath));
+        workerJobWorkflowUploadAttachment(stepId: number, type: WorkerJobWorkflowUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.workerJobWorkflowUploadAttachment(stepId, type, file, description, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -7282,8 +7283,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public addComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).addComment(stepId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowAddComment(stepId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7294,8 +7295,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public addVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).addVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7305,8 +7306,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public completeStep(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).completeStep(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowCompleteStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowCompleteStep(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7316,8 +7317,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getJobWorkflow(jobWorkflowId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetJobWorkflow(jobWorkflowId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetJobWorkflow(jobWorkflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7326,8 +7327,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getMyAssignedSteps(options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getMyAssignedSteps(options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetMyAssignedSteps(options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetMyAssignedSteps(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7336,8 +7337,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getMyJobWorkflows(options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getMyJobWorkflows(options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetMyJobWorkflows(options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetMyJobWorkflows(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7347,8 +7348,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStep1(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getStep1(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStep(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7358,8 +7359,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStepAttachments(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getStepAttachments(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetStepAttachments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStepAttachments(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7369,8 +7370,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStepComments(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getStepComments(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetStepComments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStepComments(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7380,8 +7381,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStepDiscussion(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getStepDiscussion(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetStepDiscussion(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStepDiscussion(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7391,8 +7392,8 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStepVisits(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).getStepVisits(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowGetStepVisits(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStepVisits(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7402,26 +7403,26 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public startStep(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).startStep(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowStartStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowStartStep(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @summary Upload an attachment to a step
      * @param {number} stepId 
-     * @param {UploadAttachmentTypeEnum} type 
+     * @param {WorkerJobWorkflowUploadAttachmentTypeEnum} type 
      * @param {File} file 
      * @param {string} [description] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadAttachment(stepId: number, type: UploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
-        return WorkerJobWorkflowsApiFp(this.configuration).uploadAttachment(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
+    public workerJobWorkflowUploadAttachment(stepId: number, type: WorkerJobWorkflowUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowUploadAttachment(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
-export const UploadAttachmentTypeEnum = {
+export const WorkerJobWorkflowUploadAttachmentTypeEnum = {
     General: 'GENERAL',
     Additional: 'ADDITIONAL',
     Complaint: 'COMPLAINT',
@@ -7429,7 +7430,7 @@ export const UploadAttachmentTypeEnum = {
     Approval: 'APPROVAL',
     Rejection: 'REJECTION'
 } as const;
-export type UploadAttachmentTypeEnum = typeof UploadAttachmentTypeEnum[keyof typeof UploadAttachmentTypeEnum];
+export type WorkerJobWorkflowUploadAttachmentTypeEnum = typeof WorkerJobWorkflowUploadAttachmentTypeEnum[keyof typeof WorkerJobWorkflowUploadAttachmentTypeEnum];
 
 
 /**
@@ -7443,9 +7444,9 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        checkInvitation: async (token: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerCheckInvitation: async (token: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'token' is not null or undefined
-            assertParamExists('checkInvitation', 'token', token)
+            assertParamExists('workerCheckInvitation', 'token', token)
             const localVarPath = `/api/v1/workers/invites/check/{token}`
                 .replace(`{${"token"}}`, encodeURIComponent(String(token)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7480,9 +7481,9 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createWorker: async (workerCreateRequest: WorkerCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerCreateWorker: async (workerCreateRequest: WorkerCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workerCreateRequest' is not null or undefined
-            assertParamExists('createWorker', 'workerCreateRequest', workerCreateRequest)
+            assertParamExists('workerCreateWorker', 'workerCreateRequest', workerCreateRequest)
             const localVarPath = `/api/v1/workers`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7519,9 +7520,9 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteWorker: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerDeleteWorker: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteWorker', 'id', id)
+            assertParamExists('workerDeleteWorker', 'id', id)
             const localVarPath = `/api/v1/workers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7555,7 +7556,7 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllWorkers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerGetAllWorkers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/workers`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7588,7 +7589,7 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInvitationStatus: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerGetInvitationStatus: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/workers/invites`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7622,9 +7623,9 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkerById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerGetWorkerById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getWorkerById', 'id', id)
+            assertParamExists('workerGetWorkerById', 'id', id)
             const localVarPath = `/api/v1/workers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7660,11 +7661,11 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        patchWorker: async (id: number, workerUpdateRequest: WorkerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerPatchWorker: async (id: number, workerUpdateRequest: WorkerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('patchWorker', 'id', id)
+            assertParamExists('workerPatchWorker', 'id', id)
             // verify required parameter 'workerUpdateRequest' is not null or undefined
-            assertParamExists('patchWorker', 'workerUpdateRequest', workerUpdateRequest)
+            assertParamExists('workerPatchWorker', 'workerUpdateRequest', workerUpdateRequest)
             const localVarPath = `/api/v1/workers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7702,9 +7703,9 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendInvitation: async (workerInvitationRequest: WorkerInvitationRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerSendInvitation: async (workerInvitationRequest: WorkerInvitationRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workerInvitationRequest' is not null or undefined
-            assertParamExists('sendInvitation', 'workerInvitationRequest', workerInvitationRequest)
+            assertParamExists('workerSendInvitation', 'workerInvitationRequest', workerInvitationRequest)
             const localVarPath = `/api/v1/workers/invite`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7742,11 +7743,11 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateWorker: async (id: number, workerUpdateRequest: WorkerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerUpdateWorker: async (id: number, workerUpdateRequest: WorkerUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateWorker', 'id', id)
+            assertParamExists('workerUpdateWorker', 'id', id)
             // verify required parameter 'workerUpdateRequest' is not null or undefined
-            assertParamExists('updateWorker', 'workerUpdateRequest', workerUpdateRequest)
+            assertParamExists('workerUpdateWorker', 'workerUpdateRequest', workerUpdateRequest)
             const localVarPath = `/api/v1/workers/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -7793,10 +7794,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async checkInvitation(token: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerInvitationCheckResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.checkInvitation(token, options);
+        async workerCheckInvitation(token: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerInvitationCheckResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCheckInvitation(token, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.checkInvitation']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerCheckInvitation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7805,10 +7806,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createWorker(workerCreateRequest, options);
+        async workerCreateWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCreateWorker(workerCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.createWorker']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerCreateWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7817,10 +7818,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteWorker(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteWorker(id, options);
+        async workerDeleteWorker(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerDeleteWorker(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.deleteWorker']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerDeleteWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7828,10 +7829,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllWorkers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllWorkers(options);
+        async workerGetAllWorkers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerGetAllWorkers(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.getAllWorkers']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerGetAllWorkers']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7839,10 +7840,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getInvitationStatus(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerInvitationStatusResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getInvitationStatus(options);
+        async workerGetInvitationStatus(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerInvitationStatusResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerGetInvitationStatus(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.getInvitationStatus']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerGetInvitationStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7851,10 +7852,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getWorkerById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkerById(id, options);
+        async workerGetWorkerById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerGetWorkerById(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.getWorkerById']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerGetWorkerById']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7864,10 +7865,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async patchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.patchWorker(id, workerUpdateRequest, options);
+        async workerPatchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerPatchWorker(id, workerUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.patchWorker']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerPatchWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7876,10 +7877,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async sendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerInviteResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.sendInvitation(workerInvitationRequest, options);
+        async workerSendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerInviteResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerSendInvitation(workerInvitationRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.sendInvitation']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerSendInvitation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -7889,10 +7890,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateWorker(id, workerUpdateRequest, options);
+        async workerUpdateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerUpdateWorker(id, workerUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.updateWorker']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerUpdateWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -7910,8 +7911,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        checkInvitation(token: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerInvitationCheckResponse> {
-            return localVarFp.checkInvitation(token, options).then((request) => request(axios, basePath));
+        workerCheckInvitation(token: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerInvitationCheckResponse> {
+            return localVarFp.workerCheckInvitation(token, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7919,8 +7920,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
-            return localVarFp.createWorker(workerCreateRequest, options).then((request) => request(axios, basePath));
+        workerCreateWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerCreateWorker(workerCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7928,24 +7929,24 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteWorker(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteWorker(id, options).then((request) => request(axios, basePath));
+        workerDeleteWorker(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workerDeleteWorker(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllWorkers(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerResponse>> {
-            return localVarFp.getAllWorkers(options).then((request) => request(axios, basePath));
+        workerGetAllWorkers(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerResponse>> {
+            return localVarFp.workerGetAllWorkers(options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInvitationStatus(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerInvitationStatusResponse>> {
-            return localVarFp.getInvitationStatus(options).then((request) => request(axios, basePath));
+        workerGetInvitationStatus(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerInvitationStatusResponse>> {
+            return localVarFp.workerGetInvitationStatus(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7953,8 +7954,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkerById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
-            return localVarFp.getWorkerById(id, options).then((request) => request(axios, basePath));
+        workerGetWorkerById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerGetWorkerById(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7963,8 +7964,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        patchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
-            return localVarFp.patchWorker(id, workerUpdateRequest, options).then((request) => request(axios, basePath));
+        workerPatchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerPatchWorker(id, workerUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7972,8 +7973,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        sendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerInviteResponse> {
-            return localVarFp.sendInvitation(workerInvitationRequest, options).then((request) => request(axios, basePath));
+        workerSendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerInviteResponse> {
+            return localVarFp.workerSendInvitation(workerInvitationRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7982,8 +7983,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
-            return localVarFp.updateWorker(id, workerUpdateRequest, options).then((request) => request(axios, basePath));
+        workerUpdateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerUpdateWorker(id, workerUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -7998,8 +7999,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public checkInvitation(token: string, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).checkInvitation(token, options).then((request) => request(this.axios, this.basePath));
+    public workerCheckInvitation(token: string, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerCheckInvitation(token, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8008,8 +8009,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).createWorker(workerCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerCreateWorker(workerCreateRequest: WorkerCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerCreateWorker(workerCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8018,8 +8019,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteWorker(id: number, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).deleteWorker(id, options).then((request) => request(this.axios, this.basePath));
+    public workerDeleteWorker(id: number, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerDeleteWorker(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8027,8 +8028,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAllWorkers(options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).getAllWorkers(options).then((request) => request(this.axios, this.basePath));
+    public workerGetAllWorkers(options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerGetAllWorkers(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8036,8 +8037,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getInvitationStatus(options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).getInvitationStatus(options).then((request) => request(this.axios, this.basePath));
+    public workerGetInvitationStatus(options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerGetInvitationStatus(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8046,8 +8047,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getWorkerById(id: number, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).getWorkerById(id, options).then((request) => request(this.axios, this.basePath));
+    public workerGetWorkerById(id: number, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerGetWorkerById(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8057,8 +8058,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public patchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).patchWorker(id, workerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerPatchWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerPatchWorker(id, workerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8067,8 +8068,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public sendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).sendInvitation(workerInvitationRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerSendInvitation(workerInvitationRequest: WorkerInvitationRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerSendInvitation(workerInvitationRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8078,8 +8079,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).updateWorker(id, workerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerUpdateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerUpdateWorker(id, workerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -8097,11 +8098,11 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment1: async (stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityAddComment: async (stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('addComment1', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepActivityAddComment', 'stepId', stepId)
             // verify required parameter 'stepCommentCreateRequest' is not null or undefined
-            assertParamExists('addComment1', 'stepCommentCreateRequest', stepCommentCreateRequest)
+            assertParamExists('jobWorkflowStepActivityAddComment', 'stepCommentCreateRequest', stepCommentCreateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/comments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8139,9 +8140,9 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAttachment: async (attachmentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityDeleteAttachment: async (attachmentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'attachmentId' is not null or undefined
-            assertParamExists('deleteAttachment', 'attachmentId', attachmentId)
+            assertParamExists('jobWorkflowStepActivityDeleteAttachment', 'attachmentId', attachmentId)
             const localVarPath = `/api/v1/job-workflow-steps/attachments/{attachmentId}`
                 .replace(`{${"attachmentId"}}`, encodeURIComponent(String(attachmentId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8176,9 +8177,9 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteComment: async (commentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityDeleteComment: async (commentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'commentId' is not null or undefined
-            assertParamExists('deleteComment', 'commentId', commentId)
+            assertParamExists('jobWorkflowStepActivityDeleteComment', 'commentId', commentId)
             const localVarPath = `/api/v1/job-workflow-steps/comments/{commentId}`
                 .replace(`{${"commentId"}}`, encodeURIComponent(String(commentId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8213,9 +8214,9 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAttachments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityGetAttachments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getAttachments', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepActivityGetAttachments', 'stepId', stepId)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/attachments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8250,9 +8251,9 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getComments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityGetComments: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getComments', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepActivityGetComments', 'stepId', stepId)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/comments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8287,47 +8288,10 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDiscussionTimeline: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityGetDiscussionTimeline: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getDiscussionTimeline', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepActivityGetDiscussionTimeline', 'stepId', stepId)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/discussion`
-                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} stepId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTimeline: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getTimeline', 'stepId', stepId)
-            const localVarPath = `/api/v1/job-workflow-steps/{stepId}/timeline`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -8362,11 +8326,11 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAttachment: async (attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityUpdateAttachment: async (attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'attachmentId' is not null or undefined
-            assertParamExists('updateAttachment', 'attachmentId', attachmentId)
+            assertParamExists('jobWorkflowStepActivityUpdateAttachment', 'attachmentId', attachmentId)
             // verify required parameter 'stepAttachmentUpdateRequest' is not null or undefined
-            assertParamExists('updateAttachment', 'stepAttachmentUpdateRequest', stepAttachmentUpdateRequest)
+            assertParamExists('jobWorkflowStepActivityUpdateAttachment', 'stepAttachmentUpdateRequest', stepAttachmentUpdateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/attachments/{attachmentId}`
                 .replace(`{${"attachmentId"}}`, encodeURIComponent(String(attachmentId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8405,11 +8369,11 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateComment: async (commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityUpdateComment: async (commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'commentId' is not null or undefined
-            assertParamExists('updateComment', 'commentId', commentId)
+            assertParamExists('jobWorkflowStepActivityUpdateComment', 'commentId', commentId)
             // verify required parameter 'stepCommentCreateRequest' is not null or undefined
-            assertParamExists('updateComment', 'stepCommentCreateRequest', stepCommentCreateRequest)
+            assertParamExists('jobWorkflowStepActivityUpdateComment', 'stepCommentCreateRequest', stepCommentCreateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/comments/{commentId}`
                 .replace(`{${"commentId"}}`, encodeURIComponent(String(commentId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8444,19 +8408,19 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
         /**
          * 
          * @param {number} stepId 
-         * @param {UploadAttachment1TypeEnum} type 
+         * @param {JobWorkflowStepActivityUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment1: async (stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepActivityUploadAttachment: async (stepId: number, type: JobWorkflowStepActivityUploadAttachmentTypeEnum, file: File, description?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('uploadAttachment1', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepActivityUploadAttachment', 'stepId', stepId)
             // verify required parameter 'type' is not null or undefined
-            assertParamExists('uploadAttachment1', 'type', type)
+            assertParamExists('jobWorkflowStepActivityUploadAttachment', 'type', type)
             // verify required parameter 'file' is not null or undefined
-            assertParamExists('uploadAttachment1', 'file', file)
+            assertParamExists('jobWorkflowStepActivityUploadAttachment', 'file', file)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/attachments`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8501,6 +8465,43 @@ export const WorkflowStepActivitiesApiAxiosParamCreator = function (configuratio
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        stepActivityGetTimeline: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'stepId' is not null or undefined
+            assertParamExists('stepActivityGetTimeline', 'stepId', stepId)
+            const localVarPath = `/api/v1/job-workflow-steps/{stepId}/timeline`
+                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -8517,10 +8518,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addComment1(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addComment1(stepId, stepCommentCreateRequest, options);
+        async jobWorkflowStepActivityAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityAddComment(stepId, stepCommentCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.addComment1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityAddComment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8529,10 +8530,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteAttachment(attachmentId, options);
+        async jobWorkflowStepActivityDeleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityDeleteAttachment(attachmentId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.deleteAttachment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityDeleteAttachment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8541,10 +8542,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteComment(commentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteComment(commentId, options);
+        async jobWorkflowStepActivityDeleteComment(commentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityDeleteComment(commentId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.deleteComment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityDeleteComment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8553,10 +8554,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAttachments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepAttachmentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAttachments(stepId, options);
+        async jobWorkflowStepActivityGetAttachments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepAttachmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityGetAttachments(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.getAttachments']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityGetAttachments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8565,10 +8566,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getComments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepCommentResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getComments(stepId, options);
+        async jobWorkflowStepActivityGetComments(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepCommentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityGetComments(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.getComments']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityGetComments']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8577,22 +8578,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepTimelineItemResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDiscussionTimeline(stepId, options);
+        async jobWorkflowStepActivityGetDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepTimelineItemResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityGetDiscussionTimeline(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.getDiscussionTimeline']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} stepId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getTimeline(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepActivityResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTimeline(stepId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.getTimeline']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityGetDiscussionTimeline']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8602,10 +8591,10 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateAttachment(attachmentId, stepAttachmentUpdateRequest, options);
+        async jobWorkflowStepActivityUpdateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityUpdateAttachment(attachmentId, stepAttachmentUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.updateAttachment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityUpdateAttachment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -8615,25 +8604,37 @@ export const WorkflowStepActivitiesApiFp = function(configuration?: Configuratio
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateComment(commentId, stepCommentCreateRequest, options);
+        async jobWorkflowStepActivityUpdateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepCommentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityUpdateComment(commentId, stepCommentCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.updateComment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityUpdateComment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
          * @param {number} stepId 
-         * @param {UploadAttachment1TypeEnum} type 
+         * @param {JobWorkflowStepActivityUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.uploadAttachment1(stepId, type, file, description, options);
+        async jobWorkflowStepActivityUploadAttachment(stepId: number, type: JobWorkflowStepActivityUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepAttachmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepActivityUploadAttachment(stepId, type, file, description, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.uploadAttachment1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.jobWorkflowStepActivityUploadAttachment']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async stepActivityGetTimeline(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<StepActivityResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.stepActivityGetTimeline(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepActivitiesApi.stepActivityGetTimeline']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -8652,8 +8653,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addComment1(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
-            return localVarFp.addComment1(stepId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
+            return localVarFp.jobWorkflowStepActivityAddComment(stepId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8661,8 +8662,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteAttachment(attachmentId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityDeleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobWorkflowStepActivityDeleteAttachment(attachmentId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8670,8 +8671,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteComment(commentId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteComment(commentId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityDeleteComment(commentId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobWorkflowStepActivityDeleteComment(commentId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8679,8 +8680,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAttachments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepAttachmentResponse>> {
-            return localVarFp.getAttachments(stepId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityGetAttachments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepAttachmentResponse>> {
+            return localVarFp.jobWorkflowStepActivityGetAttachments(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8688,8 +8689,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getComments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepCommentResponse>> {
-            return localVarFp.getComments(stepId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityGetComments(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepCommentResponse>> {
+            return localVarFp.jobWorkflowStepActivityGetComments(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8697,17 +8698,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepTimelineItemResponse>> {
-            return localVarFp.getDiscussionTimeline(stepId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} stepId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTimeline(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepActivityResponse>> {
-            return localVarFp.getTimeline(stepId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityGetDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepTimelineItemResponse>> {
+            return localVarFp.jobWorkflowStepActivityGetDiscussionTimeline(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8716,8 +8708,8 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.updateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityUpdateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.jobWorkflowStepActivityUpdateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -8726,20 +8718,29 @@ export const WorkflowStepActivitiesApiFactory = function (configuration?: Config
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
-            return localVarFp.updateComment(commentId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityUpdateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepCommentResponse> {
+            return localVarFp.jobWorkflowStepActivityUpdateComment(commentId, stepCommentCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
          * @param {number} stepId 
-         * @param {UploadAttachment1TypeEnum} type 
+         * @param {JobWorkflowStepActivityUploadAttachmentTypeEnum} type 
          * @param {File} file 
          * @param {string} [description] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
-            return localVarFp.uploadAttachment1(stepId, type, file, description, options).then((request) => request(axios, basePath));
+        jobWorkflowStepActivityUploadAttachment(stepId: number, type: JobWorkflowStepActivityUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<StepAttachmentResponse> {
+            return localVarFp.jobWorkflowStepActivityUploadAttachment(stepId, type, file, description, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        stepActivityGetTimeline(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<StepActivityResponse>> {
+            return localVarFp.stepActivityGetTimeline(stepId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -8755,8 +8756,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public addComment1(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).addComment1(stepId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityAddComment(stepId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityAddComment(stepId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8765,8 +8766,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).deleteAttachment(attachmentId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityDeleteAttachment(attachmentId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityDeleteAttachment(attachmentId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8775,8 +8776,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteComment(commentId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).deleteComment(commentId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityDeleteComment(commentId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityDeleteComment(commentId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8785,8 +8786,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAttachments(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).getAttachments(stepId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityGetAttachments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityGetAttachments(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8795,8 +8796,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getComments(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).getComments(stepId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityGetComments(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityGetComments(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8805,18 +8806,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).getDiscussionTimeline(stepId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} stepId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public getTimeline(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).getTimeline(stepId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityGetDiscussionTimeline(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityGetDiscussionTimeline(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8826,8 +8817,8 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).updateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityUpdateAttachment(attachmentId: number, stepAttachmentUpdateRequest: StepAttachmentUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityUpdateAttachment(attachmentId, stepAttachmentUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -8837,25 +8828,35 @@ export class WorkflowStepActivitiesApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).updateComment(commentId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityUpdateComment(commentId: number, stepCommentCreateRequest: StepCommentCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityUpdateComment(commentId, stepCommentCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
      * @param {number} stepId 
-     * @param {UploadAttachment1TypeEnum} type 
+     * @param {JobWorkflowStepActivityUploadAttachmentTypeEnum} type 
      * @param {File} file 
      * @param {string} [description] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public uploadAttachment1(stepId: number, type: UploadAttachment1TypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
-        return WorkflowStepActivitiesApiFp(this.configuration).uploadAttachment1(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepActivityUploadAttachment(stepId: number, type: JobWorkflowStepActivityUploadAttachmentTypeEnum, file: File, description?: string, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).jobWorkflowStepActivityUploadAttachment(stepId, type, file, description, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public stepActivityGetTimeline(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepActivitiesApiFp(this.configuration).stepActivityGetTimeline(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
-export const UploadAttachment1TypeEnum = {
+export const JobWorkflowStepActivityUploadAttachmentTypeEnum = {
     General: 'GENERAL',
     Additional: 'ADDITIONAL',
     Complaint: 'COMPLAINT',
@@ -8863,7 +8864,7 @@ export const UploadAttachment1TypeEnum = {
     Approval: 'APPROVAL',
     Rejection: 'REJECTION'
 } as const;
-export type UploadAttachment1TypeEnum = typeof UploadAttachment1TypeEnum[keyof typeof UploadAttachment1TypeEnum];
+export type JobWorkflowStepActivityUploadAttachmentTypeEnum = typeof JobWorkflowStepActivityUploadAttachmentTypeEnum[keyof typeof JobWorkflowStepActivityUploadAttachmentTypeEnum];
 
 
 /**
@@ -8878,11 +8879,11 @@ export const WorkflowStepVisitLogsApiAxiosParamCreator = function (configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addVisitLog1: async (stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepVisitLogAddVisitLog: async (stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('addVisitLog1', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepVisitLogAddVisitLog', 'stepId', stepId)
             // verify required parameter 'stepVisitLogCreateRequest' is not null or undefined
-            assertParamExists('addVisitLog1', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
+            assertParamExists('jobWorkflowStepVisitLogAddVisitLog', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/visits`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8920,9 +8921,9 @@ export const WorkflowStepVisitLogsApiAxiosParamCreator = function (configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteVisitLog: async (visitLogId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepVisitLogDeleteVisitLog: async (visitLogId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'visitLogId' is not null or undefined
-            assertParamExists('deleteVisitLog', 'visitLogId', visitLogId)
+            assertParamExists('jobWorkflowStepVisitLogDeleteVisitLog', 'visitLogId', visitLogId)
             const localVarPath = `/api/v1/job-workflow-steps/visits/{visitLogId}`
                 .replace(`{${"visitLogId"}}`, encodeURIComponent(String(visitLogId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8957,9 +8958,9 @@ export const WorkflowStepVisitLogsApiAxiosParamCreator = function (configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVisitLogs: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepVisitLogGetVisitLogs: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getVisitLogs', 'stepId', stepId)
+            assertParamExists('jobWorkflowStepVisitLogGetVisitLogs', 'stepId', stepId)
             const localVarPath = `/api/v1/job-workflow-steps/{stepId}/visits`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -8995,11 +8996,11 @@ export const WorkflowStepVisitLogsApiAxiosParamCreator = function (configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVisitLog: async (visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobWorkflowStepVisitLogUpdateVisitLog: async (visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'visitLogId' is not null or undefined
-            assertParamExists('updateVisitLog', 'visitLogId', visitLogId)
+            assertParamExists('jobWorkflowStepVisitLogUpdateVisitLog', 'visitLogId', visitLogId)
             // verify required parameter 'stepVisitLogCreateRequest' is not null or undefined
-            assertParamExists('updateVisitLog', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
+            assertParamExists('jobWorkflowStepVisitLogUpdateVisitLog', 'stepVisitLogCreateRequest', stepVisitLogCreateRequest)
             const localVarPath = `/api/v1/job-workflow-steps/visits/{visitLogId}`
                 .replace(`{${"visitLogId"}}`, encodeURIComponent(String(visitLogId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9047,10 +9048,10 @@ export const WorkflowStepVisitLogsApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async addVisitLog1(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.addVisitLog1(stepId, stepVisitLogCreateRequest, options);
+        async jobWorkflowStepVisitLogAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepVisitLogAddVisitLog(stepId, stepVisitLogCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.addVisitLog1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.jobWorkflowStepVisitLogAddVisitLog']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9059,10 +9060,10 @@ export const WorkflowStepVisitLogsApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteVisitLog(visitLogId, options);
+        async jobWorkflowStepVisitLogDeleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepVisitLogDeleteVisitLog(visitLogId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.deleteVisitLog']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.jobWorkflowStepVisitLogDeleteVisitLog']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9071,10 +9072,10 @@ export const WorkflowStepVisitLogsApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVisitLogs(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogSummaryResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getVisitLogs(stepId, options);
+        async jobWorkflowStepVisitLogGetVisitLogs(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepVisitLogGetVisitLogs(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.getVisitLogs']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.jobWorkflowStepVisitLogGetVisitLogs']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9084,10 +9085,10 @@ export const WorkflowStepVisitLogsApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateVisitLog(visitLogId, stepVisitLogCreateRequest, options);
+        async jobWorkflowStepVisitLogUpdateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<StepVisitLogResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowStepVisitLogUpdateVisitLog(visitLogId, stepVisitLogCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.updateVisitLog']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowStepVisitLogsApi.jobWorkflowStepVisitLogUpdateVisitLog']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -9106,8 +9107,8 @@ export const WorkflowStepVisitLogsApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        addVisitLog1(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
-            return localVarFp.addVisitLog1(stepId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowStepVisitLogAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
+            return localVarFp.jobWorkflowStepVisitLogAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9115,8 +9116,8 @@ export const WorkflowStepVisitLogsApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteVisitLog(visitLogId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepVisitLogDeleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.jobWorkflowStepVisitLogDeleteVisitLog(visitLogId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9124,8 +9125,8 @@ export const WorkflowStepVisitLogsApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVisitLogs(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogSummaryResponse> {
-            return localVarFp.getVisitLogs(stepId, options).then((request) => request(axios, basePath));
+        jobWorkflowStepVisitLogGetVisitLogs(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogSummaryResponse> {
+            return localVarFp.jobWorkflowStepVisitLogGetVisitLogs(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9134,8 +9135,8 @@ export const WorkflowStepVisitLogsApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
-            return localVarFp.updateVisitLog(visitLogId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
+        jobWorkflowStepVisitLogUpdateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
+            return localVarFp.jobWorkflowStepVisitLogUpdateVisitLog(visitLogId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -9151,8 +9152,8 @@ export class WorkflowStepVisitLogsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public addVisitLog1(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowStepVisitLogsApiFp(this.configuration).addVisitLog1(stepId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepVisitLogAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepVisitLogsApiFp(this.configuration).jobWorkflowStepVisitLogAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9161,8 +9162,8 @@ export class WorkflowStepVisitLogsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public deleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepVisitLogsApiFp(this.configuration).deleteVisitLog(visitLogId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepVisitLogDeleteVisitLog(visitLogId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepVisitLogsApiFp(this.configuration).jobWorkflowStepVisitLogDeleteVisitLog(visitLogId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9171,8 +9172,8 @@ export class WorkflowStepVisitLogsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getVisitLogs(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowStepVisitLogsApiFp(this.configuration).getVisitLogs(stepId, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepVisitLogGetVisitLogs(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowStepVisitLogsApiFp(this.configuration).jobWorkflowStepVisitLogGetVisitLogs(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -9182,8 +9183,8 @@ export class WorkflowStepVisitLogsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowStepVisitLogsApiFp(this.configuration).updateVisitLog(visitLogId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public jobWorkflowStepVisitLogUpdateVisitLog(visitLogId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowStepVisitLogsApiFp(this.configuration).jobWorkflowStepVisitLogUpdateVisitLog(visitLogId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -9196,53 +9197,16 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        _delete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('_delete', 'id', id)
-            const localVarPath = `/api/v1/workflows/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {number} workflowId 
          * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        bulkUpdate: async (workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowBulkUpdate: async (workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
-            assertParamExists('bulkUpdate', 'workflowId', workflowId)
+            assertParamExists('workflowBulkUpdate', 'workflowId', workflowId)
             // verify required parameter 'workflowBulkUpdateRequest' is not null or undefined
-            assertParamExists('bulkUpdate', 'workflowBulkUpdateRequest', workflowBulkUpdateRequest)
+            assertParamExists('workflowBulkUpdate', 'workflowBulkUpdateRequest', workflowBulkUpdateRequest)
             const localVarPath = `/api/v1/workflows/{workflowId}/bulk`
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9280,9 +9244,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create: async (workflowCreateRequest: WorkflowCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowCreate: async (workflowCreateRequest: WorkflowCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowCreateRequest' is not null or undefined
-            assertParamExists('create', 'workflowCreateRequest', workflowCreateRequest)
+            assertParamExists('workflowCreate', 'workflowCreateRequest', workflowCreateRequest)
             const localVarPath = `/api/v1/workflows`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9319,9 +9283,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createStep: async (workflowStepCreateRequest: WorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowCreateStep: async (workflowStepCreateRequest: WorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowStepCreateRequest' is not null or undefined
-            assertParamExists('createStep', 'workflowStepCreateRequest', workflowStepCreateRequest)
+            assertParamExists('workflowCreateStep', 'workflowStepCreateRequest', workflowStepCreateRequest)
             const localVarPath = `/api/v1/workflows/steps`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9354,13 +9318,50 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workflowDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workflowDelete', 'id', id)
+            const localVarPath = `/api/v1/workflows/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowDeleteStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('deleteStep', 'stepId', stepId)
+            assertParamExists('workflowDeleteStep', 'stepId', stepId)
             const localVarPath = `/api/v1/workflows/steps/{stepId}`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9394,7 +9395,7 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/workflows`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9427,7 +9428,7 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllSteps: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetAllSteps: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/workflows/steps`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -9461,9 +9462,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOne: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetOne: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getOne', 'id', id)
+            assertParamExists('workflowGetOne', 'id', id)
             const localVarPath = `/api/v1/workflows/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9498,9 +9499,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('getStep', 'stepId', stepId)
+            assertParamExists('workflowGetStep', 'stepId', stepId)
             const localVarPath = `/api/v1/workflows/steps/{stepId}`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9535,9 +9536,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSteps: async (workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetSteps: async (workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
-            assertParamExists('getSteps', 'workflowId', workflowId)
+            assertParamExists('workflowGetSteps', 'workflowId', workflowId)
             const localVarPath = `/api/v1/workflows/{workflowId}/steps`
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9572,9 +9573,9 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkflowWithSteps: async (workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowGetWorkflowWithSteps: async (workflowId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
-            assertParamExists('getWorkflowWithSteps', 'workflowId', workflowId)
+            assertParamExists('workflowGetWorkflowWithSteps', 'workflowId', workflowId)
             const localVarPath = `/api/v1/workflows/{workflowId}/with-steps`
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9610,11 +9611,11 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update: async (id: number, workflowCreateRequest: WorkflowCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowUpdate: async (id: number, workflowCreateRequest: WorkflowCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('update', 'id', id)
+            assertParamExists('workflowUpdate', 'id', id)
             // verify required parameter 'workflowCreateRequest' is not null or undefined
-            assertParamExists('update', 'workflowCreateRequest', workflowCreateRequest)
+            assertParamExists('workflowUpdate', 'workflowCreateRequest', workflowCreateRequest)
             const localVarPath = `/api/v1/workflows/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9653,11 +9654,11 @@ export const WorkflowsApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateStep: async (stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workflowUpdateStep: async (stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'stepId' is not null or undefined
-            assertParamExists('updateStep', 'stepId', stepId)
+            assertParamExists('workflowUpdateStep', 'stepId', stepId)
             // verify required parameter 'workflowStepCreateRequest' is not null or undefined
-            assertParamExists('updateStep', 'workflowStepCreateRequest', workflowStepCreateRequest)
+            assertParamExists('workflowUpdateStep', 'workflowStepCreateRequest', workflowStepCreateRequest)
             const localVarPath = `/api/v1/workflows/steps/{stepId}`
                 .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9700,27 +9701,15 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async _delete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi._delete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @param {number} workflowId 
          * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.bulkUpdate(workflowId, workflowBulkUpdateRequest, options);
+        async workflowBulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowBulkUpdate(workflowId, workflowBulkUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.bulkUpdate']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowBulkUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9729,10 +9718,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async create(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.create(workflowCreateRequest, options);
+        async workflowCreate(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowCreate(workflowCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.create']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowCreate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9741,44 +9730,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createStep(workflowStepCreateRequest, options);
+        async workflowCreateStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowCreateStep(workflowStepCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.createStep']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} stepId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteStep(stepId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.deleteStep']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAll(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getAll']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAllSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowStepResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllSteps(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getAllSteps']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowCreateStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9787,10 +9742,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOne(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOne(id, options);
+        async workflowDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowDelete(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getOne']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9799,10 +9754,56 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getStep(stepId, options);
+        async workflowDeleteStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowDeleteStep(stepId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getStep']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowDeleteStep']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workflowGetAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetAll(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetAll']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workflowGetAllSteps(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowStepResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetAllSteps(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetAllSteps']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workflowGetOne(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetOne(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetOne']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workflowGetStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetStep(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9811,10 +9812,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSteps(workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowStepResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSteps(workflowId, options);
+        async workflowGetSteps(workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkflowStepResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetSteps(workflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getSteps']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetSteps']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9823,10 +9824,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowWithStepsResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkflowWithSteps(workflowId, options);
+        async workflowGetWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowWithStepsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowGetWorkflowWithSteps(workflowId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.getWorkflowWithSteps']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowGetWorkflowWithSteps']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9836,10 +9837,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async update(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, workflowCreateRequest, options);
+        async workflowUpdate(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowUpdate(id, workflowCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.update']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowUpdate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9849,10 +9850,10 @@ export const WorkflowsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateStep(stepId, workflowStepCreateRequest, options);
+        async workflowUpdateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workflowUpdateStep(stepId, workflowStepCreateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.updateStep']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkflowsApi.workflowUpdateStep']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -9866,22 +9867,13 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        _delete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp._delete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {number} workflowId 
          * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
-            return localVarFp.bulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(axios, basePath));
+        workflowBulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
+            return localVarFp.workflowBulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9889,8 +9881,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        create(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
-            return localVarFp.create(workflowCreateRequest, options).then((request) => request(axios, basePath));
+        workflowCreate(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
+            return localVarFp.workflowCreate(workflowCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9898,33 +9890,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
-            return localVarFp.createStep(workflowStepCreateRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} stepId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteStep(stepId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowResponse>> {
-            return localVarFp.getAll(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowStepResponse>> {
-            return localVarFp.getAllSteps(options).then((request) => request(axios, basePath));
+        workflowCreateStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
+            return localVarFp.workflowCreateStep(workflowStepCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9932,8 +9899,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOne(id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
-            return localVarFp.getOne(id, options).then((request) => request(axios, basePath));
+        workflowDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workflowDelete(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9941,8 +9908,42 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
-            return localVarFp.getStep(stepId, options).then((request) => request(axios, basePath));
+        workflowDeleteStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workflowDeleteStep(stepId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workflowGetAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowResponse>> {
+            return localVarFp.workflowGetAll(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workflowGetAllSteps(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowStepResponse>> {
+            return localVarFp.workflowGetAllSteps(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workflowGetOne(id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
+            return localVarFp.workflowGetOne(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workflowGetStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
+            return localVarFp.workflowGetStep(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9950,8 +9951,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSteps(workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowStepResponse>> {
-            return localVarFp.getSteps(workflowId, options).then((request) => request(axios, basePath));
+        workflowGetSteps(workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkflowStepResponse>> {
+            return localVarFp.workflowGetSteps(workflowId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9959,8 +9960,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowWithStepsResponse> {
-            return localVarFp.getWorkflowWithSteps(workflowId, options).then((request) => request(axios, basePath));
+        workflowGetWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowWithStepsResponse> {
+            return localVarFp.workflowGetWorkflowWithSteps(workflowId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9969,8 +9970,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        update(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
-            return localVarFp.update(id, workflowCreateRequest, options).then((request) => request(axios, basePath));
+        workflowUpdate(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowResponse> {
+            return localVarFp.workflowUpdate(id, workflowCreateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9979,8 +9980,8 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
-            return localVarFp.updateStep(stepId, workflowStepCreateRequest, options).then((request) => request(axios, basePath));
+        workflowUpdateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkflowStepResponse> {
+            return localVarFp.workflowUpdateStep(stepId, workflowStepCreateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -9991,23 +9992,13 @@ export const WorkflowsApiFactory = function (configuration?: Configuration, base
 export class WorkflowsApi extends BaseAPI {
     /**
      * 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public _delete(id: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration)._delete(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @param {number} workflowId 
      * @param {WorkflowBulkUpdateRequest} workflowBulkUpdateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public bulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).bulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workflowBulkUpdate(workflowId: number, workflowBulkUpdateRequest: WorkflowBulkUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowBulkUpdate(workflowId, workflowBulkUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10016,8 +10007,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public create(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).create(workflowCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workflowCreate(workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowCreate(workflowCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10026,36 +10017,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public createStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).createStep(workflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} stepId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public deleteStep(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).deleteStep(stepId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public getAll(options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getAll(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public getAllSteps(options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getAllSteps(options).then((request) => request(this.axios, this.basePath));
+    public workflowCreateStep(workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowCreateStep(workflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10064,8 +10027,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getOne(id: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getOne(id, options).then((request) => request(this.axios, this.basePath));
+    public workflowDelete(id: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10074,8 +10037,46 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getStep(stepId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getStep(stepId, options).then((request) => request(this.axios, this.basePath));
+    public workflowDeleteStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowDeleteStep(stepId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workflowGetAll(options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetAll(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workflowGetAllSteps(options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetAllSteps(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workflowGetOne(id: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetOne(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workflowGetStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetStep(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10084,8 +10085,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getSteps(workflowId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
+    public workflowGetSteps(workflowId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10094,8 +10095,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).getWorkflowWithSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
+    public workflowGetWorkflowWithSteps(workflowId: number, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowGetWorkflowWithSteps(workflowId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10105,8 +10106,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public update(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).update(id, workflowCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workflowUpdate(id: number, workflowCreateRequest: WorkflowCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowUpdate(id, workflowCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10116,8 +10117,8 @@ export class WorkflowsApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public updateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
-        return WorkflowsApiFp(this.configuration).updateStep(stepId, workflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    public workflowUpdateStep(stepId: number, workflowStepCreateRequest: WorkflowStepCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkflowsApiFp(this.configuration).workflowUpdateStep(stepId, workflowStepCreateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

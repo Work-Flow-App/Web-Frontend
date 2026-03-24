@@ -1,14 +1,6 @@
 import { InputValidationRules, type IFields } from '../../../utils/validation';
 
 export const FieldFormSchema: IFields = {
-  name: {
-    title: 'name',
-    rule: InputValidationRules.StringRequired,
-    defaultValue: '',
-    placeHolder: 'e.g., issue_type, location',
-    label: 'Field Name',
-    isRequired: true,
-  },
   label: {
     title: 'label',
     rule: InputValidationRules.StringRequired,
@@ -27,8 +19,8 @@ export const FieldFormSchema: IFields = {
   },
   required: {
     title: 'required',
-    rule: InputValidationRules.StringNotRequired,
-    defaultValue: 'false',
+    rule: InputValidationRules.BooleanNotRequired,
+    defaultValue: false,
     placeHolder: '',
     label: 'Required Field',
     isRequired: false,
@@ -41,21 +33,11 @@ export const FieldFormSchema: IFields = {
     label: 'Dropdown Options',
     isRequired: false,
   },
-  orderIndex: {
-    title: 'orderIndex',
-    rule: InputValidationRules.NumberNotRequired,
-    defaultValue: 0,
-    placeHolder: '0',
-    label: 'Order Index',
-    isRequired: false,
-  },
 };
 
 export interface FieldFormData {
-  name: string;
   label: string;
   jobFieldType: string;
   required?: boolean;
   options?: string;
-  orderIndex?: number;
 }

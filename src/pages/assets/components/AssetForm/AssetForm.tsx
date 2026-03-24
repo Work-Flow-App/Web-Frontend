@@ -5,6 +5,7 @@ import { AssetFormFields } from '../AssetFormFields';
 import { Loader } from '../../../../components/UI';
 import { assetService, type AssetCreateRequest, type AssetUpdateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
@@ -55,8 +56,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           });
         } catch (error) {
           console.error('Error fetching asset:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load asset data';
-          showError(errorMessage);
+          showError(extractErrorMessage(error, 'Failed to load asset data'));
         } finally {
           setIsLoading(false);
         }
@@ -107,8 +107,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
         }
       } catch (error) {
         console.error('Error saving asset:', error);
-        const errorMessage = error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'add'} asset`;
-        showError(errorMessage);
+        showError(extractErrorMessage(error, `Failed to ${isEditMode ? 'update' : 'add'} asset`));
         throw error;
       }
       return { success: true };

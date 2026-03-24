@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Stack } from '@mui/material';
 import { Add as AddIcon, AssignmentReturn as ReturnIcon } from '@mui/icons-material';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { assetService } from '../../../../services/api';
 import type { AssetAssignmentResponse } from '../../../../services/api';
@@ -27,8 +28,7 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
       setAssignments(assignmentsData);
     } catch (error) {
       console.error('Error fetching job assignments:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load asset assignments';
-      showError(errorMessage);
+      showError(extractErrorMessage(error, 'Failed to load asset assignments'));
     } finally {
       setLoading(false);
     }
@@ -82,8 +82,7 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
                 fetchAssignments();
               } catch (error) {
                 console.error('Error returning asset:', error);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to return asset';
-                showError(errorMessage);
+                showError(extractErrorMessage(error, 'Failed to return asset'));
                 resetGlobalModalOuterProps();
               }
             }}

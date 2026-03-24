@@ -60,7 +60,9 @@ export interface AppThemeOptions {
 export const createAppTheme = ({ mode, customColors }: AppThemeOptions) => {
   const palette = getPalette(mode, customColors);
 
-  // Dynamic overrides for buttons to ensure they use the primary color
+  // Dynamic overrides for buttons — these apply to raw MUI <Button> components.
+  // Our custom StyledButton (Button.styles.ts) reads directly from palette.buttonColors,
+  // but raw MUI buttons (used in some third-party components and ThemeSettings) rely on these.
   const dynamicOverrides = {
     ...overrides,
     MuiButton: {
@@ -68,23 +70,17 @@ export const createAppTheme = ({ mode, customColors }: AppThemeOptions) => {
       styleOverrides: {
         ...overrides?.MuiButton?.styleOverrides,
         containedPrimary: {
-           // @ts-ignore - palette is not fully typed in the factory context yet against the custom palette
-          backgroundColor: palette.primary.main,
-          color: palette.primary.contrastText,
+          backgroundColor: palette.buttonColors.primary,
+          color: palette.buttonColors.primaryContrast,
           '&:hover': {
-            // @ts-ignore
-            backgroundColor: palette.primary.dark,
+            backgroundColor: palette.buttonColors.primaryHover,
           },
         },
         outlinedPrimary: {
-          // @ts-ignore
-          color: palette.primary.main,
-          // @ts-ignore
-          borderColor: palette.primary.main,
+          color: palette.buttonColors.primary,
+          borderColor: palette.buttonColors.primary,
           '&:hover': {
-             // @ts-ignore
-            borderColor: palette.primary.dark,
-             // @ts-ignore
+            borderColor: palette.buttonColors.primaryHover,
             backgroundColor: palette.primary.alert,
           },
         },

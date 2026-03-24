@@ -20,7 +20,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DownloadIcon from '@mui/icons-material/Download';
 import { StepCommentCreateRequestTypeEnum } from '../../../../../../workflow-api';
 import type { JobResponse, JobWorkflowStepResponse, StepTimelineItemResponse } from '../../../../../services/api';
-import { jobWorkflowService, stepActivityService, UploadAttachment1TypeEnum } from '../../../../../services/api';
+import { jobWorkflowService, stepActivityService, UploadAttachmentTypeEnum } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
@@ -160,7 +160,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
       await stepActivityService.uploadAttachment(
         selectedStepId,
         file,
-        postType as UploadAttachment1TypeEnum
+        postType as UploadAttachmentTypeEnum
       );
       showSuccess('Attachment uploaded');
       fetchTimeline();
