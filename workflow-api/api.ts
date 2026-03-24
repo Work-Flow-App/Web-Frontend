@@ -555,6 +555,7 @@ export interface PageableObject {
     'paged'?: boolean;
     'pageNumber'?: number;
     'pageSize'?: number;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;

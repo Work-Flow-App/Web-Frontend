@@ -23,6 +23,7 @@ import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
 import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
+import { JobEstimateTab } from '../JobDetailsTabs/tabs/JobEstimateTab';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -196,6 +197,10 @@ export const JobDetailsView: React.FC = () => {
             ) : activeTab === 'assets' ? (
               <S.DetailsSection>
                 <JobAssetsSection jobId={job.id!} />
+              </S.DetailsSection>
+            ) : activeTab === 'estimate' ? (
+              <S.DetailsSection>
+                <JobEstimateTab job={job} />
               </S.DetailsSection>
             ) : (
               <>
