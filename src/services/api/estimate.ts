@@ -22,18 +22,18 @@ function getEstimatesApi(): EstimatesApi {
 
 export const estimateService = {
   getByJobId(jobId: number) {
-    return getEstimatesApi().getByJob(jobId);
+    return getEstimatesApi().estimateGetByJob(jobId);
   },
 
   updateNotes(estimateId: number, data: EstimateUpdateRequest) {
-    return getEstimatesApi().update3(estimateId, data);
+    return getEstimatesApi().estimateUpdate(estimateId, data);
   },
 
   createAndLinkLineItem(estimateId: number, data: LineItemCreateRequest) {
-    return getEstimatesApi().createAndLink(estimateId, data);
+    return getEstimatesApi().estimateCreateAndLink(estimateId, data);
   },
 
   unlinkLineItem(estimateId: number, lineItemId: number) {
-    return getEstimatesApi().unlink(estimateId, lineItemId);
+    return getEstimatesApi().estimateUnlink(estimateId, lineItemId);
   },
 };
