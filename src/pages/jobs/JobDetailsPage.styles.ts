@@ -23,6 +23,8 @@ export const DetailsSection = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.colors.grey_200}`,
   boxShadow: '0 1px 3px ${floowColors.shadow.md}',
   height: '100%',
+  minWidth: 0,
+  overflowX: 'auto',
 }));
 
 export const SectionTitle = styled(Typography)(({ theme }) => ({
@@ -717,6 +719,8 @@ export const MainContentPanel = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
+  minWidth: 0,
+  overflow: 'hidden',
 }));
 
 // Collapsible Section
