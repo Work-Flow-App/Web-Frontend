@@ -8,9 +8,10 @@ export const workflowColumns: ITableColumn<WorkflowTableRow>[] = [
   {
     id: 'id',
     label: 'ID',
-    accessor: 'id',
+    accessor: 'workflowRef',
     sortable: true,
     width: 'auto',
+    render: (row) => row.workflowRef ?? row.id,
   },
   {
     id: 'name',
