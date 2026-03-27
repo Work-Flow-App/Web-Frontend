@@ -9,6 +9,8 @@ export const MapContainer = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   border: `${rem(1)} solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
+  // LoadScript renders a plain <div> with no height — force it to fill
+  '& > div': { height: '100%' },
 }));
 
 export const MapWrapper = styled(Box)({

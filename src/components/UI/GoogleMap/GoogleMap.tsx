@@ -1,44 +1,64 @@
-import React, { useState, useCallback } from 'react';
-import { GoogleMap as GoogleMapComponent, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { CircularProgress, Typography, Alert, AlertTitle } from '@mui/material';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useJsApiLoader, GoogleMap as GoogleMapComponent, Marker, InfoWindow } from '@react-google-maps/api';
+import { CircularProgress, Typography, Alert, AlertTitle, Box, Chip } from '@mui/material';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../config/googleMaps';
 import PlacesAutocomplete from './PlacesAutocomplete';
 import type { GoogleMapProps, PlaceDetails } from './GoogleMap.types';
 import {
   MapContainer,
   MapWrapper,
-  SearchBoxContainer,
   LoadingContainer,
   ErrorContainer,
   MarkerInfoWindow,
 } from './GoogleMap.styles';
 
-/**
- * GoogleMap Component
- * A reusable Google Maps component with places search functionality
- *
- * Features:
- * - Interactive map with zoom and pan controls
- * - Places autocomplete search
- * - Markers with info windows
- * - Customizable center and zoom level
- * - Click to add markers
- */
+const STATUS_COLORS: Record<string, string> = {
+  COMPLETED: '#4caf50',
+  IN_PROGRESS: '#2196f3',
+  PENDING: '#ff9800',
+};
+
 const GoogleMap: React.FC<GoogleMapProps> = ({
   center = GOOGLE_MAPS_CONFIG.defaultCenter,
   zoom = GOOGLE_MAPS_CONFIG.defaultZoom,
   markers = [],
   onLocationSelect,
+  selectedLocation,
   height = '600px',
   width = '100%',
   showSearchBox = true,
+  searchInitialValue,
   className,
 }) => {
+  const resolvedHeight = typeof height === 'number' ? `${height}px` : height;
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
+    libraries: GOOGLE_MAPS_CONFIG.libraries,
+  });
+
   const [selectedMarker, setSelectedMarker] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(center);
   const [mapZoom, setMapZoom] = useState(zoom);
 
-  // Handle place selection from search
+  const allMarkers = useMemo(() => {
+    const list = [...markers];
+    if (selectedLocation) {
+      const overlaps = markers.some(
+        (m) =>
+          Math.abs(m.location.lat - selectedLocation.location.lat) < 0.001 &&
+          Math.abs(m.location.lng - selectedLocation.location.lng) < 0.001
+      );
+      if (!overlaps) list.push(selectedLocation);
+    }
+    return list;
+  }, [markers, selectedLocation]);
+
+  useEffect(() => {
+    setMapCenter(center);
+    setMapZoom(zoom);
+  }, [center, zoom]);
+
   const handlePlaceSelect = useCallback(
     (place: PlaceDetails) => {
       setMapCenter(place.location);
@@ -48,117 +68,129 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     [onLocationSelect]
   );
 
-  // Handle map click
   const handleMapClick = useCallback(
     (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return;
-
-      const location = {
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng(),
-      };
-
-      // Use Geocoding to get address from coordinates
+      const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location }, (results, status) => {
         if (status === 'OK' && results?.[0]) {
-          const placeDetails: PlaceDetails = {
-            address: results[0].formatted_address,
-            location,
-            placeId: results[0].place_id,
-          };
-          onLocationSelect?.(placeDetails);
+          onLocationSelect?.({ address: results[0].formatted_address, location, placeId: results[0].place_id });
         } else {
-          // If geocoding fails, just use coordinates
-          const placeDetails: PlaceDetails = {
-            address: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
-            location,
-          };
-          onLocationSelect?.(placeDetails);
+          onLocationSelect?.({ address: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`, location });
         }
       });
     },
     [onLocationSelect]
   );
 
-  // Check if API key is configured
   if (!isGoogleMapsConfigured()) {
     return (
-      <MapContainer sx={{ height, width }} className={className}>
+      <MapContainer sx={{ height: resolvedHeight, width }} className={className}>
         <ErrorContainer>
-          <Alert severity="error" sx={{ maxWidth: 600 }}>
+          <Alert severity="error">
             <AlertTitle>Google Maps Not Configured</AlertTitle>
-            <Typography variant="body2" component="div" gutterBottom>
-              Please add your Google Maps API key to continue:
-            </Typography>
-            <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
-              <li>Get an API key from Google Cloud Console</li>
-              <li>Enable Maps JavaScript API, Places API, and Geocoding API</li>
-              <li>Add VITE_GOOGLE_MAPS_API_KEY to your .env file</li>
-              <li>Restart the development server</li>
-            </ol>
+            <Typography variant="body2">Add VITE_GOOGLE_MAPS_API_KEY to your .env file and restart.</Typography>
           </Alert>
         </ErrorContainer>
       </MapContainer>
     );
   }
 
+  if (loadError) {
+    return (
+      <MapContainer sx={{ height: resolvedHeight, width }} className={className}>
+        <ErrorContainer>
+          <Alert severity="error">
+            <AlertTitle>Failed to load Google Maps</AlertTitle>
+            <Typography variant="body2">Check your API key and ensure Maps JavaScript API is enabled.</Typography>
+          </Alert>
+        </ErrorContainer>
+      </MapContainer>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <MapContainer sx={{ height: resolvedHeight, width }} className={className}>
+        <LoadingContainer>
+          <CircularProgress />
+          <Typography variant="body2" color="textSecondary">Loading Google Maps...</Typography>
+        </LoadingContainer>
+      </MapContainer>
+    );
+  }
+
   return (
-    <MapContainer sx={{ height, width }} className={className}>
-      <LoadScript
-        googleMapsApiKey={GOOGLE_MAPS_CONFIG.apiKey}
-        libraries={GOOGLE_MAPS_CONFIG.libraries}
-        loadingElement={
-          <LoadingContainer>
-            <CircularProgress />
-            <Typography variant="body2" color="textSecondary">
-              Loading Google Maps...
-            </Typography>
-          </LoadingContainer>
-        }
-      >
+    <Box sx={{ width, height: resolvedHeight, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {showSearchBox && (
+        <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} placeholder="Search for a location..." defaultValue={searchInitialValue} />
+      )}
+      <MapContainer sx={{ flex: 1, minHeight: 0, width: '100%' }} className={className}>
         <MapWrapper>
-          {showSearchBox && (
-            <SearchBoxContainer>
-              <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} placeholder="Search for a location..." />
-            </SearchBoxContainer>
-          )}
 
-          <GoogleMapComponent
-            center={mapCenter}
-            zoom={mapZoom}
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            options={GOOGLE_MAPS_CONFIG.mapOptions}
-            onClick={handleMapClick}
-          >
-            {/* Render markers */}
-            {markers.map((marker, index) => (
-              <Marker
-                key={`${marker.location.lat}-${marker.location.lng}-${index}`}
-                position={marker.location}
-                onClick={() => setSelectedMarker(marker)}
-              />
-            ))}
+        <GoogleMapComponent
+          center={mapCenter}
+          zoom={mapZoom}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          options={GOOGLE_MAPS_CONFIG.mapOptions}
+          onClick={handleMapClick}
+        >
+          {allMarkers.map((marker, index) => (
+            <Marker
+              key={`${marker.location.lat}-${marker.location.lng}-${index}`}
+              position={marker.location}
+              onClick={() => setSelectedMarker(marker)}
+            />
+          ))}
 
-            {/* Show info window for selected marker */}
-            {selectedMarker && (
-              <InfoWindow position={selectedMarker.location} onCloseClick={() => setSelectedMarker(null)}>
-                <MarkerInfoWindow>
-                  {selectedMarker.name && (
-                    <Typography variant="subtitle2" component="h6">
-                      {selectedMarker.name}
+          {selectedMarker && (
+            <InfoWindow position={selectedMarker.location} onCloseClick={() => setSelectedMarker(null)}>
+              <MarkerInfoWindow>
+                {selectedMarker.workerData ? (
+                  <Box sx={{ minWidth: 220, maxWidth: 300 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      {selectedMarker.workerData.workerName}
                     </Typography>
-                  )}
-                  <Typography variant="body2" component="p">
-                    {selectedMarker.address}
-                  </Typography>
-                </MarkerInfoWindow>
-              </InfoWindow>
-            )}
-          </GoogleMapComponent>
+                    {selectedMarker.workerData.workerEmail && (
+                      <Typography variant="caption" sx={{ display: 'block', color: '#555' }}>
+                        {selectedMarker.workerData.workerEmail}
+                      </Typography>
+                    )}
+                    {selectedMarker.workerData.workerPhone && (
+                      <Typography variant="caption" sx={{ display: 'block', color: '#555', mb: 1 }}>
+                        {selectedMarker.workerData.workerPhone}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" sx={{ display: 'block', color: '#888', mb: 1 }}>
+                      {selectedMarker.address}
+                    </Typography>
+                    {selectedMarker.workerData.jobs.map((job) => (
+                      <Box key={job.jobId} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderTop: '1px solid #eee' }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, backgroundColor: STATUS_COLORS[job.status] ?? '#9e9e9e' }} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#1976d2' }}>#{job.jobId}</Typography>
+                        {job.clientName && <Typography variant="caption" sx={{ color: '#555' }}>{job.clientName}</Typography>}
+                        <Chip
+                          label={job.status}
+                          size="small"
+                          sx={{ height: 16, fontSize: '0.6rem', backgroundColor: STATUS_COLORS[job.status] ?? '#9e9e9e', color: '#fff', ml: 'auto' }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box>
+                    {selectedMarker.name && <Typography variant="subtitle2" component="h6">{selectedMarker.name}</Typography>}
+                    <Typography variant="body2" component="p">{selectedMarker.address}</Typography>
+                  </Box>
+                )}
+              </MarkerInfoWindow>
+            </InfoWindow>
+          )}
+        </GoogleMapComponent>
         </MapWrapper>
-      </LoadScript>
-    </MapContainer>
+      </MapContainer>
+    </Box>
   );
 };
 

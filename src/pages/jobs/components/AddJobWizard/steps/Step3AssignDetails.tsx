@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Typography, Chip, alpha } from '@mui/material';
-import { useForm, FormProvider } from 'react-hook-form';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
 import { workerService, workflowService, assetService } from '../../../../../services/api';
 import type { WorkerResponse, WorkflowResponse, AssetResponse } from '../../../../../services/api';
 import type { WizardData } from '../AddJobWizard';
-import { Input } from '../../../../../components/UI/Forms/Input';
-import { FormField, FormRow } from '../../../../../components/UI/FormComponents';
+import GoogleMap from '../../../../../components/UI/GoogleMap/GoogleMap';
+import type { PlaceDetails } from '../../../../../components/UI/GoogleMap';
+import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../../config/googleMaps';
 
 interface Step3Props {
   onStepComplete: (data: Partial<WizardData>) => void;
@@ -113,15 +113,25 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | undefined>(initialData.workflowId);
   const [selectedAssetIds, setSelectedAssetIds] = useState<number[]>(initialData.assetIds ?? []);
 
-  const addressMethods = useForm({
-    defaultValues: {
-      street: initialData.address?.street ?? '',
-      city: initialData.address?.city ?? '',
-      state: initialData.address?.state ?? '',
-      postalCode: initialData.address?.postalCode ?? '',
-      country: initialData.address?.country ?? '',
-    },
-  });
+  // Selected location from the map search
+  const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(
+    initialData.address
+      ? {
+          address: initialData.address.fullAddress,
+          location: {
+            lat: initialData.address.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
+            lng: initialData.address.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
+          },
+        }
+      : null
+  );
+
+  const mapCenter = selectedLocation?.location ?? GOOGLE_MAPS_CONFIG.defaultCenter;
+  const mapZoom = selectedLocation ? 15 : GOOGLE_MAPS_CONFIG.defaultZoom;
+
+  const handleLocationSelect = (place: PlaceDetails) => {
+    setSelectedLocation(place);
+  };
 
   useEffect(() => {
     const fetchWorkers = async () => {
@@ -169,50 +179,34 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
     fetchAssets();
   }, []);
 
-  const workerOptions = useMemo(
-    () => workers.map((w) => ({ label: w.name || '', id: w.id! })),
-    [workers]
-  );
+  const workerOptions = useMemo(() => workers.map((w) => ({ label: w.name || '', id: w.id! })), [workers]);
+  const workflowOptions = useMemo(() => workflows.map((w) => ({ label: w.name || '', id: w.id! })), [workflows]);
+  const assetOptions = useMemo(() => assets.map((a) => ({ label: a.name || '', id: a.id! })), [assets]);
 
-  const workflowOptions = useMemo(
-    () => workflows.map((w) => ({ label: w.name || '', id: w.id! })),
-    [workflows]
-  );
-
-  const assetOptions = useMemo(
-    () => assets.map((a) => ({ label: a.name || '', id: a.id! })),
-    [assets]
-  );
-
-  const handleWorkerClick = (id: number) => {
-    setSelectedWorkerId((prev) => (prev === id ? undefined : id));
-  };
-
-  const handleWorkflowClick = (id: number) => {
-    setSelectedWorkflowId((prev) => (prev === id ? undefined : id));
-  };
-
-  const handleAssetClick = (id: number) => {
-    setSelectedAssetIds((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
-    );
-  };
+  const handleWorkerClick = (id: number) => setSelectedWorkerId((prev) => (prev === id ? undefined : id));
+  const handleWorkflowClick = (id: number) => setSelectedWorkflowId((prev) => (prev === id ? undefined : id));
+  const handleAssetClick = (id: number) =>
+    setSelectedAssetIds((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
 
   const onConfirmRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     onConfirmRef.current = () => {
-      const addressValues = addressMethods.getValues();
-      const hasAddress = Object.values(addressValues).some((v) => v && v.trim() !== '');
       onStepComplete({
         assignedWorkerId: selectedWorkerId,
         workflowId: selectedWorkflowId,
         assetIds: selectedAssetIds.length > 0 ? selectedAssetIds : undefined,
-        address: hasAddress ? addressValues : undefined,
+        address: selectedLocation
+          ? {
+              fullAddress: selectedLocation.address,
+              latitude: selectedLocation.location.lat,
+              longitude: selectedLocation.location.lng,
+            }
+          : undefined,
       });
       updateActiveScreen(activeScreen + 1);
     };
-  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, addressMethods, onStepComplete, updateActiveScreen, activeScreen]);
+  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, selectedLocation, onStepComplete, updateActiveScreen, activeScreen]);
 
   useEffect(() => {
     updateModalTitle('Assign Details');
@@ -231,12 +225,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         emptyMessage="No workers found. Add workers from the Workers section, or continue without assigning one."
       >
         {workerOptions.map((w) => (
-          <SelectableItem
-            key={w.id}
-            label={w.label}
-            selected={selectedWorkerId === w.id}
-            onClick={() => handleWorkerClick(w.id)}
-          />
+          <SelectableItem key={w.id} label={w.label} selected={selectedWorkerId === w.id} onClick={() => handleWorkerClick(w.id)} />
         ))}
       </SelectableSection>
 
@@ -247,12 +236,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         emptyMessage="No workflows found. Create a workflow from the Workflows section, or continue without one."
       >
         {workflowOptions.map((w) => (
-          <SelectableItem
-            key={w.id}
-            label={w.label}
-            selected={selectedWorkflowId === w.id}
-            onClick={() => handleWorkflowClick(w.id)}
-          />
+          <SelectableItem key={w.id} label={w.label} selected={selectedWorkflowId === w.id} onClick={() => handleWorkflowClick(w.id)} />
         ))}
       </SelectableSection>
 
@@ -263,44 +247,33 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         emptyMessage="All assets are currently assigned to other jobs, or none have been created yet."
       >
         {assetOptions.map((a) => (
-          <SelectableItem
-            key={a.id}
-            label={a.label}
-            selected={selectedAssetIds.includes(a.id)}
-            onClick={() => handleAssetClick(a.id)}
-          />
+          <SelectableItem key={a.id} label={a.label} selected={selectedAssetIds.includes(a.id)} onClick={() => handleAssetClick(a.id)} />
         ))}
       </SelectableSection>
 
+      {/* Location — search address and pin it on the map */}
       <Box>
         <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
           Location
         </Typography>
-        <FormProvider {...addressMethods}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <FormRow>
-              <FormField label="Street">
-                <Input name="street" placeholder="Enter street" hideErrorMessage={true} />
-              </FormField>
-            </FormRow>
-            <FormRow>
-              <FormField label="City">
-                <Input name="city" placeholder="Enter city" hideErrorMessage={true} />
-              </FormField>
-              <FormField label="State">
-                <Input name="state" placeholder="Enter state" hideErrorMessage={true} />
-              </FormField>
-            </FormRow>
-            <FormRow>
-              <FormField label="Postal Code">
-                <Input name="postalCode" placeholder="Enter postal code" hideErrorMessage={true} />
-              </FormField>
-              <FormField label="Country">
-                <Input name="country" placeholder="Enter country" hideErrorMessage={true} />
-              </FormField>
-            </FormRow>
+
+        {isGoogleMapsConfigured() ? (
+          <Box sx={{ height: 300, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+            <GoogleMap
+              center={mapCenter}
+              zoom={mapZoom}
+              markers={selectedLocation ? [selectedLocation] : []}
+              selectedLocation={selectedLocation}
+              onLocationSelect={handleLocationSelect}
+              showSearchBox
+              height="300px"
+            />
           </Box>
-        </FormProvider>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            Google Maps API key not configured.
+          </Typography>
+        )}
       </Box>
     </Box>
   );

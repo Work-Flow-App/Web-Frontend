@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import { LeafletMap } from '../../../../components/UI/LeafletMap';
-import type { PlaceDetails } from '../../../../components/UI/LeafletMap';
-import { LEAFLET_CONFIG } from '../../../../config/googleMaps';
+import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
+import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
+import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
 import { jobService } from '../../../../services/api/job';
 import { workerService } from '../../../../services/api/worker';
 import { companyClientService } from '../../../../services/api/companyClient';
@@ -11,7 +11,7 @@ import { CircularProgress, Alert, Tabs, Tab, TextField, Box, Checkbox, Typograph
 import * as S from './MapsList.styles';
 
 export const MapsList: React.FC = () => {
-  const [mapCenter, setMapCenter] = useState(LEAFLET_CONFIG.defaultCenter);
+  const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [markers, setMarkers] = useState<PlaceDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export const MapsList: React.FC = () => {
     <PageWrapper title="Maps" description="View assets location" showSearch={false}>
       <S.ContentSection>
         <S.MapSection>
-          <LeafletMap
+          <GoogleMap
             center={mapCenter}
             markers={displayMarkers}
             onLocationSelect={handleLocationSelect}

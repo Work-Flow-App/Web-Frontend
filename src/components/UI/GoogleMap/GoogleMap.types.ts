@@ -3,11 +3,29 @@ export interface Location {
   lng: number;
 }
 
+export interface JobMarkerData {
+  jobId: number;
+  status: string;
+  scheduledTime?: string;
+  duration?: string;
+  clientName?: string;
+  templateName?: string;
+}
+
+export interface WorkerMarkerData {
+  workerId: number;
+  workerName: string;
+  workerEmail?: string;
+  workerPhone?: string;
+  jobs: JobMarkerData[];
+}
+
 export interface PlaceDetails {
   address: string;
   name?: string;
   location: Location;
   placeId?: string;
+  workerData?: WorkerMarkerData;
 }
 
 export interface GoogleMapProps {
@@ -15,9 +33,11 @@ export interface GoogleMapProps {
   zoom?: number;
   markers?: PlaceDetails[];
   onLocationSelect?: (location: PlaceDetails) => void;
+  selectedLocation?: PlaceDetails | null;
   height?: string | number;
   width?: string | number;
   showSearchBox?: boolean;
+  searchInitialValue?: string;
   className?: string;
 }
 

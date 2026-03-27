@@ -86,11 +86,11 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               assignedWorkerId: job.assignedWorkerId,
               assetIds: assetIdsFormatted,
               workflowId: workflowIdFormatted,
-              addressStreet: job.address?.street ?? '',
-              addressCity: job.address?.city ?? '',
-              addressState: job.address?.state ?? '',
-              addressPostalCode: job.address?.postalCode ?? '',
-              addressCountry: job.address?.country ?? '',
+              addressStreet: [job.address?.street, job.address?.city, job.address?.state, job.address?.postalCode, job.address?.country].filter(Boolean).join(', '),
+              addressCity: '',
+              addressState: '',
+              addressPostalCode: '',
+              addressCountry: '',
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -101,9 +101,18 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               const fieldValue = job.fieldValues?.[field.id?.toString() || ''];
               if (fieldValue !== undefined) {
                 // Extract the actual value from FieldValueResponse object
-                formData[fieldName] = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
+                let extractedValue = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
                   ? fieldValue.value
                   : fieldValue;
+                // DATE fields: strip time component so <input type="date"> recognises the value
+                if (
+                  typeof fieldValue === 'object' && fieldValue !== null && 'type' in fieldValue &&
+                  (fieldValue as { type: string }).type === 'DATE' &&
+                  typeof extractedValue === 'string'
+                ) {
+                  extractedValue = extractedValue.split('T')[0];
+                }
+                formData[fieldName] = extractedValue;
               }
             });
 

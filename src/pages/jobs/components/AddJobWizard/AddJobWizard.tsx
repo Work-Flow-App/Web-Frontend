@@ -31,11 +31,9 @@ export interface WizardData {
   workflowId?: number;
   assetIds?: number[];
   address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
+    fullAddress: string;
+    latitude?: number;
+    longitude?: number;
   };
 }
 

@@ -1,5 +1,5 @@
 import type { JobResponse, WorkerResponse, ClientResponse } from '../../workflow-api';
-import type { PlaceDetails, WorkerMarkerData, JobMarkerData } from '../components/UI/LeafletMap/LeafletMap.types';
+import type { PlaceDetails, WorkerMarkerData, JobMarkerData } from '../components/UI/GoogleMap/GoogleMap.types';
 import { NOMINATIM_CONFIG } from '../config/googleMaps';
 
 /**
