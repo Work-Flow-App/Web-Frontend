@@ -389,6 +389,30 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         </FormField>
       </FormRow>
 
+      <FormRow>
+        <FormField label={fieldLabels.addressStreet} required={isRequireds.addressStreet}>
+          <Input name={fieldTitles.addressStreet} placeholder={placeHolders.addressStreet} hideErrorMessage={false} />
+        </FormField>
+      </FormRow>
+
+      <FormRow>
+        <FormField label={fieldLabels.addressCity} required={isRequireds.addressCity}>
+          <Input name={fieldTitles.addressCity} placeholder={placeHolders.addressCity} hideErrorMessage={false} />
+        </FormField>
+        <FormField label={fieldLabels.addressState} required={isRequireds.addressState}>
+          <Input name={fieldTitles.addressState} placeholder={placeHolders.addressState} hideErrorMessage={false} />
+        </FormField>
+      </FormRow>
+
+      <FormRow>
+        <FormField label={fieldLabels.addressPostalCode} required={isRequireds.addressPostalCode}>
+          <Input name={fieldTitles.addressPostalCode} placeholder={placeHolders.addressPostalCode} hideErrorMessage={false} />
+        </FormField>
+        <FormField label={fieldLabels.addressCountry} required={isRequireds.addressCountry}>
+          <Input name={fieldTitles.addressCountry} placeholder={placeHolders.addressCountry} hideErrorMessage={false} />
+        </FormField>
+      </FormRow>
+
       {/* Dynamic fields based on template */}
       {templateFields.length > 0 && (
         <>

@@ -86,6 +86,11 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               assignedWorkerId: job.assignedWorkerId,
               assetIds: assetIdsFormatted,
               workflowId: workflowIdFormatted,
+              addressStreet: job.address?.street ?? '',
+              addressCity: job.address?.city ?? '',
+              addressState: job.address?.state ?? '',
+              addressPostalCode: job.address?.postalCode ?? '',
+              addressCountry: job.address?.country ?? '',
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -120,7 +125,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, ...dynamicFields } = data;
+        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, addressStreet, addressCity, addressState, addressPostalCode, addressCountry, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -190,6 +195,16 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           : workflowId;
         const workflowIdNumber = workflowIdValue ? Number(workflowIdValue) : undefined;
 
+        // Build address object
+        const addressObj = {
+          ...(addressStreet && { street: addressStreet as string }),
+          ...(addressCity && { city: addressCity as string }),
+          ...(addressState && { state: addressState as string }),
+          ...(addressPostalCode && { postalCode: addressPostalCode as string }),
+          ...(addressCountry && { country: addressCountry as string }),
+        };
+        const hasAddress = Object.keys(addressObj).length > 0;
+
         if (isEditMode) {
           // Update existing job
           const updatePayload: JobUpdateRequest = {
@@ -201,6 +216,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (clientIdNumber) updatePayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) updatePayload.assetIds = assetIdsArray;
+          if (hasAddress) updatePayload.address = addressObj;
 
           await jobService.updateJob(jobId, updatePayload);
           showSuccess('Job updated successfully');
@@ -216,6 +232,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) createPayload.assetIds = assetIdsArray;
           if (workflowIdNumber) createPayload.workflowId = workflowIdNumber;
+          if (hasAddress) createPayload.address = addressObj;
 
           await jobService.createJob(createPayload);
           showSuccess('Job created successfully');

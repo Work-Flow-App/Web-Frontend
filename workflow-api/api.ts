@@ -23,6 +23,27 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
+export interface AddressRequest {
+    'street'?: string;
+    'city'?: string;
+    'state'?: string;
+    'postalCode'?: string;
+    'country'?: string;
+    'additionalInfo'?: string;
+    'latitude'?: number;
+    'longitude'?: number;
+}
+export interface AddressResponse {
+    'id'?: number;
+    'street'?: string;
+    'city'?: string;
+    'state'?: string;
+    'postalCode'?: string;
+    'country'?: string;
+    'additionalInfo'?: string;
+    'latitude'?: number;
+    'longitude'?: number;
+}
 export interface AssetAssignmentCreateRequest {
     'assetId'?: number;
     'jobId'?: number;
@@ -34,6 +55,10 @@ export interface AssetAssignmentResponse {
     'assetId'?: number;
     'jobId'?: number;
     'assignedWorkerId'?: number;
+    'assetName'?: string;
+    'description'?: string;
+    'serialNumber'?: string;
+    'assetTag'?: string;
     'notes'?: string;
     'assignedAt'?: string;
     'returnedAt'?: string;
@@ -248,6 +273,7 @@ export interface JobCreateRequest {
     'status'?: JobCreateRequestStatusEnum;
     'fieldValues'?: { [key: string]: any; };
     'assetIds'?: Array<number>;
+    'address'?: AddressRequest;
 }
 
 export const JobCreateRequestStatusEnum = {
@@ -274,6 +300,7 @@ export interface JobResponse {
     'updatedAt'?: string;
     'fieldValues'?: { [key: string]: FieldValueResponse; };
     'assetIds'?: Array<number>;
+    'address'?: AddressResponse;
 }
 
 export const JobResponseStatusEnum = {
@@ -358,6 +385,7 @@ export interface JobUpdateRequest {
     'archived'?: boolean;
     'fieldValues'?: { [key: string]: any; };
     'assetIds'?: Array<number>;
+    'address'?: AddressRequest;
 }
 
 export const JobUpdateRequestStatusEnum = {
@@ -552,10 +580,9 @@ export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
     'unpaged'?: boolean;
-    'paged'?: boolean;
     'pageNumber'?: number;
+    'paged'?: boolean;
     'pageSize'?: number;
-    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -728,6 +755,7 @@ export interface WorkerAssignedStepResponse {
     'jobId'?: number;
     'customer'?: CustomerResponse;
     'assignedAssets'?: Array<AssetAssignmentResponse>;
+    'jobAddress'?: AddressResponse;
 }
 export interface WorkerCreateRequest {
     'name': string;
@@ -6514,6 +6542,44 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @summary Complete an ongoing step (ONGOING -> COMPLETED)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerJobWorkflowCompleteOngoingStep: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'stepId' is not null or undefined
+            assertParamExists('workerJobWorkflowCompleteOngoingStep', 'stepId', stepId)
+            const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/complete-ongoing`
+                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Complete a step (STARTED -> COMPLETED)
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -6848,6 +6914,44 @@ export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
+         * @summary Mark an initiated step as ongoing (INITIATED -> ONGOING)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerJobWorkflowMarkStepOngoing: async (stepId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'stepId' is not null or undefined
+            assertParamExists('workerJobWorkflowMarkStepOngoing', 'stepId', stepId)
+            const localVarPath = `/api/v1/worker/job-workflow-steps/{stepId}/ongoing`
+                .replace(`{${"stepId"}}`, encodeURIComponent(String(stepId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Start a step (NOT_STARTED -> STARTED)
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -6984,6 +7088,19 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Complete an ongoing step (ONGOING -> COMPLETED)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerJobWorkflowCompleteOngoingStep(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowCompleteOngoingStep(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowCompleteOngoingStep']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Complete a step (STARTED -> COMPLETED)
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -7099,6 +7216,19 @@ export const WorkerJobWorkflowsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @summary Mark an initiated step as ongoing (INITIATED -> ONGOING)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerJobWorkflowMarkStepOngoing(stepId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowStepResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerJobWorkflowMarkStepOngoing(stepId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerJobWorkflowsApi.workerJobWorkflowMarkStepOngoing']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @summary Start a step (NOT_STARTED -> STARTED)
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -7156,6 +7286,16 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
          */
         workerJobWorkflowAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<StepVisitLogResponse> {
             return localVarFp.workerJobWorkflowAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Complete an ongoing step (ONGOING -> COMPLETED)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerJobWorkflowCompleteOngoingStep(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.workerJobWorkflowCompleteOngoingStep(stepId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7247,6 +7387,16 @@ export const WorkerJobWorkflowsApiFactory = function (configuration?: Configurat
         },
         /**
          * 
+         * @summary Mark an initiated step as ongoing (INITIATED -> ONGOING)
+         * @param {number} stepId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerJobWorkflowMarkStepOngoing(stepId: number, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowStepResponse> {
+            return localVarFp.workerJobWorkflowMarkStepOngoing(stepId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @summary Start a step (NOT_STARTED -> STARTED)
          * @param {number} stepId 
          * @param {*} [options] Override http request option.
@@ -7297,6 +7447,17 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      */
     public workerJobWorkflowAddVisitLog(stepId: number, stepVisitLogCreateRequest: StepVisitLogCreateRequest, options?: RawAxiosRequestConfig) {
         return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowAddVisitLog(stepId, stepVisitLogCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Complete an ongoing step (ONGOING -> COMPLETED)
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerJobWorkflowCompleteOngoingStep(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowCompleteOngoingStep(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7394,6 +7555,17 @@ export class WorkerJobWorkflowsApi extends BaseAPI {
      */
     public workerJobWorkflowGetStepVisits(stepId: number, options?: RawAxiosRequestConfig) {
         return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowGetStepVisits(stepId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Mark an initiated step as ongoing (INITIATED -> ONGOING)
+     * @param {number} stepId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerJobWorkflowMarkStepOngoing(stepId: number, options?: RawAxiosRequestConfig) {
+        return WorkerJobWorkflowsApiFp(this.configuration).workerJobWorkflowMarkStepOngoing(stepId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

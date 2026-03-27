@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Typography, Chip, alpha } from '@mui/material';
+import { useForm, FormProvider } from 'react-hook-form';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
 import { workerService, workflowService, assetService } from '../../../../../services/api';
 import type { WorkerResponse, WorkflowResponse, AssetResponse } from '../../../../../services/api';
 import type { WizardData } from '../AddJobWizard';
+import { Input } from '../../../../../components/UI/Forms/Input';
+import { FormField, FormRow } from '../../../../../components/UI/FormComponents';
 
 interface Step3Props {
   onStepComplete: (data: Partial<WizardData>) => void;
@@ -110,6 +113,16 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | undefined>(initialData.workflowId);
   const [selectedAssetIds, setSelectedAssetIds] = useState<number[]>(initialData.assetIds ?? []);
 
+  const addressMethods = useForm({
+    defaultValues: {
+      street: initialData.address?.street ?? '',
+      city: initialData.address?.city ?? '',
+      state: initialData.address?.state ?? '',
+      postalCode: initialData.address?.postalCode ?? '',
+      country: initialData.address?.country ?? '',
+    },
+  });
+
   useEffect(() => {
     const fetchWorkers = async () => {
       try {
@@ -189,14 +202,17 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
 
   useEffect(() => {
     onConfirmRef.current = () => {
+      const addressValues = addressMethods.getValues();
+      const hasAddress = Object.values(addressValues).some((v) => v && v.trim() !== '');
       onStepComplete({
         assignedWorkerId: selectedWorkerId,
         workflowId: selectedWorkflowId,
         assetIds: selectedAssetIds.length > 0 ? selectedAssetIds : undefined,
+        address: hasAddress ? addressValues : undefined,
       });
       updateActiveScreen(activeScreen + 1);
     };
-  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, onStepComplete, updateActiveScreen, activeScreen]);
+  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, addressMethods, onStepComplete, updateActiveScreen, activeScreen]);
 
   useEffect(() => {
     updateModalTitle('Assign Details');
@@ -255,6 +271,37 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
           />
         ))}
       </SelectableSection>
+
+      <Box>
+        <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
+          Location
+        </Typography>
+        <FormProvider {...addressMethods}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <FormRow>
+              <FormField label="Street">
+                <Input name="street" placeholder="Enter street" hideErrorMessage={true} />
+              </FormField>
+            </FormRow>
+            <FormRow>
+              <FormField label="City">
+                <Input name="city" placeholder="Enter city" hideErrorMessage={true} />
+              </FormField>
+              <FormField label="State">
+                <Input name="state" placeholder="Enter state" hideErrorMessage={true} />
+              </FormField>
+            </FormRow>
+            <FormRow>
+              <FormField label="Postal Code">
+                <Input name="postalCode" placeholder="Enter postal code" hideErrorMessage={true} />
+              </FormField>
+              <FormField label="Country">
+                <Input name="country" placeholder="Enter country" hideErrorMessage={true} />
+              </FormField>
+            </FormRow>
+          </Box>
+        </FormProvider>
+      </Box>
     </Box>
   );
 };

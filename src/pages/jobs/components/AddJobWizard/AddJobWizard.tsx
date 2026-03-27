@@ -30,6 +30,13 @@ export interface WizardData {
   assignedWorkerId?: number;
   workflowId?: number;
   assetIds?: number[];
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
 }
 
 const WIZARD_STEPS = ['Template & Customer', 'Client', 'Assign Details', 'Custom Fields'];
