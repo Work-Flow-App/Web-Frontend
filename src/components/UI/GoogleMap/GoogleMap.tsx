@@ -24,6 +24,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   markers = [],
   onLocationSelect,
   selectedLocation,
+  focusedMarker,
   height = '600px',
   width = '100%',
   showSearchBox = true,
@@ -58,6 +59,15 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     setMapCenter(center);
     setMapZoom(zoom);
   }, [center, zoom]);
+
+  // When a marker is focused externally (e.g. clicked in side panel list), open its info window
+  useEffect(() => {
+    if (focusedMarker) {
+      setSelectedMarker(focusedMarker);
+      setMapCenter(focusedMarker.location);
+      setMapZoom(16);
+    }
+  }, [focusedMarker]);
 
   const handlePlaceSelect = useCallback(
     (place: PlaceDetails) => {
@@ -136,18 +146,80 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           options={GOOGLE_MAPS_CONFIG.mapOptions}
           onClick={handleMapClick}
         >
-          {allMarkers.map((marker, index) => (
-            <Marker
-              key={`${marker.location.lat}-${marker.location.lng}-${index}`}
-              position={marker.location}
-              onClick={() => setSelectedMarker(marker)}
-            />
-          ))}
+          {allMarkers.map((marker, index) => {
+            const jobStatus = marker.jobLocationData?.status;
+            const isInProgress = jobStatus === 'IN_PROGRESS';
+            const markerIcon: google.maps.Symbol | undefined = jobStatus
+              ? {
+                  path: google.maps.SymbolPath.CIRCLE,
+                  fillColor: STATUS_COLORS[jobStatus] ?? '#9e9e9e',
+                  fillOpacity: 1,
+                  strokeColor: '#ffffff',
+                  strokeWeight: isInProgress ? 3 : 2,
+                  scale: isInProgress ? 12 : 9,
+                }
+              : undefined;
+
+            return (
+              <Marker
+                key={`${marker.location.lat}-${marker.location.lng}-${index}`}
+                position={marker.location}
+                icon={markerIcon}
+                onClick={() => setSelectedMarker(marker)}
+              />
+            );
+          })}
 
           {selectedMarker && (
             <InfoWindow position={selectedMarker.location} onCloseClick={() => setSelectedMarker(null)}>
               <MarkerInfoWindow>
-                {selectedMarker.workerData ? (
+                {selectedMarker.jobLocationData ? (
+                  <Box sx={{ minWidth: 220, maxWidth: 300 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1976d2' }}>
+                        Job #{selectedMarker.jobLocationData.jobId}
+                      </Typography>
+                      <Chip
+                        label={selectedMarker.jobLocationData.status.replace('_', ' ')}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.6rem',
+                          backgroundColor: STATUS_COLORS[selectedMarker.jobLocationData.status] ?? '#9e9e9e',
+                          color: '#fff',
+                          fontWeight: 600,
+                        }}
+                      />
+                    </Box>
+                    <Typography variant="caption" sx={{ display: 'block', color: '#555', mb: 0.5 }}>
+                      {selectedMarker.address}
+                    </Typography>
+                    {selectedMarker.jobLocationData.clientName && (
+                      <Box sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
+                        <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Client:</Typography>
+                        <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.clientName}</Typography>
+                      </Box>
+                    )}
+                    {selectedMarker.jobLocationData.customerName && (
+                      <Box sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
+                        <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Customer:</Typography>
+                        <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.customerName}</Typography>
+                      </Box>
+                    )}
+                    {selectedMarker.jobLocationData.workerName && (
+                      <Box sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
+                        <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Worker:</Typography>
+                        <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.workerName}</Typography>
+                      </Box>
+                    )}
+                    {selectedMarker.jobLocationData.scheduledTime && (
+                      <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Scheduled:</Typography>
+                        <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.scheduledTime}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                ) : selectedMarker.workerData ? (
                   <Box sx={{ minWidth: 220, maxWidth: 300 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
                       {selectedMarker.workerData.workerName}
