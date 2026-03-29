@@ -17,9 +17,10 @@ import type { WizardData } from '../AddJobWizard';
 interface Step4Props {
   wizardData: WizardData;
   onSuccess?: () => void;
+  jobId?: number;
 }
 
-export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess }) => {
+export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess, jobId }) => {
   const {
     updateModalTitle,
     updateGlobalModalInnerConfig,
@@ -38,7 +39,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
     mode: 'onChange',
   });
 
-  const { handleSubmit, setError, formState: { errors } } = methods;
+  const { handleSubmit, setError, reset, formState: { errors } } = methods;
 
   useEffect(() => {
     const fetchFields = async () => {
@@ -58,6 +59,25 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
     };
     fetchFields();
   }, [wizardData.templateId]);
+
+  // Pre-fill form when editing an existing job
+  useEffect(() => {
+    if (!jobId || !wizardData.fieldValues || templateFields.length === 0) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const values: Record<string, any> = {};
+    templateFields.forEach((field) => {
+      const fieldKey = field.id?.toString() || '';
+      const raw = wizardData.fieldValues![fieldKey];
+      if (raw !== undefined && raw !== null) {
+        if (field.jobFieldType === 'DROPDOWN') {
+          values[`field_${field.id}`] = { label: String(raw), value: String(raw) };
+        } else {
+          values[`field_${field.id}`] = raw;
+        }
+      }
+    });
+    reset(values);
+  }, [jobId, templateFields, wizardData.fieldValues, reset]);
 
   const dropdownOptionsMap = useMemo(() => {
     const map = new Map<number, Array<{ label: string; value: string }>>();
@@ -157,7 +177,24 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
             }
           });
 
-          // Resolve or create customer
+          if (jobId) {
+            // Edit mode — call updateJob
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const updatePayload: any = { fieldValues };
+            if (wizardData.customerId) updatePayload.customerId = wizardData.customerId;
+            if (wizardData.clientId) updatePayload.clientId = wizardData.clientId;
+            if (wizardData.assignedWorkerId) updatePayload.assignedWorkerId = wizardData.assignedWorkerId;
+            if (wizardData.workflowId) updatePayload.workflowId = wizardData.workflowId;
+            if (wizardData.assetIds && wizardData.assetIds.length > 0) updatePayload.assetIds = wizardData.assetIds;
+
+            await jobService.updateJob(jobId, updatePayload);
+            showSuccess('Job updated successfully');
+            resetActiveScreen();
+            onSuccess?.();
+            return;
+          }
+
+          // Create mode — resolve or create customer
           let customerId = wizardData.customerId;
           if (!customerId && wizardData.newCustomerData) {
             const { name, email, telephone, mobile, street, city, postalCode, country } =
@@ -222,8 +259,8 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
   }, [handleSubmit, setError, templateFields, wizardData, showSuccess, showError, onSuccess, resetActiveScreen, updateGlobalModalInnerConfig]);
 
   useEffect(() => {
-    updateModalTitle('Custom Fields');
-    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Create Job' });
+    updateModalTitle(jobId ? 'Edit Job' : 'Custom Fields');
+    updateGlobalModalInnerConfig({ confirmModalButtonText: jobId ? 'Save Changes' : 'Create Job' });
     setSkipResetModal?.(true);
     updateOnConfirm(() => onConfirmRef.current());
     // eslint-disable-next-line react-hooks/exhaustive-deps

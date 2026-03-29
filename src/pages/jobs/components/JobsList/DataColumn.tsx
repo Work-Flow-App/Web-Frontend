@@ -6,10 +6,8 @@ export interface JobTableRow {
   jobRef?: number;
   templateId?: number;
   templateName?: string;
-  clientId?: number;
-  clientName?: string;
-  assignedWorkerId?: number;
-  workerName?: string;
+  customerId?: number;
+  customerName?: string;
   status?: string;
   createdAt: string;
   fieldValues?: { [key: string]: string };
@@ -38,20 +36,12 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       width: 'auto',
     },
     {
-      id: 'clientName',
-      label: 'Client',
-      accessor: 'clientName',
+      id: 'customerName',
+      label: 'Customer',
+      accessor: 'customerName',
       sortable: true,
       width: 'auto',
-      render: (row) => row.clientName || '-',
-    },
-    {
-      id: 'workerName',
-      label: 'Worker',
-      accessor: 'workerName',
-      sortable: true,
-      width: 'auto',
-      render: (row) => row.workerName || '-',
+      render: (row) => row.customerName || '-',
     },
     {
       id: 'status',

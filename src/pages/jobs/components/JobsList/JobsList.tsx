@@ -4,20 +4,18 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, companyClientService, workerService, assetService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, ClientResponse, WorkerResponse, AssetResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, assetService, customerService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
-import { JobForm } from '../JobForm/JobForm';
 import { AddJobWizard } from '../AddJobWizard';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobTableRow[]>([]);
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
-  const [clients, setClients] = useState<ClientResponse[]>([]);
-  const [workers, setWorkers] = useState<WorkerResponse[]>([]);
+  const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
@@ -43,27 +41,7 @@ export const JobsList: React.FC = () => {
       }
     };
 
-    const fetchClients = async () => {
-      try {
-        const response = await companyClientService.getAllClients();
-        const clientsData = Array.isArray(response.data) ? response.data : [];
-        setClients(clientsData);
-      } catch (error) {
-        console.error('Error fetching clients:', error);
-      }
-    };
-
-    const fetchWorkers = async () => {
-      try {
-        const response = await workerService.getAllWorkers();
-        const workersData = Array.isArray(response.data) ? response.data : [];
-        setWorkers(workersData);
-      } catch (error) {
-        console.error('Error fetching workers:', error);
-      }
-    };
-
-    const fetchAssets = async () => {
+const fetchAssets = async () => {
       try {
         const response = await assetService.getAllAssets(0, 1000);
         const assetsData = response.data.content || [];
@@ -73,10 +51,19 @@ export const JobsList: React.FC = () => {
       }
     };
 
+    const fetchCustomers = async () => {
+      try {
+        const response = await customerService.getAllCustomers();
+        const customersData = Array.isArray(response.data) ? response.data : [];
+        setCustomers(customersData);
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      }
+    };
+
     fetchTemplates();
-    fetchClients();
-    fetchWorkers();
     fetchAssets();
+    fetchCustomers();
   }, [showError]);
 
   // Fetch template fields when template is selected
@@ -114,8 +101,7 @@ export const JobsList: React.FC = () => {
       // Transform API response to table format
       const transformedData: JobTableRow[] = jobsData.map((job: JobResponse) => {
         const template = templates.find((t) => t.id === job.templateId);
-        const client = clients.find((c) => c.id === job.clientId);
-        const worker = workers.find((w) => w.id === job.assignedWorkerId);
+        const customer = customers.find((c) => c.id === job.customerId);
 
         // Extract values from FieldValueResponse objects
         const fieldValues: { [key: string]: string } = {};
@@ -142,10 +128,8 @@ export const JobsList: React.FC = () => {
           jobRef: job.jobRef,
           templateId: job.templateId,
           templateName: template?.name || '-',
-          clientId: job.clientId,
-          clientName: client?.name || '-',
-          assignedWorkerId: job.assignedWorkerId,
-          workerName: worker?.name || '-',
+          customerId: job.customerId,
+          customerName: customer?.name || '-',
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
           fieldValues,
@@ -161,7 +145,7 @@ export const JobsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, templates, clients, workers, assets, showError]);
+  }, [selectedTemplateId, templates, customers, assets, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
@@ -257,11 +241,10 @@ export const JobsList: React.FC = () => {
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
         isOpen: true,
-        size: ModalSizes.MEDIUM,
+        size: ModalSizes.LARGE,
         fieldName: 'editJob',
         children: (
-          <JobForm
-            isModal={true}
+          <AddJobWizard
             jobId={job.id}
             onSuccess={() => {
               resetGlobalModalOuterProps();
