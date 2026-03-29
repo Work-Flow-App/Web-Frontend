@@ -7,6 +7,7 @@ env:
   variables:
     NODE_VERSION: "20"
     VITE_TOMTOM_API_KEY: "zI1f6EP4BLb5yzAbbd9RFf06f0LIQ1YP"
+    VITE_GOOGLE_MAPS_API_KEY: "AIzaSyAYHs4TZQvN1UXOVwc_eEy5EJOjnGcQBqQ"
     # Override these in CodeBuild project settings or parameter store
     # VITE_API_BASE_URL: "https://api.workfloow.app"
     # VITE_API_TIMEOUT: "30000"
