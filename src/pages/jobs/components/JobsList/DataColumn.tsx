@@ -3,6 +3,7 @@ import type { JobTemplateFieldResponse } from '../../../../services/api';
 
 export interface JobTableRow {
   id: number;
+  jobRef?: number;
   templateId?: number;
   templateName?: string;
   clientId?: number;
@@ -24,9 +25,10 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
     {
       id: 'id',
       label: 'Job ID',
-      accessor: 'id',
+      accessor: 'jobRef',
       sortable: true,
       width: 'auto',
+      render: (row) => row.jobRef ?? row.id,
     },
     {
       id: 'templateName',

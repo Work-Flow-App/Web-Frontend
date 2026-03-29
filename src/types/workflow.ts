@@ -8,6 +8,7 @@ import type {
  */
 export interface WorkflowTableRow {
   id: number;
+  workflowRef?: number;
   name: string;
   description?: string;
   companyId?: number;

@@ -139,6 +139,7 @@ export const JobsList: React.FC = () => {
 
         return {
           id: job.id || 0,
+          jobRef: job.jobRef,
           templateId: job.templateId,
           templateName: template?.name || '-',
           clientId: job.clientId,

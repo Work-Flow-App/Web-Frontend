@@ -28,6 +28,7 @@ export const AssetArchiveTab: React.FC = () => {
 
       const transformedData: AssetArchiveRow[] = archivedOnly.map((asset: AssetResponse) => ({
         id: asset.id || 0,
+        assetRef: asset.assetRef,
         name: asset.name || '',
         assetTag: asset.assetTag,
         serialNumber: asset.serialNumber,

@@ -53,6 +53,7 @@ export const AssetsList: React.FC = () => {
 
         return {
           id: asset.id || 0,
+          assetRef: asset.assetRef,
           name: asset.name || '',
           assetTag: asset.assetTag,
           serialNumber: asset.serialNumber,

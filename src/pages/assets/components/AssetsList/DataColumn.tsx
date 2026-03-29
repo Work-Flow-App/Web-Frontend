@@ -3,6 +3,7 @@ import { StatusBadge } from './StatusBadge';
 
 export interface AssetTableRow {
   id: number;
+  assetRef?: number;
   name: string;
   assetTag?: string;
   serialNumber?: string;
@@ -23,9 +24,10 @@ export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
   {
     id: 'id',
     label: 'Asset ID',
-    accessor: 'id',
+    accessor: 'assetRef',
     sortable: true,
     width: 'auto',
+    render: (row) => row.assetRef ?? row.id,
   },
   {
     id: 'name',

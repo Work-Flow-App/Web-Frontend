@@ -37,6 +37,7 @@ export const WorkflowsList: React.FC = () => {
           }
           return {
             id: workflow.id || 0,
+            workflowRef: workflow.workflowRef,
             name: workflow.name || '',
             description: workflow.description,
             companyId: workflow.companyId,

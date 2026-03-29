@@ -2,6 +2,7 @@ import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 
 export interface AssetArchiveRow {
   id: number;
+  assetRef?: number;
   name: string;
   assetTag?: string;
   serialNumber?: string;
@@ -17,9 +18,10 @@ export const assetArchiveColumns: ITableColumn<AssetArchiveRow>[] = [
   {
     id: 'id',
     label: 'Asset ID',
-    accessor: 'id',
+    accessor: 'assetRef',
     sortable: true,
     width: 'auto',
+    render: (row) => row.assetRef ?? row.id,
   },
   {
     id: 'name',
