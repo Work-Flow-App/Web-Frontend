@@ -210,9 +210,9 @@ export const StyledButton = styled(MuiButton, {
       color: color,
       border: `${rem(1)} solid ${color}`,
       '&:hover': {
-        backgroundColor: palette.primary.alert,
-        borderColor: color,
-        color: palette.primary.contrastText,
+        backgroundColor: hoverColor,
+        borderColor: hoverColor,
+        color: palette.buttonColors.primaryContrast,
         boxShadow: palette.boxShadow.buttonShadow,
       },
       '&.Mui-disabled': {

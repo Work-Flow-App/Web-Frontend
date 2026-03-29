@@ -150,6 +150,34 @@ export interface ClientUpdateRequest {
     'address'?: string;
     'archived'?: boolean;
 }
+export interface CompanyAddressRequest {
+    'addressLine1'?: string;
+    'addressLine2'?: string;
+    'addressLine3'?: string;
+    'town'?: string;
+    'country'?: string;
+    'postcode'?: string;
+}
+export interface CompanyAddressResponse {
+    'addressLine1'?: string;
+    'addressLine2'?: string;
+    'addressLine3'?: string;
+    'town'?: string;
+    'country'?: string;
+    'postcode'?: string;
+}
+export interface CompanyBankDetailsRequest {
+    'bankName'?: string;
+    'accountName'?: string;
+    'accountNo'?: string;
+    'sortCode'?: string;
+}
+export interface CompanyBankDetailsResponse {
+    'bankName'?: string;
+    'accountName'?: string;
+    'accountNo'?: string;
+    'sortCode'?: string;
+}
 export interface CompanyDashboardResponse {
     'companyId'?: number;
     'companyName'?: string;
@@ -161,36 +189,30 @@ export interface CompanyDashboardResponse {
 export interface CompanyProfileResponse {
     'id'?: number;
     'name'?: string;
-    'addressLine1'?: string;
-    'addressLine2'?: string;
-    'addressLine3'?: string;
-    'town'?: string;
-    'country'?: string;
-    'postcode'?: string;
+    'address'?: CompanyAddressResponse;
     'telephone'?: string;
     'mobile'?: string;
     'fax'?: string;
     'email'?: string;
     'contactEmail'?: string;
     'contactNumber'?: string;
+    'vatNumber'?: string;
+    'bankDetails'?: CompanyBankDetailsResponse;
     'archived'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
 export interface CompanyProfileUpdateRequest {
     'name': string;
-    'addressLine1'?: string;
-    'addressLine2'?: string;
-    'addressLine3'?: string;
-    'town'?: string;
-    'country'?: string;
-    'postcode'?: string;
+    'address'?: CompanyAddressRequest;
     'telephone'?: string;
     'mobile'?: string;
     'fax'?: string;
     'email'?: string;
     'contactEmail'?: string;
     'contactNumber'?: string;
+    'vatNumber'?: string;
+    'bankDetails'?: CompanyBankDetailsRequest;
 }
 export interface CustomerAddressDto {
     'houseNumber'?: string;
@@ -269,12 +291,16 @@ export interface GoogleAuthRequest {
 }
 export interface InvoiceCreateRequest {
     'lineItemIds': Array<number>;
+    'dueDate'?: string;
+    'reference'?: string;
 }
 export interface InvoiceResponse {
     'id'?: number;
     'estimateId'?: number;
     'companyId'?: number;
     'invoiceNumber'?: string;
+    'dueDate'?: string;
+    'reference'?: string;
     'presignedUrl'?: string;
     'lineItems'?: Array<LineItemResponse>;
     'totalNet'?: number;
@@ -585,14 +611,14 @@ export interface LogoutRequest {
     'refreshToken': string;
 }
 export interface PageAssetResponse {
-    'totalElements'?: number;
     'totalPages'?: number;
+    'totalElements'?: number;
     'size'?: number;
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'numberOfElements'?: number;
     'pageable'?: PageableObject;
+    'numberOfElements'?: number;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -639,8 +665,8 @@ export interface SignupResponse {
 }
 export interface SortObject {
     'empty'?: boolean;
-    'unsorted'?: boolean;
     'sorted'?: boolean;
+    'unsorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;

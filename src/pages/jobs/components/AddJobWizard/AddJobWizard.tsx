@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Stepper, Step, StepLabel } from '@mui/material';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { jobService } from '../../../../services/api';
+import { Loader } from '../../../../components/UI';
 import { Step1TemplateCustomer } from './steps/Step1TemplateCustomer';
 import { Step2Client } from './steps/Step2Client';
 import { Step3AssignDetails } from './steps/Step3AssignDetails';
@@ -30,6 +32,7 @@ export interface WizardData {
   assignedWorkerId?: number;
   workflowId?: number;
   assetIds?: number[];
+  fieldValues?: { [key: string]: string | number | boolean };
   address?: {
     fullAddress: string;
     latitude?: number;
@@ -41,11 +44,40 @@ const WIZARD_STEPS = ['Template & Customer', 'Client', 'Assign Details', 'Custom
 
 interface AddJobWizardProps {
   onSuccess?: () => void;
+  jobId?: number;
 }
 
-export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess }) => {
+export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) => {
   const { activeScreen } = useGlobalModalInnerContext();
   const [wizardData, setWizardData] = useState<WizardData>({});
+  const [loadingJob, setLoadingJob] = useState(!!jobId);
+
+  useEffect(() => {
+    if (!jobId) return;
+    setLoadingJob(true);
+    jobService.getJobById(jobId)
+      .then((res) => {
+        const job = res.data;
+        const fieldValues: { [key: string]: string | number | boolean } = {};
+        if (job.fieldValues) {
+          Object.entries(job.fieldValues).forEach(([key, fv]) => {
+            if (fv && typeof fv === 'object' && 'value' in fv) {
+              fieldValues[key] = fv.value as string | number | boolean;
+            }
+          });
+        }
+        setWizardData({
+          templateId: job.templateId,
+          customerId: job.customerId,
+          clientId: job.clientId,
+          assignedWorkerId: job.assignedWorkerId,
+          workflowId: job.workflowId,
+          assetIds: job.assetIds ?? [],
+          fieldValues,
+        });
+      })
+      .finally(() => setLoadingJob(false));
+  }, [jobId]);
 
   const onStepComplete = (data: Partial<WizardData>) => {
     setWizardData((prev) => ({ ...prev, ...data }));
@@ -61,8 +93,10 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess }) => {
     if (activeScreen === 2) {
       return <Step3AssignDetails onStepComplete={onStepComplete} initialData={wizardData} />;
     }
-    return <Step4CustomFields wizardData={wizardData} onSuccess={onSuccess} />;
+    return <Step4CustomFields wizardData={wizardData} onSuccess={onSuccess} jobId={jobId} />;
   };
+
+  if (loadingJob) return <Loader size={40} centered minHeight="380px" />;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>

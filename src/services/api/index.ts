@@ -84,5 +84,8 @@ export type {
   LineItemCreateRequest,
 } from './estimate';
 
+export { lineItemService } from './lineItem';
+export type { LineItemUpdateRequest } from './lineItem';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

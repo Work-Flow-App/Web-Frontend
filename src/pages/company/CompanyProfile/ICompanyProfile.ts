@@ -11,4 +11,9 @@ export interface CompanyProfileFormData {
   town: string;
   country: string;
   postcode: string;
+  vatNumber: string;
+  bankName: string;
+  accountName: string;
+  accountNo: string;
+  sortCode: string;
 }

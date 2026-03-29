@@ -17,6 +17,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { authService } from '../services/api/auth';
@@ -230,6 +231,7 @@ export const Layout: React.FC = () => {
         { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
+    { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },

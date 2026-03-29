@@ -174,9 +174,11 @@ export const JobDetailsView: React.FC = () => {
         </S.TabsContainer>
 
         {/* Main Content Layout */}
-        <S.JobDetailsLayout>
-          {/* Left Sidebar - Workflow */}
-          <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />
+        <S.JobDetailsLayout fullWidth={activeTab !== 'overview'}>
+          {/* Left Sidebar - Workflow (overview only) */}
+          {activeTab === 'overview' && (
+            <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />
+          )}
 
           {/* Right Content - Details */}
           <S.MainContentPanel>

@@ -21,6 +21,7 @@ import { EquipmentPage } from './pages/equipment/EquipmentPage'
 import { CustomersPage } from './pages/customers/CustomersPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
 import { MapsPage, AssetsPage, AssetHistory } from './pages/assets'
+import { LineItemsPage } from './pages/lineItems'
 import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
@@ -64,6 +65,7 @@ function App() {
               <Route path="/company/assets" element={<AssetsPage />} />
               <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
               <Route path="/company/assets/maps" element={<MapsPage />} />
+              <Route path="/company/line-items" element={<LineItemsPage />} />
 
               {/* Catch all route - 404 with Layout */}
               <Route path="*" element={<NotFound />} />
