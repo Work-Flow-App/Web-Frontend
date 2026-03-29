@@ -601,8 +601,8 @@ export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
     'unpaged'?: boolean;
-    'paged'?: boolean;
     'pageNumber'?: number;
+    'paged'?: boolean;
     'pageSize'?: number;
 }
 export interface PasswordResetResponse {

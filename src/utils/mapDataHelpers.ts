@@ -1,5 +1,5 @@
-import type { JobResponse, WorkerResponse, ClientResponse } from '../../workflow-api';
-import type { PlaceDetails, WorkerMarkerData, JobMarkerData } from '../components/UI/LeafletMap/LeafletMap.types';
+import type { JobResponse, WorkerResponse, ClientResponse, CustomerResponse } from '../../workflow-api';
+import type { PlaceDetails, WorkerMarkerData, JobMarkerData, JobLocationMarkerData } from '../components/UI/GoogleMap/GoogleMap.types';
 import { NOMINATIM_CONFIG } from '../config/googleMaps';
 
 /**
@@ -106,6 +106,76 @@ export async function prepareWorkerJobMarkers(
       address: client.address,
       location,
       workerData,
+    });
+  }
+
+  return markers;
+}
+
+/**
+ * Prepare individual job location markers from jobs data.
+ * Each job with a resolvable address gets its own pin on the map.
+ * Uses stored lat/lng when available, otherwise geocodes the address.
+ */
+export async function prepareJobLocationMarkers(
+  jobs: JobResponse[],
+  workers: WorkerResponse[],
+  clients: ClientResponse[],
+  customers: CustomerResponse[] = [],
+  geocodeFn: (address: string) => Promise<{ lat: number; lng: number } | null> = geocodeAddress
+): Promise<PlaceDetails[]> {
+  const markers: PlaceDetails[] = [];
+
+  for (const job of jobs) {
+    if (!job.address) continue;
+
+    let location: { lat: number; lng: number } | null = null;
+
+    // Prefer stored coordinates — no geocoding needed
+    if (job.address.latitude != null && job.address.longitude != null) {
+      location = { lat: job.address.latitude, lng: job.address.longitude };
+    } else {
+      const addressParts = [
+        job.address.street,
+        job.address.city,
+        job.address.state,
+        job.address.postalCode,
+        job.address.country,
+      ].filter(Boolean);
+
+      if (addressParts.length === 0) continue;
+      location = await geocodeFn(addressParts.join(', '));
+    }
+
+    if (!location) continue;
+
+    const client = clients.find((c) => c.id === job.clientId);
+    const customer = customers.find((c) => c.id === job.customerId);
+    const worker = workers.find((w) => w.id === job.assignedWorkerId);
+
+    const addressParts = [
+      job.address.street,
+      job.address.city,
+      job.address.state,
+      job.address.postalCode,
+      job.address.country,
+    ].filter(Boolean);
+
+    const jobLocationData: JobLocationMarkerData = {
+      jobId: job.id || 0,
+      status: job.status || 'UNKNOWN',
+      clientName: client?.name,
+      customerName: customer?.name,
+      workerName: worker?.name,
+      scheduledTime: getScheduledTime(job),
+      templateName: undefined,
+    };
+
+    markers.push({
+      address: addressParts.join(', '),
+      name: `Job #${job.id}`,
+      location,
+      jobLocationData,
     });
   }
 

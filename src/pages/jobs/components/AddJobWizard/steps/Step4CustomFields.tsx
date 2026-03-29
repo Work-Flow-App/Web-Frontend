@@ -206,6 +206,13 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess 
           if (wizardData.assetIds && wizardData.assetIds.length > 0) {
             createPayload.assetIds = wizardData.assetIds;
           }
+          if (wizardData.address) {
+            createPayload.address = {
+              street: wizardData.address.fullAddress,
+              latitude: wizardData.address.latitude,
+              longitude: wizardData.address.longitude,
+            };
+          }
 
           await jobService.createJob(createPayload);
           showSuccess('Job created successfully');
