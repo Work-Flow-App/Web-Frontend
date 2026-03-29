@@ -46,6 +46,11 @@ export const CompanyProfile: React.FC = () => {
       town: '',
       country: '',
       postcode: '',
+      vatNumber: '',
+      bankName: '',
+      accountName: '',
+      accountNo: '',
+      sortCode: '',
     },
   });
 
@@ -65,25 +70,32 @@ export const CompanyProfile: React.FC = () => {
     variant: 'success' | 'error' | 'warning' | 'info';
   }>({ open: false, message: '', variant: 'success' });
 
+  const buildFormValues = (data: CompanyProfileResponse) => ({
+    name: data.name || '',
+    email: data.email || '',
+    contactEmail: data.contactEmail || '',
+    contactNumber: data.contactNumber || '',
+    telephone: data.telephone || '',
+    mobile: data.mobile || '',
+    addressLine1: data.address?.addressLine1 || '',
+    addressLine2: data.address?.addressLine2 || '',
+    addressLine3: data.address?.addressLine3 || '',
+    town: data.address?.town || '',
+    country: data.address?.country || '',
+    postcode: data.address?.postcode || '',
+    vatNumber: data.vatNumber || '',
+    bankName: data.bankDetails?.bankName || '',
+    accountName: data.bankDetails?.accountName || '',
+    accountNo: data.bankDetails?.accountNo || '',
+    sortCode: data.bankDetails?.sortCode || '',
+  });
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await companyService.getProfile();
         setProfile(response.data);
-        reset({
-          name: response.data.name || '',
-          email: response.data.email || '',
-          contactEmail: response.data.contactEmail || '',
-          contactNumber: response.data.contactNumber || '',
-          telephone: response.data.telephone || '',
-          mobile: response.data.mobile || '',
-          addressLine1: response.data.addressLine1 || '',
-          addressLine2: response.data.addressLine2 || '',
-          addressLine3: response.data.addressLine3 || '',
-          town: response.data.town || '',
-          country: response.data.country || '',
-          postcode: response.data.postcode || '',
-        });
+        reset(buildFormValues(response.data));
       } catch (error) {
         console.error('Failed to fetch company profile:', error);
         setSnackbar({
@@ -109,12 +121,21 @@ export const CompanyProfile: React.FC = () => {
         contactNumber: data.contactNumber || undefined,
         telephone: data.telephone || undefined,
         mobile: data.mobile || undefined,
-        addressLine1: data.addressLine1 || undefined,
-        addressLine2: data.addressLine2 || undefined,
-        addressLine3: data.addressLine3 || undefined,
-        town: data.town || undefined,
-        country: data.country || undefined,
-        postcode: data.postcode || undefined,
+        address: {
+          addressLine1: data.addressLine1 || undefined,
+          addressLine2: data.addressLine2 || undefined,
+          addressLine3: data.addressLine3 || undefined,
+          town: data.town || undefined,
+          country: data.country || undefined,
+          postcode: data.postcode || undefined,
+        },
+        vatNumber: data.vatNumber || undefined,
+        bankDetails: {
+          bankName: data.bankName || undefined,
+          accountName: data.accountName || undefined,
+          accountNo: data.accountNo || undefined,
+          sortCode: data.sortCode || undefined,
+        },
       });
       setProfile(response.data);
       setIsEditing(false);
@@ -134,20 +155,7 @@ export const CompanyProfile: React.FC = () => {
   const handleEdit = () => setIsEditing(true);
 
   const handleCancel = () => {
-    reset({
-      name: profile?.name || '',
-      email: profile?.email || '',
-      contactEmail: profile?.contactEmail || '',
-      contactNumber: profile?.contactNumber || '',
-      telephone: profile?.telephone || '',
-      mobile: profile?.mobile || '',
-      addressLine1: profile?.addressLine1 || '',
-      addressLine2: profile?.addressLine2 || '',
-      addressLine3: profile?.addressLine3 || '',
-      town: profile?.town || '',
-      country: profile?.country || '',
-      postcode: profile?.postcode || '',
-    });
+    if (profile) reset(buildFormValues(profile));
     setIsEditing(false);
   };
 
@@ -252,6 +260,14 @@ export const CompanyProfile: React.FC = () => {
                     fullWidth
                     error={errors.mobile}
                   />
+                  <Input
+                    name="vatNumber"
+                    label={fieldLabels.vatNumber}
+                    type="text"
+                    placeholder={placeHolders.vatNumber}
+                    fullWidth
+                    error={errors.vatNumber}
+                  />
                 </FieldsGrid>
               </>
             ) : (
@@ -280,6 +296,10 @@ export const CompanyProfile: React.FC = () => {
                   <FieldRow>
                     <FieldLabel>Mobile</FieldLabel>
                     <FieldValue>{profile?.mobile || EMPTY}</FieldValue>
+                  </FieldRow>
+                  <FieldRow>
+                    <FieldLabel>VAT Number</FieldLabel>
+                    <FieldValue>{profile?.vatNumber || EMPTY}</FieldValue>
                   </FieldRow>
                 </FieldsGrid>
               </>
@@ -345,27 +365,88 @@ export const CompanyProfile: React.FC = () => {
               <FieldsGrid>
                 <FieldRow>
                   <FieldLabel>Address Line 1</FieldLabel>
-                  <FieldValue>{profile?.addressLine1 || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.addressLine1 || EMPTY}</FieldValue>
                 </FieldRow>
                 <FieldRow>
                   <FieldLabel>Address Line 2</FieldLabel>
-                  <FieldValue>{profile?.addressLine2 || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.addressLine2 || EMPTY}</FieldValue>
                 </FieldRow>
                 <FieldRow>
                   <FieldLabel>Address Line 3</FieldLabel>
-                  <FieldValue>{profile?.addressLine3 || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.addressLine3 || EMPTY}</FieldValue>
                 </FieldRow>
                 <FieldRow>
                   <FieldLabel>Town / City</FieldLabel>
-                  <FieldValue>{profile?.town || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.town || EMPTY}</FieldValue>
                 </FieldRow>
                 <FieldRow>
                   <FieldLabel>Country</FieldLabel>
-                  <FieldValue>{profile?.country || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.country || EMPTY}</FieldValue>
                 </FieldRow>
                 <FieldRow>
                   <FieldLabel>Postcode</FieldLabel>
-                  <FieldValue>{profile?.postcode || EMPTY}</FieldValue>
+                  <FieldValue>{profile?.address?.postcode || EMPTY}</FieldValue>
+                </FieldRow>
+              </FieldsGrid>
+            )}
+          </SectionCard>
+
+          {/* Bank Details */}
+          <SectionCard>
+            <SectionTitle>Bank Details</SectionTitle>
+
+            {isEditing ? (
+              <FieldsGrid>
+                <Input
+                  name="bankName"
+                  label={fieldLabels.bankName}
+                  type="text"
+                  placeholder={placeHolders.bankName}
+                  fullWidth
+                  error={errors.bankName}
+                />
+                <Input
+                  name="accountName"
+                  label={fieldLabels.accountName}
+                  type="text"
+                  placeholder={placeHolders.accountName}
+                  fullWidth
+                  error={errors.accountName}
+                />
+                <Input
+                  name="accountNo"
+                  label={fieldLabels.accountNo}
+                  type="text"
+                  placeholder={placeHolders.accountNo}
+                  fullWidth
+                  error={errors.accountNo}
+                />
+                <Input
+                  name="sortCode"
+                  label={fieldLabels.sortCode}
+                  type="text"
+                  placeholder={placeHolders.sortCode}
+                  fullWidth
+                  error={errors.sortCode}
+                />
+              </FieldsGrid>
+            ) : (
+              <FieldsGrid>
+                <FieldRow>
+                  <FieldLabel>Bank Name</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.bankName || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Account Name</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.accountName || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Account Number</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.accountNo || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Sort Code</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.sortCode || EMPTY}</FieldValue>
                 </FieldRow>
               </FieldsGrid>
             )}

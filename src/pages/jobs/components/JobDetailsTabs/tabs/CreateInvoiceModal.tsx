@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { Box, Typography, Divider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Divider, TextField } from '@mui/material';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
+import { estimateService } from '../../../../../services/api';
 import type { LineItemResponse } from '../../../../../services/api';
 
 const fmt = (v?: number) => (v !== undefined ? `£${v.toFixed(2)}` : '—');
@@ -10,31 +11,61 @@ const HEADERS = ['Product Code', 'Description', 'Unit Price', 'Qty', 'VAT %', 'T
 const GRID = '100px 1fr 100px 60px 70px 100px';
 
 export interface CreateInvoiceModalProps {
+  estimateId: number;
   lineItems?: LineItemResponse[];
   onSuccess: () => void;
 }
 
 export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
+  estimateId,
   lineItems = [],
   onSuccess,
 }) => {
-  const { showSuccess } = useSnackbar();
+  const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } =
     useGlobalModalInnerContext();
 
-  useEffect(() => {
-    updateModalTitle('Create Invoice');
-    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Generate Invoice' });
-    setSkipResetModal?.(true);
-  }, [updateModalTitle, updateGlobalModalInnerConfig, setSkipResetModal]);
+  const [dueDate, setDueDate] = useState('');
+  const [reference, setReference] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    updateOnConfirm(() => {
-      // TODO: call invoiceService.create(...) when the API is available
-      showSuccess('Invoice generated successfully');
-      onSuccess();
+    updateModalTitle('Create Invoice');
+    setSkipResetModal?.(true);
+  }, [updateModalTitle, setSkipResetModal]);
+
+  useEffect(() => {
+    updateGlobalModalInnerConfig({
+      confirmModalButtonText: isGenerating ? 'Generating invoice...' : 'Generate Invoice',
+      isConfirmDisabled: isGenerating,
     });
-  }, [updateOnConfirm, showSuccess, onSuccess]);
+  }, [updateGlobalModalInnerConfig, isGenerating]);
+
+  useEffect(() => {
+    updateOnConfirm(async () => {
+      setIsGenerating(true);
+      try {
+        const res = await estimateService.generateInvoice(estimateId, {
+          lineItemIds: lineItems.map((li) => li.id!),
+          dueDate: dueDate || undefined,
+          reference: reference || undefined,
+        });
+        const url = res.data?.presignedUrl;
+        if (url) {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+        showSuccess('Invoice generated successfully');
+        onSuccess();
+      } catch (err: unknown) {
+        console.error('Generate invoice error:', err);
+        const msg =
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Failed to generate invoice. Please try again.';
+        showError(msg);
+        setIsGenerating(false);
+      }
+    });
+  }, [updateOnConfirm, estimateId, lineItems, dueDate, reference, showSuccess, showError, onSuccess]);
 
   const totalNet = lineItems.reduce((s, li) => s + (li.netAmount ?? 0), 0);
   const totalVat = lineItems.reduce((s, li) => s + (li.vatAmount ?? 0), 0);
@@ -42,6 +73,27 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Due Date & Reference */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+        <TextField
+          label="Due Date"
+          type="date"
+          size="small"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <TextField
+          label="Reference"
+          type="text"
+          size="small"
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+          inputProps={{ maxLength: 100 }}
+          placeholder="Enter reference"
+        />
+      </Box>
+
       {/* Header row */}
       <Box
         sx={(theme) => ({

@@ -167,6 +167,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       fieldName: 'createInvoice',
       children: (
         <CreateInvoiceModal
+          estimateId={estimate!.id!}
           lineItems={invoiceLineItems}
           onSuccess={() => resetGlobalModalOuterProps()}
         />
@@ -244,7 +245,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         </S.DetailsSectionTitle>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button variant="outlined" color="primary" onClick={handleGenerateInvoice}>
-            Generate Invoice
+            Create Invoice
           </Button>
         </Box>
       </S.EstimateTableHeader>
@@ -289,13 +290,18 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
             {lineItems.map((item) => (
               <StyledTableRow
                 key={item.id}
-                sx={selectedIds.has(item.id!) ? { backgroundColor: 'action.selected' } : {}}
+                onClick={() => toggleRow(item.id!)}
+                sx={{
+                  cursor: 'pointer',
+                  ...(selectedIds.has(item.id!) ? { backgroundColor: 'action.selected' } : {}),
+                }}
               >
                 <StyledTableCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }}>
                   <Checkbox
                     size="small"
                     checked={selectedIds.has(item.id!)}
                     onChange={() => toggleRow(item.id!)}
+                    onClick={(e) => e.stopPropagation()}
                     sx={{ p: 0 }}
                   />
                 </StyledTableCell>
@@ -322,7 +328,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                 <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.netAmount)}</StyledTableCell>
                 <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.vatAmount)}</StyledTableCell>
                 <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.totalAmount)}</StyledTableCell>
-                <ActionsCell sx={COMPACT_CELL}>
+                <ActionsCell sx={COMPACT_CELL} onClick={(e) => e.stopPropagation()}>
                   <Tooltip title="Unlink from estimate">
                     <IconButton size="small" onClick={() => handleUnlink(item)} color="error">
                       <LinkOffIcon sx={{ fontSize: '1rem' }} />
