@@ -10,6 +10,7 @@ import {
   Autocomplete,
   Select,
   MenuItem,
+  Checkbox,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
@@ -39,7 +40,8 @@ interface JobEstimateTabProps {
   job: JobResponse;
 }
 
-const FIELD_SX = { '& .MuiInputBase-root': { fontSize: '0.875rem' } };
+const COMPACT_CELL = { py: '5px', px: '10px', fontSize: '0.8125rem' };
+const FIELD_SX = { '& .MuiInputBase-root': { fontSize: '0.8125rem' } };
 
 const defaultNewItem = {
   productCode: '',
@@ -61,6 +63,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const [newItem, setNewItem] = useState(defaultNewItem);
   const [selectedExistingId, setSelectedExistingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const fetchEstimate = useCallback(async () => {
     if (!job.id) return;
@@ -85,6 +88,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       try {
         const res = await estimateService.unlinkLineItem(estimate.id, lineItem.id);
         setEstimate(res.data);
+        setSelectedIds((prev) => { const next = new Set(prev); next.delete(lineItem.id!); return next; });
       } catch {
         showError('Failed to remove line item');
       }
@@ -119,14 +123,8 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const handleSave = useCallback(async () => {
     if (!estimate?.id) return;
-    if (!newItem.productCode.trim()) {
-      showError('Product code is required');
-      return;
-    }
-    if (!newItem.productDescription.trim() && !selectedExistingId) {
-      showError('Description is required');
-      return;
-    }
+    if (!newItem.productCode.trim()) { showError('Product code is required'); return; }
+    if (!newItem.productDescription.trim() && !selectedExistingId) { showError('Description is required'); return; }
     setSaving(true);
     try {
       let res;
@@ -152,20 +150,27 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     }
   }, [estimate?.id, newItem, selectedExistingId, showError, handleCloseAddRow]);
 
-  const handleCreateInvoice = useCallback(() => {
+  const handleGenerateInvoice = useCallback(() => {
+    if (selectedIds.size === 0) {
+      showError('Please select at least one line item to generate an invoice');
+      return;
+    }
+
+    const lineItems: LineItemResponse[] = estimate?.lineItems || [];
+    const invoiceLineItems = lineItems.filter((li) => li.id !== undefined && selectedIds.has(li.id!));
+
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.LARGE,
       fieldName: 'createInvoice',
       children: (
         <CreateInvoiceModal
-          job={job}
-          lineItems={estimate?.lineItems || []}
+          lineItems={invoiceLineItems}
           onSuccess={() => resetGlobalModalOuterProps()}
         />
       ),
     });
-  }, [job, estimate?.lineItems, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+  }, [job, estimate?.lineItems, selectedIds, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
   const fmt = (val?: number) => (val !== undefined ? `£${val.toFixed(2)}` : '—');
 
@@ -191,6 +196,24 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const lineItems: LineItemResponse[] = estimate.lineItems || [];
   const linkedIds = lineItems.map((li) => li.id!).filter(Boolean);
+  const allSelected = lineItems.length > 0 && lineItems.every((li) => selectedIds.has(li.id!));
+  const someSelected = lineItems.some((li) => selectedIds.has(li.id!));
+
+  const toggleRow = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(lineItems.map((li) => li.id!).filter(Boolean)));
+    }
+  };
 
   return (
     <>
@@ -210,10 +233,13 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       </S.EstimateTotalsRow>
 
       <S.EstimateTableHeader>
-        <S.DetailsSectionTitle>Line Items ({lineItems.length})</S.DetailsSectionTitle>
+        <S.DetailsSectionTitle>
+          Line Items ({lineItems.length})
+          {someSelected && ` · ${selectedIds.size} selected`}
+        </S.DetailsSectionTitle>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" color="primary" onClick={handleCreateInvoice}>
-            Create Invoice
+          <Button variant="outlined" color="primary" onClick={handleGenerateInvoice}>
+            Generate Invoice
           </Button>
         </Box>
       </S.EstimateTableHeader>
@@ -222,38 +248,60 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         <StyledTable>
           <StyledTableHead>
             <TableRow>
-              <StyledHeaderCell>Code</StyledHeaderCell>
-              <StyledHeaderCell>Description</StyledHeaderCell>
-              <StyledHeaderCell>Type</StyledHeaderCell>
-              <StyledHeaderCell align="right">Unit Price</StyledHeaderCell>
-              <StyledHeaderCell align="right">Qty</StyledHeaderCell>
-              <StyledHeaderCell align="right">VAT %</StyledHeaderCell>
-              <StyledHeaderCell align="right">Net</StyledHeaderCell>
-              <StyledHeaderCell align="right">VAT</StyledHeaderCell>
-              <StyledHeaderCell align="right">Total</StyledHeaderCell>
-              <ActionsCell as={StyledHeaderCell}>Actions</ActionsCell>
+              {/* Select-all checkbox */}
+              <StyledHeaderCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }}>
+                <Checkbox
+                  size="small"
+                  checked={allSelected}
+                  indeterminate={someSelected && !allSelected}
+                  onChange={toggleAll}
+                  disabled={lineItems.length === 0}
+                  sx={{ p: 0 }}
+                />
+              </StyledHeaderCell>
+              <StyledHeaderCell sx={COMPACT_CELL}>Product Code</StyledHeaderCell>
+              <StyledHeaderCell sx={COMPACT_CELL}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={COMPACT_CELL}>Type</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>Unit Price</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>Qty</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>VAT %</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>Net</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>VAT</StyledHeaderCell>
+              <StyledHeaderCell align="right" sx={COMPACT_CELL}>Total</StyledHeaderCell>
+              <ActionsCell as={StyledHeaderCell} sx={COMPACT_CELL}>Actions</ActionsCell>
             </TableRow>
           </StyledTableHead>
 
           <StyledTableBody>
             {lineItems.length === 0 && !showAddRow && (
               <StyledTableRow>
-                <StyledTableCell colSpan={10} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <StyledTableCell colSpan={11} align="center" sx={{ color: 'text.secondary', py: 3 }}>
                   No line items yet
                 </StyledTableCell>
               </StyledTableRow>
             )}
 
             {lineItems.map((item) => (
-              <StyledTableRow key={item.id}>
-                <StyledTableCell>{item.productCode}</StyledTableCell>
-                <StyledTableCell>
+              <StyledTableRow
+                key={item.id}
+                sx={selectedIds.has(item.id!) ? { backgroundColor: 'action.selected' } : {}}
+              >
+                <StyledTableCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }}>
+                  <Checkbox
+                    size="small"
+                    checked={selectedIds.has(item.id!)}
+                    onChange={() => toggleRow(item.id!)}
+                    sx={{ p: 0 }}
+                  />
+                </StyledTableCell>
+                <StyledTableCell sx={COMPACT_CELL}>{item.productCode}</StyledTableCell>
+                <StyledTableCell sx={COMPACT_CELL}>
                   <div>{item.productDescription}</div>
                   {item.additionalDetails && (
                     <S.DocumentMeta>{item.additionalDetails}</S.DocumentMeta>
                   )}
                 </StyledTableCell>
-                <StyledTableCell>
+                <StyledTableCell sx={COMPACT_CELL}>
                   <Chip
                     label={item.coreOrSub}
                     size="small"
@@ -261,18 +309,18 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                     variant="outlined"
                   />
                 </StyledTableCell>
-                <StyledTableCell align="right">{fmt(item.unitPrice)}</StyledTableCell>
-                <StyledTableCell align="right">{item.quantity}</StyledTableCell>
-                <StyledTableCell align="right">
+                <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.unitPrice)}</StyledTableCell>
+                <StyledTableCell align="right" sx={COMPACT_CELL}>{item.quantity}</StyledTableCell>
+                <StyledTableCell align="right" sx={COMPACT_CELL}>
                   {item.vatRate !== undefined ? `${item.vatRate}%` : '—'}
                 </StyledTableCell>
-                <StyledTableCell align="right">{fmt(item.netAmount)}</StyledTableCell>
-                <StyledTableCell align="right">{fmt(item.vatAmount)}</StyledTableCell>
-                <StyledTableCell align="right">{fmt(item.totalAmount)}</StyledTableCell>
-                <ActionsCell>
+                <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.netAmount)}</StyledTableCell>
+                <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.vatAmount)}</StyledTableCell>
+                <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.totalAmount)}</StyledTableCell>
+                <ActionsCell sx={COMPACT_CELL}>
                   <Tooltip title="Unlink from estimate">
                     <IconButton size="small" onClick={() => handleUnlink(item)} color="error">
-                      <LinkOffIcon fontSize="small" />
+                      <LinkOffIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Tooltip>
                 </ActionsCell>
@@ -281,16 +329,16 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
             {showAddRow && (
               <StyledTableRow>
-                {/* Code — freeSolo autocomplete suggests existing items */}
-                <StyledTableCell sx={{ minWidth: 160 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, width: 36 }} />
+
+                {/* Code — freeSolo autocomplete */}
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 150 }}>
                   <Autocomplete
                     freeSolo
                     size="small"
                     options={availableLineItems}
                     loading={pickerLoading}
-                    getOptionLabel={(opt) =>
-                      typeof opt === 'string' ? opt : opt.productCode || ''
-                    }
+                    getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.productCode || ''}
                     inputValue={newItem.productCode}
                     onInputChange={(_, value, reason) => {
                       setNewItem((prev) => ({ ...prev, productCode: value }));
@@ -317,10 +365,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                         InputProps={{
                           ...params.InputProps,
                           endAdornment: (
-                            <>
-                              {pickerLoading && <CircularProgress size={14} />}
-                              {params.InputProps.endAdornment}
-                            </>
+                            <>{pickerLoading && <CircularProgress size={12} />}{params.InputProps.endAdornment}</>
                           ),
                         }}
                       />
@@ -329,31 +374,24 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                 </StyledTableCell>
 
                 {/* Description */}
-                <StyledTableCell sx={{ minWidth: 180 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 160 }}>
                   <TextField
                     size="small"
                     fullWidth
                     placeholder="Description..."
                     value={newItem.productDescription}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, productDescription: e.target.value }))
-                    }
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, productDescription: e.target.value }))}
                     sx={FIELD_SX}
                   />
                 </StyledTableCell>
 
                 {/* Type */}
-                <StyledTableCell sx={{ minWidth: 90 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 85 }}>
                   <Select
                     size="small"
                     value={newItem.coreOrSub}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({
-                        ...prev,
-                        coreOrSub: e.target.value as 'CORE' | 'SUB',
-                      }))
-                    }
-                    sx={{ fontSize: '0.875rem' }}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, coreOrSub: e.target.value as 'CORE' | 'SUB' }))}
+                    sx={{ fontSize: '0.8125rem' }}
                   >
                     <MenuItem value="CORE">CORE</MenuItem>
                     <MenuItem value="SUB">SUB</MenuItem>
@@ -361,83 +399,60 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                 </StyledTableCell>
 
                 {/* Unit Price */}
-                <StyledTableCell sx={{ minWidth: 130 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 120 }}>
                   <TextField
                     size="small"
                     type="number"
                     placeholder="0.00"
                     value={newItem.unitPrice}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, unitPrice: e.target.value }))
-                    }
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, unitPrice: e.target.value }))}
                     inputProps={{ min: 0, step: 0.01 }}
-                    sx={{ ...FIELD_SX, width: 120, '& input': { textAlign: 'right' } }}
+                    sx={{ ...FIELD_SX, width: 110, '& input': { textAlign: 'right' } }}
                   />
                 </StyledTableCell>
 
                 {/* Qty */}
-                <StyledTableCell sx={{ minWidth: 100 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 85 }}>
                   <TextField
                     size="small"
                     type="number"
                     placeholder="1"
                     value={newItem.quantity}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, quantity: e.target.value }))
-                    }
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, quantity: e.target.value }))}
                     inputProps={{ min: 1 }}
-                    sx={{ ...FIELD_SX, width: 90, '& input': { textAlign: 'right' } }}
+                    sx={{ ...FIELD_SX, width: 75, '& input': { textAlign: 'right' } }}
                   />
                 </StyledTableCell>
 
                 {/* VAT % */}
-                <StyledTableCell sx={{ minWidth: 110 }}>
+                <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 90 }}>
                   <TextField
                     size="small"
                     type="number"
                     placeholder="0"
                     value={newItem.vatRate}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({ ...prev, vatRate: e.target.value }))
-                    }
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, vatRate: e.target.value }))}
                     inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    sx={{ ...FIELD_SX, width: 100, '& input': { textAlign: 'right' } }}
+                    sx={{ ...FIELD_SX, width: 80, '& input': { textAlign: 'right' } }}
                   />
                 </StyledTableCell>
 
-                {/* Calculated: Net */}
-                <StyledTableCell align="right" sx={{ color: 'text.secondary' }}>
-                  {fmt(calcNet)}
-                </StyledTableCell>
+                <StyledTableCell align="right" sx={{ ...COMPACT_CELL, color: 'text.secondary' }}>{fmt(calcNet)}</StyledTableCell>
+                <StyledTableCell align="right" sx={{ ...COMPACT_CELL, color: 'text.secondary' }}>{fmt(calcVat)}</StyledTableCell>
+                <StyledTableCell align="right" sx={{ ...COMPACT_CELL, color: 'text.secondary' }}>{fmt(calcTotal)}</StyledTableCell>
 
-                {/* Calculated: VAT */}
-                <StyledTableCell align="right" sx={{ color: 'text.secondary' }}>
-                  {fmt(calcVat)}
-                </StyledTableCell>
-
-                {/* Calculated: Total */}
-                <StyledTableCell align="right" sx={{ color: 'text.secondary' }}>
-                  {fmt(calcTotal)}
-                </StyledTableCell>
-
-                {/* Actions */}
-                <ActionsCell>
+                <ActionsCell sx={COMPACT_CELL}>
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <Tooltip title="Save">
                       <span>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={handleSave}
-                          disabled={saving}
-                        >
-                          {saving ? <CircularProgress size={14} /> : <CheckIcon fontSize="small" />}
+                        <IconButton size="small" color="primary" onClick={handleSave} disabled={saving}>
+                          {saving ? <CircularProgress size={12} /> : <CheckIcon sx={{ fontSize: '1rem' }} />}
                         </IconButton>
                       </span>
                     </Tooltip>
                     <Tooltip title="Cancel">
                       <IconButton size="small" onClick={handleCloseAddRow} disabled={saving}>
-                        <CloseIcon fontSize="small" />
+                        <CloseIcon sx={{ fontSize: '1rem' }} />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -447,24 +462,24 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
             {!showAddRow && (
               <StyledTableRow sx={{ '&:hover': { background: 'inherit' } }}>
-                <StyledTableCell colSpan={10}>
+                <StyledTableCell colSpan={11} sx={COMPACT_CELL}>
                   <Box
                     onClick={() => handleOpenAddRow(linkedIds)}
-                    sx={{
+                    sx={(theme) => ({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 0.5,
                       px: 2,
-                      py: 0.75,
+                      py: 0.6,
                       borderRadius: '20px',
-                      backgroundColor: 'primary.main',
-                      color: '#fff',
+                      backgroundColor: theme.palette.buttonColors.primary,
+                      color: theme.palette.buttonColors.primaryContrast,
                       fontWeight: 600,
                       fontSize: '0.8125rem',
                       fontFamily: 'Manrope, sans-serif',
                       cursor: 'pointer',
-                      '&:hover': { backgroundColor: 'primary.dark' },
-                    }}
+                      '&:hover': { backgroundColor: theme.palette.buttonColors.primaryHover },
+                    })}
                   >
                     <AddIcon sx={{ fontSize: '1rem' }} />
                     Add New Line Item

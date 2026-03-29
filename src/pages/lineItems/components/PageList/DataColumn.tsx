@@ -22,7 +22,7 @@ const fmt = (val: number) => (val !== undefined ? `£${val.toFixed(2)}` : '—')
 export const columns: ITableColumn<LineItemTableRow>[] = [
   {
     id: 'productCode',
-    label: 'Code',
+    label: 'Product Code',
     accessor: 'productCode',
     sortable: true,
     width: 'auto',
