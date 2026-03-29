@@ -46,6 +46,7 @@ export interface GoogleMapProps {
   onLocationSelect?: (location: PlaceDetails) => void;
   selectedLocation?: PlaceDetails | null;
   focusedMarker?: PlaceDetails | null;
+  autoFitBounds?: boolean;
   height?: string | number;
   width?: string | number;
   showSearchBox?: boolean;

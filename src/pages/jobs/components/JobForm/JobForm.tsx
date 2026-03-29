@@ -91,6 +91,8 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               addressState: '',
               addressPostalCode: '',
               addressCountry: '',
+              addressLatitude: job.address?.latitude ?? null,
+              addressLongitude: job.address?.longitude ?? null,
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -134,7 +136,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, addressStreet, addressCity, addressState, addressPostalCode, addressCountry, ...dynamicFields } = data;
+        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, addressStreet, addressCity, addressState, addressPostalCode, addressCountry, addressLatitude, addressLongitude, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -204,13 +206,15 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           : workflowId;
         const workflowIdNumber = workflowIdValue ? Number(workflowIdValue) : undefined;
 
-        // Build address object
+        // Build address object — always include coordinates when available
         const addressObj = {
           ...(addressStreet && { street: addressStreet as string }),
           ...(addressCity && { city: addressCity as string }),
           ...(addressState && { state: addressState as string }),
           ...(addressPostalCode && { postalCode: addressPostalCode as string }),
           ...(addressCountry && { country: addressCountry as string }),
+          ...(addressLatitude != null && { latitude: addressLatitude as number }),
+          ...(addressLongitude != null && { longitude: addressLongitude as number }),
         };
         const hasAddress = Object.keys(addressObj).length > 0;
 

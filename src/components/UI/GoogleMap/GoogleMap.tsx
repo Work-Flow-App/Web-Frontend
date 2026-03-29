@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useJsApiLoader, GoogleMap as GoogleMapComponent, Marker, InfoWindow } from '@react-google-maps/api';
 import { CircularProgress, Typography, Alert, AlertTitle, Box, Chip } from '@mui/material';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../config/googleMaps';
@@ -25,6 +25,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   onLocationSelect,
   selectedLocation,
   focusedMarker,
+  autoFitBounds = false,
   height = '600px',
   width = '100%',
   showSearchBox = true,
@@ -37,6 +38,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
     libraries: GOOGLE_MAPS_CONFIG.libraries,
   });
+
+  const mapRef = useRef<google.maps.Map | null>(null);
 
   const [selectedMarker, setSelectedMarker] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(center);
@@ -60,10 +63,27 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     setMapZoom(zoom);
   }, [center, zoom]);
 
-  // When a marker is focused externally (e.g. clicked in side panel list), open its info window
+  // Auto-fit the map viewport to show every marker whenever the marker list changes
   useEffect(() => {
-    if (focusedMarker) {
-      setSelectedMarker(focusedMarker);
+    if (!autoFitBounds || !mapRef.current || markers.length === 0) return;
+    if (markers.length === 1) {
+      mapRef.current.setCenter(markers[0].location);
+      mapRef.current.setZoom(14);
+    } else {
+      const bounds = new google.maps.LatLngBounds();
+      markers.forEach((m) => bounds.extend(m.location));
+      mapRef.current.fitBounds(bounds, 80);
+    }
+  }, [markers, autoFitBounds]);
+
+  // When a marker is focused externally (e.g. clicked in side panel list), pan directly to it
+  useEffect(() => {
+    if (!focusedMarker) return;
+    setSelectedMarker(focusedMarker);
+    if (mapRef.current) {
+      mapRef.current.panTo(focusedMarker.location);
+      mapRef.current.setZoom(16);
+    } else {
       setMapCenter(focusedMarker.location);
       setMapZoom(16);
     }
@@ -145,18 +165,22 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           mapContainerStyle={{ width: '100%', height: '100%' }}
           options={GOOGLE_MAPS_CONFIG.mapOptions}
           onClick={handleMapClick}
+          onLoad={(map) => { mapRef.current = map; }}
         >
           {allMarkers.map((marker, index) => {
             const jobStatus = marker.jobLocationData?.status;
             const isInProgress = jobStatus === 'IN_PROGRESS';
+            // Standard teardrop pin shape (same as Google Maps default marker, scaled by status)
             const markerIcon: google.maps.Symbol | undefined = jobStatus
               ? {
-                  path: google.maps.SymbolPath.CIRCLE,
+                  // Standard Google Maps teardrop path (24×24 viewBox, tip at bottom-centre)
+                  path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z',
                   fillColor: STATUS_COLORS[jobStatus] ?? '#9e9e9e',
                   fillOpacity: 1,
                   strokeColor: '#ffffff',
-                  strokeWeight: isInProgress ? 3 : 2,
-                  scale: isInProgress ? 12 : 9,
+                  strokeWeight: 1.5,
+                  scale: isInProgress ? 2.2 : 1.7,
+                  anchor: new google.maps.Point(12, 22),
                 }
               : undefined;
 

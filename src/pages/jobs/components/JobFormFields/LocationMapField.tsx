@@ -16,6 +16,8 @@ import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../config/g
 const LocationMapField: React.FC = () => {
   const { setValue, watch } = useFormContext();
   const addressStreet = watch('addressStreet') as string;
+  const savedLat = watch('addressLatitude') as number | null | undefined;
+  const savedLng = watch('addressLongitude') as number | null | undefined;
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
@@ -27,10 +29,19 @@ const LocationMapField: React.FC = () => {
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
   const geocodedRef = useRef(false);
 
-  // Geocode existing address once when the API loads (edit mode)
+  // Restore pin from saved coordinates when editing (no geocoding needed)
+  // Falls back to geocoding the address text if coordinates aren't stored yet
   useEffect(() => {
     if (!isLoaded || !addressStreet || geocodedRef.current) return;
     geocodedRef.current = true;
+
+    if (savedLat != null && savedLng != null) {
+      const location = { lat: savedLat, lng: savedLng };
+      setSelectedLocation({ address: addressStreet, location });
+      setMapCenter(location);
+      setMapZoom(15);
+      return;
+    }
 
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: addressStreet }, (results, status) => {
@@ -39,20 +50,23 @@ const LocationMapField: React.FC = () => {
           lat: results[0].geometry.location.lat(),
           lng: results[0].geometry.location.lng(),
         };
-        const pin: PlaceDetails = { address: addressStreet, location };
-        setSelectedLocation(pin);
+        setSelectedLocation({ address: addressStreet, location });
         setMapCenter(location);
         setMapZoom(15);
+        // Persist discovered coordinates back into the form so future opens skip geocoding
+        setValue('addressLatitude', location.lat, { shouldDirty: true });
+        setValue('addressLongitude', location.lng, { shouldDirty: true });
       }
     });
-  }, [isLoaded, addressStreet]);
+  }, [isLoaded, addressStreet, savedLat, savedLng, setValue]);
 
   const handleLocationSelect = (place: PlaceDetails) => {
     setSelectedLocation(place);
     setMapCenter(place.location);
     setMapZoom(15);
-    // Write selected address into form — clear the split fields
     setValue('addressStreet', place.address, { shouldDirty: true });
+    setValue('addressLatitude', place.location.lat, { shouldDirty: true });
+    setValue('addressLongitude', place.location.lng, { shouldDirty: true });
     setValue('addressCity', '');
     setValue('addressState', '');
     setValue('addressPostalCode', '');

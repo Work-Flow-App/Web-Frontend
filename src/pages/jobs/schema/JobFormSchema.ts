@@ -87,6 +87,18 @@ export const JobFormSchema: IFields = {
     label: 'Country',
     isRequired: false,
   },
+  addressLatitude: {
+    title: 'addressLatitude',
+    defaultValue: null,
+    label: 'Latitude',
+    isRequired: false,
+  },
+  addressLongitude: {
+    title: 'addressLongitude',
+    defaultValue: null,
+    label: 'Longitude',
+    isRequired: false,
+  },
 };
 
 export interface JobFormData {
@@ -102,5 +114,7 @@ export interface JobFormData {
   addressState?: string | null;
   addressPostalCode?: string | null;
   addressCountry?: string | null;
+  addressLatitude?: number | null;
+  addressLongitude?: number | null;
   [key: string]: string | number | undefined | null | { label: string; value: string } | Array<number | string | { label: string; value: string }>; // For dynamic template fields
 }

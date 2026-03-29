@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
@@ -8,6 +9,7 @@ import { workerService } from '../../../../services/api/worker';
 import { companyClientService } from '../../../../services/api/companyClient';
 import { customerService } from '../../../../services/api/customer';
 import { prepareWorkerJobMarkers, prepareJobLocationMarkers } from '../../../../utils/mapDataHelpers';
+import type { JobResponse, WorkerResponse, ClientResponse, CustomerResponse } from '../../../../services/api';
 import {
   CircularProgress,
   Alert,
@@ -31,58 +33,97 @@ const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
 const ALL_STATUSES = ['ALL', 'NEW', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
 
 export const MapsList: React.FC = () => {
-  const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
-  const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
+  const { isLoaded: mapsApiLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
+    libraries: GOOGLE_MAPS_CONFIG.libraries,
+  });
+
   const [jobMarkers, setJobMarkers] = useState<PlaceDetails[]>([]);
   const [workerMarkers, setWorkerMarkers] = useState<PlaceDetails[]>([]);
+  // Raw data fetched independently of Maps API
+  const [rawData, setRawData] = useState<{
+    jobs: JobResponse[];
+    workers: WorkerResponse[];
+    clients: ClientResponse[];
+    customers: CustomerResponse[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'jobs' | 'workers'>('jobs');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('IN_PROGRESS');
   const [searchedLocation, setSearchedLocation] = useState<PlaceDetails | null>(null);
   const [focusedMarker, setFocusedMarker] = useState<PlaceDetails | null>(null);
 
+  // Step 1: fetch raw API data (no Maps API needed)
   useEffect(() => {
-    const fetchMapData = async () => {
+    const fetchRawData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
         const [jobsRes, workersRes, clientsRes, customersRes] = await Promise.all([
           jobService.getAllJobs(),
           workerService.getAllWorkers(),
           companyClientService.getAllClients(),
           customerService.getAllCustomers(),
         ]);
+        setRawData({
+          jobs: jobsRes.data || [],
+          workers: workersRes.data || [],
+          clients: clientsRes.data || [],
+          customers: customersRes.data || [],
+        });
+      } catch (err) {
+        console.error('Error fetching map data:', err);
+        setError('Failed to load map data. Please try again.');
+        setLoading(false);
+      }
+    };
+    fetchRawData();
+  }, []);
 
-        const jobs = jobsRes.data || [];
-        const workers = workersRes.data || [];
-        const clients = clientsRes.data || [];
-        const customers = customersRes.data || [];
+  // Step 2: prepare markers once BOTH raw data and Google Maps API are ready.
+  // Uses Google Maps Geocoder — far more reliable than Nominatim for addresses
+  // that don't already have stored lat/lng coordinates.
+  useEffect(() => {
+    if (!rawData || !mapsApiLoaded) return;
 
+    const googleGeocode = (address: string): Promise<{ lat: number; lng: number } | null> =>
+      new Promise((resolve) => {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results?.[0]?.geometry?.location) {
+            resolve({
+              lat: results[0].geometry.location.lat(),
+              lng: results[0].geometry.location.lng(),
+            });
+          } else {
+            resolve(null);
+          }
+        });
+      });
+
+    const buildMarkers = async () => {
+      try {
+        const { jobs, workers, clients, customers } = rawData;
         const [jobPins, workerPins] = await Promise.all([
-          prepareJobLocationMarkers(jobs, workers, clients, customers),
+          prepareJobLocationMarkers(jobs, workers, clients, customers, googleGeocode),
           prepareWorkerJobMarkers(jobs, workers, clients),
         ]);
 
         setJobMarkers(jobPins);
         setWorkerMarkers(workerPins);
 
-        if (jobPins.length > 0) {
-          setMapCenter(jobPins[0].location);
-        } else if (workerPins.length > 0) {
-          setMapCenter(workerPins[0].location);
-        }
+        // Default to IN_PROGRESS view; fall back to ALL if no in-progress jobs have a location
+        const hasInProgress = jobPins.some((m) => m.jobLocationData?.status === 'IN_PROGRESS');
+        setStatusFilter(hasInProgress ? 'IN_PROGRESS' : 'ALL');
       } catch (err) {
-        console.error('Error fetching map data:', err);
-        setError('Failed to load map data. Please try again.');
+        console.error('Error building markers:', err);
+        setError('Failed to prepare map markers. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMapData();
-  }, []);
+    buildMarkers();
+  }, [rawData, mapsApiLoaded]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: jobMarkers.length };
@@ -111,15 +152,11 @@ export const MapsList: React.FC = () => {
 
   const handleLocationSelect = (location: PlaceDetails) => {
     setSearchedLocation(location);
-    setMapCenter(location.location);
-    setMapZoom(14);
     setFocusedMarker(null);
   };
 
   const handleJobRowClick = (marker: PlaceDetails) => {
     setFocusedMarker(marker);
-    setMapCenter(marker.location);
-    setMapZoom(16);
   };
 
   if (loading) {
@@ -147,12 +184,11 @@ export const MapsList: React.FC = () => {
       <S.ContentSection>
         <S.MapSection>
           <GoogleMap
-            center={mapCenter}
-            zoom={mapZoom}
             markers={displayMarkers}
             onLocationSelect={handleLocationSelect}
             selectedLocation={searchedLocation}
             focusedMarker={focusedMarker}
+            autoFitBounds
             showSearchBox
             height="100%"
           />
@@ -208,17 +244,19 @@ export const MapsList: React.FC = () => {
                 </Typography>
                 {Object.entries(STATUS_CONFIG).map(([status, cfg]) => (
                   <Box key={status} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    {/* Teardrop pin shape matching the map markers */}
                     <Box
-                      sx={{
-                        width: status === 'IN_PROGRESS' ? 14 : 10,
-                        height: status === 'IN_PROGRESS' ? 14 : 10,
-                        borderRadius: '50%',
-                        backgroundColor: cfg.color,
-                        border: '2px solid #fff',
-                        boxShadow: '0 0 0 1px rgba(0,0,0,0.2)',
-                        flexShrink: 0,
-                      }}
-                    />
+                      component="svg"
+                      viewBox="0 0 24 24"
+                      sx={{ width: status === 'IN_PROGRESS' ? 16 : 13, height: status === 'IN_PROGRESS' ? 16 : 13, flexShrink: 0 }}
+                    >
+                      <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                        fill={cfg.color}
+                        stroke="#fff"
+                        strokeWidth="1"
+                      />
+                    </Box>
                     <Typography variant="caption" sx={{ color: '#666', fontSize: '0.65rem' }}>
                       {cfg.label}
                     </Typography>
@@ -318,14 +356,17 @@ export const MapsList: React.FC = () => {
                               {/* Status */}
                               <Box sx={{ width: 90, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Box
-                                  sx={{
-                                    width: isInProgress ? 10 : 8,
-                                    height: isInProgress ? 10 : 8,
-                                    borderRadius: '50%',
-                                    backgroundColor: cfg?.color ?? '#9e9e9e',
-                                    flexShrink: 0,
-                                  }}
-                                />
+                                  component="svg"
+                                  viewBox="0 0 24 24"
+                                  sx={{ width: isInProgress ? 13 : 11, height: isInProgress ? 13 : 11, flexShrink: 0 }}
+                                >
+                                  <path
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+                                    fill={cfg?.color ?? '#9e9e9e'}
+                                    stroke="#fff"
+                                    strokeWidth="1"
+                                  />
+                                </Box>
                                 <Typography variant="caption" sx={{ color: cfg?.color ?? '#666', fontWeight: isInProgress ? 700 : 500, fontSize: '0.68rem' }}>
                                   {cfg?.label ?? jd.status}
                                 </Typography>

@@ -121,7 +121,8 @@ export async function prepareJobLocationMarkers(
   jobs: JobResponse[],
   workers: WorkerResponse[],
   clients: ClientResponse[],
-  customers: CustomerResponse[] = []
+  customers: CustomerResponse[] = [],
+  geocodeFn: (address: string) => Promise<{ lat: number; lng: number } | null> = geocodeAddress
 ): Promise<PlaceDetails[]> {
   const markers: PlaceDetails[] = [];
 
@@ -143,7 +144,7 @@ export async function prepareJobLocationMarkers(
       ].filter(Boolean);
 
       if (addressParts.length === 0) continue;
-      location = await geocodeAddress(addressParts.join(', '));
+      location = await geocodeFn(addressParts.join(', '));
     }
 
     if (!location) continue;
