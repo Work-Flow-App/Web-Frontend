@@ -86,14 +86,14 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     async (lineItem: LineItemResponse) => {
       if (!estimate?.id || !lineItem.id) return;
       try {
-        const res = await estimateService.unlinkLineItem(estimate.id, lineItem.id);
-        setEstimate(res.data);
+        await estimateService.unlinkLineItem(estimate.id, lineItem.id);
         setSelectedIds((prev) => { const next = new Set(prev); next.delete(lineItem.id!); return next; });
+        await fetchEstimate();
       } catch {
         showError('Failed to remove line item');
       }
     },
-    [estimate?.id, showError]
+    [estimate?.id, showError, fetchEstimate]
   );
 
   const handleOpenAddRow = useCallback(
@@ -127,9 +127,8 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     if (!newItem.productDescription.trim() && !selectedExistingId) { showError('Description is required'); return; }
     setSaving(true);
     try {
-      let res;
       if (selectedExistingId) {
-        res = await estimateService.linkExistingLineItem(estimate.id, selectedExistingId);
+        await estimateService.linkExistingLineItem(estimate.id, selectedExistingId);
       } else {
         const payload: LineItemCreateRequest = {
           productCode: newItem.productCode.trim(),
@@ -139,16 +138,19 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
           quantity: parseInt(newItem.quantity) || 1,
           vatRate: parseFloat(newItem.vatRate) || 0,
         };
-        res = await estimateService.createAndLinkLineItem(estimate.id, payload);
+        // Create via lineItemCreate (correct VAT computation) then link, instead of
+        // estimateCreateAndLink which treats vatRate as a multiplier not a percentage
+        const created = await lineItemService.create(payload);
+        await estimateService.linkExistingLineItem(estimate.id, created.data.id!);
       }
-      setEstimate(res.data);
       handleCloseAddRow();
+      await fetchEstimate();
     } catch {
       showError('Failed to add line item');
     } finally {
       setSaving(false);
     }
-  }, [estimate?.id, newItem, selectedExistingId, showError, handleCloseAddRow]);
+  }, [estimate?.id, newItem, selectedExistingId, showError, handleCloseAddRow, fetchEstimate]);
 
   const handleGenerateInvoice = useCallback(() => {
     if (selectedIds.size === 0) {
@@ -176,11 +178,14 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const calcNet = useMemo(() => {
     const price = parseFloat(newItem.unitPrice) || 0;
-    const qty = parseInt(newItem.quantity) || 0;
+    const qty = parseFloat(newItem.quantity) || 1;
     return price * qty;
   }, [newItem.unitPrice, newItem.quantity]);
 
-  const calcVat = useMemo(() => calcNet * ((parseFloat(newItem.vatRate) || 0) / 100), [calcNet, newItem.vatRate]);
+  const calcVat = useMemo(() => {
+    const rate = parseFloat(newItem.vatRate);
+    return isNaN(rate) ? 0 : calcNet * (rate / 100);
+  }, [calcNet, newItem.vatRate]);
   const calcTotal = calcNet + calcVat;
 
   if (loading) return <Loader size={40} centered minHeight="200px" />;
