@@ -81,7 +81,6 @@ export interface AssetCreateRequest {
 }
 export interface AssetResponse {
     'id'?: number;
-    'assetRef'?: number;
     'companyId'?: number;
     'name'?: string;
     'description'?: string;
@@ -132,7 +131,6 @@ export interface ClientCreateRequest {
 }
 export interface ClientResponse {
     'id'?: number;
-    'clientRef'?: number;
     'name'?: string;
     'email'?: string;
     'telephone'?: string;
@@ -209,7 +207,6 @@ export interface CustomerCreateRequest {
 }
 export interface CustomerResponse {
     'id'?: number;
-    'customerRef'?: number;
     'name'?: string;
     'email'?: string;
     'telephone'?: string;
@@ -267,22 +264,6 @@ export interface ForgotPasswordRequest {
 export interface GoogleAuthRequest {
     'idToken': string;
 }
-export interface InvoiceCreateRequest {
-    'lineItemIds': Array<number>;
-}
-export interface InvoiceResponse {
-    'id'?: number;
-    'estimateId'?: number;
-    'companyId'?: number;
-    'invoiceNumber'?: string;
-    'presignedUrl'?: string;
-    'lineItems'?: Array<LineItemResponse>;
-    'totalNet'?: number;
-    'totalVat'?: number;
-    'grandTotal'?: number;
-    'createdAt'?: string;
-    'updatedAt'?: string;
-}
 export interface JobCreateRequest {
     'templateId'?: number;
     'clientId'?: number;
@@ -307,7 +288,6 @@ export type JobCreateRequestStatusEnum = typeof JobCreateRequestStatusEnum[keyof
 
 export interface JobResponse {
     'id'?: number;
-    'jobRef'?: number;
     'companyId'?: number;
     'templateId'?: number;
     'clientId'?: number;
@@ -385,7 +365,6 @@ export type JobTemplateFieldResponseJobFieldTypeEnum = typeof JobTemplateFieldRe
 
 export interface JobTemplateResponse {
     'id'?: number;
-    'templateRef'?: number;
     'companyId'?: number;
     'name'?: string;
     'description'?: string;
@@ -591,8 +570,8 @@ export interface PageAssetResponse {
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'pageable'?: PageableObject;
     'numberOfElements'?: number;
+    'pageable'?: PageableObject;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -600,10 +579,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
+    'unpaged'?: boolean;
     'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
-    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -639,8 +618,8 @@ export interface SignupResponse {
 }
 export interface SortObject {
     'empty'?: boolean;
-    'sorted'?: boolean;
     'unsorted'?: boolean;
+    'sorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;
@@ -774,7 +753,6 @@ export interface VerifyEmailRequest {
 export interface WorkerAssignedStepResponse {
     'step'?: JobWorkflowStepResponse;
     'jobId'?: number;
-    'jobRef'?: number;
     'customer'?: CustomerResponse;
     'assignedAssets'?: Array<AssetAssignmentResponse>;
     'jobAddress'?: AddressResponse;
@@ -833,7 +811,6 @@ export interface WorkerInviteResponse {
 }
 export interface WorkerResponse {
     'id'?: number;
-    'workerRef'?: number;
     'name'?: string;
     'initials'?: string;
     'telephone'?: string;
@@ -878,7 +855,6 @@ export interface WorkflowCreateRequest {
 }
 export interface WorkflowResponse {
     'id'?: number;
-    'workflowRef'?: number;
     'companyId'?: number;
     'name'?: string;
     'description'?: string;
@@ -4101,252 +4077,6 @@ export class EstimatesApi extends BaseAPI {
      */
     public estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig) {
         return EstimatesApiFp(this.configuration).estimateUpdate(id, estimateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
- * InvoicesApi - axios parameter creator
- */
-export const InvoicesApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {InvoiceCreateRequest} invoiceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceGenerate: async (estimateId: number, invoiceCreateRequest: InvoiceCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'estimateId' is not null or undefined
-            assertParamExists('invoiceGenerate', 'estimateId', estimateId)
-            // verify required parameter 'invoiceCreateRequest' is not null or undefined
-            assertParamExists('invoiceGenerate', 'invoiceCreateRequest', invoiceCreateRequest)
-            const localVarPath = `/api/v1/estimates/{estimateId}/invoice`
-                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(invoiceCreateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} invoiceId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceGet: async (invoiceId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'invoiceId' is not null or undefined
-            assertParamExists('invoiceGet', 'invoiceId', invoiceId)
-            const localVarPath = `/api/v1/estimates/invoices/{invoiceId}`
-                .replace(`{${"invoiceId"}}`, encodeURIComponent(String(invoiceId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceListForEstimate: async (estimateId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'estimateId' is not null or undefined
-            assertParamExists('invoiceListForEstimate', 'estimateId', estimateId)
-            const localVarPath = `/api/v1/estimates/{estimateId}/invoices`
-                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * InvoicesApi - functional programming interface
- */
-export const InvoicesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = InvoicesApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {InvoiceCreateRequest} invoiceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async invoiceGenerate(estimateId: number, invoiceCreateRequest: InvoiceCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InvoiceResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.invoiceGenerate(estimateId, invoiceCreateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['InvoicesApi.invoiceGenerate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} invoiceId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async invoiceGet(invoiceId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InvoiceResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.invoiceGet(invoiceId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['InvoicesApi.invoiceGet']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async invoiceListForEstimate(estimateId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<InvoiceResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.invoiceListForEstimate(estimateId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['InvoicesApi.invoiceListForEstimate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * InvoicesApi - factory interface
- */
-export const InvoicesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = InvoicesApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {InvoiceCreateRequest} invoiceCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceGenerate(estimateId: number, invoiceCreateRequest: InvoiceCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<InvoiceResponse> {
-            return localVarFp.invoiceGenerate(estimateId, invoiceCreateRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} invoiceId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceGet(invoiceId: number, options?: RawAxiosRequestConfig): AxiosPromise<InvoiceResponse> {
-            return localVarFp.invoiceGet(invoiceId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} estimateId 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        invoiceListForEstimate(estimateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<InvoiceResponse>> {
-            return localVarFp.invoiceListForEstimate(estimateId, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * InvoicesApi - object-oriented interface
- */
-export class InvoicesApi extends BaseAPI {
-    /**
-     * 
-     * @param {number} estimateId 
-     * @param {InvoiceCreateRequest} invoiceCreateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public invoiceGenerate(estimateId: number, invoiceCreateRequest: InvoiceCreateRequest, options?: RawAxiosRequestConfig) {
-        return InvoicesApiFp(this.configuration).invoiceGenerate(estimateId, invoiceCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} invoiceId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public invoiceGet(invoiceId: number, options?: RawAxiosRequestConfig) {
-        return InvoicesApiFp(this.configuration).invoiceGet(invoiceId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} estimateId 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public invoiceListForEstimate(estimateId: number, options?: RawAxiosRequestConfig) {
-        return InvoicesApiFp(this.configuration).invoiceListForEstimate(estimateId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
