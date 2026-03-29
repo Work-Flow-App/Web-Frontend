@@ -84,5 +84,8 @@ export type {
   LineItemCreateRequest,
 } from './estimate';
 
+export { invoiceService } from './invoice';
+export type { InvoiceResponse, InvoiceCreateRequest } from './invoice';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

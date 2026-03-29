@@ -6,8 +6,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
-import { companyClientService } from '../../../../../services/api';
-import type { JobResponse, ClientResponse, LineItemResponse } from '../../../../../services/api';
+import { companyClientService, invoiceService } from '../../../../../services/api';
+import type { JobResponse, ClientResponse, LineItemResponse, InvoiceResponse } from '../../../../../services/api';
 import { FormField } from '../../../../../components/UI/FormComponents';
 import { Input } from '../../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../../components/UI/Forms/Dropdown';
@@ -123,12 +123,14 @@ const InvoiceTotals: React.FC<{ control: Control<FormValues> }> = ({ control }) 
 
 export interface CreateInvoiceModalProps {
   job: JobResponse;
+  estimateId: number;
   lineItems?: LineItemResponse[];
-  onSuccess: () => void;
+  onSuccess: (invoice: InvoiceResponse) => void;
 }
 
 export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   job,
+  estimateId,
   lineItems,
   onSuccess,
 }) => {
@@ -191,16 +193,25 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         showError('Please select a client');
         return;
       }
-      if (!values.rows.some((r) => r.service?.label?.trim())) {
-        showError('Please add at least one service');
+
+      const lineItemIds = values.rows
+        .map((r) => Number(r.service?.value))
+        .filter((id) => !isNaN(id) && id > 0);
+
+      if (lineItemIds.length === 0) {
+        showError('Please select at least one service');
         return;
       }
 
-      // TODO: call invoiceService.create(...) when the API is available
-      showSuccess('Invoice generated successfully');
-      onSuccess();
+      invoiceService
+        .generate(estimateId, { lineItemIds })
+        .then((res) => {
+          showSuccess('Invoice generated successfully');
+          onSuccess(res.data);
+        })
+        .catch(() => showError('Failed to generate invoice'));
     });
-  }, [updateOnConfirm, showError, showSuccess, onSuccess]);
+  }, [updateOnConfirm, showError, showSuccess, onSuccess, estimateId]);
 
   // Auto-fill qty / price / vatRate when user picks a service from the dropdown
   const handleServiceChange = (index: number, value: string | number) => {

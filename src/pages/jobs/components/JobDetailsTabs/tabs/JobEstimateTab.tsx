@@ -3,7 +3,7 @@ import { Box, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import type { JobResponse, EstimateResponse, LineItemResponse } from '../../../../../services/api';
+import type { JobResponse, EstimateResponse, LineItemResponse, InvoiceResponse } from '../../../../../services/api';
 import { estimateService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../../components/UI/GlobalModal';
@@ -13,6 +13,7 @@ import { Table } from '../../../../../components/UI/Table';
 import type { ITableColumn, ITableAction, ITableRow } from '../../../../../components/UI/Table';
 import { AddLineItemModal } from './AddLineItemModal';
 import { CreateInvoiceModal } from './CreateInvoiceModal';
+import { ViewInvoicePdfModal } from './ViewInvoicePdfModal';
 import * as S from '../../../JobDetailsPage.styles';
 
 interface JobEstimateTabProps {
@@ -56,6 +57,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   );
 
   const handleCreateInvoice = useCallback(() => {
+    if (!estimate?.id) return;
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.LARGE,
@@ -63,12 +65,20 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       children: (
         <CreateInvoiceModal
           job={job}
-          lineItems={estimate?.lineItems || []}
-          onSuccess={() => resetGlobalModalOuterProps()}
+          estimateId={estimate.id}
+          lineItems={estimate.lineItems || []}
+          onSuccess={(invoice: InvoiceResponse) => {
+            setGlobalModalOuterProps({
+              isOpen: true,
+              size: ModalSizes.LARGE,
+              fieldName: 'viewInvoicePdf',
+              children: <ViewInvoicePdfModal invoice={invoice} />,
+            });
+          }}
         />
       ),
     });
-  }, [job, estimate?.lineItems, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+  }, [job, estimate, setGlobalModalOuterProps]);
 
   const handleAddLineItem = useCallback(() => {
     if (!estimate?.id) return;
