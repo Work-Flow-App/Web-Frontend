@@ -514,9 +514,9 @@ export const BreadcrumbCurrent = styled('span')(({ theme}) => ({
 }));
 
 // New Job Details Layout Styles
-export const JobDetailsLayout = styled(Box)(({ theme }) => ({
+export const JobDetailsLayout = styled(Box)<{ fullWidth?: boolean }>(({ theme, fullWidth }) => ({
   display: 'grid',
-  gridTemplateColumns: '320px 1fr',
+  gridTemplateColumns: fullWidth ? '1fr' : '320px 1fr',
   gap: theme.spacing(3),
   '@media (max-width: 1024px)': {
     gridTemplateColumns: '1fr',

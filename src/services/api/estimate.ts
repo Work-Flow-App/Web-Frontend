@@ -33,6 +33,10 @@ export const estimateService = {
     return getEstimatesApi().estimateCreateAndLink(estimateId, data);
   },
 
+  linkExistingLineItem(estimateId: number, lineItemId: number) {
+    return getEstimatesApi().estimateLinkExisting(estimateId, lineItemId);
+  },
+
   unlinkLineItem(estimateId: number, lineItemId: number) {
     return getEstimatesApi().estimateUnlink(estimateId, lineItemId);
   },
