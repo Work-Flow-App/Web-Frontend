@@ -8,19 +8,22 @@
 
 // Map Provider Selection
 export type MapProvider = 'leaflet' | 'google';
-export const ACTIVE_MAP_PROVIDER: MapProvider = 'leaflet'; // Change to 'google' if you want to use Google Maps
+export const ACTIVE_MAP_PROVIDER: MapProvider = 'google';
+
+// Must be defined outside the config object so the reference is stable across renders
+export const GOOGLE_MAPS_LIBRARIES: ['places'] = ['places'];
 
 // Google Maps Configuration (Optional - only if using Google Maps)
 export const GOOGLE_MAPS_CONFIG = {
   apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-  libraries: ['places', 'geocoding'] as ('places' | 'geocoding')[],
+  libraries: GOOGLE_MAPS_LIBRARIES,
 
   // Default map configuration
   defaultCenter: {
-    lat: 50.4501, // Kyiv, Ukraine
-    lng: 30.5234,
+    lat: 51.5074, // London, UK
+    lng: -0.1278,
   },
-  defaultZoom: 12,
+  defaultZoom: 6,
 
   // Map styling options
   mapOptions: {

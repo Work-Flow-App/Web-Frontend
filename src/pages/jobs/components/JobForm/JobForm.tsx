@@ -86,6 +86,13 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               assignedWorkerId: job.assignedWorkerId,
               assetIds: assetIdsFormatted,
               workflowId: workflowIdFormatted,
+              addressStreet: [job.address?.street, job.address?.city, job.address?.state, job.address?.postalCode, job.address?.country].filter(Boolean).join(', '),
+              addressCity: '',
+              addressState: '',
+              addressPostalCode: '',
+              addressCountry: '',
+              addressLatitude: job.address?.latitude ?? null,
+              addressLongitude: job.address?.longitude ?? null,
             };
 
             console.log('Edit mode - Setting form data:', formData);
@@ -96,9 +103,18 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               const fieldValue = job.fieldValues?.[field.id?.toString() || ''];
               if (fieldValue !== undefined) {
                 // Extract the actual value from FieldValueResponse object
-                formData[fieldName] = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
+                let extractedValue = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
                   ? fieldValue.value
                   : fieldValue;
+                // DATE fields: strip time component so <input type="date"> recognises the value
+                if (
+                  typeof fieldValue === 'object' && fieldValue !== null && 'type' in fieldValue &&
+                  (fieldValue as { type: string }).type === 'DATE' &&
+                  typeof extractedValue === 'string'
+                ) {
+                  extractedValue = extractedValue.split('T')[0];
+                }
+                formData[fieldName] = extractedValue;
               }
             });
 
@@ -120,7 +136,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
     async (data: JobFormData) => {
       try {
         // Extract template ID and status
-        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, ...dynamicFields } = data;
+        const { templateId, status, customerId, clientId, assignedWorkerId, assetIds, workflowId, addressStreet, addressCity, addressState, addressPostalCode, addressCountry, addressLatitude, addressLongitude, ...dynamicFields } = data;
 
         // Extract the value if templateId is an object (from dropdown)
         const templateIdValue = typeof templateId === 'object' && templateId !== null
@@ -190,6 +206,18 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           : workflowId;
         const workflowIdNumber = workflowIdValue ? Number(workflowIdValue) : undefined;
 
+        // Build address object — always include coordinates when available
+        const addressObj = {
+          ...(addressStreet && { street: addressStreet as string }),
+          ...(addressCity && { city: addressCity as string }),
+          ...(addressState && { state: addressState as string }),
+          ...(addressPostalCode && { postalCode: addressPostalCode as string }),
+          ...(addressCountry && { country: addressCountry as string }),
+          ...(addressLatitude != null && { latitude: addressLatitude as number }),
+          ...(addressLongitude != null && { longitude: addressLongitude as number }),
+        };
+        const hasAddress = Object.keys(addressObj).length > 0;
+
         if (isEditMode) {
           // Update existing job
           const updatePayload: JobUpdateRequest = {
@@ -201,6 +229,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (clientIdNumber) updatePayload.clientId = clientIdNumber;
           if (assignedWorkerIdNumber) updatePayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) updatePayload.assetIds = assetIdsArray;
+          if (hasAddress) updatePayload.address = addressObj;
 
           await jobService.updateJob(jobId, updatePayload);
           showSuccess('Job updated successfully');
@@ -216,6 +245,7 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (assignedWorkerIdNumber) createPayload.assignedWorkerId = assignedWorkerIdNumber;
           if (assetIdsArray.length > 0) createPayload.assetIds = assetIdsArray;
           if (workflowIdNumber) createPayload.workflowId = workflowIdNumber;
+          if (hasAddress) createPayload.address = addressObj;
 
           await jobService.createJob(createPayload);
           showSuccess('Job created successfully');

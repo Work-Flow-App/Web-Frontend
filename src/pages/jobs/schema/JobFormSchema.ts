@@ -52,6 +52,53 @@ export const JobFormSchema: IFields = {
     label: 'Workflow',
     isRequired: false,
   },
+  addressStreet: {
+    title: 'addressStreet',
+    defaultValue: '',
+    placeHolder: 'Enter street',
+    label: 'Street',
+    isRequired: false,
+  },
+  addressCity: {
+    title: 'addressCity',
+    defaultValue: '',
+    placeHolder: 'Enter city',
+    label: 'City',
+    isRequired: false,
+  },
+  addressState: {
+    title: 'addressState',
+    defaultValue: '',
+    placeHolder: 'Enter state',
+    label: 'State',
+    isRequired: false,
+  },
+  addressPostalCode: {
+    title: 'addressPostalCode',
+    defaultValue: '',
+    placeHolder: 'Enter postal code',
+    label: 'Postal Code',
+    isRequired: false,
+  },
+  addressCountry: {
+    title: 'addressCountry',
+    defaultValue: '',
+    placeHolder: 'Enter country',
+    label: 'Country',
+    isRequired: false,
+  },
+  addressLatitude: {
+    title: 'addressLatitude',
+    defaultValue: null,
+    label: 'Latitude',
+    isRequired: false,
+  },
+  addressLongitude: {
+    title: 'addressLongitude',
+    defaultValue: null,
+    label: 'Longitude',
+    isRequired: false,
+  },
 };
 
 export interface JobFormData {
@@ -62,5 +109,12 @@ export interface JobFormData {
   assignedWorkerId?: number | string | { label: string; value: string } | null;
   assetIds?: Array<number | string | { label: string; value: string }> | null;
   workflowId?: number | string | { label: string; value: string } | null;
+  addressStreet?: string | null;
+  addressCity?: string | null;
+  addressState?: string | null;
+  addressPostalCode?: string | null;
+  addressCountry?: string | null;
+  addressLatitude?: number | null;
+  addressLongitude?: number | null;
   [key: string]: string | number | undefined | null | { label: string; value: string } | Array<number | string | { label: string; value: string }>; // For dynamic template fields
 }

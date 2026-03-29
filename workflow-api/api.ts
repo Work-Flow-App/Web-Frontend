@@ -626,10 +626,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'paged'?: boolean;
-    'pageNumber'?: number;
-    'pageSize'?: number;
     'unpaged'?: boolean;
+    'pageNumber'?: number;
+    'paged'?: boolean;
+    'pageSize'?: number;
 }
 export interface PasswordResetResponse {
     'message'?: string;

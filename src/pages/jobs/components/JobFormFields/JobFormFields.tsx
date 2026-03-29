@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import LocationMapField from './LocationMapField';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { JobFormSchema } from '../../schema/JobFormSchema';
 import { useSchema } from '../../../../utils/validation';
@@ -388,6 +389,8 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           />
         </FormField>
       </FormRow>
+
+      <LocationMapField />
 
       {/* Dynamic fields based on template */}
       {templateFields.length > 0 && (
