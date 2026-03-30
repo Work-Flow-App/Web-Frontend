@@ -3,8 +3,11 @@ import { Drawer, Box, IconButton, Typography, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from 'react-router-dom';
-import type { JobResponse } from '../../../services/api';
+import type { JobResponse, CustomerResponse } from '../../../services/api';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
 import type { StepEventGroup } from './JobEventsSection';
@@ -14,6 +17,7 @@ interface JobStepDetailDrawerProps {
   onClose: () => void;
   stepGroup: StepEventGroup;
   jobsMap: Map<number, JobResponse>;
+  customersMap: Map<number, CustomerResponse>;
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -51,11 +55,24 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+function daysSince(dateStr: string): number {
+  const ms = Date.now() - new Date(dateStr).getTime();
+  return Math.floor(ms / (1000 * 60 * 60 * 24));
+}
+
+function formatAddress(job: JobResponse): string | null {
+  const a = job.address;
+  if (!a) return null;
+  const parts = [a.street, a.city, a.state, a.postalCode, a.country].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : null;
+}
+
 export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
   open,
   onClose,
   stepGroup,
   jobsMap,
+  customersMap,
 }) => {
   const navigate = useNavigate();
 
@@ -179,6 +196,9 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
             stepGroup.jobWorkflows.map(({ jobWorkflow, currentStep }, index) => {
               const jobId = jobWorkflow.jobId!;
               const job = jobsMap.get(jobId);
+              const customer = job?.customerId != null ? customersMap.get(job.customerId) : undefined;
+              const addressStr = job ? formatAddress(job) : null;
+              const days = job?.createdAt ? daysSince(job.createdAt) : null;
               const statusStyle = STATUS_COLORS[currentStep.status ?? ''] ?? STATUS_COLORS.NOT_STARTED;
               const statusLabel = STATUS_LABELS[currentStep.status ?? ''] ?? currentStep.status ?? '';
               const title = getJobTitle(job, jobId);
@@ -195,7 +215,7 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                     px: rem(16),
                     py: rem(14),
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     justifyContent: 'space-between',
                     gap: rem(12),
                     cursor: 'pointer',
@@ -257,12 +277,39 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                           {job.status.replace(/_/g, ' ')}
                         </Typography>
                       )}
-                      {job?.createdAt && (
-                        <Typography sx={{ fontSize: rem(11), color: floowColors.text.disabled }}>
-                          {formatDate(job.createdAt)}
-                        </Typography>
-                      )}
                     </Box>
+
+                    {/* Customer / Address */}
+                    {(customer?.name || addressStr) && (
+                      <Box sx={{ mt: rem(6), display: 'flex', flexDirection: 'column', gap: rem(2) }}>
+                        {customer?.name && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(4) }}>
+                            <PersonOutlineIcon sx={{ fontSize: rem(12), color: floowColors.text.muted, flexShrink: 0 }} />
+                            <Typography sx={{ fontSize: rem(12), fontWeight: 600, color: floowColors.text.primary }}>
+                              {customer.name}
+                            </Typography>
+                          </Box>
+                        )}
+                        {addressStr && (
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: rem(4) }}>
+                            <LocationOnOutlinedIcon sx={{ fontSize: rem(12), color: floowColors.text.muted, flexShrink: 0, mt: '1px' }} />
+                            <Typography sx={{ fontSize: rem(11), color: floowColors.text.muted }}>
+                              {addressStr}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+
+                    {/* Date received + days timer */}
+                    {job?.createdAt && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(4), mt: rem(4) }}>
+                        <AccessTimeIcon sx={{ fontSize: rem(12), color: floowColors.text.disabled, flexShrink: 0 }} />
+                        <Typography sx={{ fontSize: rem(11), color: floowColors.text.disabled }}>
+                          {formatDate(job.createdAt)} · {days} day{days !== 1 ? 's' : ''} since received
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
 
                   <IconButton

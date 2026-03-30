@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { CircularProgress, Select, MenuItem, FormControl, Box } from '@mui/material';
+import { CircularProgress, Select, MenuItem, FormControl, Box, LinearProgress, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
@@ -14,6 +17,7 @@ import {
   jobWorkflowService,
   workflowService,
   jobTemplateService,
+  customerService,
 } from '../../../services/api';
 import type {
   JobResponse,
@@ -21,6 +25,7 @@ import type {
   JobWorkflowStepResponse,
   WorkflowStepResponse,
   WorkflowResponse,
+  CustomerResponse,
 } from '../../../services/api';
 import { floowColors } from '../../../theme/colors';
 import { JobStepDetailDrawer } from './JobStepDetailDrawer';
@@ -110,6 +115,91 @@ function buildGroups(
   });
 
   return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
+}
+
+// ─── Stat Boxes ───────────────────────────────────────────────────────────────
+
+const statCardSx = {
+  bgcolor: '#fff',
+  borderRadius: '12px',
+  border: '1px solid #e5e7eb',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+  p: '20px 24px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+};
+
+function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
+  const total = jobs.length;
+  const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
+  const awaitingApproval = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
+  const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
+
+  return (
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      {/* Box 1 — Estimate Sent */}
+      <Box sx={statCardSx}>
+        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Estimate Sent
+        </Typography>
+        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
+          {total}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
+          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
+            up-trend
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Box 2 — Work In Progress */}
+      <Box sx={statCardSx}>
+        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Work In Progress (Total Job)
+        </Typography>
+        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
+          {inProgress}
+        </Typography>
+        <LinearProgress
+          variant="determinate"
+          value={progressPct}
+          sx={{ borderRadius: '2px', height: '4px', bgcolor: floowColors.grey[100], '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main } }}
+        />
+        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>
+          {progressPct}% Complete
+        </Typography>
+      </Box>
+
+      {/* Box 3 — Estimates Awaiting Approval */}
+      <Box sx={statCardSx}>
+        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Estimates Awaiting Approval
+        </Typography>
+        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
+          {awaitingApproval}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {awaitingApproval > 0 ? (
+            <>
+              <ErrorOutlineIcon sx={{ fontSize: '14px', color: floowColors.error.main }} />
+              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.error.main }}>
+                awaiting approval
+              </Typography>
+            </>
+          ) : (
+            <>
+              <PendingActionsIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
+              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
+                all approved
+              </Typography>
+            </>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
 }
 
 // ─── Pipeline Bar ─────────────────────────────────────────────────────────────
@@ -279,6 +369,7 @@ export const JobEventsSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<StepEventGroup[]>([]);
   const [jobsMap, setJobsMap] = useState<Map<number, JobResponse>>(new Map());
+  const [customersMap, setCustomersMap] = useState<Map<number, CustomerResponse>>(new Map());
   const [templates, setTemplates] = useState<{ id?: number }[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
@@ -290,21 +381,28 @@ export const JobEventsSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [jobsRes, jobWorkflowsRes, workflowsRes, templatesRes] = await Promise.all([
+        const [jobsRes, jobWorkflowsRes, workflowsRes, templatesRes, customersRes] = await Promise.all([
           jobService.getAllJobs(),
           jobWorkflowService.getAllJobWorkflows(),
           workflowService.getAllWorkflows(),
           jobTemplateService.getAllTemplates(),
+          customerService.getAllCustomers(),
         ]);
         setTemplates(Array.isArray(templatesRes.data) ? templatesRes.data : []);
 
         const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
         const jobWorkflows: JobWorkflowResponse[] = Array.isArray(jobWorkflowsRes.data) ? jobWorkflowsRes.data : [];
         const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
+        const customers: CustomerResponse[] = Array.isArray(customersRes.data) ? customersRes.data : [];
 
         const map = new Map<number, JobResponse>();
         jobs.forEach((j) => { if (j.id != null) map.set(j.id, j); });
         setJobsMap(map);
+
+        const cMap = new Map<number, CustomerResponse>();
+        customers.forEach((c) => { if (c.id != null) cMap.set(c.id, c); });
+        setCustomersMap(cMap);
+
         setAllJobs(jobs);
         setAllJobWorkflows(jobWorkflows);
         setWorkflows(wfs);
@@ -443,6 +541,9 @@ export const JobEventsSection: React.FC = () => {
         </Button>
       </S.SectionHeader>
 
+      {/* Stat boxes */}
+      {!loading && <StatBoxesRow jobs={allJobs} />}
+
       {/* Pipeline bar */}
       {loading ? (
         <S.LoadingBox>
@@ -465,6 +566,7 @@ export const JobEventsSection: React.FC = () => {
           onClose={handleCloseDrawer}
           stepGroup={selectedGroup}
           jobsMap={jobsMap}
+          customersMap={customersMap}
         />
       )}
     </S.SectionWrapper>
