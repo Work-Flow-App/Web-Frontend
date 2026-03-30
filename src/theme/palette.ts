@@ -99,14 +99,93 @@ declare module '@mui/material/styles' {
     slate_dark: string;
     blue_dark: string;
     blue_main: string;
+    blue_light: string;
+    blue_hover: string;
     red_main: string;
     gradient_blueVertical: string;
     gradient_blueHorizontal: string;
     gradient_slateHorizontal: string;
+    gradient_authBackground: string;
+    gradient_authGlow: string;
+    gradient_pricingCard: string;
+    gradient_pricingIcon: string;
+    gradient_pricingButton: string;
+    gradient_pricingButtonHover: string;
     invitation_pending: string;
     invitation_accepted: string;
     invitation_expired: string;
+    overlay_light: string;
+    overlay_medium: string;
+    overlay_dark: string;
     overlay_backdrop: string;
+    shadow_xs: string;
+    shadow_sm: string;
+    shadow_md: string;
+    shadow_lg: string;
+    shadow_xl: string;
+    shadow_xxl: string;
+    shadow_xxxl: string;
+    shadow_drag: string;
+    shadow_card: string;
+    shadow_hover: string;
+    shadow_focus: string;
+    whiteAlpha_2: string;
+    whiteAlpha_3: string;
+    whiteAlpha_5: string;
+    whiteAlpha_8: string;
+    whiteAlpha_12: string;
+    whiteAlpha_25: string;
+    whiteAlpha_50: string;
+    whiteAlpha_70: string;
+    whiteAlpha_80: string;
+    whiteAlpha_90: string;
+    blackAlpha_2: string;
+    blackAlpha_4: string;
+    blackAlpha_5: string;
+    blackAlpha_8: string;
+    blackAlpha_10: string;
+    blackAlpha_15: string;
+    blackAlpha_20: string;
+    blackAlpha_35: string;
+    blackAlpha_50: string;
+    statusBadge_active_bg: string;
+    statusBadge_active_text: string;
+    statusBadge_pending_bg: string;
+    statusBadge_pending_text: string;
+    statusBadge_inactive_bg: string;
+    statusBadge_inactive_text: string;
+    statusBadge_default_bg: string;
+    statusBadge_default_text: string;
+    form_input_bg: string;
+    form_input_border: string;
+    form_input_borderHover: string;
+    form_input_borderFocus: string;
+    form_input_borderDisabled: string;
+    form_input_bgDisabled: string;
+    form_input_textDisabled: string;
+    form_button_primary: string;
+    form_button_primaryHover: string;
+    form_button_secondary: string;
+    form_button_secondaryHover: string;
+    tab_active: string;
+    tab_inactive: string;
+    tag_default: string;
+    tailwind_gray_50: string;
+    tailwind_gray_200: string;
+    tailwind_gray_300: string;
+    tailwind_gray_400: string;
+    tailwind_gray_500: string;
+    tailwind_gray_600: string;
+    tailwind_gray_700: string;
+    tailwind_gray_900: string;
+    text_label: string;
+    text_heading: string;
+    text_muted: string;
+    glass_background: string;
+    glass_border: string;
+    glass_backgroundDark: string;
+    scrollbar_thumb: string;
+    scrollbar_track: string;
   }
   interface PaletteOptions {
     icon?: DynamicValues;
@@ -176,9 +255,7 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
 
   // Button color follows primaryMain in dark mode (already dark-mode-optimised above).
   // In light mode, use the preset's explicit buttonPrimary when provided.
-  const buttonPrimaryMain = isDark
-    ? primaryMain
-    : (customColors?.buttonPrimary || primaryMain);
+  const buttonPrimaryMain = isDark ? primaryMain : customColors?.buttonPrimary || primaryMain;
 
   const secondaryMain = customColors?.secondary || (isDark ? GREY_400 : SECONDARY);
   const backgroundDefault = customColors?.background || (isDark ? BLACK_DARK : BACKGROUND);
@@ -343,6 +420,7 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
       whiteAlpha_2: floowColors.whiteAlpha[2],
       whiteAlpha_3: floowColors.whiteAlpha[3],
       whiteAlpha_5: floowColors.whiteAlpha[5],
+      whiteAlpha_8: floowColors.whiteAlpha[8],
       whiteAlpha_12: floowColors.whiteAlpha[12],
       whiteAlpha_25: floowColors.whiteAlpha[25],
       whiteAlpha_50: floowColors.whiteAlpha[50],
@@ -410,9 +488,7 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
       primary: buttonPrimaryMain,
       // Darken on hover in light mode (button gets deeper); lighten in dark mode
       // (button brightens slightly, which feels natural on a dark surface).
-      primaryHover: isDark
-        ? lighten(buttonPrimaryMain, 0.1)
-        : darken(buttonPrimaryMain, 0.1),
+      primaryHover: isDark ? lighten(buttonPrimaryMain, 0.1) : darken(buttonPrimaryMain, 0.1),
       primaryContrast: WHITE,
     },
     boxShadow: {
