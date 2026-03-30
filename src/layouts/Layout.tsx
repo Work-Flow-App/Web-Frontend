@@ -70,10 +70,6 @@ const RightActions = ({
 
       <S.ActionDivider aria-hidden={true} />
 
-      <S.ActionButton role="button" aria-label="Settings" tabIndex={0} onClick={onViewSettings}>
-        <SettingsIcon />
-      </S.ActionButton>
-
       <S.UserAvatar
         role="button"
         aria-label="User profile"
@@ -236,7 +232,6 @@ export const Layout: React.FC = () => {
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
-    { id: 'settings', label: 'Settings', icon: <SettingsIcon />, href: '/company/settings' },
   ];
 
   const handleToggleSidebar = () => {
