@@ -191,7 +191,7 @@ export const getPalette = (mode: PaletteMode, customColors?: CustomThemeColors) 
     primary: {
       light: isDark ? lighten(primaryMain, 0.2) : lighten(PRIMARY, 0.1),
       main: primaryMain,
-      dark: isDark ? darken(primaryMain, 0.15) : BLACK_DARK,
+      dark: darken(primaryMain, 0.15),
       contrastText: WHITE,
       alert: isDark ? floowColors.whiteAlpha[8] : floowColors.blackAlpha[10],
     },
