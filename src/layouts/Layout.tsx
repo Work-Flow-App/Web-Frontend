@@ -64,11 +64,12 @@ const RightActions = ({
 
   return (
     <S.RightActionsContainer>
-      <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
+      {/* Notification Icon */}
+      {/* <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
         <NotificationsIcon />
       </S.ActionButton>
 
-      <S.ActionDivider aria-hidden={true} />
+      <S.ActionDivider aria-hidden={true} /> */}
 
       <S.UserAvatar
         role="button"
@@ -257,20 +258,6 @@ export const Layout: React.FC = () => {
       <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
-          searchContent={
-            <Box sx={S.searchContainerSx}>
-              <Search
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onSearch={(query) => {
-                  console.log('Search:', query);
-                }}
-                width="300px"
-                styles={S.searchStyles}
-              />
-            </Box>
-          }
           rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
           onToggleSidebar={handleToggleSidebar}
         />
