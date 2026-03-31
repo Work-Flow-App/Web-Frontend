@@ -27,21 +27,24 @@ const LocationMapField: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
+  // Guard only the geocoding API call — not the coordinates restore path
   const geocodedRef = useRef(false);
 
-  // Restore pin from saved coordinates when editing (no geocoding needed)
-  // Falls back to geocoding the address text if coordinates aren't stored yet
+  // Restore pin when coordinates are available (runs whenever lat/lng/address change)
   useEffect(() => {
-    if (!isLoaded || !addressStreet || geocodedRef.current) return;
-    geocodedRef.current = true;
+    if (!isLoaded) return;
 
-    if (savedLat != null && savedLng != null) {
+    if (savedLat != null && savedLng != null && addressStreet) {
       const location = { lat: savedLat, lng: savedLng };
       setSelectedLocation({ address: addressStreet, location });
       setMapCenter(location);
       setMapZoom(15);
       return;
     }
+
+    // Fall back to geocoding only when no coordinates exist yet
+    if (!addressStreet || geocodedRef.current) return;
+    geocodedRef.current = true;
 
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: addressStreet }, (results, status) => {
@@ -53,7 +56,6 @@ const LocationMapField: React.FC = () => {
         setSelectedLocation({ address: addressStreet, location });
         setMapCenter(location);
         setMapZoom(15);
-        // Persist discovered coordinates back into the form so future opens skip geocoding
         setValue('addressLatitude', location.lat, { shouldDirty: true });
         setValue('addressLongitude', location.lng, { shouldDirty: true });
       }
@@ -82,7 +84,7 @@ const LocationMapField: React.FC = () => {
   }
 
   return (
-    <Box sx={{ height: 300, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ height: 300, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
       <GoogleMap
         center={mapCenter}
         zoom={mapZoom}

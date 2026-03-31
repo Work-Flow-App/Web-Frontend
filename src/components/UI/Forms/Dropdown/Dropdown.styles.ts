@@ -88,6 +88,8 @@ export const MuiAutocomplete = styled(Autocomplete, {
         background: floowColors.white,
         borderColor: palette.primary?.main || floowColors.form.input.borderFocus,
         boxShadow: `0 0 0 ${rem(2)} ${palette.primary?.main || floowColors.form.input.borderFocus}20`,
+        position: 'relative',
+        zIndex: 1,
       },
 
       '&.Mui-disabled': {

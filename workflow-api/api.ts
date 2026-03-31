@@ -611,8 +611,8 @@ export interface LogoutRequest {
     'refreshToken': string;
 }
 export interface PageAssetResponse {
-    'totalPages'?: number;
     'totalElements'?: number;
+    'totalPages'?: number;
     'size'?: number;
     'content'?: Array<AssetResponse>;
     'number'?: number;
@@ -626,10 +626,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'unpaged'?: boolean;
     'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -800,6 +800,7 @@ export interface VerifyEmailRequest {
 export interface WorkerAssignedStepResponse {
     'step'?: JobWorkflowStepResponse;
     'jobId'?: number;
+    'jobRef'?: number;
     'customer'?: CustomerResponse;
     'assignedAssets'?: Array<AssetAssignmentResponse>;
     'jobAddress'?: AddressResponse;

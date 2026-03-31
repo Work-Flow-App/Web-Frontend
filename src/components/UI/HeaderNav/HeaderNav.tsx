@@ -87,14 +87,14 @@ export const HeaderNav: React.FC<IHeaderNav> = ({
         {/* Controls Section */}
         <ControlsSection>
           {/* Notification Icon */}
-          <IconButtonStyled onClick={onNotificationClick} role="button" aria-label="Notifications">
+          {/* <IconButtonStyled onClick={onNotificationClick} role="button" aria-label="Notifications">
             <NotificationIcon />
-          </IconButtonStyled>
+          </IconButtonStyled> */}
 
           {/* Search Icon */}
-          <IconButtonStyled onClick={onSearchClick} role="button" aria-label="Search">
+          {/* <IconButtonStyled onClick={onSearchClick} role="button" aria-label="Search">
             <SearchIcon />
-          </IconButtonStyled>
+          </IconButtonStyled> */}
 
           {/* Settings Icon */}
           <IconButtonStyled onClick={onSettingsClick} role="button" aria-label="Settings">

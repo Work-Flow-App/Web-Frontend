@@ -1,8 +1,8 @@
 import React from 'react';
 import * as S from './FloowLogo.styled';
-import floowLogoLightSvg from '../../../assets/logo/workflowwLogo/2687_floow_SR-02.svg';
-import floowLogoWhiteSvg from '../../../assets/logo/workflowwLogo/2687_floow_SR-01.svg';
-import floowLogoIconSvg from '../../../assets/logo/workflowwLogo/2687_floow_SR-03.svg';
+import floowLogoLightSvg from '../../../assets/logo/workflowwLogo/WorkFloow Log1o.svg';
+import floowLogoWhiteSvg from '../../../assets/logo/workflowwLogo/WorkFloow Logo.svg';
+import floowLogoIconSvg from '../../../assets/logo/workflowwLogo/Connect Shape.svg';
 import type { FloowLogoProps } from './FloowLogo.types';
 
 function FloowLogo({ width, height, variant = 'light', iconOnly = false }: FloowLogoProps): React.ReactElement {

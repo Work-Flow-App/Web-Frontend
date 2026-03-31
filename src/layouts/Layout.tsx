@@ -64,15 +64,12 @@ const RightActions = ({
 
   return (
     <S.RightActionsContainer>
-      <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
+      {/* Notification Icon */}
+      {/* <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
         <NotificationsIcon />
       </S.ActionButton>
 
-      <S.ActionDivider aria-hidden={true} />
-
-      <S.ActionButton role="button" aria-label="Settings" tabIndex={0} onClick={onViewSettings}>
-        <SettingsIcon />
-      </S.ActionButton>
+      <S.ActionDivider aria-hidden={true} /> */}
 
       <S.UserAvatar
         role="button"
@@ -236,7 +233,6 @@ export const Layout: React.FC = () => {
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
-    { id: 'settings', label: 'Settings', icon: <SettingsIcon />, href: '/company/settings' },
   ];
 
   const handleToggleSidebar = () => {
@@ -262,20 +258,6 @@ export const Layout: React.FC = () => {
       <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
-          searchContent={
-            <Box sx={S.searchContainerSx}>
-              <Search
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onSearch={(query) => {
-                  console.log('Search:', query);
-                }}
-                width="300px"
-                styles={S.searchStyles}
-              />
-            </Box>
-          }
           rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
           onToggleSidebar={handleToggleSidebar}
         />

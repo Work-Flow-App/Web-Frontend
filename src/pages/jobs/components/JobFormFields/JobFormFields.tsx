@@ -99,11 +99,11 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
     const fetchAssets = async () => {
       try {
         setLoadingAssets(true);
-        const response = await assetService.getAllAssets(0, 100, false, true);
+        // Fetch all non-archived assets so currently assigned ones also appear in edit mode
+        const response = await assetService.getAllAssets(0, 200, false);
         const assetsData = response.data.content || [];
-        // Additional client-side filtering to ensure only available assets are shown
-        const availableAssets = assetsData.filter((asset: AssetResponse) => asset.available === true && asset.archived !== true);
-        setAssets(availableAssets);
+        const nonArchivedAssets = assetsData.filter((asset: AssetResponse) => asset.archived !== true);
+        setAssets(nonArchivedAssets);
       } catch (error) {
         console.error('Error fetching assets:', error);
       } finally {
@@ -371,21 +371,11 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
           <Dropdown
             name={fieldTitles.assetIds}
             preFetchedOptions={assetOptions}
-            placeHolder={
-              assetOptions.length === 0 && !loadingAssets
-                ? 'No available assets - all assets are currently in use'
-                : placeHolders.assetIds
-            }
+            placeHolder={placeHolders.assetIds}
             isPreFetchLoading={loadingAssets}
             disablePortal={true}
             fullWidth={true}
-            disabled={assetOptions.length === 0}
             multiple={true}
-            helperText={
-              !loadingAssets && assetOptions.length === 0
-                ? 'All assets are currently assigned to other jobs. Please wait for assets to become available or create new assets.'
-                : undefined
-            }
           />
         </FormField>
       </FormRow>

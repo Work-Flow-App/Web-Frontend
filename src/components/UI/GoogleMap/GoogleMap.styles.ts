@@ -68,6 +68,22 @@ export const ErrorContainer = styled(Box)(({ theme }) => ({
   color: theme.palette.error.main,
 }));
 
+export const RouteInfoPanel = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  bottom: theme.spacing(3),
+  left: theme.spacing(1.5),
+  zIndex: 10,
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(1.25, 2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
+  border: `1px solid ${theme.palette.divider}`,
+  minWidth: 220,
+}));
+
 export const MarkerInfoWindow = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
   minWidth: rem(200),

@@ -210,10 +210,13 @@ export const JobDetailsView: React.FC = () => {
                 <JobDetailsSection
                   job={job}
                   client={client}
+                  customer={customer}
                   template={template}
                   templateFields={templateFields}
                   title="Job Details"
                   defaultExpanded={true}
+                  onJobUpdate={(updatedJob) => setJob(updatedJob)}
+                  onCustomerUpdate={(updatedCustomer) => setCustomer(updatedCustomer)}
                 />
 
                 {/* Additional Information Section - Description and Attachments */}

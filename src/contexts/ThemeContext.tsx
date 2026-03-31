@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { createAppTheme } from '../theme/themeFactory';
 import type { CustomThemeColors } from '../theme/palette';
+import { THEME_PRESETS } from '../theme/presets';
 
 interface ThemeContextType {
   mode: 'light' | 'dark';
@@ -91,9 +92,15 @@ export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let customColors: CustomThemeColors | undefined;
 
     if (activeThemeId !== 'default') {
-      const selectedTheme = customThemes.find((t) => t.id === activeThemeId);
-      if (selectedTheme) {
-        customColors = selectedTheme.colors;
+      // Check preset themes first, then user-created custom themes
+      const preset = THEME_PRESETS.find((p) => p.id === activeThemeId);
+      if (preset) {
+        customColors = preset.colors;
+      } else {
+        const selectedTheme = customThemes.find((t) => t.id === activeThemeId);
+        if (selectedTheme) {
+          customColors = selectedTheme.colors;
+        }
       }
     }
 
