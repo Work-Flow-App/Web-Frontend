@@ -52,6 +52,7 @@ export interface GoogleMapProps {
   showSearchBox?: boolean;
   searchInitialValue?: string;
   className?: string;
+  showDirections?: boolean;
 }
 
 export interface PlacesAutocompleteProps {

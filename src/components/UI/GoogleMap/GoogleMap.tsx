@@ -1,15 +1,19 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { useJsApiLoader, GoogleMap as GoogleMapComponent, Marker, InfoWindow } from '@react-google-maps/api';
-import { CircularProgress, Typography, Alert, AlertTitle, Box, Chip } from '@mui/material';
+import { useJsApiLoader, GoogleMap as GoogleMapComponent, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
+import { CircularProgress, Typography, Alert, AlertTitle, Box, Chip, Button, IconButton } from '@mui/material';
+import DirectionsIcon from '@mui/icons-material/Directions';
+import CloseIcon from '@mui/icons-material/Close';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../config/googleMaps';
 import PlacesAutocomplete from './PlacesAutocomplete';
-import type { GoogleMapProps, PlaceDetails } from './GoogleMap.types';
+import type { GoogleMapProps, PlaceDetails, Location } from './GoogleMap.types';
 import {
   MapContainer,
   MapWrapper,
   LoadingContainer,
   ErrorContainer,
   MarkerInfoWindow,
+  RouteInfoPanel,
 } from './GoogleMap.styles';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -31,6 +35,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   showSearchBox = true,
   searchInitialValue,
   className,
+  showDirections = false,
 }) => {
   const resolvedHeight = typeof height === 'number' ? `${height}px` : height;
 
@@ -44,6 +49,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const [selectedMarker, setSelectedMarker] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(center);
   const [mapZoom, setMapZoom] = useState(zoom);
+  const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
+  const [directionsLoading, setDirectionsLoading] = useState(false);
+  const [directionsError, setDirectionsError] = useState<string | null>(null);
 
   const allMarkers = useMemo(() => {
     const list = [...markers];
@@ -88,6 +97,57 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       setMapZoom(16);
     }
   }, [focusedMarker]);
+
+  const handleGetDirections = useCallback((destination: Location) => {
+    if (!navigator.geolocation) {
+      setDirectionsError('Geolocation is not supported by your browser.');
+      return;
+    }
+    setDirectionsLoading(true);
+    setDirectionsError(null);
+    setDirectionsResult(null);
+    setRouteInfo(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const origin = { lat: position.coords.latitude, lng: position.coords.longitude };
+        const service = new google.maps.DirectionsService();
+        service.route(
+          { origin, destination, travelMode: google.maps.TravelMode.DRIVING },
+          (result, status) => {
+            setDirectionsLoading(false);
+            if (status === google.maps.DirectionsStatus.OK && result) {
+              setDirectionsResult(result);
+              const leg = result.routes[0]?.legs[0];
+              if (leg) {
+                setRouteInfo({ distance: leg.distance?.text ?? '', duration: leg.duration?.text ?? '' });
+              }
+              if (mapRef.current && result.routes[0]?.bounds) {
+                mapRef.current.fitBounds(result.routes[0].bounds, 80);
+              }
+              setSelectedMarker(null);
+            } else {
+              setDirectionsError('Could not calculate route. Please try again.');
+            }
+          }
+        );
+      },
+      (err) => {
+        setDirectionsLoading(false);
+        setDirectionsError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location access denied. Please allow location access and try again.'
+            : 'Could not get your location. Please try again.'
+        );
+      },
+      { timeout: 10000 }
+    );
+  }, []);
+
+  const clearDirections = useCallback(() => {
+    setDirectionsResult(null);
+    setRouteInfo(null);
+    setDirectionsError(null);
+  }, []);
 
   const handlePlaceSelect = useCallback(
     (place: PlaceDetails) => {
@@ -194,6 +254,20 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
             );
           })}
 
+          {directionsResult && (
+            <DirectionsRenderer
+              directions={directionsResult}
+              options={{
+                suppressMarkers: false,
+                polylineOptions: {
+                  strokeColor: '#1976d2',
+                  strokeWeight: 5,
+                  strokeOpacity: 0.85,
+                },
+              }}
+            />
+          )}
+
           {selectedMarker && (
             <InfoWindow position={selectedMarker.location} onCloseClick={() => setSelectedMarker(null)}>
               <MarkerInfoWindow>
@@ -242,6 +316,26 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                         <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.scheduledTime}</Typography>
                       </Box>
                     )}
+                    {showDirections && (
+                      <Box sx={{ mt: 1 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          fullWidth
+                          startIcon={directionsLoading ? <CircularProgress size={13} color="inherit" /> : <DirectionsIcon />}
+                          onClick={() => handleGetDirections(selectedMarker.location)}
+                          disabled={directionsLoading}
+                          sx={{ fontSize: '0.72rem', py: 0.6, textTransform: 'none' }}
+                        >
+                          {directionsLoading ? 'Getting route…' : 'Get Directions'}
+                        </Button>
+                        {directionsError && (
+                          <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                            {directionsError}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
                   </Box>
                 ) : selectedMarker.workerData ? (
                   <Box sx={{ minWidth: 220, maxWidth: 300 }}>
@@ -284,6 +378,23 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
             </InfoWindow>
           )}
         </GoogleMapComponent>
+
+        {showDirections && routeInfo && (
+          <RouteInfoPanel>
+            <DirectionsCarIcon sx={{ color: '#1976d2', fontSize: 22, flexShrink: 0 }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#1976d2', display: 'block', lineHeight: 1.2 }}>
+                {routeInfo.duration}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#555', display: 'block', lineHeight: 1.2 }}>
+                {routeInfo.distance} via driving
+              </Typography>
+            </Box>
+            <IconButton size="small" onClick={clearDirections} sx={{ ml: 'auto', p: 0.5 }}>
+              <CloseIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </RouteInfoPanel>
+        )}
         </MapWrapper>
       </MapContainer>
     </Box>

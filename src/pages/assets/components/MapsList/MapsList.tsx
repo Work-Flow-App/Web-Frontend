@@ -190,6 +190,7 @@ export const MapsList: React.FC = () => {
             focusedMarker={focusedMarker}
             autoFitBounds
             showSearchBox
+            showDirections
             height="100%"
           />
         </S.MapSection>
