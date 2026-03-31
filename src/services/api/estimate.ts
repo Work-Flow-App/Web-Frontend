@@ -53,4 +53,8 @@ export const estimateService = {
   generateInvoice(estimateId: number, data: InvoiceCreateRequest) {
     return getInvoicesApi().invoiceGenerate(estimateId, data);
   },
+
+  listInvoicesForEstimate(estimateId: number) {
+    return getInvoicesApi().invoiceListForEstimate(estimateId);
+  },
 };

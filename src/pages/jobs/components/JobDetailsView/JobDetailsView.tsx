@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, IconButton } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import EditIcon from '@mui/icons-material/Edit';
+// import IconButton from '@mui/material/IconButton';
+// import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+// import EditIcon from '@mui/icons-material/Edit';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import { jobService, jobTemplateService, companyClientService, customerService } from '../../../../services/api';
 import type {
@@ -128,7 +129,7 @@ export const JobDetailsView: React.FC = () => {
             </S.JobHeaderInfo>
           </S.JobHeaderLeft>
 
-          <S.JobHeaderRight>
+          {/* <S.JobHeaderRight>
             <S.AssignedToSelector>
               <span className="label">Assigned to</span>
               <KeyboardArrowDownIcon fontSize="small" />
@@ -136,7 +137,7 @@ export const JobDetailsView: React.FC = () => {
             <IconButton size="small">
               <EditIcon />
             </IconButton>
-          </S.JobHeaderRight>
+          </S.JobHeaderRight> */}
         </S.JobHeader>
 
         {/* Tabs Navigation */}

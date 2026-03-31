@@ -18,6 +18,7 @@ import {
   workflowService,
   jobTemplateService,
   customerService,
+  estimateService,
 } from '../../../services/api';
 import type {
   JobResponse,
@@ -130,11 +131,23 @@ const statCardSx = {
   gap: '6px',
 };
 
-function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
-  const total = jobs.length;
+function formatAmount(value: number): string {
+  return value.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function StatBoxesRow({
+  jobs,
+  estimateSentTotal,
+  awaitingInvoiceTotal,
+}: {
+  jobs: JobResponse[];
+  estimateSentTotal: number;
+  awaitingInvoiceTotal: number;
+}) {
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
-  const awaitingApproval = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
+  const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
+  const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
@@ -143,8 +156,8 @@ function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
         <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Estimate Sent
         </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {total}
+        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
+          £{formatAmount(estimateSentTotal)}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
@@ -177,11 +190,11 @@ function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
         <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Estimates Awaiting Approval
         </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {awaitingApproval}
+        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
+          £{formatAmount(awaitingInvoiceTotal)}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {awaitingApproval > 0 ? (
+          {awaitingCount > 0 ? (
             <>
               <ErrorOutlineIcon sx={{ fontSize: '14px', color: floowColors.error.main }} />
               <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.error.main }}>
@@ -377,6 +390,8 @@ export const JobEventsSection: React.FC = () => {
   const [allJobWorkflows, setAllJobWorkflows] = useState<JobWorkflowResponse[]>([]);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [estimateSentTotal, setEstimateSentTotal] = useState(0);
+  const [awaitingInvoiceTotal, setAwaitingInvoiceTotal] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -409,6 +424,42 @@ export const JobEventsSection: React.FC = () => {
 
         const defaultId = wfs[0]?.id ?? null;
         setSelectedWorkflowId(defaultId);
+
+        // Fetch estimates for all jobs in parallel
+        const estimateResults = await Promise.allSettled(
+          jobs.filter((j) => j.id != null).map((j) => estimateService.getByJobId(j.id!))
+        );
+
+        let sentTotal = 0;
+        const awaitingJobIds = new Set(
+          jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').map((j) => j.id!)
+        );
+        const awaitingEstimateIds: number[] = [];
+
+        jobs.filter((j) => j.id != null).forEach((j, i) => {
+          const result = estimateResults[i];
+          if (result.status === 'fulfilled') {
+            const estimate = result.value.data;
+            sentTotal += estimate.grandTotal ?? 0;
+            if (awaitingJobIds.has(j.id!) && estimate.id != null) {
+              awaitingEstimateIds.push(estimate.id);
+            }
+          }
+        });
+        setEstimateSentTotal(sentTotal);
+
+        // Fetch invoices for awaiting-approval estimates and sum their totals
+        const invoiceResults = await Promise.allSettled(
+          awaitingEstimateIds.map((eid) => estimateService.listInvoicesForEstimate(eid))
+        );
+        let invoiceTotal = 0;
+        invoiceResults.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            const invoices = Array.isArray(result.value.data) ? result.value.data : [];
+            invoices.forEach((inv) => { invoiceTotal += inv.grandTotal ?? 0; });
+          }
+        });
+        setAwaitingInvoiceTotal(invoiceTotal);
       } catch (err) {
         console.error('Failed to load job events:', err);
       } finally {
@@ -542,7 +593,7 @@ export const JobEventsSection: React.FC = () => {
       </S.SectionHeader>
 
       {/* Stat boxes */}
-      {!loading && <StatBoxesRow jobs={allJobs} />}
+      {!loading && <StatBoxesRow jobs={allJobs} estimateSentTotal={estimateSentTotal} awaitingInvoiceTotal={awaitingInvoiceTotal} />}
 
       {/* Pipeline bar */}
       {loading ? (
