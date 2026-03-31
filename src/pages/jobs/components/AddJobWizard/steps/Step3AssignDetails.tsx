@@ -161,12 +161,17 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
     const fetchAssets = async () => {
       try {
         setLoadingAssets(true);
-        const resp = await assetService.getAllAssets(0, 100, false, true);
+        // Fetch all non-archived assets so currently assigned ones show in edit mode
+        const resp = await assetService.getAllAssets(0, 200, false);
         const assetsData = resp.data.content || [];
-        const available = assetsData.filter(
-          (a: AssetResponse) => a.available === true && a.archived !== true
+        const currentAssetIds = initialData.assetIds ?? [];
+        setAssets(
+          assetsData.filter(
+            (a: AssetResponse) =>
+              a.archived !== true &&
+              (a.available === true || currentAssetIds.includes(a.id!))
+          )
         );
-        setAssets(available);
       } catch (error) {
         console.error('Error fetching assets:', error);
       } finally {
@@ -258,7 +263,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         </Typography>
 
         {isGoogleMapsConfigured() ? (
-          <Box sx={{ height: 300, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ height: 300, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
             <GoogleMap
               center={mapCenter}
               zoom={mapZoom}
@@ -266,6 +271,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
               selectedLocation={selectedLocation}
               onLocationSelect={handleLocationSelect}
               showSearchBox
+              searchInitialValue={selectedLocation?.address}
               height="300px"
             />
           </Box>

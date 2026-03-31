@@ -22,7 +22,8 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
 
   // Initialize with empty object - fields will use schema defaults
   const [jobData, setJobData] = useState<Partial<JobFormData>>({});
-  const [isLoading, setIsLoading] = useState(false);
+  // Start in loading state when editing so the form never briefly renders with empty defaults
+  const [isLoading, setIsLoading] = useState(!!jobId);
 
   const isEditMode = !!jobId;
 
@@ -50,12 +51,12 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             // Fetch all required data in parallel
             const [fieldsResponse, assetsResponse, workflowsResponse] = await Promise.all([
               jobTemplateService.getTemplateFields(job.templateId),
-              assetService.getAllAssets(0, 100, false, true),
+              assetService.getAllAssets(0, 200, false),
               workflowService.getAllWorkflows(),
             ]);
 
             const fields = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
-            const assetsData = assetsResponse.data.content || [];
+            const assetsData = (assetsResponse.data.content || []).filter((a: any) => a.archived !== true);
             const workflowsData = Array.isArray(workflowsResponse.data) ? workflowsResponse.data : [];
 
             // Convert assetIds to dropdown format { label, value }
@@ -162,7 +163,12 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               : value;
             // Only add non-empty values
             if (actualValue !== '' && actualValue !== null && actualValue !== undefined) {
-              fieldValues[fieldId] = actualValue;
+              // DATE fields: backend expects LocalDateTime — restore time if stripped for display
+              if (typeof actualValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(actualValue)) {
+                fieldValues[fieldId] = `${actualValue}T00:00:00`;
+              } else {
+                fieldValues[fieldId] = actualValue;
+              }
             }
           }
         });

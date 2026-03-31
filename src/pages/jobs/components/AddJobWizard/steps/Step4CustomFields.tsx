@@ -18,9 +18,10 @@ interface Step4Props {
   wizardData: WizardData;
   onSuccess?: () => void;
   jobId?: number;
+  originalAssetIds?: number[];
 }
 
-export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess, jobId }) => {
+export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess, jobId, originalAssetIds = [] }) => {
   const {
     updateModalTitle,
     updateGlobalModalInnerConfig,
@@ -71,6 +72,8 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
       if (raw !== undefined && raw !== null) {
         if (field.jobFieldType === 'DROPDOWN') {
           values[`field_${field.id}`] = { label: String(raw), value: String(raw) };
+        } else if (field.jobFieldType === FieldType.DATE && typeof raw === 'string') {
+          values[`field_${field.id}`] = raw.split('T')[0];
         } else {
           values[`field_${field.id}`] = raw;
         }
@@ -172,7 +175,13 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
                   ? (value as { value: string | number | boolean }).value
                   : value;
               if (actualValue !== '' && actualValue !== null && actualValue !== undefined) {
-                fieldValues[fieldId] = actualValue;
+                // DATE fields: backend expects LocalDateTime format — append time if stripped for display
+                const field = templateFields.find((f) => `field_${f.id}` === key);
+                if (field?.jobFieldType === FieldType.DATE && typeof actualValue === 'string' && !actualValue.includes('T')) {
+                  fieldValues[fieldId] = `${actualValue}T00:00:00`;
+                } else {
+                  fieldValues[fieldId] = actualValue;
+                }
               }
             }
           });
@@ -180,12 +189,12 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
           if (jobId) {
             // Edit mode — call updateJob
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const updatePayload: any = { fieldValues };
+            const updatePayload: any = {};
+            if (Object.keys(fieldValues).length > 0) updatePayload.fieldValues = fieldValues;
             if (wizardData.customerId) updatePayload.customerId = wizardData.customerId;
             if (wizardData.clientId) updatePayload.clientId = wizardData.clientId;
             if (wizardData.assignedWorkerId) updatePayload.assignedWorkerId = wizardData.assignedWorkerId;
-            if (wizardData.workflowId) updatePayload.workflowId = wizardData.workflowId;
-            if (wizardData.assetIds && wizardData.assetIds.length > 0) updatePayload.assetIds = wizardData.assetIds;
+            updatePayload.assetIds = wizardData.assetIds ?? [];
 
             await jobService.updateJob(jobId, updatePayload);
             showSuccess('Job updated successfully');

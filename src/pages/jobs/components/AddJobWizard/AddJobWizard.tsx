@@ -50,6 +50,7 @@ interface AddJobWizardProps {
 export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) => {
   const { activeScreen } = useGlobalModalInnerContext();
   const [wizardData, setWizardData] = useState<WizardData>({});
+  const [originalAssetIds, setOriginalAssetIds] = useState<number[]>([]);
   const [loadingJob, setLoadingJob] = useState(!!jobId);
 
   useEffect(() => {
@@ -66,14 +67,25 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
             }
           });
         }
+        const loadedAssetIds = job.assetIds ?? [];
+        setOriginalAssetIds(loadedAssetIds);
         setWizardData({
           templateId: job.templateId,
           customerId: job.customerId,
           clientId: job.clientId,
           assignedWorkerId: job.assignedWorkerId,
           workflowId: job.workflowId,
-          assetIds: job.assetIds ?? [],
+          assetIds: loadedAssetIds,
           fieldValues,
+          address: job.address
+            ? {
+                fullAddress: [job.address.street, job.address.city, job.address.state, job.address.postalCode, job.address.country]
+                  .filter(Boolean)
+                  .join(', '),
+                latitude: job.address.latitude,
+                longitude: job.address.longitude,
+              }
+            : undefined,
         });
       })
       .finally(() => setLoadingJob(false));
@@ -93,7 +105,7 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
     if (activeScreen === 2) {
       return <Step3AssignDetails onStepComplete={onStepComplete} initialData={wizardData} />;
     }
-    return <Step4CustomFields wizardData={wizardData} onSuccess={onSuccess} jobId={jobId} />;
+    return <Step4CustomFields wizardData={wizardData} onSuccess={onSuccess} jobId={jobId} originalAssetIds={originalAssetIds} />;
   };
 
   if (loadingJob) return <Loader size={40} centered minHeight="380px" />;
