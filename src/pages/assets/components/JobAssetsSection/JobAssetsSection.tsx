@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Button, Card, CardContent, Chip, IconButton, Stack } from '@mui/material';
-import { Add as AddIcon, AssignmentReturn as ReturnIcon } from '@mui/icons-material';
+import { Stack } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { Button } from '../../../../components/UI';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
@@ -8,6 +9,7 @@ import { assetService } from '../../../../services/api';
 import type { AssetAssignmentResponse } from '../../../../services/api';
 import { Loader } from '../../../../components/UI';
 import { AssignAssetModal } from '../AssignAssetModal';
+import * as S from './JobAssetsSection.styles';
 
 export interface JobAssetsSectionProps {
   jobId: number;
@@ -19,11 +21,10 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
   const [assignments, setAssignments] = useState<AssetAssignmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch job assignments
   const fetchAssignments = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await assetService.getJobAssignments(jobId, true); // Only active assignments
+      const response = await assetService.getJobAssignments(jobId, true);
       const assignmentsData = Array.isArray(response.data) ? response.data : [];
       setAssignments(assignmentsData);
     } catch (error) {
@@ -38,7 +39,6 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
     fetchAssignments();
   }, [fetchAssignments]);
 
-  // Handle assign asset
   const handleAssignAsset = () => {
     setGlobalModalOuterProps({
       isOpen: true,
@@ -56,7 +56,6 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
     });
   };
 
-  // Handle return asset
   const handleReturnAsset = useCallback(
     (assignment: AssetAssignmentResponse) => {
       setGlobalModalOuterProps({
@@ -100,10 +99,24 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
     return <Loader />;
   }
 
+  const formatMeta = (assignment: AssetAssignmentResponse): string => {
+    const parts: string[] = [];
+    if (assignment.assignedAt) {
+      parts.push(`Assigned ${new Date(assignment.assignedAt).toLocaleDateString()}`);
+    }
+    if (assignment.durationDays !== undefined && assignment.durationDays !== null) {
+      parts.push(`${assignment.durationDays} ${assignment.durationDays === 1 ? 'day' : 'days'}`);
+    }
+    if (assignment.serialNumber) {
+      parts.push(`S/N ${assignment.serialNumber}`);
+    }
+    return parts.join('  ·  ');
+  };
+
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Assets on Job</Typography>
+    <div>
+      <S.SectionHeader>
+        <S.SectionTitle>Assets on Job</S.SectionTitle>
         <Button
           variant="contained"
           color="primary"
@@ -114,66 +127,38 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
         >
           Assign Asset
         </Button>
-      </Box>
+      </S.SectionHeader>
 
       {assignments.length === 0 ? (
-        <Card variant="outlined">
-          <CardContent sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant="body2" color="text.secondary">
-              No assets assigned to this job yet.
-            </Typography>
-          </CardContent>
-        </Card>
+        <S.EmptyState>
+          <S.EmptyStateIcon />
+          <S.EmptyStateText>No assets assigned</S.EmptyStateText>
+          <S.EmptyStateHint>Click &quot;Assign Asset&quot; to attach an asset to this job.</S.EmptyStateHint>
+        </S.EmptyState>
       ) : (
-        <Stack spacing={2}>
+        <Stack spacing={1}>
           {assignments.map((assignment) => (
-            <Card key={assignment.assignmentId} variant="outlined">
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      Asset ID: {assignment.assetId}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
-                      <Chip
-                        label={`Assigned: ${assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString() : '-'}`}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
-                      {assignment.assignedWorkerId && (
-                        <Chip
-                          label={`Worker ID: ${assignment.assignedWorkerId}`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                      <Chip
-                        label={assignment.status || 'Active'}
-                        size="small"
-                        color="success"
-                      />
-                    </Box>
-                    {assignment.notes && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Notes: {assignment.notes}
-                      </Typography>
-                    )}
-                  </Box>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleReturnAsset(assignment)}
-                    title="Return Asset"
-                    size="small"
-                  >
-                    <ReturnIcon />
-                  </IconButton>
-                </Box>
-              </CardContent>
-            </Card>
+            <S.AssetCard key={assignment.assignmentId}>
+              <S.AssetIconBox>
+                <S.AssetIconSmall />
+              </S.AssetIconBox>
+
+              <S.AssetContent>
+                <S.AssetName>{assignment.assetName || `Asset #${assignment.assetId}`}</S.AssetName>
+                <S.AssetMeta>{formatMeta(assignment)}</S.AssetMeta>
+                {assignment.notes && <S.AssetNotes>{assignment.notes}</S.AssetNotes>}
+              </S.AssetContent>
+
+              <S.CardRight>
+                <S.StatusChip label={assignment.status || 'Active'} size="small" color="success" />
+                <Button variant="outlined" color="secondary" size="small" onClick={() => handleReturnAsset(assignment)}>
+                  Return
+                </Button>
+              </S.CardRight>
+            </S.AssetCard>
           ))}
         </Stack>
       )}
-    </Box>
+    </div>
   );
 };
