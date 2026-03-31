@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
@@ -19,7 +19,7 @@ export interface AssignAssetModalProps {
 export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuccess }) => {
   const methods = useForm();
   const { showSuccess, showError } = useSnackbar();
-  const { updateModalTitle, updateGlobalModalInnerConfig, triggerSubmit } = useGlobalModalInnerContext();
+  const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } = useGlobalModalInnerContext();
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
@@ -28,26 +28,63 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Set modal title and button
+  // Use refs so the registered onConfirm callback always sees latest values
+  const stateRef = useRef({ selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess });
+  useEffect(() => {
+    stateRef.current = { selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess };
+  }, [selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess]);
+
+  // Set modal title, button text, and skip auto-close so we control closing after async success
   useEffect(() => {
     updateModalTitle('Assign Asset to Job');
-    updateGlobalModalInnerConfig({
-      confirmModalButtonText: 'Assign Asset',
+    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Assign Asset' });
+    setSkipResetModal?.(true);
+  }, [updateModalTitle, updateGlobalModalInnerConfig, setSkipResetModal]);
+
+  // Register the confirm handler once; it reads latest values via ref
+  useEffect(() => {
+    updateOnConfirm(async () => {
+      const { selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess } = stateRef.current;
+
+      if (!selectedAssetId) {
+        showError('Please select an asset');
+        return;
+      }
+
+      try {
+        setSubmitting(true);
+        await assetService.assignAsset({
+          assetId: selectedAssetId,
+          jobId,
+          assignedWorkerId: selectedWorkerId || undefined,
+          notes: notes || undefined,
+        });
+
+        const selectedAsset = assets.find((a) => a.id === selectedAssetId);
+        showSuccess(`${selectedAsset?.name || 'Asset'} assigned successfully`);
+        onSuccess?.();
+      } catch (error) {
+        console.error('Error assigning asset:', error);
+        showError(extractErrorMessage(error, 'Failed to assign asset'));
+      } finally {
+        setSubmitting(false);
+      }
     });
-  }, [updateModalTitle, updateGlobalModalInnerConfig]);
+  }, [updateOnConfirm, showSuccess, showError]);
 
   // Fetch available assets and workers
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Fetch only available (not archived, not assigned) assets
         const assetsResponse = await assetService.getAllAssets(0, 100, false, true);
-        const assetsData = assetsResponse.data.content ? Array.isArray(assetsResponse.data.content) ? assetsResponse.data.content : [] : [];
+        const assetsData = assetsResponse.data.content
+          ? Array.isArray(assetsResponse.data.content)
+            ? assetsResponse.data.content
+            : []
+          : [];
         setAssets(assetsData);
 
-        // Fetch workers
         const workersResponse = await workerService.getAllWorkers();
         const workersData = Array.isArray(workersResponse.data) ? workersResponse.data : [];
         setWorkers(workersData);
@@ -62,44 +99,6 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
     fetchData();
   }, [showError]);
 
-  // Handle submit via modal trigger
-  useEffect(() => {
-    const handleSubmit = async () => {
-      if (!selectedAssetId) {
-        showError('Please select an asset');
-        return;
-      }
-
-      try {
-        setSubmitting(true);
-
-        await assetService.assignAsset({
-          assetId: selectedAssetId,
-          jobId,
-          assignedWorkerId: selectedWorkerId || undefined,
-          notes: notes || undefined,
-        });
-
-        const selectedAsset = assets.find(a => a.id === selectedAssetId);
-        showSuccess(`${selectedAsset?.name || 'Asset'} assigned successfully`);
-
-        if (onSuccess) {
-          onSuccess();
-        }
-      } catch (error) {
-        console.error('Error assigning asset:', error);
-        showError(extractErrorMessage(error, 'Failed to assign asset'));
-      } finally {
-        setSubmitting(false);
-      }
-    };
-
-    if (triggerSubmit) {
-      handleSubmit();
-    }
-  }, [triggerSubmit, selectedAssetId, jobId, selectedWorkerId, notes, assets, showSuccess, showError, onSuccess]);
-
-  // Asset options for dropdown
   const assetOptions = useMemo(
     () =>
       assets.map((asset) => ({
@@ -109,7 +108,6 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
     [assets]
   );
 
-  // Worker options for dropdown
   const workerOptions = useMemo(
     () =>
       workers.map((worker) => ({
@@ -141,10 +139,9 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
             name="assetId"
             preFetchedOptions={assetOptions}
             placeHolder="Select an asset"
-            value={selectedAssetId ? { label: '', value: selectedAssetId.toString() } : null}
+            value={selectedAssetId ? selectedAssetId.toString() : undefined}
             onChange={(value) => {
-              const assetId = value ? parseInt(value as string) : null;
-              setSelectedAssetId(assetId);
+              setSelectedAssetId(value ? parseInt(value as string) : null);
             }}
             disablePortal={true}
             fullWidth={true}
@@ -157,10 +154,9 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
             name="workerId"
             preFetchedOptions={workerOptions}
             placeHolder="Select a worker (optional)"
-            value={selectedWorkerId ? { label: '', value: selectedWorkerId.toString() } : null}
+            value={selectedWorkerId ? selectedWorkerId.toString() : undefined}
             onChange={(value) => {
-              const workerId = value ? parseInt(value as string) : null;
-              setSelectedWorkerId(workerId);
+              setSelectedWorkerId(value ? parseInt(value as string) : null);
             }}
             disablePortal={true}
             fullWidth={true}
