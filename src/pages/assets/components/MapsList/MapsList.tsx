@@ -298,7 +298,7 @@ export const MapsList: React.FC = () => {
                       >
                         <Typography variant="caption" sx={{ width: 60, fontWeight: 700, color: '#555', fontSize: '0.65rem', textTransform: 'uppercase' }}>Job</Typography>
                         <Typography variant="caption" sx={{ width: 90, fontWeight: 700, color: '#555', fontSize: '0.65rem', textTransform: 'uppercase' }}>Status</Typography>
-                        <Typography variant="caption" sx={{ width: 110, fontWeight: 700, color: '#555', fontSize: '0.65rem', textTransform: 'uppercase' }}>Client</Typography>
+                        <Typography variant="caption" sx={{ width: 110, fontWeight: 700, color: '#555', fontSize: '0.65rem', textTransform: 'uppercase' }}>Customer</Typography>
                         <Typography variant="caption" sx={{ flex: 1, fontWeight: 700, color: '#555', fontSize: '0.65rem', textTransform: 'uppercase' }}>Address</Typography>
                       </Box>
 
@@ -386,7 +386,7 @@ export const MapsList: React.FC = () => {
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                {jd.clientName || '—'}
+                                {jd.customerName || '—'}
                               </Typography>
 
                               {/* Address */}

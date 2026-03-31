@@ -292,12 +292,6 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                     <Typography variant="caption" sx={{ display: 'block', color: '#555', mb: 0.5 }}>
                       {selectedMarker.address}
                     </Typography>
-                    {selectedMarker.jobLocationData.clientName && (
-                      <Box sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
-                        <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Client:</Typography>
-                        <Typography variant="caption" sx={{ color: '#555' }}>{selectedMarker.jobLocationData.clientName}</Typography>
-                      </Box>
-                    )}
                     {selectedMarker.jobLocationData.customerName && (
                       <Box sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
                         <Typography variant="caption" sx={{ color: '#888', fontWeight: 600 }}>Customer:</Typography>
