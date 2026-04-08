@@ -10,8 +10,9 @@ interface ConfigurationModalProps {
 const STORAGE_KEY = 'app_environment_config';
 
 const ENVIRONMENT_OPTIONS = [
-  { label: 'Local', value: 'http://localhost:3000' },
-  { label: 'Production', value: 'https://api.dev2.workfloow.app' },
+  { label: 'Local', value: 'http://localhost:5173' },
+  { label: 'Dev', value: 'https://api.dev2.workfloow.app' },
+  { label: 'Production', value: 'https://api.workfloow.app' },
 ];
 
 const getStoredConfig = (): EnvironmentConfig => {
