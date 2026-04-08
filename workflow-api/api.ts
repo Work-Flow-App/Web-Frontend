@@ -70,13 +70,13 @@ export interface AssetAssignmentReturnRequest {
     'notes'?: string;
 }
 export interface AssetCreateRequest {
-    'name'?: string;
+    'name': string;
     'description'?: string;
     'serialNumber'?: string;
     'assetTag'?: string;
-    'purchasePrice'?: number;
-    'purchaseDate'?: string;
-    'depreciationRate'?: number;
+    'purchasePrice': number;
+    'purchaseDate': string;
+    'depreciationRate': number;
     'salvageValue'?: number;
 }
 export interface AssetResponse {
@@ -95,6 +95,15 @@ export interface AssetResponse {
     'archived'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
+}
+export interface AssetStatistics {
+    'totalAssets'?: number;
+    'availableAssets'?: number;
+    'assetsInUse'?: number;
+    'totalPurchaseValue'?: number;
+    'totalCurrentValue'?: number;
+    'totalDepreciation'?: number;
+    'averageDepreciationRate'?: number;
 }
 export interface AssetUpdateRequest {
     'name'?: string;
@@ -121,7 +130,6 @@ export interface AuthenticationResponse {
     'refreshToken'?: string;
     'tokenType'?: string;
     'expiresIn'?: number;
-    'errorMessage'?: string;
 }
 export interface ClientCreateRequest {
     'name': string;
@@ -617,8 +625,8 @@ export interface PageAssetResponse {
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'pageable'?: PageableObject;
     'numberOfElements'?: number;
+    'pageable'?: PageableObject;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -626,10 +634,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
+    'unpaged'?: boolean;
     'pageNumber'?: number;
     'paged'?: boolean;
     'pageSize'?: number;
-    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -665,8 +673,8 @@ export interface SignupResponse {
 }
 export interface SortObject {
     'empty'?: boolean;
-    'sorted'?: boolean;
     'unsorted'?: boolean;
+    'sorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;
@@ -836,7 +844,6 @@ export interface WorkerInvitationRequest {
 export interface WorkerInvitationStatusResponse {
     'invitationId'?: number;
     'email'?: string;
-    'token'?: string;
     'status'?: WorkerInvitationStatusResponseStatusEnum;
     'createdAt'?: string;
     'expiresAt'?: string;
@@ -1279,7 +1286,7 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -1622,7 +1629,7 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async assetStats(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async assetStats(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetStatistics>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.assetStats(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetStats']?.[localVarOperationServerIndex]?.url;
@@ -1709,7 +1716,7 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assetStats(options?: RawAxiosRequestConfig): AxiosPromise<object> {
+        assetStats(options?: RawAxiosRequestConfig): AxiosPromise<AssetStatistics> {
             return localVarFp.assetStats(options).then((request) => request(axios, basePath));
         },
         /**

@@ -1,4 +1,4 @@
-export type FloowLogoVariant = 'light' | 'white';
+export type FloowLogoVariant = 'light' | 'white' | 'dark';
 
 export interface FloowLogoProps {
   /** @deprecated Text is now embedded in the SVG logo */

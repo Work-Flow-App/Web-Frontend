@@ -19,9 +19,12 @@ const ENVIRONMENT_OPTIONS = [
            (import.meta.env.DEV ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:5173')
   },
   {
+    label: 'Dev',
+    value: 'https://api.dev2.workfloow.app'
+  },
+  {
     label: 'Production',
-    value: import.meta.env.VITE_API_PRODUCTION_URL ||
-           (import.meta.env.PROD ? import.meta.env.VITE_API_BASE_URL : 'https://api.dev2.workfloow.app')
+    value: import.meta.env.VITE_API_PRODUCTION_URL || 'https://api.workfloow.app'
   },
 ];
 

@@ -20,6 +20,7 @@ import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 
 export const BASE_PATH = "https://api.dev2.workfloow.app".replace(/\/+$/, "");
+export const PROD_BASE_PATH = "https://api.workfloow.app".replace(/\/+$/, "");
 
 export const COLLECTION_FORMATS = {
     csv: ",",
