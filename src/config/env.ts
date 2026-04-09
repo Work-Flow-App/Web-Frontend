@@ -21,9 +21,8 @@ const getValidUrls = (): string[] => {
  */
 const getApiBaseUrl = (): string => {
   // Default to local URL in development mode, production URL in production mode
-  const defaultUrl = import.meta.env.DEV
-    ? (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173')
-    : (import.meta.env.VITE_API_BASE_URL || 'https://api.workfloow.app');
+  const defaultUrl = import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.DEV ? 'http://localhost:5173' : 'https://api.dev2.workfloow.app');
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
