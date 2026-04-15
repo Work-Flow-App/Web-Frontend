@@ -583,6 +583,7 @@ export interface LineItemResponse {
     'netAmount'?: number;
     'vatAmount'?: number;
     'totalAmount'?: number;
+    'invoiced'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
@@ -4226,6 +4227,39 @@ export const InvoicesApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        invoiceListAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/estimates/invoices`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} estimateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4297,6 +4331,17 @@ export const InvoicesApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async invoiceListAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<InvoiceResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.invoiceListAll(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['InvoicesApi.invoiceListAll']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} estimateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4337,6 +4382,14 @@ export const InvoicesApiFactory = function (configuration?: Configuration, baseP
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        invoiceListAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<InvoiceResponse>> {
+            return localVarFp.invoiceListAll(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} estimateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -4370,6 +4423,15 @@ export class InvoicesApi extends BaseAPI {
      */
     public invoiceGet(invoiceId: number, options?: RawAxiosRequestConfig) {
         return InvoicesApiFp(this.configuration).invoiceGet(invoiceId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public invoiceListAll(options?: RawAxiosRequestConfig) {
+        return InvoicesApiFp(this.configuration).invoiceListAll(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

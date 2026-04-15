@@ -82,6 +82,7 @@ export type {
   EstimateUpdateRequest,
   LineItemResponse,
   LineItemCreateRequest,
+  InvoiceResponse,
 } from './estimate';
 
 export { lineItemService } from './lineItem';
