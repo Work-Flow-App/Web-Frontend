@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Box,
   Chip,
+  Collapse,
+  Divider,
   TableRow,
   IconButton,
   Tooltip,
@@ -11,13 +13,17 @@ import {
   Select,
   MenuItem,
   Checkbox,
+  Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import type { JobResponse, EstimateResponse, LineItemResponse, LineItemCreateRequest } from '../../../../../services/api';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import type { JobResponse, EstimateResponse, LineItemResponse, LineItemCreateRequest, InvoiceResponse } from '../../../../../services/api';
 import { estimateService, lineItemService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../../components/UI/GlobalModal';
@@ -64,6 +70,22 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const [selectedExistingId, setSelectedExistingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
+  const [expandedInvoiceIds, setExpandedInvoiceIds] = useState<Set<number>>(new Set());
+
+  const fetchInvoices = useCallback(async (estimateId: number) => {
+    try {
+      const res = await estimateService.listInvoicesForEstimate(estimateId);
+      const data = Array.isArray(res.data) ? res.data : [];
+      setInvoices(data.slice().sort((a, b) => {
+        const dA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dB - dA;
+      }));
+    } catch {
+      // non-critical — silently ignore
+    }
+  }, []);
 
   const fetchEstimate = useCallback(async () => {
     if (!job.id) return;
@@ -71,12 +93,13 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       setLoading(true);
       const res = await estimateService.getByJobId(job.id);
       setEstimate(res.data);
+      if (res.data?.id) await fetchInvoices(res.data.id);
     } catch {
       showError('Failed to load estimate');
     } finally {
       setLoading(false);
     }
-  }, [job.id, showError]);
+  }, [job.id, showError, fetchInvoices]);
 
   useEffect(() => {
     fetchEstimate();
@@ -159,7 +182,15 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     }
 
     const lineItems: LineItemResponse[] = estimate?.lineItems || [];
-    const invoiceLineItems = lineItems.filter((li) => li.id !== undefined && selectedIds.has(li.id!));
+    // Strictly exclude any already-invoiced items regardless of checkbox state
+    const invoiceLineItems = lineItems.filter(
+      (li) => li.id !== undefined && selectedIds.has(li.id!) && !li.invoiced
+    );
+
+    if (invoiceLineItems.length === 0) {
+      showError('All selected line items have already been invoiced');
+      return;
+    }
 
     setGlobalModalOuterProps({
       isOpen: true,
@@ -169,7 +200,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         <CreateInvoiceModal
           estimateId={estimate!.id!}
           lineItems={invoiceLineItems}
-          onSuccess={() => resetGlobalModalOuterProps()}
+          onSuccess={() => {
+            resetGlobalModalOuterProps();
+            setSelectedIds(new Set());
+            fetchEstimate();
+          }}
         />
       ),
     });
@@ -189,6 +224,18 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   }, [calcNet, newItem.vatRate]);
   const calcTotal = calcNet + calcVat;
 
+  // Map: lineItemId → invoice that contains it (for the identifier badge)
+  // Must be before any early returns to satisfy Rules of Hooks
+  const lineItemInvoiceMap = useMemo(() => {
+    const map = new Map<number, InvoiceResponse>();
+    invoices.forEach((inv) => {
+      (inv.lineItems || []).forEach((li) => {
+        if (li.id !== undefined) map.set(li.id, inv);
+      });
+    });
+    return map;
+  }, [invoices]);
+
   if (loading) return <Loader size={40} centered minHeight="200px" />;
 
   if (!estimate) {
@@ -202,8 +249,9 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const lineItems: LineItemResponse[] = estimate.lineItems || [];
   const linkedIds = lineItems.map((li) => li.id!).filter(Boolean);
-  const allSelected = lineItems.length > 0 && lineItems.every((li) => selectedIds.has(li.id!));
-  const someSelected = lineItems.some((li) => selectedIds.has(li.id!));
+  const selectableItems = lineItems.filter((li) => !li.invoiced);
+  const allSelected = selectableItems.length > 0 && selectableItems.every((li) => selectedIds.has(li.id!));
+  const someSelected = selectableItems.some((li) => selectedIds.has(li.id!));
 
   const toggleRow = (id: number) => {
     setSelectedIds((prev) => {
@@ -217,8 +265,16 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(lineItems.map((li) => li.id!).filter(Boolean)));
+      setSelectedIds(new Set(selectableItems.map((li) => li.id!).filter(Boolean)));
     }
+  };
+
+  const toggleInvoiceExpand = (id: number) => {
+    setExpandedInvoiceIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
 
   return (
@@ -268,6 +324,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
               <StyledHeaderCell sx={COMPACT_CELL}>Product Code</StyledHeaderCell>
               <StyledHeaderCell sx={COMPACT_CELL}>Description</StyledHeaderCell>
               <StyledHeaderCell sx={COMPACT_CELL}>Type</StyledHeaderCell>
+              <StyledHeaderCell sx={COMPACT_CELL}>Status</StyledHeaderCell>
               <StyledHeaderCell align="right" sx={COMPACT_CELL}>Unit Price</StyledHeaderCell>
               <StyledHeaderCell align="right" sx={COMPACT_CELL}>Qty</StyledHeaderCell>
               <StyledHeaderCell align="right" sx={COMPACT_CELL}>VAT %</StyledHeaderCell>
@@ -281,25 +338,32 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
           <StyledTableBody>
             {lineItems.length === 0 && !showAddRow && (
               <StyledTableRow>
-                <StyledTableCell colSpan={11} align="center" sx={{ color: 'text.secondary', py: 3 }}>
+                <StyledTableCell colSpan={12} align="center" sx={{ color: 'text.secondary', py: 3 }}>
                   No line items yet
                 </StyledTableCell>
               </StyledTableRow>
             )}
 
-            {lineItems.map((item) => (
+            {lineItems.map((item) => {
+              const linkedInvoice = item.invoiced ? lineItemInvoiceMap.get(item.id!) : undefined;
+              return (
               <StyledTableRow
                 key={item.id}
-                onClick={() => toggleRow(item.id!)}
-                sx={{
-                  cursor: 'pointer',
-                  ...(selectedIds.has(item.id!) ? { backgroundColor: 'action.selected' } : {}),
-                }}
+                onClick={() => !item.invoiced && toggleRow(item.id!)}
+                sx={(theme) => ({
+                  cursor: item.invoiced ? 'default' : 'pointer',
+                  ...(item.invoiced
+                    ? { backgroundColor: theme.palette.warning.light + '22' }
+                    : selectedIds.has(item.id!)
+                    ? { backgroundColor: 'action.selected' }
+                    : {}),
+                })}
               >
                 <StyledTableCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }}>
                   <Checkbox
                     size="small"
                     checked={selectedIds.has(item.id!)}
+                    disabled={!!item.invoiced}
                     onChange={() => toggleRow(item.id!)}
                     onClick={(e) => e.stopPropagation()}
                     sx={{ p: 0 }}
@@ -320,6 +384,24 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                     variant="outlined"
                   />
                 </StyledTableCell>
+                <StyledTableCell sx={COMPACT_CELL}>
+                  {item.invoiced ? (
+                    <Tooltip title={linkedInvoice ? `Part of ${linkedInvoice.invoiceNumber || `Invoice #${linkedInvoice.id}`}` : 'Already invoiced'}>
+                      <Chip
+                        label={linkedInvoice
+                          ? linkedInvoice.invoiceNumber || `#${linkedInvoice.id}`
+                          : 'Invoiced'}
+                        size="small"
+                        color="warning"
+                        variant="filled"
+                        icon={<ReceiptLongIcon style={{ fontSize: '0.75rem' }} />}
+                        sx={{ fontSize: '0.7rem', height: 20, cursor: 'default' }}
+                      />
+                    </Tooltip>
+                  ) : (
+                    <Chip label="Available" size="small" color="success" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+                  )}
+                </StyledTableCell>
                 <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(item.unitPrice)}</StyledTableCell>
                 <StyledTableCell align="right" sx={COMPACT_CELL}>{item.quantity}</StyledTableCell>
                 <StyledTableCell align="right" sx={COMPACT_CELL}>
@@ -336,7 +418,8 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                   </Tooltip>
                 </ActionsCell>
               </StyledTableRow>
-            ))}
+              );
+            })}
 
             {showAddRow && (
               <StyledTableRow>
@@ -409,6 +492,9 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                   </Select>
                 </StyledTableCell>
 
+                {/* Status — empty for new rows */}
+                <StyledTableCell sx={COMPACT_CELL} />
+
                 {/* Unit Price */}
                 <StyledTableCell sx={{ ...COMPACT_CELL, minWidth: 120 }}>
                   <TextField
@@ -473,7 +559,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
             {!showAddRow && (
               <StyledTableRow sx={{ '&:hover': { background: 'inherit' } }}>
-                <StyledTableCell colSpan={11} sx={COMPACT_CELL}>
+                <StyledTableCell colSpan={12} sx={COMPACT_CELL}>
                   <Box
                     onClick={() => handleOpenAddRow(linkedIds)}
                     sx={(theme) => ({
@@ -501,6 +587,137 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
           </StyledTableBody>
         </StyledTable>
       </StyledTableContainer>
+
+      {/* ── Generated Invoices ── */}
+      {invoices.length > 0 && (
+        <>
+          <Divider sx={{ my: 2 }} />
+          <S.EstimateTableHeader>
+            <S.DetailsSectionTitle>Generated Invoices ({invoices.length})</S.DetailsSectionTitle>
+          </S.EstimateTableHeader>
+
+          <StyledTableContainer>
+            <StyledTable>
+              <StyledTableHead>
+                <TableRow>
+                  <StyledHeaderCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }} />
+                  <StyledHeaderCell sx={COMPACT_CELL}>Invoice #</StyledHeaderCell>
+                  <StyledHeaderCell sx={COMPACT_CELL}>Reference</StyledHeaderCell>
+                  <StyledHeaderCell sx={COMPACT_CELL}>Due Date</StyledHeaderCell>
+                  <StyledHeaderCell sx={COMPACT_CELL}>Created</StyledHeaderCell>
+                  <StyledHeaderCell align="right" sx={COMPACT_CELL}>Net</StyledHeaderCell>
+                  <StyledHeaderCell align="right" sx={COMPACT_CELL}>VAT</StyledHeaderCell>
+                  <StyledHeaderCell align="right" sx={COMPACT_CELL}>Total</StyledHeaderCell>
+                  <ActionsCell as={StyledHeaderCell} sx={COMPACT_CELL}>PDF</ActionsCell>
+                </TableRow>
+              </StyledTableHead>
+
+              <StyledTableBody>
+                {invoices.map((inv) => {
+                  const isExpanded = expandedInvoiceIds.has(inv.id!);
+                  const invLineItems: LineItemResponse[] = inv.lineItems || [];
+                  return (
+                    <React.Fragment key={inv.id}>
+                      {/* Invoice summary row */}
+                      <StyledTableRow
+                        onClick={() => toggleInvoiceExpand(inv.id!)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        <StyledTableCell sx={{ ...COMPACT_CELL, width: 36, px: '8px' }}>
+                          <IconButton size="small" sx={{ p: 0 }}>
+                            {isExpanded
+                              ? <KeyboardArrowDownIcon sx={{ fontSize: '1rem' }} />
+                              : <KeyboardArrowRightIcon sx={{ fontSize: '1rem' }} />}
+                          </IconButton>
+                        </StyledTableCell>
+                        <StyledTableCell sx={COMPACT_CELL}>
+                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: 'inherit' }}>
+                            {inv.invoiceNumber || `#${inv.id}`}
+                          </Typography>
+                        </StyledTableCell>
+                        <StyledTableCell sx={COMPACT_CELL}>{inv.reference || '—'}</StyledTableCell>
+                        <StyledTableCell sx={COMPACT_CELL}>
+                          {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
+                        </StyledTableCell>
+                        <StyledTableCell sx={COMPACT_CELL}>
+                          {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '—'}
+                        </StyledTableCell>
+                        <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(inv.totalNet)}</StyledTableCell>
+                        <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(inv.totalVat)}</StyledTableCell>
+                        <StyledTableCell align="right" sx={{ ...COMPACT_CELL, fontWeight: 600 }}>{fmt(inv.grandTotal)}</StyledTableCell>
+                        <ActionsCell sx={COMPACT_CELL} onClick={(e) => e.stopPropagation()}>
+                          <Tooltip title="View PDF">
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                disabled={!inv.presignedUrl}
+                                onClick={() => inv.presignedUrl && window.open(inv.presignedUrl, '_blank', 'noopener,noreferrer')}
+                              >
+                                <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </ActionsCell>
+                      </StyledTableRow>
+
+                      {/* Expanded line items for this invoice */}
+                      <TableRow sx={{ p: 0 }}>
+                        <StyledTableCell colSpan={9} sx={{ p: 0, border: 0 }}>
+                          <Collapse in={isExpanded} unmountOnExit>
+                            <Box sx={(theme) => ({ backgroundColor: theme.palette.action.hover, px: 2, py: 1 })}>
+                              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 0.75 }}>
+                                Line Items ({invLineItems.length})
+                              </Typography>
+                              <StyledTable size="small">
+                                <StyledTableHead>
+                                  <TableRow>
+                                    <StyledHeaderCell sx={COMPACT_CELL}>Product Code</StyledHeaderCell>
+                                    <StyledHeaderCell sx={COMPACT_CELL}>Description</StyledHeaderCell>
+                                    <StyledHeaderCell sx={COMPACT_CELL}>Type</StyledHeaderCell>
+                                    <StyledHeaderCell align="right" sx={COMPACT_CELL}>Unit Price</StyledHeaderCell>
+                                    <StyledHeaderCell align="right" sx={COMPACT_CELL}>Qty</StyledHeaderCell>
+                                    <StyledHeaderCell align="right" sx={COMPACT_CELL}>VAT %</StyledHeaderCell>
+                                    <StyledHeaderCell align="right" sx={COMPACT_CELL}>Net</StyledHeaderCell>
+                                    <StyledHeaderCell align="right" sx={COMPACT_CELL}>Total</StyledHeaderCell>
+                                  </TableRow>
+                                </StyledTableHead>
+                                <StyledTableBody>
+                                  {invLineItems.map((li) => (
+                                    <StyledTableRow key={li.id}>
+                                      <StyledTableCell sx={COMPACT_CELL}>{li.productCode}</StyledTableCell>
+                                      <StyledTableCell sx={COMPACT_CELL}>{li.productDescription}</StyledTableCell>
+                                      <StyledTableCell sx={COMPACT_CELL}>
+                                        <Chip
+                                          label={li.coreOrSub}
+                                          size="small"
+                                          color={li.coreOrSub === 'CORE' ? 'primary' : 'default'}
+                                          variant="outlined"
+                                        />
+                                      </StyledTableCell>
+                                      <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(li.unitPrice)}</StyledTableCell>
+                                      <StyledTableCell align="right" sx={COMPACT_CELL}>{li.quantity}</StyledTableCell>
+                                      <StyledTableCell align="right" sx={COMPACT_CELL}>
+                                        {li.vatRate !== undefined ? `${li.vatRate}%` : '—'}
+                                      </StyledTableCell>
+                                      <StyledTableCell align="right" sx={COMPACT_CELL}>{fmt(li.netAmount)}</StyledTableCell>
+                                      <StyledTableCell align="right" sx={{ ...COMPACT_CELL, fontWeight: 600 }}>{fmt(li.totalAmount)}</StyledTableCell>
+                                    </StyledTableRow>
+                                  ))}
+                                </StyledTableBody>
+                              </StyledTable>
+                            </Box>
+                          </Collapse>
+                        </StyledTableCell>
+                      </TableRow>
+                    </React.Fragment>
+                  );
+                })}
+              </StyledTableBody>
+            </StyledTable>
+          </StyledTableContainer>
+        </>
+      )}
     </>
   );
 };
