@@ -243,7 +243,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
                     <IconButton
                       size="small"
                       variant="outlined"
-                      color="danger"
+                      color="error"
                       onClick={() => handleDelete(document)}
                       aria-label="Delete document"
                     >
