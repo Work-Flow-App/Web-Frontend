@@ -88,5 +88,12 @@ export type {
 export { lineItemService } from './lineItem';
 export type { LineItemUpdateRequest } from './lineItem';
 
+export { visitLogService } from './visitLog';
+export type {
+  StepVisitLogCreateRequest,
+  StepVisitLogResponse,
+  StepVisitLogSummaryResponse,
+} from './visitLog';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';

@@ -25,6 +25,7 @@ import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
 import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
 import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
 import { JobEstimateTab } from '../JobDetailsTabs/tabs/JobEstimateTab';
+import { JobWorkLogsTab } from '../JobDetailsTabs/tabs/JobWorkLogsTab';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -163,6 +164,9 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'step-activity'} onClick={() => setActiveTab('step-activity')}>
             Step Activity
           </S.TabButton>
+          <S.TabButton active={activeTab === 'work-logs'} onClick={() => setActiveTab('work-logs')}>
+            Work Logs
+          </S.TabButton>
           <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
             Assets
           </S.TabButton>
@@ -200,6 +204,10 @@ export const JobDetailsView: React.FC = () => {
             ) : activeTab === 'assets' ? (
               <S.DetailsSection>
                 <JobAssetsSection jobId={job.id!} />
+              </S.DetailsSection>
+            ) : activeTab === 'work-logs' ? (
+              <S.DetailsSection>
+                <JobWorkLogsTab job={job} />
               </S.DetailsSection>
             ) : activeTab === 'estimate' ? (
               <S.DetailsSection>

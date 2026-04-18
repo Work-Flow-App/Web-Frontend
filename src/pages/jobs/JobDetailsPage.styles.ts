@@ -2525,3 +2525,52 @@ export const ActivityInputBar = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.5),
   flexWrap: 'wrap',
 }));
+
+// Work Logs Tab Styles
+export const WorkLogsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
+
+export const WorkLogsSummaryRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(3),
+  marginBottom: theme.spacing(1),
+  flexWrap: 'wrap',
+}));
+
+export const WorkLogsSummaryCard = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(2, 3),
+  minWidth: rem(140),
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const WorkLogsSummaryValue = styled(Typography)(({ theme }) => ({
+  fontSize: rem(20),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+}));
+
+export const WorkLogsTableHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: theme.spacing(2),
+}));
+
+export const ModalFormContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
+
+export const ModalFormRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+}));
