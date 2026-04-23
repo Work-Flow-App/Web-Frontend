@@ -23,6 +23,11 @@ export const LoginContainer = styled(Box)({
     padding: rem(10),
     gap: rem(10),
   },
+  '@media (max-width: 1024px)': {
+    padding: rem(0),
+    gap: rem(0),
+    overflow: 'auto',
+  },
 });
 
 // Frame 20 - Left Section
@@ -58,6 +63,21 @@ export const LeftSection = styled(Box)({
     minWidth: rem(340),
     maxWidth: rem(420),
   },
+  '@media (max-width: 1024px)': {
+    padding: `${rem(40)} ${rem(32)}`,
+    gap: rem(24),
+    minWidth: 'unset',
+    maxWidth: 'unset',
+    width: '100%',
+    flex: '1 1 auto',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    overflowY: 'auto',
+  },
+  '@media (max-width: 480px)': {
+    padding: `${rem(24)} ${rem(16)}`,
+    gap: rem(16),
+  },
 });
 
 export const FormContainer = styled(Box)({
@@ -84,6 +104,15 @@ export const FormContainer = styled(Box)({
     gap: rem(16),
     maxWidth: rem(360),
   },
+  '@media (max-width: 1024px)': {
+    maxWidth: rem(440),
+    gap: rem(20),
+    alignSelf: 'center',
+  },
+  '@media (max-width: 480px)': {
+    maxWidth: '100%',
+    gap: rem(16),
+  },
 });
 
 export const HeaderSection = styled(Box)({
@@ -106,6 +135,9 @@ export const HeaderSection = styled(Box)({
   '@media (max-width: 1366px)': {
     gap: rem(8),
   },
+  '@media (max-width: 1024px)': {
+    gap: rem(10),
+  },
 });
 
 export const Title = styled(Typography)(({ theme }) => ({
@@ -126,6 +158,12 @@ export const Title = styled(Typography)(({ theme }) => ({
   },
   '@media (max-width: 1366px)': {
     fontSize: rem(24),
+  },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(26),
+  },
+  '@media (max-width: 480px)': {
+    fontSize: rem(22),
   },
 }));
 
@@ -154,6 +192,14 @@ export const Subtitle = styled(Typography)(() => ({
     fontSize: rem(12),
     lineHeight: rem(18),
   },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(14),
+    lineHeight: rem(20),
+  },
+  '@media (max-width: 480px)': {
+    fontSize: rem(13),
+    lineHeight: rem(19),
+  },
 }));
 
 export const FormWrapper = styled('form')({
@@ -169,6 +215,12 @@ export const FormWrapper = styled('form')({
   },
   '@media (max-width: 1366px)': {
     gap: rem(10),
+  },
+  '@media (max-width: 1024px)': {
+    gap: rem(14),
+  },
+  '@media (max-width: 480px)': {
+    gap: rem(12),
   },
 });
 
@@ -193,6 +245,10 @@ export const ForgotPasswordLink = styled(Box)(({ theme }) => ({
     fontSize: rem(12),
     marginTop: rem(-4),
   },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(14),
+    marginTop: rem(-6),
+  },
 }));
 
 export const DividerContainer = styled(Box)({
@@ -211,6 +267,10 @@ export const DividerContainer = styled(Box)({
   },
   '@media (max-width: 1366px)': {
     gap: rem(12),
+    margin: `${rem(4)} 0`,
+  },
+  '@media (max-width: 1024px)': {
+    gap: rem(16),
     margin: `${rem(4)} 0`,
   },
 });
@@ -233,6 +293,9 @@ export const DividerText = styled(Typography)(({ theme }) => ({
   },
   '@media (max-width: 1366px)': {
     fontSize: rem(10),
+  },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(12),
   },
 }));
 
@@ -257,6 +320,9 @@ export const SignUpLink = styled(Box)(({ theme }) => ({
   },
   '@media (max-width: 1366px)': {
     fontSize: rem(12),
+  },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(14),
   },
 }));
 
@@ -284,6 +350,9 @@ export const RightSection = styled(Box)({
   '@media (max-width: 1366px)': {
     padding: `${rem(20)} ${rem(12)}`,
     gap: rem(28),
+  },
+  '@media (max-width: 1024px)': {
+    display: 'none',
   },
   '&::before': {
     content: '""',
@@ -385,12 +454,10 @@ export const FeaturesGrid = styled(Box)({
   '@media (max-width: 1536px)': {
     maxWidth: rem(900),
     height: rem(360),
-    transform: 'scale(0.9)',
   },
   '@media (max-width: 1366px)': {
-    maxWidth: rem(780),
-    height: rem(320),
-    transform: 'scale(0.8)',
+    maxWidth: rem(600),
+    height: rem(340),
   },
   '& > div': {
     flex: '0 0 auto',
@@ -402,6 +469,9 @@ export const FeaturesGrid = styled(Box)({
     marginRight: rem(-80),
     opacity: 0.7,
     transform: 'scale(1)',
+    '@media (max-width: 1366px)': {
+      marginRight: rem(-100),
+    },
   },
   '& > div.card-center': {
     order: 1,
@@ -415,6 +485,9 @@ export const FeaturesGrid = styled(Box)({
     marginLeft: rem(-80),
     opacity: 0.7,
     transform: 'scale(1)',
+    '@media (max-width: 1366px)': {
+      marginLeft: rem(-100),
+    },
   },
 });
 
@@ -498,6 +571,16 @@ export const GoogleButton = styled(Box)(({ theme }) => ({
     '& svg': {
       width: rem(14),
       height: rem(14),
+    },
+  },
+  '@media (max-width: 1024px)': {
+    height: rem(44),
+    padding: `${rem(11)} ${rem(14)}`,
+    fontSize: rem(14),
+    gap: rem(10),
+    '& svg': {
+      width: rem(18),
+      height: rem(18),
     },
   },
 }));
