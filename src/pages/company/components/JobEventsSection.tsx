@@ -328,7 +328,7 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
   return (
     <S.SummaryCard>
-      <S.SummaryTitle>Ongoing Total Jobs</S.SummaryTitle>
+      <S.SummaryTitle>Workflow Pipeline</S.SummaryTitle>
 
       <S.SummaryStatRow>
         <div>
@@ -360,7 +360,7 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
         <>
           <S.SummaryDivider />
           <div>
-            <S.SummarySectionLabel>Pending Steps</S.SummarySectionLabel>
+            <S.SummarySectionLabel>Empty Steps</S.SummarySectionLabel>
             {noJobs.map((g) => (
               <S.SummaryRow key={g.stepName}>
                 <S.SummaryRowName>{g.stepName}</S.SummaryRowName>
@@ -387,7 +387,6 @@ export const JobEventsSection: React.FC = () => {
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [allJobs, setAllJobs] = useState<JobResponse[]>([]);
-  const [allJobWorkflows, setAllJobWorkflows] = useState<JobWorkflowResponse[]>([]);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [estimateSentTotal, setEstimateSentTotal] = useState(0);
@@ -396,9 +395,8 @@ export const JobEventsSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [jobsRes, jobWorkflowsRes, workflowsRes, templatesRes, customersRes] = await Promise.all([
+        const [jobsRes, workflowsRes, templatesRes, customersRes] = await Promise.all([
           jobService.getAllJobs(),
-          jobWorkflowService.getAllJobWorkflows(),
           workflowService.getAllWorkflows(),
           jobTemplateService.getAllTemplates(),
           customerService.getAllCustomers(),
@@ -406,7 +404,6 @@ export const JobEventsSection: React.FC = () => {
         setTemplates(Array.isArray(templatesRes.data) ? templatesRes.data : []);
 
         const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
-        const jobWorkflows: JobWorkflowResponse[] = Array.isArray(jobWorkflowsRes.data) ? jobWorkflowsRes.data : [];
         const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
         const customers: CustomerResponse[] = Array.isArray(customersRes.data) ? customersRes.data : [];
 
@@ -419,7 +416,6 @@ export const JobEventsSection: React.FC = () => {
         setCustomersMap(cMap);
 
         setAllJobs(jobs);
-        setAllJobWorkflows(jobWorkflows);
         setWorkflows(wfs);
 
         const defaultId = wfs[0]?.id ?? null;
@@ -474,12 +470,19 @@ export const JobEventsSection: React.FC = () => {
     if (workflowId == null) { setGroups([]); return; }
 
     // Jobs that belong to this workflow
-    const filteredJobIds = new Set(
-      allJobs.filter((j) => j.workflowId === workflowId).map((j) => j.id!)
-    );
+    const filteredJobs = allJobs.filter((j) => j.workflowId === workflowId && j.id != null);
 
-    // Job workflows whose job is in the filtered set
-    const filteredJobWorkflows = allJobWorkflows.filter((jw) => filteredJobIds.has(jw.jobId!));
+    // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
+    // returns stale or incomplete data; per-job fetch matches the Job Details page.
+    const jwResults = await Promise.allSettled(
+      filteredJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
+    );
+    const filteredJobWorkflows: JobWorkflowResponse[] = [];
+    jwResults.forEach((r) => {
+      if (r.status === 'fulfilled' && r.value?.data) {
+        filteredJobWorkflows.push(r.value.data);
+      }
+    });
 
     // Template steps for this workflow
     let templateSteps: WorkflowStepResponse[] = [];
@@ -489,7 +492,7 @@ export const JobEventsSection: React.FC = () => {
     } catch { /* ignore */ }
 
     setGroups(buildGroups(templateSteps, filteredJobWorkflows));
-  }, [allJobs, allJobWorkflows]);
+  }, [allJobs]);
 
   useEffect(() => {
     if (!loading) recomputeGroups(selectedWorkflowId);
