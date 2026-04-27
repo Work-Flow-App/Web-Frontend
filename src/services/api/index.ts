@@ -68,6 +68,9 @@ export type {
   JobWorkflowStepUpdateRequest,
 } from './jobWorkflow';
 
+export { workerJobWorkflowService, WorkerJobWorkflowUploadAttachmentTypeEnum } from './workerJobWorkflow';
+export type { WorkerAssignedStepResponse } from './workerJobWorkflow';
+
 export { stepActivityService, UploadAttachmentTypeEnum } from './stepActivity';
 export type {
   StepCommentCreateRequest,
