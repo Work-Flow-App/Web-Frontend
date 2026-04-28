@@ -59,18 +59,19 @@ export const TopNav: React.FC<TopNavProps> = ({
           <Box sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: rem(8),
-            '& img': {
-              width: rem(28),
-              height: rem(28),
+            justifyContent: 'center',
+            '& > div': {
+              gap: 0,
             },
-            '& > div > div': {
-              fontSize: rem(18),
-              lineHeight: rem(18),
-              color: floowColors.white,
+            '& img': {
+              height: rem(28),
+              width: 'auto',
+              maxWidth: '120px',
+              objectFit: 'contain',
+              display: 'block',
             },
           }}>
-            <FloowLogo variant="light" showText={true} />
+            <FloowLogo variant="white" iconOnly />
           </Box>
         </CenterSection>
 

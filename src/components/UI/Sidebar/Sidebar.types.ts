@@ -75,4 +75,9 @@ export interface SidebarProps {
    * Custom sx props for Material-UI styling
    */
   sx?: SxProps<Theme>;
+
+  /**
+   * Optional subtitle shown next to the brand name on mobile (e.g. "Worker", "Company")
+   */
+  subtitle?: string;
 }

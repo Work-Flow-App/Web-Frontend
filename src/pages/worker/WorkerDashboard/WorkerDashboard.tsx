@@ -1,310 +1,164 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  CircularProgress,
-  Select,
-  MenuItem,
-  FormControl,
-  Box,
-  LinearProgress,
-  Typography,
-} from '@mui/material';
+import { CircularProgress, Box, Alert } from '@mui/material';
+import { useJsApiLoader } from '@react-google-maps/api';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import GoogleMap from '../../../components/UI/GoogleMap/GoogleMap';
+import type { PlaceDetails } from '../../../components/UI/GoogleMap';
+import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../config/googleMaps';
 import { workerJobWorkflowService } from '../../../services/api';
-import type {
-  JobWorkflowResponse,
-  WorkerAssignedStepResponse,
-} from '../../../services/api';
+import type { WorkerAssignedStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { floowColors } from '../../../theme/colors';
-import * as S from '../../company/components/JobEventsSection.styles';
-import { PageContainer } from '../../company/CompanyPage.styles';
+import * as M from '../styles/WorkerMobile.styles';
 
-const STEP_COLORS = [
-  floowColors.info.main,
-  floowColors.warning.main,
-  floowColors.chart.quaternary,
-  floowColors.success.main,
-  floowColors.indigo.main,
-  floowColors.grey[500],
-  floowColors.error.main,
-  floowColors.chart.primary,
+type StatusKey =
+  | 'INITIATED'
+  | 'NOT_STARTED'
+  | 'PENDING'
+  | 'ONGOING'
+  | 'STARTED'
+  | 'COMPLETED'
+  | 'SKIPPED';
+
+interface StatusMeta {
+  key: StatusKey;
+  label: string;
+  iconBg: string;
+  iconFg: string;
+  bar: string;
+  Icon: React.ElementType;
+}
+
+const STATUS_META: StatusMeta[] = [
+  {
+    key: 'INITIATED',
+    label: 'Initiated',
+    iconBg: 'rgba(139, 92, 246, 0.14)',
+    iconFg: '#7C3AED',
+    bar: '#8B5CF6',
+    Icon: AutoAwesomeIcon,
+  },
+  {
+    key: 'NOT_STARTED',
+    label: 'Not Started',
+    iconBg: 'rgba(107, 114, 128, 0.16)',
+    iconFg: '#374151',
+    bar: '#4B5563',
+    Icon: AccessTimeIcon,
+  },
+  {
+    key: 'PENDING',
+    label: 'Pending',
+    iconBg: 'rgba(239, 68, 68, 0.14)',
+    iconFg: '#B91C1C',
+    bar: '#EF4444',
+    Icon: ReportProblemOutlinedIcon,
+  },
+  {
+    key: 'ONGOING',
+    label: 'Ongoing',
+    iconBg: 'rgba(59, 130, 246, 0.14)',
+    iconFg: '#1D4ED8',
+    bar: '#3B82F6',
+    Icon: AutorenewIcon,
+  },
+  {
+    key: 'STARTED',
+    label: 'Started',
+    iconBg: 'rgba(37, 99, 235, 0.14)',
+    iconFg: '#1E40AF',
+    bar: '#2563EB',
+    Icon: PlayCircleFilledWhiteIcon,
+  },
+  {
+    key: 'COMPLETED',
+    label: 'Completed',
+    iconBg: 'rgba(16, 185, 129, 0.16)',
+    iconFg: '#047857',
+    bar: '#10B981',
+    Icon: CheckCircleIcon,
+  },
+  {
+    key: 'SKIPPED',
+    label: 'Skipped',
+    iconBg: 'rgba(156, 163, 175, 0.18)',
+    iconFg: '#4B5563',
+    bar: '#9CA3AF',
+    Icon: SkipNextIcon,
+  },
 ];
 
-const getStepColor = (index: number): string => STEP_COLORS[index % STEP_COLORS.length];
-
-const DONE_STATUSES = new Set<string>([
+const FINISHED_STATUSES = new Set<string>([
   JobWorkflowStepResponseStatusEnum.Completed,
   JobWorkflowStepResponseStatusEnum.Skipped,
 ]);
 
-const ACTIVE_STATUSES = new Set<string>([
-  JobWorkflowStepResponseStatusEnum.Started,
-  JobWorkflowStepResponseStatusEnum.Ongoing,
-]);
+type LocationFilter = 'ALL' | StatusKey;
 
-interface StepGroup {
-  stepName: string;
-  orderIndex: number;
-  count: number;
-  color: string;
-  steps: WorkerAssignedStepResponse[];
+const LOCATION_FILTERS: { key: LocationFilter; label: string }[] = [
+  { key: 'ALL', label: 'All' },
+  { key: 'ONGOING', label: 'Ongoing' },
+  { key: 'STARTED', label: 'Started' },
+  { key: 'INITIATED', label: 'Initiated' },
+  { key: 'NOT_STARTED', label: 'Not Started' },
+  { key: 'COMPLETED', label: 'Completed' },
+];
+
+interface LocationItem {
+  key: string;
+  title: string;
+  subtitle: string;
+  customer: string;
+  status: StatusKey;
+  latitude?: number;
+  longitude?: number;
+  addressString: string;
+  stepId?: number;
+  jobRef?: number;
 }
 
-const buildGroups = (assignedSteps: WorkerAssignedStepResponse[]): StepGroup[] => {
-  const groupMap = new Map<string, StepGroup>();
-
-  assignedSteps.forEach((s) => {
-    const name = s.step?.name || 'Unnamed Step';
-    if (!groupMap.has(name)) {
-      groupMap.set(name, {
-        stepName: name,
-        orderIndex: s.step?.orderIndex ?? 999,
-        count: 0,
-        color: getStepColor(groupMap.size),
-        steps: [],
-      });
-    }
-    const group = groupMap.get(name)!;
-    group.count += 1;
-    group.steps.push(s);
-  });
-
-  return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
+const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
+  if (!addr) return '';
+  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
 };
 
-const statCardSx = {
-  bgcolor: '#fff',
-  borderRadius: '12px',
-  border: '1px solid #e5e7eb',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-  p: '20px 24px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
-};
-
-const StatBoxesRow: React.FC<{
-  totalSteps: number;
-  pendingSteps: number;
-  ongoingSteps: number;
-  completedSteps: number;
-}> = ({ totalSteps, pendingSteps, ongoingSteps, completedSteps }) => {
-  const progressPct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
-
-  return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-      <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Pending Steps
-        </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {pendingSteps}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <PendingActionsIcon sx={{ fontSize: '14px', color: floowColors.warning.main }} />
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.warning.main }}>
-            awaiting action
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Ongoing (My Progress)
-        </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {ongoingSteps}
-        </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={progressPct}
-          sx={{ borderRadius: '2px', height: '4px', bgcolor: floowColors.grey[100], '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main } }}
-        />
-        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>
-          {progressPct}% Complete
-        </Typography>
-      </Box>
-
-      <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Completed Steps
-        </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {completedSteps}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <CheckCircleOutlineIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
-            done
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  );
-};
-
-const PIPELINE_MAX_VISIBLE = 6;
-
-const PipelineBar: React.FC<{
-  groups: StepGroup[];
-  activeStep: string | null;
-  onSelectStep: (name: string) => void;
-}> = ({ groups, activeStep, onSelectStep }) => {
-  const visible = groups.slice(0, PIPELINE_MAX_VISIBLE);
-  const hidden = groups.length - PIPELINE_MAX_VISIBLE;
-
-  return (
-    <S.PipelineBar>
-      {visible.map((group, index) => (
-        <React.Fragment key={group.stepName}>
-          {index > 0 && <S.PipelineArrow>›</S.PipelineArrow>}
-          <S.PipelineChip
-            chipColor={group.color}
-            isActive={activeStep === group.stepName}
-            onClick={() => onSelectStep(group.stepName)}
-          >
-            <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
-            <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
-          </S.PipelineChip>
-        </React.Fragment>
-      ))}
-      {hidden > 0 && (
-        <>
-          <S.PipelineArrow>›</S.PipelineArrow>
-          <S.PipelineMore>···</S.PipelineMore>
-        </>
-      )}
-    </S.PipelineBar>
-  );
-};
-
-const EventsList: React.FC<{
-  groups: StepGroup[];
-  onSelectStep: (group: StepGroup) => void;
-}> = ({ groups, onSelectStep }) => {
-  const maxCount = Math.max(...groups.map((g) => g.count), 1);
-
-  if (groups.length === 0) {
-    return (
-      <S.EventsCard>
-        <S.EmptyState>
-          <WorkOutlineIcon sx={{ fontSize: 40, opacity: 0.3 }} />
-          No assigned steps yet
-        </S.EmptyState>
-      </S.EventsCard>
-    );
-  }
-
-  return (
-    <S.EventsCard>
-      <S.EventsCardHeader>
-        <S.EventsCardTitle>My Step Events</S.EventsCardTitle>
-        <S.EventsCardSubtitle>Steps assigned to you, grouped by stage</S.EventsCardSubtitle>
-      </S.EventsCardHeader>
-
-      {groups.map((group) => {
-        const fillPct = (group.count / maxCount) * 100;
-        const ongoingCount = group.steps.filter((s) => ACTIVE_STATUSES.has(s.step?.status ?? '')).length;
-        const label = ongoingCount > 0
-          ? `${ongoingCount} active · ${group.count} total`
-          : `${group.count} pending`;
-
-        return (
-          <S.EventRow key={group.stepName} onClick={() => onSelectStep(group)}>
-            <S.CountBadge badgeColor={group.color}>{group.count}</S.CountBadge>
-            <S.EventInfo>
-              <S.EventNameRow>
-                <S.EventName>{group.stepName}</S.EventName>
-              </S.EventNameRow>
-              <S.EventSubText>{label}</S.EventSubText>
-              <S.ProgressTrack>
-                <S.ProgressFill fillColor={group.color} fillPct={fillPct} />
-              </S.ProgressTrack>
-            </S.EventInfo>
-            <S.EventArrow>
-              <ChevronRightIcon sx={{ color: floowColors.grey[300] }} />
-            </S.EventArrow>
-          </S.EventRow>
-        );
-      })}
-    </S.EventsCard>
-  );
-};
-
-const SummaryPanel: React.FC<{
-  groups: StepGroup[];
-  workflows: JobWorkflowResponse[];
-}> = ({ groups, workflows }) => {
-  const totalSteps = groups.reduce((s, g) => s + g.count, 0);
-  const activeSteps = groups
-    .flatMap((g) => g.steps)
-    .filter((s) => ACTIVE_STATUSES.has(s.step?.status ?? ''))
-    .length;
-
-  const withSteps = groups.filter((g) => g.count > 0);
-
-  return (
-    <S.SummaryCard>
-      <S.SummaryTitle>My Pipeline</S.SummaryTitle>
-
-      <S.SummaryStatRow>
-        <div>
-          <S.SummaryBubble bubbleColor={floowColors.info.main}>{totalSteps}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Total</S.SummaryBubbleLabel>
-        </div>
-        <div>
-          <S.SummaryBubble bubbleColor={floowColors.success.main}>{activeSteps}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Active</S.SummaryBubbleLabel>
-        </div>
-        <div>
-          <S.SummaryBubble bubbleColor={floowColors.indigo.main}>{workflows.length}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Workflows</S.SummaryBubbleLabel>
-        </div>
-      </S.SummaryStatRow>
-
-      {withSteps.length > 0 && (
-        <>
-          <S.SummaryDivider />
-          <div>
-            <S.SummarySectionLabel>By Stage</S.SummarySectionLabel>
-            {withSteps.map((g) => (
-              <S.SummaryRow key={g.stepName}>
-                <S.SummaryRowName>{g.stepName}</S.SummaryRowName>
-                <S.SummaryRowCount countColor={g.color}>{g.count}</S.SummaryRowCount>
-              </S.SummaryRow>
-            ))}
-          </div>
-        </>
-      )}
-    </S.SummaryCard>
-  );
+// Map worker status → marker color bucket used by the shared GoogleMap component
+const toMarkerStatus = (status: StatusKey): string => {
+  if (status === 'COMPLETED') return 'COMPLETED';
+  if (status === 'STARTED' || status === 'ONGOING') return 'IN_PROGRESS';
+  if (status === 'NOT_STARTED' || status === 'PENDING' || status === 'INITIATED') return 'PENDING';
+  return 'CANCELLED';
 };
 
 export const WorkerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { showError } = useSnackbar();
   const [loading, setLoading] = useState(true);
-  const [workflows, setWorkflows] = useState<JobWorkflowResponse[]>([]);
   const [allAssignedSteps, setAllAssignedSteps] = useState<WorkerAssignedStepResponse[]>([]);
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | 'ALL'>('ALL');
-  const [activeStep, setActiveStep] = useState<string | null>(null);
+  const [locationFilter, setLocationFilter] = useState<LocationFilter>('ALL');
+  const [markers, setMarkers] = useState<PlaceDetails[]>([]);
+  const [focusedMarker, setFocusedMarker] = useState<PlaceDetails | null>(null);
+
+  const { isLoaded: mapsApiLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
+    libraries: GOOGLE_MAPS_CONFIG.libraries,
+  });
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const [workflowsRes, stepsRes] = await Promise.all([
-          workerJobWorkflowService.getMyJobWorkflows(),
-          workerJobWorkflowService.getMyAssignedSteps(),
-        ]);
-        setWorkflows(Array.isArray(workflowsRes.data) ? workflowsRes.data : []);
+        const stepsRes = await workerJobWorkflowService.getMyAssignedSteps();
         setAllAssignedSteps(Array.isArray(stepsRes.data) ? stepsRes.data : []);
       } catch (err) {
         console.error('Failed to load worker dashboard:', err);
@@ -316,97 +170,272 @@ export const WorkerDashboard: React.FC = () => {
     load();
   }, [showError]);
 
-  const filteredSteps = selectedWorkflowId === 'ALL'
-    ? allAssignedSteps
-    : allAssignedSteps.filter((s) => {
-        const workflow = workflows.find((w) =>
-          w.steps?.some((step) => step.id === s.step?.id),
-        );
-        return workflow?.id === selectedWorkflowId;
+  const counts = useMemo(() => {
+    const map: Record<StatusKey, number> = {
+      INITIATED: 0,
+      NOT_STARTED: 0,
+      PENDING: 0,
+      ONGOING: 0,
+      STARTED: 0,
+      COMPLETED: 0,
+      SKIPPED: 0,
+    };
+    allAssignedSteps.forEach((s) => {
+      const key = (s.step?.status || 'NOT_STARTED').toUpperCase() as StatusKey;
+      if (key in map) map[key] += 1;
+    });
+    return map;
+  }, [allAssignedSteps]);
+
+  const totalSteps = allAssignedSteps.length;
+  const finishedSteps = allAssignedSteps.filter((s) =>
+    FINISHED_STATUSES.has(s.step?.status ?? ''),
+  ).length;
+  const completionPct =
+    totalSteps > 0 ? Math.round((finishedSteps / totalSteps) * 1000) / 10 : 0;
+  const maxBarValue = Math.max(...Object.values(counts), 1);
+
+  const locations: LocationItem[] = useMemo(() => {
+    const seen = new Map<string, LocationItem>();
+    allAssignedSteps.forEach((s) => {
+      const formatted = formatAddress(s.jobAddress);
+      if (!formatted) return;
+      const status = (s.step?.status || 'NOT_STARTED').toUpperCase() as StatusKey;
+      // Group by address; keep the most "active" status if duplicate addresses
+      const existing = seen.get(formatted);
+      if (existing) {
+        const priority: StatusKey[] = ['ONGOING', 'STARTED', 'INITIATED', 'PENDING', 'NOT_STARTED', 'COMPLETED', 'SKIPPED'];
+        if (priority.indexOf(status) < priority.indexOf(existing.status)) {
+          existing.status = status;
+          existing.stepId = s.step?.id;
+        }
+        return;
+      }
+      seen.set(formatted, {
+        key: formatted,
+        title: s.jobAddress?.street || s.customer?.name || 'Job site',
+        subtitle: formatted,
+        customer: s.customer?.name || '',
+        status,
+        latitude: s.jobAddress?.latitude ?? undefined,
+        longitude: s.jobAddress?.longitude ?? undefined,
+        addressString: formatted,
+        stepId: s.step?.id,
+        jobRef: s.jobRef ?? s.jobId,
+      });
+    });
+    return Array.from(seen.values());
+  }, [allAssignedSteps]);
+
+  const filteredLocations = useMemo(() => {
+    if (locationFilter === 'ALL') return locations;
+    return locations.filter((l) => l.status === locationFilter);
+  }, [locations, locationFilter]);
+
+  // Build PlaceDetails markers (geocoding any addresses without coordinates)
+  useEffect(() => {
+    if (!mapsApiLoaded || locations.length === 0) {
+      setMarkers([]);
+      return;
+    }
+
+    let cancelled = false;
+    const geocoder = new google.maps.Geocoder();
+
+    const geocodeOne = (address: string): Promise<{ lat: number; lng: number } | null> =>
+      new Promise((resolve) => {
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results?.[0]?.geometry?.location) {
+            resolve({
+              lat: results[0].geometry.location.lat(),
+              lng: results[0].geometry.location.lng(),
+            });
+          } else {
+            resolve(null);
+          }
+        });
       });
 
-  const groups = buildGroups(filteredSteps);
-  const totalSteps = filteredSteps.length;
-  const pendingSteps = filteredSteps.filter((s) => !DONE_STATUSES.has(s.step?.status ?? '')).length;
-  const ongoingSteps = filteredSteps.filter((s) => ACTIVE_STATUSES.has(s.step?.status ?? '')).length;
-  const completedSteps = filteredSteps.filter(
-    (s) => s.step?.status === JobWorkflowStepResponseStatusEnum.Completed,
-  ).length;
+    const build = async () => {
+      const resolved: PlaceDetails[] = [];
+      for (const loc of locations) {
+        let lat = loc.latitude;
+        let lng = loc.longitude;
+        if (lat == null || lng == null) {
+          const geo = await geocodeOne(loc.addressString);
+          if (!geo) continue;
+          lat = geo.lat;
+          lng = geo.lng;
+        }
+        resolved.push({
+          address: loc.addressString,
+          name: loc.customer || loc.title,
+          location: { lat, lng },
+          jobLocationData: {
+            jobId: loc.jobRef ?? 0,
+            status: toMarkerStatus(loc.status),
+            customerName: loc.customer || undefined,
+          },
+        });
+      }
+      if (!cancelled) setMarkers(resolved);
+    };
 
-  const handleSelectStep = useCallback((group: StepGroup) => {
-    setActiveStep(group.stepName);
-    const firstStep = group.steps[0];
-    if (firstStep?.step?.id) {
-      navigate(`/worker/steps/${firstStep.step.id}`);
-    }
-  }, [navigate]);
+    build();
+    return () => {
+      cancelled = true;
+    };
+  }, [mapsApiLoaded, locations]);
 
-  const handlePipelineSelect = (stepName: string) => {
-    const group = groups.find((g) => g.stepName === stepName);
-    if (group) handleSelectStep(group);
-  };
+  const filteredMarkers = useMemo(() => {
+    if (locationFilter === 'ALL') return markers;
+    const allowedAddresses = new Set(filteredLocations.map((l) => l.addressString));
+    return markers.filter((m) => allowedAddresses.has(m.address));
+  }, [markers, locationFilter, filteredLocations]);
+
+  const handleLocationCardClick = useCallback(
+    (loc: LocationItem) => {
+      const marker = markers.find((m) => m.address === loc.addressString);
+      if (marker) {
+        setFocusedMarker(marker);
+        // Smooth-scroll the map into view on mobile so user sees the focus
+        const mapEl = document.getElementById('worker-job-locations-map');
+        if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (loc.stepId) navigate(`/worker/steps/${loc.stepId}`);
+    },
+    [markers, navigate],
+  );
+
+  if (loading) {
+    return (
+      <M.WorkerShell>
+        <M.LoadingBox>
+          <CircularProgress size={28} />
+        </M.LoadingBox>
+      </M.WorkerShell>
+    );
+  }
+
+  const showMap = isGoogleMapsConfigured() && locations.length > 0;
 
   return (
-    <PageContainer>
-      <S.SectionWrapper>
-        <S.SectionHeader>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <S.SectionTitle>My Work</S.SectionTitle>
+    <M.WorkerShell>
+      <M.WorkerHeader>
+        <h1>Task Overview</h1>
+      </M.WorkerHeader>
 
-          {workflows.length > 0 && (
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Select
-                value={selectedWorkflowId}
-                onChange={(e) =>
-                  setSelectedWorkflowId(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))
-                }
-                displayEmpty
-                startAdornment={
-                  <AccountTreeOutlinedIcon sx={{ fontSize: 16, mr: 0.5, color: floowColors.text.muted }} />
-                }
-                sx={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: floowColors.text.primary,
-                  bgcolor: floowColors.white,
-                  borderRadius: '8px',
-                }}
-              >
-                <MenuItem value="ALL" sx={{ fontSize: 13 }}>All My Workflows</MenuItem>
-                {workflows.map((wf) => (
-                  <MenuItem key={wf.id} value={wf.id} sx={{ fontSize: 13 }}>
-                    Workflow #{wf.id}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
+      <M.HeroCompletionCard>
+        <span className="label">Overall Completion</span>
+        <span className="value">{completionPct}%</span>
+        <M.HeroProgressTrack>
+          <M.HeroProgressFill pct={completionPct} />
+        </M.HeroProgressTrack>
+        <span className="meta">
+          {finishedSteps} of {totalSteps} task{totalSteps === 1 ? '' : 's'} finished
+        </span>
+      </M.HeroCompletionCard>
+
+      <M.SectionTitle>Task Breakdown</M.SectionTitle>
+
+      <M.BreakdownGrid>
+        {STATUS_META.map(({ key, label, iconBg, iconFg, Icon }) => (
+          <M.BreakdownTile key={key} iconBg={iconBg} iconFg={iconFg}>
+            <div className="icon">
+              <Icon />
+            </div>
+            <span className="count">{counts[key]}</span>
+            <span className="name">{label}</span>
+          </M.BreakdownTile>
+        ))}
+      </M.BreakdownGrid>
+
+      <M.DistributionCard>
+        <h3>Status Distribution</h3>
+        {STATUS_META.map(({ key, label, bar }) => {
+          const value = counts[key];
+          const pct = (value / maxBarValue) * 100;
+          return (
+            <M.DistributionRow key={key}>
+              <span className="label">{label}</span>
+              <M.DistributionBar>
+                <M.DistributionBarFill pct={pct} fg={bar} />
+              </M.DistributionBar>
+              <span className="count">{value}</span>
+            </M.DistributionRow>
+          );
+        })}
+      </M.DistributionCard>
+
+      <M.SectionTitle>Job Locations</M.SectionTitle>
+
+      <M.FilterTabs>
+        {LOCATION_FILTERS.map(({ key, label }) => (
+          <M.FilterTab
+            key={key}
+            active={locationFilter === key}
+            onClick={() => setLocationFilter(key)}
+          >
+            {label}
+          </M.FilterTab>
+        ))}
+      </M.FilterTabs>
+
+      {showMap && (
+        <Box
+          id="worker-job-locations-map"
+          sx={{
+            position: 'relative',
+            height: { xs: 260, sm: 360 },
+            borderRadius: '14px',
+            overflow: 'hidden',
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+          }}
+        >
+          <GoogleMap
+            markers={filteredMarkers}
+            focusedMarker={focusedMarker}
+            autoFitBounds
+            showSearchBox={false}
+            showDirections
+            height="100%"
+          />
         </Box>
-      </S.SectionHeader>
-
-      {!loading && (
-        <StatBoxesRow
-          totalSteps={totalSteps}
-          pendingSteps={pendingSteps}
-          ongoingSteps={ongoingSteps}
-          completedSteps={completedSteps}
-        />
       )}
 
-        {loading ? (
-          <S.LoadingBox>
-            <CircularProgress size={28} />
-          </S.LoadingBox>
-        ) : (
-          <>
-            <PipelineBar groups={groups} activeStep={activeStep} onSelectStep={handlePipelineSelect} />
-            <S.ContentRow>
-              <EventsList groups={groups} onSelectStep={handleSelectStep} />
-              <SummaryPanel groups={groups} workflows={workflows} />
-            </S.ContentRow>
-          </>
-        )}
-      </S.SectionWrapper>
-    </PageContainer>
+      {!isGoogleMapsConfigured() && locations.length > 0 && (
+        <Alert severity="info" sx={{ borderRadius: '12px', fontSize: 13 }}>
+          Map view is disabled — Google Maps API key is not configured.
+        </Alert>
+      )}
+
+      {filteredLocations.length === 0 ? (
+        <M.EmptyState>
+          <WorkOutlineIcon />
+          <span>No job locations match this filter.</span>
+        </M.EmptyState>
+      ) : (
+        <M.TaskList>
+          {filteredLocations.map((loc) => (
+            <M.LocationCard key={loc.key} onClick={() => handleLocationCardClick(loc)}>
+              <div className="icon">
+                <LocationOnOutlinedIcon />
+              </div>
+              <div className="body">
+                <span className="title">{loc.customer || loc.title}</span>
+                <span className="meta">{loc.subtitle}</span>
+              </div>
+              <span className="chevron">
+                <ChevronRightIcon />
+              </span>
+            </M.LocationCard>
+          ))}
+        </M.TaskList>
+      )}
+    </M.WorkerShell>
   );
 };
+
+export default WorkerDashboard;

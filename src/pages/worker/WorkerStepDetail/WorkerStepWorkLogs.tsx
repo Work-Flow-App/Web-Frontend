@@ -1,30 +1,22 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { TableRow } from '@mui/material';
+import { Box } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AddIcon from '@mui/icons-material/Add';
+import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import type { StepVisitLogResponse } from '../../../services/api';
 import { workerJobWorkflowService } from '../../../services/api';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../components/UI/GlobalModal';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { Button } from '../../../components/UI/Button';
-import {
-  StyledTableContainer,
-  StyledTable,
-  StyledTableHead,
-  StyledTableBody,
-  StyledTableRow,
-  StyledHeaderCell,
-  StyledTableCell,
-} from '../../../components/UI/Table/Table.styles';
 import { AddWorkLogModal } from './AddWorkLogModal';
-import * as S from '../../jobs/JobDetailsPage.styles';
+import * as M from '../styles/WorkerMobile.styles';
 
 interface WorkerStepWorkLogsProps {
   stepId: number;
 }
-
-const COMPACT_CELL = { py: '5px', px: '10px', fontSize: '0.8125rem' };
 
 const formatMinutes = (minutes?: number): string => {
   if (!minutes) return '0h 0m';
@@ -48,6 +40,7 @@ const formatTime = (timeString?: string): string => {
     return new Date(timeString).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     });
   }
   return timeString.substring(0, 5);
@@ -104,80 +97,74 @@ export const WorkerStepWorkLogs: React.FC<WorkerStepWorkLogsProps> = ({ stepId }
   };
 
   return (
-    <S.WorkLogsContainer>
-      <S.WorkLogsSummaryRow>
-        <S.WorkLogsSummaryCard>
-          <S.DetailLabel>Total Time</S.DetailLabel>
-          <S.WorkLogsSummaryValue>{formatMinutes(totalMinutes)}</S.WorkLogsSummaryValue>
-        </S.WorkLogsSummaryCard>
-        <S.WorkLogsSummaryCard>
-          <S.DetailLabel>Total Hours</S.DetailLabel>
-          <S.WorkLogsSummaryValue>{summary.totalHours.toFixed(1)}</S.WorkLogsSummaryValue>
-        </S.WorkLogsSummaryCard>
-        <S.WorkLogsSummaryCard>
-          <S.DetailLabel>Entries</S.DetailLabel>
-          <S.WorkLogsSummaryValue>{summary.totalEntries}</S.WorkLogsSummaryValue>
-        </S.WorkLogsSummaryCard>
-        <S.WorkLogsSummaryCard>
-          <S.DetailLabel>Avg per Entry</S.DetailLabel>
-          <S.WorkLogsSummaryValue>{formatMinutes(summary.avgMinutes)}</S.WorkLogsSummaryValue>
-        </S.WorkLogsSummaryCard>
-      </S.WorkLogsSummaryRow>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <M.WorkLogsSummaryGrid>
+        <M.WorkLogsSummaryTile>
+          <span className="label">Total Time</span>
+          <span className="value">{formatMinutes(totalMinutes)}</span>
+        </M.WorkLogsSummaryTile>
+        <M.WorkLogsSummaryTile>
+          <span className="label">Total Hours</span>
+          <span className="value">{summary.totalHours.toFixed(1)}</span>
+        </M.WorkLogsSummaryTile>
+        <M.WorkLogsSummaryTile>
+          <span className="label">Entries</span>
+          <span className="value">{summary.totalEntries}</span>
+        </M.WorkLogsSummaryTile>
+        <M.WorkLogsSummaryTile>
+          <span className="label">Avg per Entry</span>
+          <span className="value">{formatMinutes(summary.avgMinutes)}</span>
+        </M.WorkLogsSummaryTile>
+      </M.WorkLogsSummaryGrid>
 
-      <S.WorkLogsTableHeader>
-        <S.DetailsSectionTitle>
-          Work Logs ({visitLogs.length})
-        </S.DetailsSectionTitle>
-        <Button onClick={openAddModal} startIcon={<AddIcon fontSize="small" />}>
+      <M.WorkLogsHeader>
+        <h3>Work Logs ({visitLogs.length})</h3>
+        <Button onClick={openAddModal} size="small" startIcon={<AddIcon fontSize="small" />}>
           Add Work Log
         </Button>
-      </S.WorkLogsTableHeader>
+      </M.WorkLogsHeader>
 
       {loading ? (
-        <Loader centered minHeight="200px" />
+        <Loader centered minHeight="160px" />
       ) : visitLogs.length === 0 ? (
-        <S.DocumentsEmptyState>
-          <S.DocumentsEmptyIcon>
-            <AccessTimeIcon sx={{ fontSize: 32 }} />
-          </S.DocumentsEmptyIcon>
-          <S.DocumentsEmptyText>No work logs recorded yet</S.DocumentsEmptyText>
-          <S.DocumentsEmptySubtext>
-            Add a work log to track time spent on this step
-          </S.DocumentsEmptySubtext>
-        </S.DocumentsEmptyState>
+        <M.EmptyState>
+          <AccessTimeIcon />
+          <span>No work logs recorded yet</span>
+        </M.EmptyState>
       ) : (
-        <StyledTableContainer>
-          <StyledTable>
-            <StyledTableHead>
-              <TableRow>
-                <StyledHeaderCell sx={COMPACT_CELL}>Date</StyledHeaderCell>
-                <StyledHeaderCell sx={COMPACT_CELL}>Start Time</StyledHeaderCell>
-                <StyledHeaderCell sx={COMPACT_CELL}>End Time</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={COMPACT_CELL}>Duration</StyledHeaderCell>
-                <StyledHeaderCell sx={COMPACT_CELL}>Description</StyledHeaderCell>
-                <StyledHeaderCell sx={COMPACT_CELL}>Created</StyledHeaderCell>
-              </TableRow>
-            </StyledTableHead>
+        <M.WorkLogList>
+          {visitLogs.map((log) => (
+            <M.WorkLogItem key={log.id}>
+              <M.WorkLogTopRow>
+                <M.WorkLogTimeRow>
+                  <EventOutlinedIcon />
+                  <span className="date">{formatDate(log.visitDate)}</span>
+                </M.WorkLogTimeRow>
+                <span className="duration">{formatMinutes(log.workedMinutes)}</span>
+              </M.WorkLogTopRow>
 
-            <StyledTableBody>
-              {visitLogs.map((log) => (
-                <StyledTableRow key={log.id}>
-                  <StyledTableCell sx={COMPACT_CELL}>{formatDate(log.visitDate)}</StyledTableCell>
-                  <StyledTableCell sx={COMPACT_CELL}>{formatTime(log.timeIn)}</StyledTableCell>
-                  <StyledTableCell sx={COMPACT_CELL}>{formatTime(log.timeOut)}</StyledTableCell>
-                  <StyledTableCell align="right" sx={{ ...COMPACT_CELL, fontWeight: 600 }}>
-                    {formatMinutes(log.workedMinutes)}
-                  </StyledTableCell>
-                  <StyledTableCell sx={COMPACT_CELL}>{log.description || '-'}</StyledTableCell>
-                  <StyledTableCell sx={COMPACT_CELL}>
-                    <S.DocumentMeta>{formatDate(log.createdAt)}</S.DocumentMeta>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </StyledTableBody>
-          </StyledTable>
-        </StyledTableContainer>
+              <Box sx={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                <M.WorkLogTimeRow>
+                  <LoginOutlinedIcon />
+                  <span>In: {formatTime(log.timeIn)}</span>
+                </M.WorkLogTimeRow>
+                <M.WorkLogTimeRow>
+                  <LogoutOutlinedIcon />
+                  <span>Out: {formatTime(log.timeOut)}</span>
+                </M.WorkLogTimeRow>
+              </Box>
+
+              {log.description && (
+                <M.WorkLogDescription>{log.description}</M.WorkLogDescription>
+              )}
+
+              {log.createdAt && (
+                <M.WorkLogMeta>Logged on {formatDate(log.createdAt)}</M.WorkLogMeta>
+              )}
+            </M.WorkLogItem>
+          ))}
+        </M.WorkLogList>
       )}
-    </S.WorkLogsContainer>
+    </Box>
   );
 };

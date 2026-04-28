@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider, useController } from 'react-hook-form';
+import { Box } from '@mui/material';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,7 +12,6 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { workerJobWorkflowService } from '../../../../services/api';
-import * as S from '../../../jobs/JobDetailsPage.styles';
 
 export interface AddWorkLogModalProps {
   stepId: number;
@@ -41,6 +41,26 @@ const timePickerDialogSx = {
     borderRadius: '16px',
     overflow: 'hidden',
     boxShadow: '0 24px 48px rgba(0, 0, 0, 0.16)',
+    width: '100%',
+    maxWidth: 'min(360px, calc(100vw - 32px))',
+    margin: '16px',
+  },
+  '@media (max-width: 480px)': {
+    '& .MuiPickersToolbar-root': {
+      padding: '14px 16px 10px',
+    },
+    '& .MuiTimePickerToolbar-hourMinuteLabel .MuiPickersToolbarText-root': {
+      fontSize: '2.25rem !important',
+      minWidth: '52px !important',
+    },
+    '& .MuiPickersLayout-contentWrapper': {
+      minHeight: 'auto',
+    },
+    '& .MuiTimeClock-root': {
+      width: '100%',
+      maxWidth: '280px',
+      margin: '0 auto',
+    },
   },
   '& .MuiPickersLayout-root': {
     backgroundColor: '#FFFFFF',
@@ -180,20 +200,37 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, onSucc
   return (
     <FormProvider {...methods}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <S.ModalFormContainer>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            width: '100%',
+            minWidth: 0,
+          }}
+        >
           <FormField label="Visit Date" required>
             <Input name="visitDate" type="date" placeHolder="Select date" fullWidth />
           </FormField>
 
-          <S.ModalFormRow>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+              gap: 2,
+              width: '100%',
+              minWidth: 0,
+              '& > *': { minWidth: 0 },
+            }}
+          >
             <TimeField name="timeIn" label="Start Time" />
             <TimeField name="timeOut" label="End Time" />
-          </S.ModalFormRow>
+          </Box>
 
           <FormField label="Description">
             <TextArea name="description" placeHolder="What was done during this visit..." rows={3} fullWidth />
           </FormField>
-        </S.ModalFormContainer>
+        </Box>
       </LocalizationProvider>
     </FormProvider>
   );

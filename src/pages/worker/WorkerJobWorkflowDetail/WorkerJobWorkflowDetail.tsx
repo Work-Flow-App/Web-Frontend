@@ -2,12 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { JobWorkflowResponse, WorkerAssignedStepResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import * as S from '../../jobs/JobDetailsPage.styles';
+import * as M from '../styles/WorkerMobile.styles';
 import { WorkerWorkflowStages } from './WorkerWorkflowStages';
+
+const formatStatusLabel = (status?: string): string => {
+  if (!status) return 'Not Started';
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 export const WorkerJobWorkflowDetail: React.FC = () => {
   const { jobWorkflowId } = useParams<{ jobWorkflowId: string }>();
@@ -17,7 +25,6 @@ export const WorkerJobWorkflowDetail: React.FC = () => {
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
   const [context, setContext] = useState<WorkerAssignedStepResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
 
   const fetchJobWorkflow = useCallback(async () => {
     if (!jobWorkflowId) return;
@@ -31,7 +38,8 @@ export const WorkerJobWorkflowDetail: React.FC = () => {
       const workflowData = workflowRes.data;
       setJobWorkflow(workflowData);
       const stepIds = new Set((workflowData.steps || []).map((s) => s.id).filter(Boolean));
-      const match = (assignedRes.data || []).find((a) => a.step?.id && stepIds.has(a.step.id)) || null;
+      const match =
+        (assignedRes.data || []).find((a) => a.step?.id && stepIds.has(a.step.id)) || null;
       setContext(match);
     } catch (error) {
       console.error('Error fetching job workflow:', error);
@@ -41,164 +49,106 @@ export const WorkerJobWorkflowDetail: React.FC = () => {
     }
   }, [jobWorkflowId, showError]);
 
-  const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
-    if (!addr) return '';
-    return [addr.street, addr.city, addr.state, addr.postalCode, addr.country]
-      .filter(Boolean)
-      .join(', ');
-  };
-
-  const buildMapsUrl = (addr?: WorkerAssignedStepResponse['jobAddress']): string | null => {
-    if (!addr) return null;
-    if (addr.latitude != null && addr.longitude != null) {
-      return `https://www.google.com/maps?q=${addr.latitude},${addr.longitude}`;
-    }
-    const formatted = formatAddress(addr);
-    return formatted ? `https://www.google.com/maps?q=${encodeURIComponent(formatted)}` : null;
-  };
-
   useEffect(() => {
     fetchJobWorkflow();
   }, [fetchJobWorkflow]);
 
-  const handleBackClick = () => {
-    navigate('/worker/job-workflows');
-  };
+  const handleBackClick = () => navigate('/worker/job-workflows');
 
   if (loading) {
     return (
-      <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
-      </PageWrapper>
+      <M.WorkerShell>
+        <M.LoadingBox>
+          <CircularProgress size={28} />
+        </M.LoadingBox>
+      </M.WorkerShell>
     );
   }
 
   if (!jobWorkflow) {
     return (
-      <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <S.InfoValue>Workflow not found</S.InfoValue>
-        </Box>
-      </PageWrapper>
+      <M.WorkerShell>
+        <M.WorkerHeader>
+          <M.BackIconButton onClick={handleBackClick} aria-label="Back">
+            <ArrowBackIcon />
+          </M.BackIconButton>
+          <h1>Workflow</h1>
+        </M.WorkerHeader>
+        <M.EmptyState>Workflow not found</M.EmptyState>
+      </M.WorkerShell>
     );
   }
 
   const totalSteps = jobWorkflow.steps?.length ?? 0;
-  const completedSteps = jobWorkflow.steps?.filter(
-    (s) => s.status === 'COMPLETED' || s.status === 'SKIPPED',
-  ).length ?? 0;
+  const completedSteps =
+    jobWorkflow.steps?.filter((s) => s.status === 'COMPLETED' || s.status === 'SKIPPED').length ?? 0;
+  const pct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  const statusTheme = M.resolveStatusTheme(jobWorkflow.status);
 
   return (
-    <PageWrapper title="" description="">
-      <S.ContentContainer>
-        <S.JobHeader>
-          <S.JobHeaderLeft>
-            <S.BackButton onClick={handleBackClick}>
-              <ArrowBackIcon />
-            </S.BackButton>
-            <S.JobHeaderInfo>
-              <S.JobHeaderTitle>
-                {context?.customer?.name || `Workflow #${jobWorkflow.id}`}
-              </S.JobHeaderTitle>
-              <S.JobHeaderMeta>
-                Job #{context?.jobRef ?? jobWorkflow.jobId} · {jobWorkflow.status || 'NOT_STARTED'} · {completedSteps} of {totalSteps} steps complete
-              </S.JobHeaderMeta>
-            </S.JobHeaderInfo>
-          </S.JobHeaderLeft>
-        </S.JobHeader>
+    <M.WorkerShell>
+      <M.WorkerHeader>
+        <M.BackIconButton onClick={handleBackClick} aria-label="Back">
+          <ArrowBackIcon />
+        </M.BackIconButton>
+        <h1>{context?.customer?.name || `Workflow #${jobWorkflow.id}`}</h1>
+      </M.WorkerHeader>
 
-        <S.TabsContainer>
-          <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
-            Overview
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'service-location'} onClick={() => setActiveTab('service-location')}>
-            Service Location
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
-            Assets
-          </S.TabButton>
-        </S.TabsContainer>
+      <M.StepBadgesRow>
+        <M.RefBadge>
+          Job #{context?.jobRef ?? jobWorkflow.jobId} · Workflow #{jobWorkflow.id}
+        </M.RefBadge>
+        <M.StatusPill bg={statusTheme.pillBg} fg={statusTheme.pillFg}>
+          {formatStatusLabel(jobWorkflow.status)}
+        </M.StatusPill>
+      </M.StepBadgesRow>
 
-        <S.JobDetailsLayout fullWidth>
-          {activeTab === 'overview' && (
-            <WorkerWorkflowStages jobWorkflow={jobWorkflow} onStepUpdate={fetchJobWorkflow} />
-          )}
+      <Box
+        sx={{
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '14px',
+          padding: '14px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontFamily: 'Manrope, sans-serif',
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#71717A',
+          }}
+        >
+          <span>
+            {completedSteps} of {totalSteps} steps complete
+          </span>
+          <span style={{ color: statusTheme.pillFg, fontWeight: 700 }}>{pct}%</span>
+        </Box>
+        <M.ProgressOuter>
+          <M.ProgressInner pct={pct} fg={statusTheme.accent} />
+        </M.ProgressOuter>
+      </Box>
 
-          {activeTab === 'service-location' && (
-            <S.MainContentPanel>
-              <S.DetailsSection>
-                <S.SectionTitle>Service Location</S.SectionTitle>
-                {context?.customer && (
-                  <>
-                    <S.InfoRow>
-                      <S.InfoLabel>Customer</S.InfoLabel>
-                      <S.InfoValue>{context.customer.name || '-'}</S.InfoValue>
-                    </S.InfoRow>
-                    {context.customer.email && (
-                      <S.InfoRow>
-                        <S.InfoLabel>Customer Email</S.InfoLabel>
-                        <S.InfoValue>{context.customer.email}</S.InfoValue>
-                      </S.InfoRow>
-                    )}
-                    {context.customer.telephone && (
-                      <S.InfoRow>
-                        <S.InfoLabel>Customer Phone</S.InfoLabel>
-                        <S.InfoValue>{context.customer.telephone}</S.InfoValue>
-                      </S.InfoRow>
-                    )}
-                  </>
-                )}
-                <S.InfoRow>
-                  <S.InfoLabel>Address</S.InfoLabel>
-                  <S.InfoValue>{formatAddress(context?.jobAddress) || 'No address provided'}</S.InfoValue>
-                </S.InfoRow>
-                {context?.jobAddress?.additionalInfo && (
-                  <S.InfoRow>
-                    <S.InfoLabel>Additional Info</S.InfoLabel>
-                    <S.InfoValue>{context.jobAddress.additionalInfo}</S.InfoValue>
-                  </S.InfoRow>
-                )}
-                {buildMapsUrl(context?.jobAddress) && (
-                  <S.InfoRow>
-                    <S.InfoLabel>Map</S.InfoLabel>
-                    <S.InfoValue>
-                      <a
-                        href={buildMapsUrl(context?.jobAddress) || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Open in Google Maps
-                      </a>
-                    </S.InfoValue>
-                  </S.InfoRow>
-                )}
-              </S.DetailsSection>
-            </S.MainContentPanel>
-          )}
-
-          {activeTab === 'assets' && (
-            <S.MainContentPanel>
-              <S.DetailsSection>
-                <S.SectionTitle>Assigned Assets</S.SectionTitle>
-                {context?.assignedAssets && context.assignedAssets.length > 0 ? (
-                  context.assignedAssets.map((asset) => (
-                    <S.InfoRow key={asset.assignmentId}>
-                      <S.InfoLabel>{asset.assetName || `Asset #${asset.assetId}`}</S.InfoLabel>
-                      <S.InfoValue>
-                        {[asset.assetTag, asset.serialNumber, asset.notes].filter(Boolean).join(' · ') || '-'}
-                      </S.InfoValue>
-                    </S.InfoRow>
-                  ))
-                ) : (
-                  <S.PlaceholderText>No assets assigned to this workflow.</S.PlaceholderText>
-                )}
-              </S.DetailsSection>
-            </S.MainContentPanel>
-          )}
-        </S.JobDetailsLayout>
-      </S.ContentContainer>
-    </PageWrapper>
+      <Box
+        sx={{
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}
+      >
+        <WorkerWorkflowStages jobWorkflow={jobWorkflow} onStepUpdate={fetchJobWorkflow} />
+      </Box>
+    </M.WorkerShell>
   );
 };
+
+export default WorkerJobWorkflowDetail;

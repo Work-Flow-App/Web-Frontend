@@ -1,47 +1,71 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Chip } from '@mui/material';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
-import Table from '../../../components/UI/Table/Table';
-import type { ITableColumn } from '../../../components/UI/Table/ITable';
+import { CircularProgress } from '@mui/material';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { WorkerAssignedStepResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import * as M from '../styles/WorkerMobile.styles';
 
 interface StepRow {
   id: number;
   name?: string;
   description?: string;
-  status?: string;
+  status: string;
   jobId?: number;
   jobRef?: number;
+  orderIndex?: number;
   customerName?: string;
   jobAddress?: string;
   startedAt?: string;
+  completedAt?: string;
 }
-
-const getStatusChipProps = (status?: string) => {
-  switch (status) {
-    case 'COMPLETED':
-      return { label: 'COMPLETED', bg: '#E8F5E9', color: '#2E7D32' };
-    case 'STARTED':
-    case 'ONGOING':
-      return { label: status, bg: '#E3F2FD', color: '#1565C0' };
-    case 'PENDING':
-      return { label: 'PENDING', bg: '#FFF8E1', color: '#F9A825' };
-    case 'SKIPPED':
-      return { label: 'SKIPPED', bg: '#FFEBEE', color: '#C62828' };
-    case 'INITIATED':
-      return { label: 'INITIATED', bg: '#F3E5F5', color: '#7B1FA2' };
-    default:
-      return { label: status || 'NOT_STARTED', bg: '#F5F5F5', color: '#616161' };
-  }
-};
 
 const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
   if (!addr) return '';
-  return [addr.street, addr.city, addr.postalCode].filter(Boolean).join(', ');
+  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
+};
+
+const formatTimestamp = (iso?: string): string => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
+type FilterKey = 'ALL' | 'STARTED' | 'NOT_STARTED' | 'COMPLETED';
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'ALL', label: 'All' },
+  { key: 'STARTED', label: 'Started' },
+  { key: 'NOT_STARTED', label: 'Not Started' },
+  { key: 'COMPLETED', label: 'Completed' },
+];
+
+const matchesFilter = (status: string, filter: FilterKey): boolean => {
+  if (filter === 'ALL') return true;
+  if (filter === 'STARTED') return status === 'STARTED' || status === 'ONGOING' || status === 'INITIATED';
+  if (filter === 'COMPLETED') return status === 'COMPLETED' || status === 'SKIPPED';
+  return status === 'NOT_STARTED' || status === 'PENDING' || !status;
+};
+
+const formatStatusLabel = (status: string): string => {
+  if (!status) return 'Not Started';
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export const WorkerStepsList: React.FC = () => {
@@ -49,6 +73,7 @@ export const WorkerStepsList: React.FC = () => {
   const { showError } = useSnackbar();
   const [steps, setSteps] = useState<StepRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterKey>('ALL');
 
   const fetchSteps = useCallback(async () => {
     try {
@@ -61,12 +86,14 @@ export const WorkerStepsList: React.FC = () => {
           id: s.step!.id!,
           name: s.step?.name,
           description: s.step?.description,
-          status: s.step?.status,
+          status: s.step?.status || 'NOT_STARTED',
           jobId: s.jobId,
           jobRef: s.jobRef,
+          orderIndex: s.step?.orderIndex,
           customerName: s.customer?.name,
           jobAddress: formatAddress(s.jobAddress),
           startedAt: s.step?.startedAt,
+          completedAt: s.step?.completedAt,
         }));
       setSteps(rows);
     } catch (error) {
@@ -81,90 +108,136 @@ export const WorkerStepsList: React.FC = () => {
     fetchSteps();
   }, [fetchSteps]);
 
-  const handleRowClick = useCallback(
+  const filteredSteps = useMemo(
+    () => steps.filter((s) => matchesFilter(s.status, filter)),
+    [steps, filter],
+  );
+
+  const counts = useMemo(() => {
+    return {
+      ALL: steps.length,
+      STARTED: steps.filter((s) => matchesFilter(s.status, 'STARTED')).length,
+      NOT_STARTED: steps.filter((s) => matchesFilter(s.status, 'NOT_STARTED')).length,
+      COMPLETED: steps.filter((s) => matchesFilter(s.status, 'COMPLETED')).length,
+    };
+  }, [steps]);
+
+  const handleCardClick = useCallback(
     (row: StepRow) => {
       navigate(`/worker/steps/${row.id}`);
     },
     [navigate],
   );
 
-  const columns: ITableColumn<StepRow>[] = useMemo(
-    () => [
-      {
-        id: 'name',
-        label: 'Step',
-        accessor: 'name',
-        sortable: true,
-        width: 'auto',
-        render: (row) => row.name || `Step #${row.id}`,
-      },
-      {
-        id: 'jobRef',
-        label: 'Job',
-        accessor: 'jobRef',
-        sortable: true,
-        width: 'auto',
-        render: (row) => `Job #${row.jobRef ?? row.jobId ?? '-'}`,
-      },
-      {
-        id: 'customerName',
-        label: 'Customer',
-        accessor: 'customerName',
-        sortable: true,
-        width: 'auto',
-        render: (row) => row.customerName || '-',
-      },
-      {
-        id: 'jobAddress',
-        label: 'Address',
-        accessor: 'jobAddress',
-        sortable: false,
-        width: 'auto',
-        render: (row) => row.jobAddress || '-',
-      },
-      {
-        id: 'status',
-        label: 'Status',
-        accessor: 'status',
-        sortable: true,
-        width: 'auto',
-        render: (row) => {
-          const info = getStatusChipProps(row.status);
-          return (
-            <Chip
-              label={info.label}
-              size="small"
-              sx={{
-                height: 22,
-                fontSize: 11,
-                fontWeight: 600,
-                backgroundColor: info.bg,
-                color: info.color,
-              }}
-            />
-          );
-        },
-      },
-    ],
-    [],
-  );
+  const renderTimelineLine = (row: StepRow) => {
+    const theme = M.resolveStatusTheme(row.status);
+    if (row.status === 'COMPLETED' || row.status === 'SKIPPED') {
+      return (
+        <M.TimelineRow fg={theme.pillFg}>
+          <CheckCircleOutlineIcon />
+          <span>Completed: {formatTimestamp(row.completedAt) || formatTimestamp(row.startedAt) || '-'}</span>
+        </M.TimelineRow>
+      );
+    }
+    if (row.status === 'STARTED' || row.status === 'ONGOING' || row.status === 'INITIATED') {
+      return (
+        <M.TimelineRow fg={theme.pillFg}>
+          <AccessTimeIcon />
+          <span>Started: {formatTimestamp(row.startedAt) || 'In progress'}</span>
+        </M.TimelineRow>
+      );
+    }
+    return (
+      <M.TimelineRow fg={theme.pillFg}>
+        <RadioButtonUncheckedIcon />
+        <span>Awaiting start</span>
+      </M.TimelineRow>
+    );
+  };
 
   return (
-    <PageWrapper
-      title="My Steps"
-      description="All workflow steps assigned to you"
-      showSearch
-      searchPlaceholder="Search steps"
-    >
-      <Table<StepRow>
-        columns={columns}
-        data={steps}
-        onRowClick={handleRowClick}
-        loading={loading}
-        emptyMessage="No steps assigned to you yet."
-        rowsPerPage={10}
-        showPagination
-      />
-    </PageWrapper>
+    <M.WorkerShell>
+      <M.WorkerHeader>
+        <h1>My Tasks</h1>
+      </M.WorkerHeader>
+
+      <M.FilterTabs>
+        {FILTERS.map(({ key, label }) => (
+          <M.FilterTab key={key} active={filter === key} onClick={() => setFilter(key)}>
+            {key === 'ALL' && (
+              <CheckCircleOutlineIcon
+                sx={{ fontSize: 14, opacity: filter === 'ALL' ? 1 : 0.6 }}
+              />
+            )}
+            {label}
+            {counts[key] > 0 && (
+              <span style={{ opacity: filter === key ? 1 : 0.6 }}>· {counts[key]}</span>
+            )}
+          </M.FilterTab>
+        ))}
+      </M.FilterTabs>
+
+      {loading ? (
+        <M.LoadingBox>
+          <CircularProgress size={28} />
+        </M.LoadingBox>
+      ) : filteredSteps.length === 0 ? (
+        <M.EmptyState>
+          <AssignmentOutlinedIcon />
+          <span>
+            {filter === 'ALL'
+              ? 'No tasks assigned to you yet.'
+              : `No ${formatStatusLabel(filter).toLowerCase()} tasks right now.`}
+          </span>
+        </M.EmptyState>
+      ) : (
+        <M.TaskList>
+          {filteredSteps.map((row) => {
+            const theme = M.resolveStatusTheme(row.status);
+            return (
+              <M.TaskCard
+                key={row.id}
+                accentColor={theme.accent}
+                onClick={() => handleCardClick(row)}
+              >
+                <M.TaskCardTopRow>
+                  <M.RefBadgeRow>
+                    <M.RefBadge>Job #{row.jobRef ?? row.jobId ?? '-'}</M.RefBadge>
+                    {row.orderIndex != null && (
+                      <M.RefBadge>Step #{row.orderIndex}</M.RefBadge>
+                    )}
+                  </M.RefBadgeRow>
+                  <M.StatusPill bg={theme.pillBg} fg={theme.pillFg}>
+                    {formatStatusLabel(row.status)}
+                  </M.StatusPill>
+                </M.TaskCardTopRow>
+
+                <M.TaskTitle>{row.name || `Step #${row.id}`}</M.TaskTitle>
+                {row.description && <M.TaskDescription>{row.description}</M.TaskDescription>}
+
+                <M.InfoBlock>
+                  {row.customerName && (
+                    <M.InfoLine>
+                      <PersonOutlineIcon />
+                      <span>{row.customerName}</span>
+                    </M.InfoLine>
+                  )}
+                  {row.jobAddress && (
+                    <M.InfoLine>
+                      <LocationOnOutlinedIcon />
+                      <span>{row.jobAddress}</span>
+                    </M.InfoLine>
+                  )}
+                </M.InfoBlock>
+
+                {renderTimelineLine(row)}
+              </M.TaskCard>
+            );
+          })}
+        </M.TaskList>
+      )}
+    </M.WorkerShell>
   );
 };
+
+export default WorkerStepsList;

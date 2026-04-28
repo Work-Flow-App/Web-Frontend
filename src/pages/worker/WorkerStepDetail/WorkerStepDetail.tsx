@@ -1,37 +1,128 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Chip } from '@mui/material';
+import { Box, CircularProgress, Collapse } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import NearMeOutlinedIcon from '@mui/icons-material/NearMeOutlined';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { Button } from '../../../components/UI/Button';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { JobWorkflowStepResponse, WorkerAssignedStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import * as S from '../../jobs/JobDetailsPage.styles';
+import * as M from '../styles/WorkerMobile.styles';
 import { WorkerStepComments } from './WorkerStepComments';
 import { WorkerStepAttachments } from './WorkerStepAttachments';
 import { WorkerStepWorkLogs } from './WorkerStepWorkLogs';
 import { WorkerStepDiscussion } from './WorkerStepDiscussion';
 
-const getStatusInfo = (status?: string) => {
-  switch (status) {
-    case JobWorkflowStepResponseStatusEnum.Completed:
-      return { label: 'COMPLETED', bg: '#E8F5E9', color: '#2E7D32' };
-    case JobWorkflowStepResponseStatusEnum.Started:
-      return { label: 'STARTED', bg: '#E3F2FD', color: '#1565C0' };
-    case JobWorkflowStepResponseStatusEnum.Ongoing:
-      return { label: 'ONGOING', bg: '#E3F2FD', color: '#1565C0' };
-    case JobWorkflowStepResponseStatusEnum.Pending:
-      return { label: 'PENDING', bg: '#FFF8E1', color: '#F9A825' };
-    case JobWorkflowStepResponseStatusEnum.Skipped:
-      return { label: 'SKIPPED', bg: '#FFEBEE', color: '#C62828' };
-    case JobWorkflowStepResponseStatusEnum.Initiated:
-      return { label: 'INITIATED', bg: '#F3E5F5', color: '#7B1FA2' };
-    case JobWorkflowStepResponseStatusEnum.NotStarted:
-    default:
-      return { label: 'NOT_STARTED', bg: '#F5F5F5', color: '#616161' };
+type SectionKey = 'task' | 'location' | 'customer' | 'assets';
+type ActivityTab = 'discussion' | 'comments' | 'attachments';
+
+const SECTION_THEMES: Record<
+  SectionKey,
+  { accent: string; iconBg: string; iconFg: string }
+> = {
+  task: {
+    accent: '#3B82F6',
+    iconBg: 'rgba(59, 130, 246, 0.12)',
+    iconFg: '#1D4ED8',
+  },
+  location: {
+    accent: '#EF4444',
+    iconBg: 'rgba(239, 68, 68, 0.12)',
+    iconFg: '#B91C1C',
+  },
+  customer: {
+    accent: '#06B6D4',
+    iconBg: 'rgba(6, 182, 212, 0.12)',
+    iconFg: '#0E7490',
+  },
+  assets: {
+    accent: '#F59E0B',
+    iconBg: 'rgba(245, 158, 11, 0.14)',
+    iconFg: '#B45309',
+  },
+};
+
+const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
+  if (!addr) return '';
+  return [addr.street, addr.city, addr.state, addr.postalCode, addr.country]
+    .filter(Boolean)
+    .join(', ');
+};
+
+const buildMapsUrl = (addr?: WorkerAssignedStepResponse['jobAddress']): string | null => {
+  if (!addr) return null;
+  if (addr.latitude != null && addr.longitude != null) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${addr.latitude},${addr.longitude}`;
   }
+  const formatted = formatAddress(addr);
+  return formatted
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(formatted)}`
+    : null;
+};
+
+const buildPlusCode = (addr?: WorkerAssignedStepResponse['jobAddress']): string | null => {
+  if (!addr) return null;
+  if (addr.latitude != null && addr.longitude != null) {
+    return `${addr.latitude.toFixed(4)}, ${addr.longitude.toFixed(4)}`;
+  }
+  return null;
+};
+
+const formatStatusLabel = (status?: string): string => {
+  if (!status) return 'Not Started';
+  return status
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+interface AccordionSectionProps {
+  sectionKey: SectionKey;
+  title: string;
+  icon: React.ReactNode;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+const AccordionSection: React.FC<AccordionSectionProps> = ({
+  sectionKey,
+  title,
+  icon,
+  expanded,
+  onToggle,
+  children,
+}) => {
+  const theme = SECTION_THEMES[sectionKey];
+  return (
+    <M.AccordionCard accentColor={theme.accent}>
+      <M.AccordionHeader onClick={onToggle} aria-expanded={expanded}>
+        <M.AccordionIcon bg={theme.iconBg} fg={theme.iconFg}>
+          {icon}
+        </M.AccordionIcon>
+        <M.AccordionTitle>{title}</M.AccordionTitle>
+        <M.AccordionChevron
+          sx={{
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          <KeyboardArrowDownIcon />
+        </M.AccordionChevron>
+      </M.AccordionHeader>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <M.AccordionBody>{children}</M.AccordionBody>
+      </Collapse>
+    </M.AccordionCard>
+  );
 };
 
 export const WorkerStepDetail: React.FC = () => {
@@ -43,7 +134,14 @@ export const WorkerStepDetail: React.FC = () => {
   const [context, setContext] = useState<WorkerAssignedStepResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [openSections, setOpenSections] = useState<Record<SectionKey, boolean>>({
+    task: true,
+    location: false,
+    customer: false,
+    assets: false,
+  });
+  const [activityTab, setActivityTab] = useState<ActivityTab | null>(null);
+  const [showWorkLogs, setShowWorkLogs] = useState(false);
 
   const fetchStep = useCallback(async () => {
     if (!stepId) return;
@@ -65,29 +163,14 @@ export const WorkerStepDetail: React.FC = () => {
     }
   }, [stepId, showError]);
 
-  const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
-    if (!addr) return '';
-    return [addr.street, addr.city, addr.state, addr.postalCode, addr.country]
-      .filter(Boolean)
-      .join(', ');
-  };
-
-  const buildMapsUrl = (addr?: WorkerAssignedStepResponse['jobAddress']): string | null => {
-    if (!addr) return null;
-    if (addr.latitude != null && addr.longitude != null) {
-      return `https://www.google.com/maps?q=${addr.latitude},${addr.longitude}`;
-    }
-    const formatted = formatAddress(addr);
-    return formatted ? `https://www.google.com/maps?q=${encodeURIComponent(formatted)}` : null;
-  };
-
   useEffect(() => {
     fetchStep();
   }, [fetchStep]);
 
-  const handleBackClick = () => {
-    navigate('/worker/steps');
-  };
+  const toggle = (key: SectionKey) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const handleBackClick = () => navigate('/worker/steps');
 
   const handleStartStep = async () => {
     if (!step?.id) return;
@@ -140,230 +223,279 @@ export const WorkerStepDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress />
-        </Box>
-      </PageWrapper>
+      <M.WorkerShell>
+        <M.LoadingBox>
+          <CircularProgress size={28} />
+        </M.LoadingBox>
+      </M.WorkerShell>
     );
   }
 
   if (!step) {
     return (
-      <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <S.InfoValue>Step not found</S.InfoValue>
-        </Box>
-      </PageWrapper>
+      <M.WorkerShell>
+        <M.WorkerHeader>
+          <M.BackIconButton onClick={handleBackClick} aria-label="Back">
+            <ArrowBackIcon />
+          </M.BackIconButton>
+          <h1>Step</h1>
+        </M.WorkerHeader>
+        <M.EmptyState>Step not found</M.EmptyState>
+      </M.WorkerShell>
     );
   }
 
-  const statusInfo = getStatusInfo(step.status);
   const numericStepId = Number(stepId);
+  const statusTheme = M.resolveStatusTheme(step.status);
+  const mapsUrl = buildMapsUrl(context?.jobAddress);
+  const plusCode = buildPlusCode(context?.jobAddress);
 
   return (
-    <PageWrapper title="" description="">
-      <S.ContentContainer>
-        <S.JobHeader>
-          <S.JobHeaderLeft>
-            <S.BackButton onClick={handleBackClick}>
-              <ArrowBackIcon />
-            </S.BackButton>
-            <S.JobHeaderInfo>
-              <S.JobHeaderTitle>{step.name || `Step #${step.id}`}</S.JobHeaderTitle>
-              <S.JobHeaderMeta>
-                Step #{step.id}
-                {context?.jobRef ? ` · Job #${context.jobRef}` : context?.jobId ? ` · Job #${context.jobId}` : ''}
-                {context?.customer?.name ? ` · ${context.customer.name}` : ''}
-                {step.startedAt ? ` · Started ${new Date(step.startedAt).toLocaleDateString()}` : ''}
-              </S.JobHeaderMeta>
-            </S.JobHeaderInfo>
-          </S.JobHeaderLeft>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Chip
-              label={statusInfo.label}
-              size="small"
-              sx={{
-                height: 26,
-                fontSize: 12,
-                fontWeight: 600,
-                backgroundColor: statusInfo.bg,
-                color: statusInfo.color,
-              }}
-            />
-            {step.status === JobWorkflowStepResponseStatusEnum.NotStarted && (
-              <Button size="small" onClick={handleStartStep} disabled={updating}>
-                Start
-              </Button>
-            )}
-            {step.status === JobWorkflowStepResponseStatusEnum.Initiated && (
-              <Button size="small" onClick={handleMarkOngoing} disabled={updating}>
-                Mark Ongoing
-              </Button>
-            )}
-            {(step.status === JobWorkflowStepResponseStatusEnum.Started ||
-              step.status === JobWorkflowStepResponseStatusEnum.Ongoing) && (
-              <Button size="small" onClick={handleCompleteStep} disabled={updating}>
-                Complete
-              </Button>
-            )}
-          </Box>
-        </S.JobHeader>
+    <M.WorkerShell>
+      <M.WorkerHeader>
+        <M.BackIconButton onClick={handleBackClick} aria-label="Back">
+          <ArrowBackIcon />
+        </M.BackIconButton>
+        <h1>Step: {step.name || `#${step.id}`}</h1>
+      </M.WorkerHeader>
 
-        <S.TabsContainer>
-          <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
-            Overview
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'service-location'} onClick={() => setActiveTab('service-location')}>
-            Service Location
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
-            Assets
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'discussion'} onClick={() => setActiveTab('discussion')}>
-            Discussion
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'comments'} onClick={() => setActiveTab('comments')}>
-            Comments
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'attachments'} onClick={() => setActiveTab('attachments')}>
-            Attachments
-          </S.TabButton>
-          <S.TabButton active={activeTab === 'work-logs'} onClick={() => setActiveTab('work-logs')}>
-            Work Logs
-          </S.TabButton>
-        </S.TabsContainer>
+      <M.StepBadgesRow>
+        <M.RefBadge>
+          Job #{context?.jobRef ?? context?.jobId ?? step.id} · Step #{step.orderIndex ?? 1}
+        </M.RefBadge>
+        <M.StatusPill bg={statusTheme.pillBg} fg={statusTheme.pillFg}>
+          {formatStatusLabel(step.status)}
+        </M.StatusPill>
+      </M.StepBadgesRow>
 
-        <S.JobDetailsLayout fullWidth>
-          <S.MainContentPanel>
-            {activeTab === 'overview' && (
-              <S.DetailsSection>
-                <S.SectionTitle>Step Details</S.SectionTitle>
-                <S.InfoRow>
-                  <S.InfoLabel>Name</S.InfoLabel>
-                  <S.InfoValue>{step.name || '-'}</S.InfoValue>
-                </S.InfoRow>
-                <S.InfoRow>
-                  <S.InfoLabel>Description</S.InfoLabel>
-                  <S.InfoValue>{step.description || 'No description'}</S.InfoValue>
-                </S.InfoRow>
-                <S.InfoRow>
-                  <S.InfoLabel>Status</S.InfoLabel>
-                  <S.InfoValue>{step.status || '-'}</S.InfoValue>
-                </S.InfoRow>
-                <S.InfoRow>
-                  <S.InfoLabel>Order</S.InfoLabel>
-                  <S.InfoValue>{step.orderIndex ?? '-'}</S.InfoValue>
-                </S.InfoRow>
-                <S.InfoRow>
-                  <S.InfoLabel>Started At</S.InfoLabel>
-                  <S.InfoValue>
-                    {step.startedAt ? new Date(step.startedAt).toLocaleString() : '-'}
-                  </S.InfoValue>
-                </S.InfoRow>
-                <S.InfoRow>
-                  <S.InfoLabel>Completed At</S.InfoLabel>
-                  <S.InfoValue>
-                    {step.completedAt ? new Date(step.completedAt).toLocaleString() : '-'}
-                  </S.InfoValue>
-                </S.InfoRow>
-              </S.DetailsSection>
-            )}
+      <M.PageTitle>{step.name || `Step #${step.id}`}</M.PageTitle>
 
-            {activeTab === 'service-location' && (
-              <S.DetailsSection>
-                <S.SectionTitle>Service Location</S.SectionTitle>
-                {context?.customer && (
-                  <>
-                    <S.InfoRow>
-                      <S.InfoLabel>Customer</S.InfoLabel>
-                      <S.InfoValue>{context.customer.name || '-'}</S.InfoValue>
-                    </S.InfoRow>
-                    {context.customer.email && (
-                      <S.InfoRow>
-                        <S.InfoLabel>Customer Email</S.InfoLabel>
-                        <S.InfoValue>{context.customer.email}</S.InfoValue>
-                      </S.InfoRow>
-                    )}
-                    {context.customer.telephone && (
-                      <S.InfoRow>
-                        <S.InfoLabel>Customer Phone</S.InfoLabel>
-                        <S.InfoValue>{context.customer.telephone}</S.InfoValue>
-                      </S.InfoRow>
-                    )}
-                  </>
-                )}
-                <S.InfoRow>
-                  <S.InfoLabel>Address</S.InfoLabel>
-                  <S.InfoValue>{formatAddress(context?.jobAddress) || 'No address provided'}</S.InfoValue>
-                </S.InfoRow>
-                {context?.jobAddress?.additionalInfo && (
-                  <S.InfoRow>
-                    <S.InfoLabel>Additional Info</S.InfoLabel>
-                    <S.InfoValue>{context.jobAddress.additionalInfo}</S.InfoValue>
-                  </S.InfoRow>
-                )}
-                {buildMapsUrl(context?.jobAddress) && (
-                  <S.InfoRow>
-                    <S.InfoLabel>Map</S.InfoLabel>
-                    <S.InfoValue>
-                      <a
-                        href={buildMapsUrl(context?.jobAddress) || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Open in Google Maps
-                      </a>
-                    </S.InfoValue>
-                  </S.InfoRow>
-                )}
-              </S.DetailsSection>
-            )}
+      {(step.status === JobWorkflowStepResponseStatusEnum.NotStarted ||
+        step.status === JobWorkflowStepResponseStatusEnum.Initiated ||
+        step.status === JobWorkflowStepResponseStatusEnum.Started ||
+        step.status === JobWorkflowStepResponseStatusEnum.Ongoing) && (
+        <M.StepActionsBar>
+          {step.status === JobWorkflowStepResponseStatusEnum.NotStarted && (
+            <Button onClick={handleStartStep} disabled={updating}>
+              Start Step
+            </Button>
+          )}
+          {step.status === JobWorkflowStepResponseStatusEnum.Initiated && (
+            <Button onClick={handleMarkOngoing} disabled={updating}>
+              Mark Ongoing
+            </Button>
+          )}
+          {(step.status === JobWorkflowStepResponseStatusEnum.Started ||
+            step.status === JobWorkflowStepResponseStatusEnum.Ongoing) && (
+            <Button onClick={handleCompleteStep} disabled={updating}>
+              Complete Step
+            </Button>
+          )}
+        </M.StepActionsBar>
+      )}
 
-            {activeTab === 'assets' && (
-              <S.DetailsSection>
-                <S.SectionTitle>Assigned Assets</S.SectionTitle>
-                {context?.assignedAssets && context.assignedAssets.length > 0 ? (
-                  context.assignedAssets.map((asset) => (
-                    <S.InfoRow key={asset.assignmentId}>
-                      <S.InfoLabel>{asset.assetName || `Asset #${asset.assetId}`}</S.InfoLabel>
-                      <S.InfoValue>
-                        {[asset.assetTag, asset.serialNumber, asset.notes].filter(Boolean).join(' · ') || '-'}
-                      </S.InfoValue>
-                    </S.InfoRow>
-                  ))
-                ) : (
-                  <S.PlaceholderText>No assets assigned to this step.</S.PlaceholderText>
-                )}
-              </S.DetailsSection>
-            )}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <AccordionSection
+          sectionKey="task"
+          title="Task Details"
+          icon={<DescriptionOutlinedIcon />}
+          expanded={openSections.task}
+          onToggle={() => toggle('task')}
+        >
+          <M.AccordionBodyRow>
+            <span className="label">Description</span>
+            <span className="value">{step.description || 'No description provided.'}</span>
+          </M.AccordionBodyRow>
+          <M.AccordionBodyRow>
+            <span className="label">Started At</span>
+            <span className="value">
+              {step.startedAt ? new Date(step.startedAt).toLocaleString() : '-'}
+            </span>
+          </M.AccordionBodyRow>
+          <M.AccordionBodyRow>
+            <span className="label">Completed At</span>
+            <span className="value">
+              {step.completedAt ? new Date(step.completedAt).toLocaleString() : '-'}
+            </span>
+          </M.AccordionBodyRow>
+        </AccordionSection>
 
-            {activeTab === 'discussion' && (
-              <S.DetailsSection>
-                <WorkerStepDiscussion stepId={numericStepId} />
-              </S.DetailsSection>
-            )}
+        <AccordionSection
+          sectionKey="location"
+          title="Service Location"
+          icon={<LocationOnOutlinedIcon />}
+          expanded={openSections.location}
+          onToggle={() => toggle('location')}
+        >
+          {plusCode && (
+            <M.AccordionBodyRow>
+              <span className="label">Coordinates</span>
+              <span className="value" style={{ fontWeight: 700 }}>{plusCode}</span>
+            </M.AccordionBodyRow>
+          )}
+          <M.AccordionBodyRow>
+            <span className="label">Address</span>
+            <span className="value">
+              {formatAddress(context?.jobAddress) || 'No address provided'}
+            </span>
+          </M.AccordionBodyRow>
+          {context?.jobAddress?.additionalInfo && (
+            <M.AccordionBodyRow>
+              <span className="label">Additional Info</span>
+              <span className="value">{context.jobAddress.additionalInfo}</span>
+            </M.AccordionBodyRow>
+          )}
+          {mapsUrl && (
+            <M.PrimaryActionButton
+              onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
+            >
+              <NearMeOutlinedIcon />
+              Get Directions
+            </M.PrimaryActionButton>
+          )}
+        </AccordionSection>
 
-            {activeTab === 'comments' && (
-              <S.DetailsSection>
-                <WorkerStepComments stepId={numericStepId} onUpdate={fetchStep} />
-              </S.DetailsSection>
-            )}
+        <AccordionSection
+          sectionKey="customer"
+          title="Customer Details"
+          icon={<PersonOutlineIcon />}
+          expanded={openSections.customer}
+          onToggle={() => toggle('customer')}
+        >
+          {context?.customer ? (
+            <>
+              <M.AccordionBodyRow>
+                <span className="label">Name</span>
+                <span className="value">{context.customer.name || '-'}</span>
+              </M.AccordionBodyRow>
+              {context.customer.email && (
+                <M.AccordionBodyRow>
+                  <span className="label">Email</span>
+                  <span className="value">
+                    <a
+                      href={`mailto:${context.customer.email}`}
+                      style={{ color: '#1976d2', textDecoration: 'none' }}
+                    >
+                      {context.customer.email}
+                    </a>
+                  </span>
+                </M.AccordionBodyRow>
+              )}
+              {context.customer.telephone && (
+                <M.AccordionBodyRow>
+                  <span className="label">Phone</span>
+                  <span className="value">
+                    <a
+                      href={`tel:${context.customer.telephone}`}
+                      style={{ color: '#1976d2', textDecoration: 'none' }}
+                    >
+                      {context.customer.telephone}
+                    </a>
+                  </span>
+                </M.AccordionBodyRow>
+              )}
+            </>
+          ) : (
+            <M.AccordionBodyRow>
+              <span className="value">No customer information available.</span>
+            </M.AccordionBodyRow>
+          )}
+        </AccordionSection>
 
-            {activeTab === 'attachments' && (
-              <S.DetailsSection>
-                <WorkerStepAttachments stepId={numericStepId} onUpdate={fetchStep} />
-              </S.DetailsSection>
-            )}
+        <AccordionSection
+          sectionKey="assets"
+          title="Assigned Assets"
+          icon={<Inventory2OutlinedIcon />}
+          expanded={openSections.assets}
+          onToggle={() => toggle('assets')}
+        >
+          {context?.assignedAssets && context.assignedAssets.length > 0 ? (
+            context.assignedAssets.map((asset) => (
+              <M.AccordionBodyRow key={asset.assignmentId}>
+                <span className="label">{asset.assetName || `Asset #${asset.assetId}`}</span>
+                <span className="value">
+                  {[asset.assetTag, asset.serialNumber, asset.notes].filter(Boolean).join(' · ') || '-'}
+                </span>
+              </M.AccordionBodyRow>
+            ))
+          ) : (
+            <M.AccordionBodyRow>
+              <span className="value">No assets assigned to this step.</span>
+            </M.AccordionBodyRow>
+          )}
+        </AccordionSection>
+      </Box>
 
-            {activeTab === 'work-logs' && (
-              <S.DetailsSection>
-                <WorkerStepWorkLogs stepId={numericStepId} />
-              </S.DetailsSection>
-            )}
-          </S.MainContentPanel>
-        </S.JobDetailsLayout>
-      </S.ContentContainer>
-    </PageWrapper>
+      <M.FloatingActionButton onClick={() => setShowWorkLogs((prev) => !prev)}>
+        <AccessTimeIcon />
+        Work Logs
+      </M.FloatingActionButton>
+
+      <Collapse in={showWorkLogs} timeout="auto" unmountOnExit>
+        <Box
+          sx={{
+            background: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '14px',
+            padding: '14px',
+          }}
+        >
+          <WorkerStepWorkLogs stepId={numericStepId} />
+        </Box>
+      </Collapse>
+
+      <M.ActivityCard
+        onClick={() => setActivityTab((prev) => (prev ? null : 'discussion'))}
+        role="button"
+      >
+        <ChatBubbleOutlineIcon />
+        <span>Activity, Comments &amp; Attachments</span>
+      </M.ActivityCard>
+
+      <Collapse in={activityTab !== null} timeout="auto" unmountOnExit>
+        <Box
+          sx={{
+            background: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '14px',
+            padding: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}
+        >
+          <M.ActivityTabsBar>
+            <M.FilterTab
+              active={activityTab === 'discussion'}
+              onClick={() => setActivityTab('discussion')}
+            >
+              Discussion
+            </M.FilterTab>
+            <M.FilterTab
+              active={activityTab === 'comments'}
+              onClick={() => setActivityTab('comments')}
+            >
+              Comments
+            </M.FilterTab>
+            <M.FilterTab
+              active={activityTab === 'attachments'}
+              onClick={() => setActivityTab('attachments')}
+            >
+              Attachments
+            </M.FilterTab>
+          </M.ActivityTabsBar>
+
+          {activityTab === 'discussion' && <WorkerStepDiscussion stepId={numericStepId} />}
+          {activityTab === 'comments' && (
+            <WorkerStepComments stepId={numericStepId} onUpdate={fetchStep} />
+          )}
+          {activityTab === 'attachments' && (
+            <WorkerStepAttachments stepId={numericStepId} onUpdate={fetchStep} />
+          )}
+        </Box>
+      </Collapse>
+    </M.WorkerShell>
   );
 };
+
+export default WorkerStepDetail;
