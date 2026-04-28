@@ -57,6 +57,7 @@ export const SidebarWrapper = styled(Box, {
  * Individual sidebar item button
  */
 export const SidebarItemButton = styled(Box)(({ theme }) => ({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'flex-start',
@@ -66,7 +67,7 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   width: '100%',
   minHeight: rem(40),
   backgroundColor: 'transparent',
-  borderRadius: rem(8),
+  borderRadius: rem(10),
   cursor: 'pointer',
   border: 'none',
   fontSize: rem(14),
@@ -75,6 +76,20 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   userSelect: 'none',
   transition: 'all 0.25s ease',
   boxSizing: 'border-box',
+  overflow: 'hidden',
+
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    height: 0,
+    width: rem(3),
+    borderRadius: rem(3),
+    background: '#6366F1',
+    transform: 'translateY(-50%)',
+    transition: 'height 0.25s ease',
+  },
 
   '&:hover': {
     backgroundColor: theme.palette.colors?.grey_100 || theme.palette.action.hover,
@@ -83,9 +98,17 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   },
 
   '&.active': {
-    backgroundColor: theme.palette.colors?.grey_200 || theme.palette.action.selected,
-    color: theme.palette.colors?.black || theme.palette.text.primary,
-    fontWeight: 600,
+    backgroundColor: 'rgba(99, 102, 241, 0.10)',
+    color: '#4338CA',
+    fontWeight: 700,
+
+    '&::before': {
+      height: '60%',
+    },
+
+    '& svg': {
+      color: '#6366F1',
+    },
   },
 
   [theme.breakpoints.down('lg')]: {

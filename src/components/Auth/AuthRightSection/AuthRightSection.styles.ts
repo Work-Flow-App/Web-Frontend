@@ -26,6 +26,9 @@ export const RightSection = styled(Box)({
     padding: `${rem(20)} ${rem(12)}`,
     gap: rem(28),
   },
+  '@media (max-width: 1024px)': {
+    display: 'none',
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -83,6 +86,9 @@ export const RightContent = styled(Box)({
   '@media (max-width: 1366px)': {
     gap: rem(28),
   },
+  '@media (max-width: 1024px)': {
+    gap: rem(20),
+  },
 });
 
 export const BrandSection = styled(Box)({
@@ -92,6 +98,10 @@ export const BrandSection = styled(Box)({
   gap: rem(20),
   width: '100%',
   maxWidth: rem(800),
+  '@media (max-width: 1024px)': {
+    gap: rem(12),
+    maxWidth: rem(400),
+  },
 });
 
 export const Tagline = styled(Typography)(({ theme }) => ({
@@ -105,6 +115,9 @@ export const Tagline = styled(Typography)(({ theme }) => ({
   },
   '@media (max-width: 1366px)': {
     fontSize: rem(18),
+  },
+  '@media (max-width: 1024px)': {
+    fontSize: rem(16),
   },
 }));
 
@@ -126,12 +139,14 @@ export const FeaturesGrid = styled(Box)({
   '@media (max-width: 1536px)': {
     maxWidth: rem(900),
     height: rem(360),
-    transform: 'scale(0.9)',
   },
   '@media (max-width: 1366px)': {
-    maxWidth: rem(780),
+    maxWidth: rem(600),
+    height: rem(340),
+  },
+  '@media (max-width: 1024px)': {
+    maxWidth: rem(400),
     height: rem(320),
-    transform: 'scale(0.8)',
   },
   '& > div': {
     flex: '0 0 auto',
@@ -143,12 +158,21 @@ export const FeaturesGrid = styled(Box)({
     marginRight: rem(-80),
     opacity: 0.7,
     transform: 'scale(1)',
+    '@media (max-width: 1366px)': {
+      marginRight: rem(-100),
+    },
+    '@media (max-width: 1024px)': {
+      display: 'none',
+    },
   },
   '& > div.card-center': {
     order: 1,
     zIndex: 2,
     transform: 'scale(1.05)',
     opacity: 1,
+    '@media (max-width: 1024px)': {
+      transform: 'scale(1)',
+    },
   },
   '& > div.card-right': {
     order: 2,
@@ -156,5 +180,11 @@ export const FeaturesGrid = styled(Box)({
     marginLeft: rem(-80),
     opacity: 0.7,
     transform: 'scale(1)',
+    '@media (max-width: 1366px)': {
+      marginLeft: rem(-100),
+    },
+    '@media (max-width: 1024px)': {
+      display: 'none',
+    },
   },
 });
