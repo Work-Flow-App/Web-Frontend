@@ -8,7 +8,14 @@ import { VerifyEmail } from './pages/auth/VerifyEmail'
 import { ResendVerification } from './pages/auth/ResendVerification'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { CompanyProfile } from './pages/company/CompanyProfile'
-import { WorkerPage } from './pages/worker/WorkerPage'
+import {
+  WorkerPage,
+  WorkerDashboard,
+  WorkerJobWorkflowsList,
+  WorkerJobWorkflowDetail,
+  WorkerStepsList,
+  WorkerStepDetail,
+} from './pages/worker'
 import { InvitationsPage } from './pages/invitations'
 import { ClientPage } from './pages/client/ClientPage'
 import { JobsPage } from './pages/jobs/JobsPage'
@@ -66,6 +73,13 @@ function App() {
               <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
               <Route path="/company/assets/maps" element={<MapsPage />} />
               <Route path="/company/line-items" element={<LineItemsPage />} />
+
+              {/* Worker routes */}
+              <Route path="/worker" element={<WorkerDashboard />} />
+              <Route path="/worker/job-workflows" element={<WorkerJobWorkflowsList />} />
+              <Route path="/worker/job-workflows/:jobWorkflowId" element={<WorkerJobWorkflowDetail />} />
+              <Route path="/worker/steps" element={<WorkerStepsList />} />
+              <Route path="/worker/steps/:stepId" element={<WorkerStepDetail />} />
 
               {/* Catch all route - 404 with Layout */}
               <Route path="*" element={<NotFound />} />

@@ -221,8 +221,13 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
 
       const updatedFieldValues: Record<string, any> = { ...(job.fieldValues || {}) };
       sortedFields.forEach((f) => {
-        if (f.id !== undefined) {
-          updatedFieldValues[String(f.id)] = editFieldValues[String(f.id)] ?? '';
+        if (f.id === undefined) return;
+        const key = String(f.id);
+        const value = editFieldValues[key];
+        if (value === undefined || value === '') {
+          delete updatedFieldValues[key];
+        } else {
+          updatedFieldValues[key] = value;
         }
       });
 

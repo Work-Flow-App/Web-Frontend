@@ -206,10 +206,33 @@ export interface CompanyProfileResponse {
     'contactNumber'?: string;
     'vatNumber'?: string;
     'bankDetails'?: CompanyBankDetailsResponse;
+    'currency'?: CompanyProfileResponseCurrencyEnum;
     'archived'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
+
+export const CompanyProfileResponseCurrencyEnum = {
+    Gbp: 'GBP',
+    Eur: 'EUR',
+    Usd: 'USD',
+    Cad: 'CAD',
+    Aud: 'AUD',
+    Nzd: 'NZD',
+    Chf: 'CHF',
+    Jpy: 'JPY',
+    Sek: 'SEK',
+    Nok: 'NOK',
+    Dkk: 'DKK',
+    Sgd: 'SGD',
+    Aed: 'AED',
+    Sar: 'SAR',
+    Inr: 'INR',
+    Zar: 'ZAR'
+} as const;
+
+export type CompanyProfileResponseCurrencyEnum = typeof CompanyProfileResponseCurrencyEnum[keyof typeof CompanyProfileResponseCurrencyEnum];
+
 export interface CompanyProfileUpdateRequest {
     'name': string;
     'address'?: CompanyAddressRequest;
@@ -221,7 +244,30 @@ export interface CompanyProfileUpdateRequest {
     'contactNumber'?: string;
     'vatNumber'?: string;
     'bankDetails'?: CompanyBankDetailsRequest;
+    'currency'?: CompanyProfileUpdateRequestCurrencyEnum;
 }
+
+export const CompanyProfileUpdateRequestCurrencyEnum = {
+    Gbp: 'GBP',
+    Eur: 'EUR',
+    Usd: 'USD',
+    Cad: 'CAD',
+    Aud: 'AUD',
+    Nzd: 'NZD',
+    Chf: 'CHF',
+    Jpy: 'JPY',
+    Sek: 'SEK',
+    Nok: 'NOK',
+    Dkk: 'DKK',
+    Sgd: 'SGD',
+    Aed: 'AED',
+    Sar: 'SAR',
+    Inr: 'INR',
+    Zar: 'ZAR'
+} as const;
+
+export type CompanyProfileUpdateRequestCurrencyEnum = typeof CompanyProfileUpdateRequestCurrencyEnum[keyof typeof CompanyProfileUpdateRequestCurrencyEnum];
+
 export interface CustomerAddressDto {
     'houseNumber'?: string;
     'street'?: string;
@@ -318,7 +364,7 @@ export interface InvoiceResponse {
     'updatedAt'?: string;
 }
 export interface JobCreateRequest {
-    'templateId'?: number;
+    'templateId': number;
     'clientId'?: number;
     'customerId': number;
     'assignedWorkerId'?: number;
@@ -368,7 +414,7 @@ export const JobResponseStatusEnum = {
 export type JobResponseStatusEnum = typeof JobResponseStatusEnum[keyof typeof JobResponseStatusEnum];
 
 export interface JobTemplateCreateRequest {
-    'name'?: string;
+    'name': string;
     'description'?: string;
     'isDefault'?: boolean;
 }
@@ -724,8 +770,8 @@ export const StepAttachmentUpdateRequestTypeEnum = {
 export type StepAttachmentUpdateRequestTypeEnum = typeof StepAttachmentUpdateRequestTypeEnum[keyof typeof StepAttachmentUpdateRequestTypeEnum];
 
 export interface StepCommentCreateRequest {
-    'content'?: string;
-    'type'?: StepCommentCreateRequestTypeEnum;
+    'content': string;
+    'type': StepCommentCreateRequestTypeEnum;
 }
 
 export const StepCommentCreateRequestTypeEnum = {
@@ -861,7 +907,6 @@ export type WorkerInvitationStatusResponseStatusEnum = typeof WorkerInvitationSt
 
 export interface WorkerInviteResponse {
     'email'?: string;
-    'token'?: string;
     'message'?: string;
     'expiresAt'?: string;
 }
@@ -907,7 +952,7 @@ export interface WorkflowBulkUpdateRequest {
     'steps'?: Array<WorkflowStepBulkRequest>;
 }
 export interface WorkflowCreateRequest {
-    'name'?: string;
+    'name': string;
     'description'?: string;
 }
 export interface WorkflowResponse {

@@ -18,6 +18,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { authService } from '../services/api/auth';
@@ -32,11 +33,13 @@ import { Place } from '@mui/icons-material';
  */
 const RightActions = ({
   userInitials = 'U',
+  isWorker = false,
   onLogout,
   onViewProfile,
   onViewSettings,
 }: {
   userInitials?: string;
+  isWorker?: boolean;
   onLogout: () => void;
   onViewProfile: () => void;
   onViewSettings: () => void;
@@ -102,14 +105,16 @@ const RightActions = ({
           <ListItemIcon>
             <AccountCircleIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Company Profile</ListItemText>
+          <ListItemText>{isWorker ? 'My Profile' : 'Company Profile'}</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => { handleClose(); onViewSettings(); }}>
-          <ListItemIcon>
-            <SettingsIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Settings</ListItemText>
-        </MenuItem>
+        {!isWorker && (
+          <MenuItem onClick={() => { handleClose(); onViewSettings(); }}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Settings</ListItemText>
+          </MenuItem>
+        )}
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
@@ -161,10 +166,19 @@ export const Layout: React.FC = () => {
     return role.replace('ROLE_', '').substring(0, 2).toUpperCase();
   }, []);
 
+  const userRole = useMemo(() => {
+    const token = authService.getAccessToken();
+    if (!token) return null;
+    return getRoleFromToken(token);
+  }, []);
+
+  const isWorker = userRole === 'ROLE_WORKER' || userRole === 'WORKER';
+
   const [userInitials, setUserInitials] = useState(roleInitials);
 
-  // Update initials from company name once profile loads
+  // Update initials from company name once profile loads (company users only)
   useEffect(() => {
+    if (isWorker) return;
     companyService.getProfile()
       .then((response) => {
         const name = response.data.name;
@@ -179,16 +193,24 @@ export const Layout: React.FC = () => {
       .catch(() => {
         // Keep role-based initials if profile fetch fails
       });
-  }, []);
+  }, [isWorker]);
 
-  // Navigate to company profile
+  // Navigate to profile (company has a profile page; worker goes to dashboard)
   const handleViewProfile = () => {
-    navigate('/company/profile');
+    if (isWorker) {
+      navigate('/worker');
+    } else {
+      navigate('/company/profile');
+    }
   };
 
   // Navigate to settings
   const handleViewSettings = () => {
-    navigate('/company/settings');
+    if (isWorker) {
+      navigate('/worker');
+    } else {
+      navigate('/company/settings');
+    }
   };
 
   // Handle logout
@@ -207,7 +229,7 @@ export const Layout: React.FC = () => {
    * Sidebar items with their icons
    * Links are handled in Sidebar component using React Router Link
    */
-  const sidebarItems: SidebarItem[] = [
+  const companySidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
     {
       id: 'workers',
@@ -235,6 +257,14 @@ export const Layout: React.FC = () => {
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
   ];
 
+  const workerSidebarItems: SidebarItem[] = [
+    { id: 'worker-dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/worker' },
+    { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
+    { id: 'worker-steps', label: 'My Steps', icon: <AssignmentIcon />, href: '/worker/steps' },
+  ];
+
+  const sidebarItems: SidebarItem[] = isWorker ? workerSidebarItems : companySidebarItems;
+
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
@@ -258,7 +288,7 @@ export const Layout: React.FC = () => {
       <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
-          rightContent={<RightActions userInitials={userInitials} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
+          rightContent={<RightActions userInitials={userInitials} isWorker={isWorker} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
           onToggleSidebar={handleToggleSidebar}
         />
 
