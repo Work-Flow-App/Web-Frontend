@@ -18,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   className,
   sx,
+  subtitle,
 }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -111,22 +112,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Box>
         )}
 
-        {/* Mobile Close Button - Top Right */}
+        {/* Mobile Header - Logo + Close Button */}
         {!isCollapsed && (
           <Box
             sx={{
               display: { xs: 'flex', sm: 'none' },
               width: '100%',
-              justifyContent: 'flex-end',
-              marginBottom: rem(8),
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: rem(8),
+              paddingBottom: rem(12),
+              marginBottom: rem(12),
+              borderBottom: `${rem(1)} solid ${floowColors.tailwind.gray[200]}`,
             }}
           >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: rem(10),
+                '& img': {
+                  height: rem(28),
+                  width: rem(28),
+                  objectFit: 'contain',
+                },
+              }}
+            >
+              <FloowLogo iconOnly />
+              <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                <Box
+                  sx={{
+                    fontFamily: 'Manrope, sans-serif',
+                    fontSize: rem(15),
+                    fontWeight: 800,
+                    color: floowColors.text.heading,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Workfloww
+                </Box>
+                {subtitle && (
+                  <Box
+                    sx={{
+                      fontFamily: 'Manrope, sans-serif',
+                      fontSize: rem(10),
+                      fontWeight: 700,
+                      color: '#6366F1',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                    }}
+                  >
+                    {subtitle}
+                  </Box>
+                )}
+              </Box>
+            </Box>
             <IconButton
               onClick={onToggleCollapse}
               sx={{
                 padding: rem(4),
-                minWidth: rem(40),
-                minHeight: rem(40),
+                minWidth: rem(36),
+                minHeight: rem(36),
                 color: floowColors.grey[700],
                 '&:hover': {
                   backgroundColor: floowColors.grey[100],

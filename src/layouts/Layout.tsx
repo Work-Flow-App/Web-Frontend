@@ -258,9 +258,9 @@ export const Layout: React.FC = () => {
   ];
 
   const workerSidebarItems: SidebarItem[] = [
-    { id: 'worker-dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/worker' },
+    { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
-    { id: 'worker-steps', label: 'My Steps', icon: <AssignmentIcon />, href: '/worker/steps' },
+    { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
   ];
 
   const sidebarItems: SidebarItem[] = isWorker ? workerSidebarItems : companySidebarItems;
@@ -282,7 +282,12 @@ export const Layout: React.FC = () => {
   return (
     <S.PageWrapper>
       {/* Persistent Sidebar */}
-      <Sidebar items={sidebarItems} isCollapsed={isSidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+      <Sidebar
+        items={sidebarItems}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleSidebar}
+        subtitle={isWorker ? 'Worker' : 'Company'}
+      />
 
       {/* Right Section: TopNav + MainContent */}
       <S.PageRightSection>
