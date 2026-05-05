@@ -26,6 +26,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import type { JobResponse, EstimateResponse, LineItemResponse, LineItemCreateRequest, InvoiceResponse } from '../../../../../services/api';
 import { estimateService, lineItemService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../../contexts/CurrencyContext';
 import { useGlobalModalOuterContext, ModalSizes } from '../../../../../components/UI/GlobalModal';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
@@ -60,6 +61,7 @@ const defaultNewItem = {
 
 export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const { showError } = useSnackbar();
+  const { formatCurrency } = useCurrency();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const [estimate, setEstimate] = useState<EstimateResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,7 +212,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     });
   }, [job, estimate?.lineItems, selectedIds, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
-  const fmt = (val?: number) => (val !== undefined ? `£${val.toFixed(2)}` : '—');
+  const fmt = (val?: number) => formatCurrency(val);
 
   const calcNet = useMemo(() => {
     const price = parseFloat(newItem.unitPrice) || 0;

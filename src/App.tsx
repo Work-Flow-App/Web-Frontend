@@ -34,11 +34,13 @@ import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
+import { CurrencyProvider } from './contexts/CurrencyContext'
 import './App.css'
 
 function App() {
   return (
     <GlobalSnackbarProvider>
+      <CurrencyProvider>
       <GlobalModalOuterContextProvider>
         <Router>
           <AppConfiguration />
@@ -90,6 +92,7 @@ function App() {
           <GlobalModal />
         </Router>
       </GlobalModalOuterContextProvider>
+      </CurrencyProvider>
     </GlobalSnackbarProvider>
   )
 }

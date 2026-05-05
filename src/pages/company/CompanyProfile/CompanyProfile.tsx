@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
+import { UniversalDropdown } from '../../../components/UI/Forms/Dropdown/UniversalDropdown';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { companyService } from '../../../services/api';
 import type { CompanyProfileResponse } from '../../../services/api';
+import type { CompanyProfileUpdateRequestCurrencyEnum } from '../../../../workflow-api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { CompanyProfileFormSchema } from './CompanyProfileSchema';
@@ -28,6 +30,25 @@ import type { CompanyProfileFormData } from './ICompanyProfile';
 
 const EMPTY = '—';
 
+const CURRENCY_OPTIONS = [
+  { value: 'GBP', label: '£  GBP — British Pound Sterling' },
+  { value: 'EUR', label: '€  EUR — Euro' },
+  { value: 'USD', label: '$  USD — US Dollar' },
+  { value: 'CAD', label: 'CA$  CAD — Canadian Dollar' },
+  { value: 'AUD', label: 'A$  AUD — Australian Dollar' },
+  { value: 'NZD', label: 'NZ$  NZD — New Zealand Dollar' },
+  { value: 'CHF', label: 'Fr  CHF — Swiss Franc' },
+  { value: 'JPY', label: '¥  JPY — Japanese Yen' },
+  { value: 'SEK', label: 'kr  SEK — Swedish Krona' },
+  { value: 'NOK', label: 'kr  NOK — Norwegian Krone' },
+  { value: 'DKK', label: 'kr  DKK — Danish Krone' },
+  { value: 'SGD', label: 'S$  SGD — Singapore Dollar' },
+  { value: 'AED', label: 'د.إ  AED — UAE Dirham' },
+  { value: 'SAR', label: '﷼  SAR — Saudi Riyal' },
+  { value: 'INR', label: '₹  INR — Indian Rupee' },
+  { value: 'ZAR', label: 'R  ZAR — South African Rand' },
+];
+
 export const CompanyProfile: React.FC = () => {
   const { fieldRules, placeHolders, fieldLabels } = useSchema(CompanyProfileFormSchema);
 
@@ -47,6 +68,7 @@ export const CompanyProfile: React.FC = () => {
       country: '',
       postcode: '',
       vatNumber: '',
+      currency: '',
       bankName: '',
       accountName: '',
       accountNo: '',
@@ -57,6 +79,7 @@ export const CompanyProfile: React.FC = () => {
   const {
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = methods;
 
@@ -84,6 +107,7 @@ export const CompanyProfile: React.FC = () => {
     country: data.address?.country || '',
     postcode: data.address?.postcode || '',
     vatNumber: data.vatNumber || '',
+    currency: data.currency || '',
     bankName: data.bankDetails?.bankName || '',
     accountName: data.bankDetails?.accountName || '',
     accountNo: data.bankDetails?.accountNo || '',
@@ -130,6 +154,7 @@ export const CompanyProfile: React.FC = () => {
           postcode: data.postcode || undefined,
         },
         vatNumber: data.vatNumber || undefined,
+        currency: (data.currency as CompanyProfileUpdateRequestCurrencyEnum) || undefined,
         bankDetails: {
           bankName: data.bankName || undefined,
           accountName: data.accountName || undefined,
@@ -269,6 +294,22 @@ export const CompanyProfile: React.FC = () => {
                     error={errors.vatNumber}
                   />
                 </FieldsGrid>
+                <Controller
+                  name="currency"
+                  control={control}
+                  render={({ field }) => (
+                    <UniversalDropdown
+                      label="Currency"
+                      placeholder="Select currency"
+                      options={CURRENCY_OPTIONS}
+                      value={CURRENCY_OPTIONS.find((o) => o.value === field.value) ?? null}
+                      onChange={(val) => field.onChange(val)}
+                      clearable={false}
+                      searchable
+                      fullWidth
+                    />
+                  )}
+                />
               </>
             ) : (
               <>
@@ -302,6 +343,14 @@ export const CompanyProfile: React.FC = () => {
                     <FieldValue>{profile?.vatNumber || EMPTY}</FieldValue>
                   </FieldRow>
                 </FieldsGrid>
+                <FieldRow>
+                  <FieldLabel>Currency</FieldLabel>
+                  <FieldValue>
+                    {CURRENCY_OPTIONS.find((o) => o.value === profile?.currency)?.label ||
+                      profile?.currency ||
+                      EMPTY}
+                  </FieldValue>
+                </FieldRow>
               </>
             )}
           </SectionCard>

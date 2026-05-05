@@ -12,6 +12,7 @@ export interface CompanyProfileFormData {
   country: string;
   postcode: string;
   vatNumber: string;
+  currency?: string;
   bankName: string;
   accountName: string;
   accountNo: string;

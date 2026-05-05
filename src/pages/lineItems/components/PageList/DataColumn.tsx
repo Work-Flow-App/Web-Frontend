@@ -17,9 +17,7 @@ export interface LineItemTableRow {
   createdAt: string;
 }
 
-const fmt = (val: number) => (val !== undefined ? `£${val.toFixed(2)}` : '—');
-
-export const columns: ITableColumn<LineItemTableRow>[] = [
+export const getColumns = (fmt: (val?: number | null) => string): ITableColumn<LineItemTableRow>[] => [
   {
     id: 'productCode',
     label: 'Product Code',

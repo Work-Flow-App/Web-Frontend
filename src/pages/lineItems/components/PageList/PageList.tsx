@@ -7,14 +7,17 @@ import { CreateLineItemModal } from '../CreateLineItemModal';
 import { lineItemService } from '../../../../services/api';
 import type { LineItemResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import { columns, type LineItemTableRow } from './DataColumn';
+import { getColumns, type LineItemTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
   const [lineItems, setLineItems] = useState<LineItemTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
+  const { formatCurrency } = useCurrency();
+  const columns = useMemo(() => getColumns(formatCurrency), [formatCurrency]);
 
   const fetchLineItems = useCallback(async () => {
     try {
