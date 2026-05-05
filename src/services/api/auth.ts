@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { ApiResponse } from './client';
+import { getAffiliateTid } from '../../utils/tracking';
 import type {
   SignupRequest as WorkflowSignupRequest,
   SignupResponse,
@@ -43,7 +44,7 @@ export const authService = {
    */
   async verifyEmail(token: string): Promise<ApiResponse<AuthResponse>> {
     const body: VerifyEmailRequest = { token };
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/verify-email', body);
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/verify-email', { ...body, tid: getAffiliateTid() });
 
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
@@ -81,7 +82,7 @@ export const authService = {
    * Sign in with Google using the ID token from Google Identity Services
    */
   async loginWithGoogle(idToken: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/google', { idToken, role: 'COMPANY' });
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/google', { idToken, role: 'COMPANY', tid: getAffiliateTid() });
 
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
