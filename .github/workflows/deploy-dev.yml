@@ -40,6 +40,8 @@ jobs:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_TOMTOM_API_KEY: ${{ secrets.VITE_TOMTOM_API_KEY }}
+          VITE_PADDLE_TOKEN: ${{ secrets.DEV_VITE_PADDLE_TOKEN }}
+          VITE_PADDLE_ENV: ${{ secrets.DEV_VITE_PADDLE_ENV }}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
