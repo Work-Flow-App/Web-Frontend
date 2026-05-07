@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Forms/Input';
-import { UniversalDropdown } from '../../../components/UI/Forms/Dropdown/UniversalDropdown';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { companyService } from '../../../services/api';
 import type { CompanyProfileResponse } from '../../../services/api';
-import type { CompanyProfileUpdateRequestCurrencyEnum } from '../../../../workflow-api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { CompanyProfileFormSchema } from './CompanyProfileSchema';
@@ -36,25 +34,6 @@ import { BillingSettings } from '../../settings/BillingSettings';
 
 const EMPTY = '—';
 
-const CURRENCY_OPTIONS = [
-  { value: 'GBP', label: '£  GBP — British Pound Sterling' },
-  { value: 'EUR', label: '€  EUR — Euro' },
-  { value: 'USD', label: '$  USD — US Dollar' },
-  { value: 'CAD', label: 'CA$  CAD — Canadian Dollar' },
-  { value: 'AUD', label: 'A$  AUD — Australian Dollar' },
-  { value: 'NZD', label: 'NZ$  NZD — New Zealand Dollar' },
-  { value: 'CHF', label: 'Fr  CHF — Swiss Franc' },
-  { value: 'JPY', label: '¥  JPY — Japanese Yen' },
-  { value: 'SEK', label: 'kr  SEK — Swedish Krona' },
-  { value: 'NOK', label: 'kr  NOK — Norwegian Krone' },
-  { value: 'DKK', label: 'kr  DKK — Danish Krone' },
-  { value: 'SGD', label: 'S$  SGD — Singapore Dollar' },
-  { value: 'AED', label: 'د.إ  AED — UAE Dirham' },
-  { value: 'SAR', label: '﷼  SAR — Saudi Riyal' },
-  { value: 'INR', label: '₹  INR — Indian Rupee' },
-  { value: 'ZAR', label: 'R  ZAR — South African Rand' },
-];
-
 export const CompanyProfile: React.FC = () => {
   const { fieldRules, placeHolders, fieldLabels } = useSchema(CompanyProfileFormSchema);
 
@@ -74,7 +53,6 @@ export const CompanyProfile: React.FC = () => {
       country: '',
       postcode: '',
       vatNumber: '',
-      currency: '',
       bankName: '',
       accountName: '',
       accountNo: '',
@@ -85,7 +63,6 @@ export const CompanyProfile: React.FC = () => {
   const {
     handleSubmit,
     reset,
-    control,
     formState: { errors },
   } = methods;
 
@@ -114,7 +91,6 @@ export const CompanyProfile: React.FC = () => {
     country: data.address?.country || '',
     postcode: data.address?.postcode || '',
     vatNumber: data.vatNumber || '',
-    currency: data.currency || '',
     bankName: data.bankDetails?.bankName || '',
     accountName: data.bankDetails?.accountName || '',
     accountNo: data.bankDetails?.accountNo || '',
@@ -161,7 +137,6 @@ export const CompanyProfile: React.FC = () => {
           postcode: data.postcode || undefined,
         },
         vatNumber: data.vatNumber || undefined,
-        currency: (data.currency as CompanyProfileUpdateRequestCurrencyEnum) || undefined,
         bankDetails: {
           bankName: data.bankName || undefined,
           accountName: data.accountName || undefined,
@@ -210,7 +185,13 @@ export const CompanyProfile: React.FC = () => {
             <HeaderActions>
               {isEditing ? (
                 <>
-                  <Button variant="outlined" color="secondary" size="medium" onClick={handleCancel} disabled={isSaving}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="medium"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                  >
                     Cancel
                   </Button>
                   <Button
@@ -245,278 +226,254 @@ export const CompanyProfile: React.FC = () => {
           </TabContent>
         )}
 
-        {activeTab === 0 && (
-          <SectionsGrid>
-            {/* Company Information */}
-            <SectionCard>
-              <SectionTitle>Company Information</SectionTitle>
+        {activeTab === 0 && <SectionsGrid>
+          {/* Company Information */}
+          <SectionCard>
+            <SectionTitle>Company Information</SectionTitle>
 
-              {isEditing ? (
-                <>
-                  <Input
-                    name="name"
-                    label={fieldLabels.name}
-                    type="text"
-                    placeholder={placeHolders.name}
-                    fullWidth
-                    error={errors.name}
-                  />
-                  <FieldsGrid>
-                    <Input
-                      name="email"
-                      label={fieldLabels.email}
-                      type="email"
-                      placeholder={placeHolders.email}
-                      fullWidth
-                      error={errors.email}
-                    />
-                    <Input
-                      name="contactEmail"
-                      label={fieldLabels.contactEmail}
-                      type="email"
-                      placeholder={placeHolders.contactEmail}
-                      fullWidth
-                      error={errors.contactEmail}
-                    />
-                    <Input
-                      name="contactNumber"
-                      label={fieldLabels.contactNumber}
-                      type="text"
-                      placeholder={placeHolders.contactNumber}
-                      fullWidth
-                      error={errors.contactNumber}
-                    />
-                    <Input
-                      name="telephone"
-                      label={fieldLabels.telephone}
-                      type="text"
-                      placeholder={placeHolders.telephone}
-                      fullWidth
-                      error={errors.telephone}
-                    />
-                    <Input
-                      name="mobile"
-                      label={fieldLabels.mobile}
-                      type="text"
-                      placeholder={placeHolders.mobile}
-                      fullWidth
-                      error={errors.mobile}
-                    />
-                    <Input
-                      name="vatNumber"
-                      label={fieldLabels.vatNumber}
-                      type="text"
-                      placeholder={placeHolders.vatNumber}
-                      fullWidth
-                      error={errors.vatNumber}
-                    />
-                  </FieldsGrid>
-                  <Controller
-                    name="currency"
-                    control={control}
-                    render={({ field }) => (
-                      <UniversalDropdown
-                        label="Currency"
-                        placeholder="Select currency"
-                        options={CURRENCY_OPTIONS}
-                        value={CURRENCY_OPTIONS.find((o) => o.value === field.value) ?? null}
-                        onChange={(val) => field.onChange(val)}
-                        clearable={false}
-                        searchable
-                        fullWidth
-                      />
-                    )}
-                  />
-                </>
-              ) : (
-                <>
-                  <FieldRow>
-                    <FieldLabel>Company Name</FieldLabel>
-                    <FieldValue>{profile?.name || EMPTY}</FieldValue>
-                  </FieldRow>
-                  <FieldsGrid>
-                    <FieldRow>
-                      <FieldLabel>Email</FieldLabel>
-                      <FieldValue>{profile?.email || EMPTY}</FieldValue>
-                    </FieldRow>
-                    <FieldRow>
-                      <FieldLabel>Contact Email</FieldLabel>
-                      <FieldValue>{profile?.contactEmail || EMPTY}</FieldValue>
-                    </FieldRow>
-                    <FieldRow>
-                      <FieldLabel>Contact Number</FieldLabel>
-                      <FieldValue>{profile?.contactNumber || EMPTY}</FieldValue>
-                    </FieldRow>
-                    <FieldRow>
-                      <FieldLabel>Telephone</FieldLabel>
-                      <FieldValue>{profile?.telephone || EMPTY}</FieldValue>
-                    </FieldRow>
-                    <FieldRow>
-                      <FieldLabel>Mobile</FieldLabel>
-                      <FieldValue>{profile?.mobile || EMPTY}</FieldValue>
-                    </FieldRow>
-                    <FieldRow>
-                      <FieldLabel>VAT Number</FieldLabel>
-                      <FieldValue>{profile?.vatNumber || EMPTY}</FieldValue>
-                    </FieldRow>
-                  </FieldsGrid>
-                  <FieldRow>
-                    <FieldLabel>Currency</FieldLabel>
-                    <FieldValue>
-                      {CURRENCY_OPTIONS.find((o) => o.value === profile?.currency)?.label || profile?.currency || EMPTY}
-                    </FieldValue>
-                  </FieldRow>
-                </>
-              )}
-            </SectionCard>
-
-            {/* Address */}
-            <SectionCard>
-              <SectionTitle>Address</SectionTitle>
-
-              {isEditing ? (
+            {isEditing ? (
+              <>
+                <Input
+                  name="name"
+                  label={fieldLabels.name}
+                  type="text"
+                  placeholder={placeHolders.name}
+                  fullWidth
+                  error={errors.name}
+                />
                 <FieldsGrid>
                   <Input
-                    name="addressLine1"
-                    label={fieldLabels.addressLine1}
-                    type="text"
-                    placeholder={placeHolders.addressLine1}
+                    name="email"
+                    label={fieldLabels.email}
+                    type="email"
+                    placeholder={placeHolders.email}
                     fullWidth
-                    error={errors.addressLine1}
+                    error={errors.email}
                   />
                   <Input
-                    name="addressLine2"
-                    label={fieldLabels.addressLine2}
-                    type="text"
-                    placeholder={placeHolders.addressLine2}
+                    name="contactEmail"
+                    label={fieldLabels.contactEmail}
+                    type="email"
+                    placeholder={placeHolders.contactEmail}
                     fullWidth
-                    error={errors.addressLine2}
+                    error={errors.contactEmail}
                   />
                   <Input
-                    name="addressLine3"
-                    label={fieldLabels.addressLine3}
+                    name="contactNumber"
+                    label={fieldLabels.contactNumber}
                     type="text"
-                    placeholder={placeHolders.addressLine3}
+                    placeholder={placeHolders.contactNumber}
                     fullWidth
-                    error={errors.addressLine3}
+                    error={errors.contactNumber}
                   />
                   <Input
-                    name="town"
-                    label={fieldLabels.town}
+                    name="telephone"
+                    label={fieldLabels.telephone}
                     type="text"
-                    placeholder={placeHolders.town}
+                    placeholder={placeHolders.telephone}
                     fullWidth
-                    error={errors.town}
+                    error={errors.telephone}
                   />
                   <Input
-                    name="country"
-                    label={fieldLabels.country}
+                    name="mobile"
+                    label={fieldLabels.mobile}
                     type="text"
-                    placeholder={placeHolders.country}
+                    placeholder={placeHolders.mobile}
                     fullWidth
-                    error={errors.country}
+                    error={errors.mobile}
                   />
                   <Input
-                    name="postcode"
-                    label={fieldLabels.postcode}
+                    name="vatNumber"
+                    label={fieldLabels.vatNumber}
                     type="text"
-                    placeholder={placeHolders.postcode}
+                    placeholder={placeHolders.vatNumber}
                     fullWidth
-                    error={errors.postcode}
+                    error={errors.vatNumber}
                   />
                 </FieldsGrid>
-              ) : (
+              </>
+            ) : (
+              <>
+                <FieldRow>
+                  <FieldLabel>Company Name</FieldLabel>
+                  <FieldValue>{profile?.name || EMPTY}</FieldValue>
+                </FieldRow>
                 <FieldsGrid>
                   <FieldRow>
-                    <FieldLabel>Address Line 1</FieldLabel>
-                    <FieldValue>{profile?.address?.addressLine1 || EMPTY}</FieldValue>
+                    <FieldLabel>Email</FieldLabel>
+                    <FieldValue>{profile?.email || EMPTY}</FieldValue>
                   </FieldRow>
                   <FieldRow>
-                    <FieldLabel>Address Line 2</FieldLabel>
-                    <FieldValue>{profile?.address?.addressLine2 || EMPTY}</FieldValue>
+                    <FieldLabel>Contact Email</FieldLabel>
+                    <FieldValue>{profile?.contactEmail || EMPTY}</FieldValue>
                   </FieldRow>
                   <FieldRow>
-                    <FieldLabel>Address Line 3</FieldLabel>
-                    <FieldValue>{profile?.address?.addressLine3 || EMPTY}</FieldValue>
+                    <FieldLabel>Contact Number</FieldLabel>
+                    <FieldValue>{profile?.contactNumber || EMPTY}</FieldValue>
                   </FieldRow>
                   <FieldRow>
-                    <FieldLabel>Town / City</FieldLabel>
-                    <FieldValue>{profile?.address?.town || EMPTY}</FieldValue>
+                    <FieldLabel>Telephone</FieldLabel>
+                    <FieldValue>{profile?.telephone || EMPTY}</FieldValue>
                   </FieldRow>
                   <FieldRow>
-                    <FieldLabel>Country</FieldLabel>
-                    <FieldValue>{profile?.address?.country || EMPTY}</FieldValue>
+                    <FieldLabel>Mobile</FieldLabel>
+                    <FieldValue>{profile?.mobile || EMPTY}</FieldValue>
                   </FieldRow>
                   <FieldRow>
-                    <FieldLabel>Postcode</FieldLabel>
-                    <FieldValue>{profile?.address?.postcode || EMPTY}</FieldValue>
+                    <FieldLabel>VAT Number</FieldLabel>
+                    <FieldValue>{profile?.vatNumber || EMPTY}</FieldValue>
                   </FieldRow>
                 </FieldsGrid>
-              )}
-            </SectionCard>
+              </>
+            )}
+          </SectionCard>
 
-            {/* Bank Details */}
-            <SectionCard>
-              <SectionTitle>Bank Details</SectionTitle>
+          {/* Address */}
+          <SectionCard>
+            <SectionTitle>Address</SectionTitle>
 
-              {isEditing ? (
-                <FieldsGrid>
-                  <Input
-                    name="bankName"
-                    label={fieldLabels.bankName}
-                    type="text"
-                    placeholder={placeHolders.bankName}
-                    fullWidth
-                    error={errors.bankName}
-                  />
-                  <Input
-                    name="accountName"
-                    label={fieldLabels.accountName}
-                    type="text"
-                    placeholder={placeHolders.accountName}
-                    fullWidth
-                    error={errors.accountName}
-                  />
-                  <Input
-                    name="accountNo"
-                    label={fieldLabels.accountNo}
-                    type="text"
-                    placeholder={placeHolders.accountNo}
-                    fullWidth
-                    error={errors.accountNo}
-                  />
-                  <Input
-                    name="sortCode"
-                    label={fieldLabels.sortCode}
-                    type="text"
-                    placeholder={placeHolders.sortCode}
-                    fullWidth
-                    error={errors.sortCode}
-                  />
-                </FieldsGrid>
-              ) : (
-                <FieldsGrid>
-                  <FieldRow>
-                    <FieldLabel>Bank Name</FieldLabel>
-                    <FieldValue>{profile?.bankDetails?.bankName || EMPTY}</FieldValue>
-                  </FieldRow>
-                  <FieldRow>
-                    <FieldLabel>Account Name</FieldLabel>
-                    <FieldValue>{profile?.bankDetails?.accountName || EMPTY}</FieldValue>
-                  </FieldRow>
-                  <FieldRow>
-                    <FieldLabel>Account Number</FieldLabel>
-                    <FieldValue>{profile?.bankDetails?.accountNo || EMPTY}</FieldValue>
-                  </FieldRow>
-                  <FieldRow>
-                    <FieldLabel>Sort Code</FieldLabel>
-                    <FieldValue>{profile?.bankDetails?.sortCode || EMPTY}</FieldValue>
-                  </FieldRow>
-                </FieldsGrid>
-              )}
-            </SectionCard>
-          </SectionsGrid>
-        )}
+            {isEditing ? (
+              <FieldsGrid>
+                <Input
+                  name="addressLine1"
+                  label={fieldLabels.addressLine1}
+                  type="text"
+                  placeholder={placeHolders.addressLine1}
+                  fullWidth
+                  error={errors.addressLine1}
+                />
+                <Input
+                  name="addressLine2"
+                  label={fieldLabels.addressLine2}
+                  type="text"
+                  placeholder={placeHolders.addressLine2}
+                  fullWidth
+                  error={errors.addressLine2}
+                />
+                <Input
+                  name="addressLine3"
+                  label={fieldLabels.addressLine3}
+                  type="text"
+                  placeholder={placeHolders.addressLine3}
+                  fullWidth
+                  error={errors.addressLine3}
+                />
+                <Input
+                  name="town"
+                  label={fieldLabels.town}
+                  type="text"
+                  placeholder={placeHolders.town}
+                  fullWidth
+                  error={errors.town}
+                />
+                <Input
+                  name="country"
+                  label={fieldLabels.country}
+                  type="text"
+                  placeholder={placeHolders.country}
+                  fullWidth
+                  error={errors.country}
+                />
+                <Input
+                  name="postcode"
+                  label={fieldLabels.postcode}
+                  type="text"
+                  placeholder={placeHolders.postcode}
+                  fullWidth
+                  error={errors.postcode}
+                />
+              </FieldsGrid>
+            ) : (
+              <FieldsGrid>
+                <FieldRow>
+                  <FieldLabel>Address Line 1</FieldLabel>
+                  <FieldValue>{profile?.address?.addressLine1 || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Address Line 2</FieldLabel>
+                  <FieldValue>{profile?.address?.addressLine2 || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Address Line 3</FieldLabel>
+                  <FieldValue>{profile?.address?.addressLine3 || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Town / City</FieldLabel>
+                  <FieldValue>{profile?.address?.town || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Country</FieldLabel>
+                  <FieldValue>{profile?.address?.country || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Postcode</FieldLabel>
+                  <FieldValue>{profile?.address?.postcode || EMPTY}</FieldValue>
+                </FieldRow>
+              </FieldsGrid>
+            )}
+          </SectionCard>
+
+          {/* Bank Details */}
+          <SectionCard>
+            <SectionTitle>Bank Details</SectionTitle>
+
+            {isEditing ? (
+              <FieldsGrid>
+                <Input
+                  name="bankName"
+                  label={fieldLabels.bankName}
+                  type="text"
+                  placeholder={placeHolders.bankName}
+                  fullWidth
+                  error={errors.bankName}
+                />
+                <Input
+                  name="accountName"
+                  label={fieldLabels.accountName}
+                  type="text"
+                  placeholder={placeHolders.accountName}
+                  fullWidth
+                  error={errors.accountName}
+                />
+                <Input
+                  name="accountNo"
+                  label={fieldLabels.accountNo}
+                  type="text"
+                  placeholder={placeHolders.accountNo}
+                  fullWidth
+                  error={errors.accountNo}
+                />
+                <Input
+                  name="sortCode"
+                  label={fieldLabels.sortCode}
+                  type="text"
+                  placeholder={placeHolders.sortCode}
+                  fullWidth
+                  error={errors.sortCode}
+                />
+              </FieldsGrid>
+            ) : (
+              <FieldsGrid>
+                <FieldRow>
+                  <FieldLabel>Bank Name</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.bankName || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Account Name</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.accountName || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Account Number</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.accountNo || EMPTY}</FieldValue>
+                </FieldRow>
+                <FieldRow>
+                  <FieldLabel>Sort Code</FieldLabel>
+                  <FieldValue>{profile?.bankDetails?.sortCode || EMPTY}</FieldValue>
+                </FieldRow>
+              </FieldsGrid>
+            )}
+          </SectionCard>
+        </SectionsGrid>}
 
         <Snackbar
           open={snackbar.open}

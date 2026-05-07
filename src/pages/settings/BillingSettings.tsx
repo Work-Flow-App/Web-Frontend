@@ -119,7 +119,7 @@ export const BillingSettings: React.FC = () => {
           )}
         </S.StatusRow>
 
-        {status.trialEndsAt && (
+        {currentStatus === SubscriptionStatusResponseStatusEnum.Trial && status.trialEndsAt && (
           <S.StatusRow>
             <S.LabelText>
               <Typography variant="body2" color="text.secondary">
