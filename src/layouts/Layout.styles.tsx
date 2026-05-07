@@ -1,6 +1,6 @@
 import { styled } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { Box, Avatar } from '@mui/material';
+import { Box, Avatar, Typography } from '@mui/material';
 import { rem } from '../components/UI/Typography/utility';
 
 /**
@@ -132,6 +132,63 @@ export const menuSx: SxProps<Theme> = {
     boxShadow: (theme: Theme) => theme.palette.boxShadow.dropDownListShadow,
   },
 };
+
+/**
+ * Yellow trial badge shown in TopNav right section
+ */
+export const TrialBadge = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  padding: `${rem(4)} ${rem(8)}`,
+
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+}));
+
+export const TrialBadgeIcon = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: rem(20),
+  height: rem(20),
+  borderRadius: '50%',
+  background: 'linear-gradient(135deg, #FFB300 0%, #FF8C00 100%)',
+  boxShadow: '0 2px 6px rgba(255, 140, 0, 0.5)',
+  color: '#FFFFFF',
+  fontSize: rem(11),
+  fontWeight: 800,
+  flexShrink: 0,
+  lineHeight: 1,
+  letterSpacing: '-0.5px',
+}));
+
+export const TrialUpgradeButton = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: `${rem(3)} ${rem(10)}`,
+  borderRadius: rem(12),
+  backgroundColor: 'transparent',
+  border: `1px solid #FFA500`,
+  color: '#FFD966',
+  fontSize: rem(11),
+  fontWeight: 700,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'background-color 0.2s ease',
+
+  '&:hover': {
+    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+  },
+}));
+
+export const TrialBadgeText = styled(Typography)(() => ({
+  fontSize: rem(12),
+  fontWeight: 700,
+  color: '#FFD966',
+  whiteSpace: 'nowrap',
+}));
 
 /**
  * Search container wrapper

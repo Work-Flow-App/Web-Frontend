@@ -21,10 +21,13 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
+import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
 import { authService } from '../services/api/auth';
 import { companyService } from '../services/api/company';
 import { getRoleFromToken } from '../utils/jwt';
 import { useSessionRestore } from '../hooks/useSessionRestore';
+import { useSubscription } from '../contexts/SubscriptionContext';
+import { SubscriptionStatusResponseStatusEnum } from '../../workflow-api';
 import * as S from './Layout.styles';
 import { Place } from '@mui/icons-material';
 
@@ -156,6 +159,13 @@ export const Layout: React.FC = () => {
 
   // Wait for session restoration before rendering protected content
   const { isRestoring, hasSession } = useSessionRestore();
+  const { status: subscriptionStatus } = useSubscription();
+
+  const trialDaysLeft = useMemo(() => {
+    if (subscriptionStatus?.status !== SubscriptionStatusResponseStatusEnum.Trial) return null;
+    if (!subscriptionStatus.trialEndsAt) return null;
+    return Math.ceil((new Date(subscriptionStatus.trialEndsAt).getTime() - Date.now()) / 86_400_000);
+  }, [subscriptionStatus]);
 
   // Get initial fallback from JWT role (e.g., ROLE_COMPANY -> CO)
   const roleInitials = useMemo(() => {
@@ -293,9 +303,35 @@ export const Layout: React.FC = () => {
       <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
-          rightContent={<RightActions userInitials={userInitials} isWorker={isWorker} onLogout={handleLogout} onViewProfile={handleViewProfile} onViewSettings={handleViewSettings} />}
+          rightContent={
+            <>
+              {trialDaysLeft !== null && (
+                <S.TrialBadge>
+                  <S.TrialBadgeIcon>!</S.TrialBadgeIcon>
+                  <S.TrialBadgeText>
+                    {trialDaysLeft > 0
+                      ? `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} left in trial`
+                      : 'Trial ending soon'}
+                  </S.TrialBadgeText>
+                  <S.TrialUpgradeButton onClick={() => navigate('/subscribe')}>
+                    Upgrade Now
+                  </S.TrialUpgradeButton>
+                </S.TrialBadge>
+              )}
+              <RightActions
+                userInitials={userInitials}
+                isWorker={isWorker}
+                onLogout={handleLogout}
+                onViewProfile={handleViewProfile}
+                onViewSettings={handleViewSettings}
+              />
+            </>
+          }
           onToggleSidebar={handleToggleSidebar}
         />
+
+        {/* Subscription status banner — visible for non-active company accounts */}
+        <SubscriptionBanner />
 
         {/* Dynamic Content Area - Changes based on route */}
         <S.MainContent>
