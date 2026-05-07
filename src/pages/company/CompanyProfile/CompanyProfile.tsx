@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
@@ -23,8 +24,13 @@ import {
   FieldValue,
   FieldsGrid,
   LoadingContainer,
+  TabsWrapper,
+  StyledTabs,
+  StyledTab,
+  TabContent,
 } from './CompanyProfile.styles';
 import type { CompanyProfileFormData } from './ICompanyProfile';
+import { BillingSettings } from '../../settings/BillingSettings';
 
 const EMPTY = '—';
 
@@ -60,6 +66,7 @@ export const CompanyProfile: React.FC = () => {
     formState: { errors },
   } = methods;
 
+  const [activeTab, setActiveTab] = useState(0);
   const [profile, setProfile] = useState<CompanyProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -174,37 +181,52 @@ export const CompanyProfile: React.FC = () => {
       <PageContainer>
         <PageHeader>
           <Title>Company Profile</Title>
-          <HeaderActions>
-            {isEditing ? (
-              <>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  size="medium"
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                >
-                  Cancel
+          {activeTab === 0 && (
+            <HeaderActions>
+              {isEditing ? (
+                <>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="medium"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="medium"
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </>
+              ) : (
+                <Button variant="contained" color="primary" size="medium" onClick={handleEdit}>
+                  Edit Profile
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="medium"
-                  onClick={handleSubmit(onSubmit)}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </>
-            ) : (
-              <Button variant="contained" color="primary" size="medium" onClick={handleEdit}>
-                Edit Profile
-              </Button>
-            )}
-          </HeaderActions>
+              )}
+            </HeaderActions>
+          )}
         </PageHeader>
 
-        <SectionsGrid>
+        <TabsWrapper>
+          <StyledTabs value={activeTab} onChange={(_: SyntheticEvent, val: number) => setActiveTab(val)}>
+            <StyledTab label="Overview" />
+            <StyledTab label="Billing" />
+          </StyledTabs>
+        </TabsWrapper>
+
+        {activeTab === 1 && (
+          <TabContent>
+            <BillingSettings />
+          </TabContent>
+        )}
+
+        {activeTab === 0 && <SectionsGrid>
           {/* Company Information */}
           <SectionCard>
             <SectionTitle>Company Information</SectionTitle>
@@ -451,7 +473,7 @@ export const CompanyProfile: React.FC = () => {
               </FieldsGrid>
             )}
           </SectionCard>
-        </SectionsGrid>
+        </SectionsGrid>}
 
         <Snackbar
           open={snackbar.open}

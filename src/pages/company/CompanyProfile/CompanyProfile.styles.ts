@@ -1,4 +1,4 @@
-import { Box, Typography, styled } from '@mui/material';
+import { Box, Typography, Tabs, Tab, styled } from '@mui/material';
 import { rem } from '../../../components/UI/Typography/utility';
 
 export const PageContainer = styled(Box)(({ theme }) => ({
@@ -120,4 +120,39 @@ export const LoadingContainer = styled(Box)(() => ({
   justifyContent: 'center',
   alignItems: 'center',
   minHeight: rem(300),
+}));
+
+export const TabsWrapper = styled(Box)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.divider}`,
+  marginBottom: rem(32),
+  '@media (max-width: 1366px)': {
+    marginBottom: rem(24),
+  },
+}));
+
+export const StyledTabs = styled(Tabs)(({ theme }) => ({
+  minHeight: rem(44),
+  '& .MuiTabs-indicator': {
+    backgroundColor: theme.palette.primary.main,
+    height: rem(2),
+  },
+}));
+
+export const StyledTab = styled(Tab)(({ theme }) => ({
+  fontFamily: "'Manrope', sans-serif",
+  fontWeight: 500,
+  fontSize: rem(14),
+  textTransform: 'none',
+  minHeight: rem(44),
+  padding: `0 ${rem(4)}`,
+  marginRight: rem(28),
+  color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
+  '&.Mui-selected': {
+    fontWeight: 600,
+    color: theme.palette.primary.main,
+  },
+}));
+
+export const TabContent = styled(Box)(() => ({
+  width: '100%',
 }));
