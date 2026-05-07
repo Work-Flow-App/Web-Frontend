@@ -159,7 +159,14 @@ export const Layout: React.FC = () => {
 
   // Wait for session restoration before rendering protected content
   const { isRestoring, hasSession } = useSessionRestore();
-  const { status: subscriptionStatus } = useSubscription();
+  const { status: subscriptionStatus, refresh: refreshSubscription } = useSubscription();
+
+  // Re-fetch subscription status once session is confirmed — handles post-login race condition
+  useEffect(() => {
+    if (!isRestoring && hasSession) {
+      refreshSubscription();
+    }
+  }, [isRestoring, hasSession, refreshSubscription]);
 
   const trialDaysLeft = useMemo(() => {
     if (subscriptionStatus?.status !== SubscriptionStatusResponseStatusEnum.Trial) return null;
