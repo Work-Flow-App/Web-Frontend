@@ -666,14 +666,14 @@ export interface LogoutRequest {
     'refreshToken': string;
 }
 export interface PageAssetResponse {
-    'totalElements'?: number;
     'totalPages'?: number;
+    'totalElements'?: number;
     'size'?: number;
     'content'?: Array<AssetResponse>;
     'number'?: number;
     'sort'?: SortObject;
-    'numberOfElements'?: number;
     'pageable'?: PageableObject;
+    'numberOfElements'?: number;
     'first'?: boolean;
     'last'?: boolean;
     'empty'?: boolean;
@@ -682,8 +682,8 @@ export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
     'unpaged'?: boolean;
-    'pageNumber'?: number;
     'paged'?: boolean;
+    'pageNumber'?: number;
     'pageSize'?: number;
 }
 export interface PasswordResetResponse {
@@ -849,6 +849,24 @@ export interface StepVisitLogSummaryResponse {
     'visitLogs'?: Array<StepVisitLogResponse>;
     'totalWorkedMinutes'?: number;
 }
+export interface SubscriptionStatusResponse {
+    'status'?: SubscriptionStatusResponseStatusEnum;
+    'trialEndsAt'?: string;
+    'currentPeriodEnd'?: string;
+    'accessAllowed'?: boolean;
+}
+
+export const SubscriptionStatusResponseStatusEnum = {
+    Trial: 'TRIAL',
+    Active: 'ACTIVE',
+    PastDue: 'PAST_DUE',
+    Paused: 'PAUSED',
+    Cancelled: 'CANCELLED',
+    Expired: 'EXPIRED'
+} as const;
+
+export type SubscriptionStatusResponseStatusEnum = typeof SubscriptionStatusResponseStatusEnum[keyof typeof SubscriptionStatusResponseStatusEnum];
+
 export interface VerifyEmailRequest {
     'token': string;
 }
@@ -6852,6 +6870,395 @@ export class LineItemsApi extends BaseAPI {
      */
     public lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
         return LineItemsApiFp(this.configuration).lineItemUpdate(id, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * PaddleWebhookControllerApi - axios parameter creator
+ */
+export const PaddleWebhookControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} paddleSignature 
+         * @param {string} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        paddleWebhookReceivePaddleWebhook: async (paddleSignature: string, body: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'paddleSignature' is not null or undefined
+            assertParamExists('paddleWebhookReceivePaddleWebhook', 'paddleSignature', paddleSignature)
+            // verify required parameter 'body' is not null or undefined
+            assertParamExists('paddleWebhookReceivePaddleWebhook', 'body', body)
+            const localVarPath = `/api/v1/webhooks/paddle`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            if (paddleSignature != null) {
+                localVarHeaderParameter['Paddle-Signature'] = String(paddleSignature);
+            }
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * PaddleWebhookControllerApi - functional programming interface
+ */
+export const PaddleWebhookControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = PaddleWebhookControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} paddleSignature 
+         * @param {string} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async paddleWebhookReceivePaddleWebhook(paddleSignature: string, body: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.paddleWebhookReceivePaddleWebhook(paddleSignature, body, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PaddleWebhookControllerApi.paddleWebhookReceivePaddleWebhook']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * PaddleWebhookControllerApi - factory interface
+ */
+export const PaddleWebhookControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = PaddleWebhookControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {string} paddleSignature 
+         * @param {string} body 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        paddleWebhookReceivePaddleWebhook(paddleSignature: string, body: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.paddleWebhookReceivePaddleWebhook(paddleSignature, body, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * PaddleWebhookControllerApi - object-oriented interface
+ */
+export class PaddleWebhookControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} paddleSignature 
+     * @param {string} body 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public paddleWebhookReceivePaddleWebhook(paddleSignature: string, body: string, options?: RawAxiosRequestConfig) {
+        return PaddleWebhookControllerApiFp(this.configuration).paddleWebhookReceivePaddleWebhook(paddleSignature, body, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * SubscriptionApi - axios parameter creator
+ */
+export const SubscriptionApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionCancelSubscription: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/subscription`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionCreateCheckoutSession: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/subscription/checkout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionGetPortalUrl: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/subscription/portal`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionGetStatus: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/subscription/status`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * SubscriptionApi - functional programming interface
+ */
+export const SubscriptionApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SubscriptionApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async subscriptionCancelSubscription(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionCancelSubscription(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionCancelSubscription']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: string; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionCreateCheckoutSession(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionCreateCheckoutSession']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async subscriptionGetPortalUrl(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: string; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionGetPortalUrl(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionGetPortalUrl']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async subscriptionGetStatus(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubscriptionStatusResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionGetStatus(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionGetStatus']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * SubscriptionApi - factory interface
+ */
+export const SubscriptionApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SubscriptionApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionCancelSubscription(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.subscriptionCancelSubscription(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: string; }> {
+            return localVarFp.subscriptionCreateCheckoutSession(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionGetPortalUrl(options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: string; }> {
+            return localVarFp.subscriptionGetPortalUrl(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionGetStatus(options?: RawAxiosRequestConfig): AxiosPromise<SubscriptionStatusResponse> {
+            return localVarFp.subscriptionGetStatus(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * SubscriptionApi - object-oriented interface
+ */
+export class SubscriptionApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public subscriptionCancelSubscription(options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionCancelSubscription(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionCreateCheckoutSession(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public subscriptionGetPortalUrl(options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionGetPortalUrl(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public subscriptionGetStatus(options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionGetStatus(options).then((request) => request(this.axios, this.basePath));
     }
 }
 
