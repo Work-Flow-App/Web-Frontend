@@ -342,6 +342,7 @@ export interface ForgotPasswordRequest {
 }
 export interface GoogleAuthRequest {
     'idToken': string;
+    'tid'?: string;
 }
 export interface InvoiceCreateRequest {
     'lineItemIds': Array<number>;
@@ -681,10 +682,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'unpaged'?: boolean;
     'paged'?: boolean;
     'pageNumber'?: number;
     'pageSize'?: number;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -705,6 +706,7 @@ export interface SignupRequest {
     'email': string;
     'password': string;
     'role'?: SignupRequestRoleEnum;
+    'tid'?: string;
 }
 
 export const SignupRequestRoleEnum = {
@@ -720,8 +722,8 @@ export interface SignupResponse {
 }
 export interface SortObject {
     'empty'?: boolean;
-    'unsorted'?: boolean;
     'sorted'?: boolean;
+    'unsorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;
@@ -869,6 +871,7 @@ export type SubscriptionStatusResponseStatusEnum = typeof SubscriptionStatusResp
 
 export interface VerifyEmailRequest {
     'token': string;
+    'tid'?: string;
 }
 export interface WorkerAssignedStepResponse {
     'step'?: JobWorkflowStepResponse;
