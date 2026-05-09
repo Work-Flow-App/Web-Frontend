@@ -704,10 +704,10 @@ export interface PageAssetResponse {
 export interface PageableObject {
     'offset'?: number;
     'sort'?: SortObject;
-    'unpaged'?: boolean;
     'paged'?: boolean;
     'pageNumber'?: number;
     'pageSize'?: number;
+    'unpaged'?: boolean;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -744,8 +744,8 @@ export interface SignupResponse {
 }
 export interface SortObject {
     'empty'?: boolean;
-    'unsorted'?: boolean;
     'sorted'?: boolean;
+    'unsorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;
