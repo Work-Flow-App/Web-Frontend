@@ -243,8 +243,8 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           // Create new job - only include fields that have values
           const createPayload: JobCreateRequest = {
             templateId: templateIdNumber,
-            customerId: customerIdNumber!,
             fieldValues,
+            ...(customerIdNumber && { customerId: customerIdNumber }),
           };
           if (statusValue) createPayload.status = statusValue as JobCreateRequestStatusEnum;
           if (clientIdNumber) createPayload.clientId = clientIdNumber;

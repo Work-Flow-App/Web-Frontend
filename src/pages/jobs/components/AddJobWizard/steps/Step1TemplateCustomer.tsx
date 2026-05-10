@@ -14,11 +14,7 @@ import type { WizardData } from '../AddJobWizard';
 const step1Schema = object({
   templateId: object().required('Please select a template'),
   customerMode: string().required(),
-  customerId: mixed().when('customerMode', {
-    is: 'select',
-    then: () => object().required('Please select a customer'),
-    otherwise: () => mixed().notRequired(),
-  }),
+  customerId: mixed().notRequired(),
   customerName: string().when('customerMode', {
     is: 'create',
     then: () =>
@@ -191,6 +187,9 @@ export const Step1TemplateCustomer: React.FC<Step1Props> = ({ onStepComplete, in
             country: data.customerCountry || undefined,
           };
           update.customerId = undefined;
+        } else {
+          update.customerId = undefined;
+          update.newCustomerData = undefined;
         }
 
         onStepComplete(update);
@@ -243,7 +242,7 @@ export const Step1TemplateCustomer: React.FC<Step1Props> = ({ onStepComplete, in
           </ToggleButtonGroup>
 
           {customerMode === 'select' && (
-            <FormField label="Customer" required>
+            <FormField label="Customer">
               {!loadingCustomers && customerOptions.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
                   No customers available. Switch to <strong>Create New</strong> to add one.

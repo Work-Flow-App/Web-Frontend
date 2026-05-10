@@ -220,11 +220,6 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
             customerId = customerResp.data.id;
           }
 
-          if (!customerId) {
-            showError('Customer is required to create a job');
-            return;
-          }
-
           // Resolve or create client
           let clientId = wizardData.clientId;
           if (!clientId && wizardData.newClientData) {
@@ -243,8 +238,8 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const createPayload: any = {
             templateId: wizardData.templateId!,
-            customerId,
             fieldValues,
+            ...(customerId && { customerId }),
           };
           if (clientId) createPayload.clientId = clientId;
           if (wizardData.assignedWorkerId) createPayload.assignedWorkerId = wizardData.assignedWorkerId;
