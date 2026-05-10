@@ -194,6 +194,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
             if (wizardData.customerId) updatePayload.customerId = wizardData.customerId;
             if (wizardData.clientId) updatePayload.clientId = wizardData.clientId;
             if (wizardData.assignedWorkerId) updatePayload.assignedWorkerId = wizardData.assignedWorkerId;
+            if (wizardData.workflowId) updatePayload.workflowId = wizardData.workflowId;
             updatePayload.assetIds = wizardData.assetIds ?? [];
 
             await jobService.updateJob(jobId, updatePayload);
