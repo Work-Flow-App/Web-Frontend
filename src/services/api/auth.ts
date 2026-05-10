@@ -35,16 +35,15 @@ export const authService = {
    * Returns a message asking the user to verify their email — no tokens are issued yet.
    */
   async signup(data: SignupRequest): Promise<ApiResponse<SignupResponse>> {
-    return await apiClient.post<SignupResponse>('/api/v1/auth/signup', data);
+    return await apiClient.post<SignupResponse>('/api/v1/auth/signup', { ...data, tid: getAffiliateTid() });
   },
 
   /**
    * Verify email address using token from the verification link
    * On success, returns tokens and logs the user in automatically
    */
-  async verifyEmail(token: string): Promise<ApiResponse<AuthResponse>> {
-    const body: VerifyEmailRequest = { token };
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/verify-email', { ...body, tid: getAffiliateTid() });
+  async verifyEmail(token: string, tid: string | null): Promise<ApiResponse<AuthResponse>> {
+    const response = await apiClient.post<AuthResponse>('/api/v1/auth/verify-email', { token, tid });
 
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);

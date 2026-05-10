@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { initializePaddle } from '@paddle/paddle-js'
 import { Signup } from './pages/auth/Signup'
 import { WorkerSignup } from './pages/auth/WorkerSignup'
 import { Login } from './pages/auth/Login'
@@ -29,20 +31,32 @@ import { CustomersPage } from './pages/customers/CustomersPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
 import { MapsPage, AssetsPage, AssetHistory } from './pages/assets'
 import { LineItemsPage } from './pages/lineItems'
+import { SubscribePage, SubscriptionSuccessPage, SubscriptionCancelPage } from './pages/subscription'
 import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
+import { SubscriptionProvider } from './contexts/SubscriptionContext'
+import env from './config/env'
 import './App.css'
 
 function App() {
+  useEffect(() => {
+    if (!env.paddleToken) return
+    initializePaddle({
+      token: env.paddleToken,
+      environment: env.paddleEnvironment,
+    })
+  }, [])
+
   return (
     <GlobalSnackbarProvider>
       <GlobalModalOuterContextProvider>
         <Router>
-          <AppConfiguration />
-          <Routes>
+          <SubscriptionProvider>
+            <AppConfiguration />
+            <Routes>
             {/* Public routes - No layout */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/worker" element={<WorkerSignup />} />
@@ -73,6 +87,9 @@ function App() {
               <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
               <Route path="/company/assets/maps" element={<MapsPage />} />
               <Route path="/company/line-items" element={<LineItemsPage />} />
+              <Route path="/subscribe" element={<SubscribePage />} />
+              <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+              <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
 
               {/* Worker routes */}
               <Route path="/worker" element={<WorkerDashboard />} />
@@ -87,7 +104,8 @@ function App() {
 
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
-          <GlobalModal />
+            <GlobalModal />
+          </SubscriptionProvider>
         </Router>
       </GlobalModalOuterContextProvider>
     </GlobalSnackbarProvider>
