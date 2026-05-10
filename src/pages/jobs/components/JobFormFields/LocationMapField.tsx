@@ -63,16 +63,24 @@ const LocationMapField: React.FC = () => {
   }, [isLoaded, addressStreet, savedLat, savedLng, setValue]);
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setSelectedLocation(place);
-    setMapCenter(place.location);
-    setMapZoom(15);
     setValue('addressStreet', place.address, { shouldDirty: true });
-    setValue('addressLatitude', place.location.lat, { shouldDirty: true });
-    setValue('addressLongitude', place.location.lng, { shouldDirty: true });
     setValue('addressCity', '');
     setValue('addressState', '');
     setValue('addressPostalCode', '');
     setValue('addressCountry', '');
+
+    if (place.isManualAddressOnly) {
+      setSelectedLocation(null);
+      setValue('addressLatitude', null, { shouldDirty: true });
+      setValue('addressLongitude', null, { shouldDirty: true });
+      return;
+    }
+
+    setSelectedLocation(place);
+    setMapCenter(place.location);
+    setMapZoom(15);
+    setValue('addressLatitude', place.location.lat, { shouldDirty: true });
+    setValue('addressLongitude', place.location.lng, { shouldDirty: true });
   };
 
   if (!isGoogleMapsConfigured()) {
