@@ -152,9 +152,9 @@ export const JobDetailsView: React.FC = () => {
           <S.TabButton active={activeTab === 'estimate'} onClick={() => setActiveTab('estimate')}>
             Estimate
           </S.TabButton>
-          <S.TabButton active={activeTab === 'financials'} onClick={() => setActiveTab('financials')}>
+          {/* <S.TabButton active={activeTab === 'financials'} onClick={() => setActiveTab('financials')}>
             Financials
-          </S.TabButton>
+          </S.TabButton> */}
           <S.TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
             Documents
           </S.TabButton>
@@ -181,9 +181,7 @@ export const JobDetailsView: React.FC = () => {
         {/* Main Content Layout */}
         <S.JobDetailsLayout fullWidth={activeTab !== 'overview'}>
           {/* Left Sidebar - Workflow (overview only) */}
-          {activeTab === 'overview' && (
-            <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />
-          )}
+          {activeTab === 'overview' && <JobWorkflowStages job={job} onStepUpdate={handleWorkflowUpdate} />}
 
           {/* Right Content - Details */}
           <S.MainContentPanel>
