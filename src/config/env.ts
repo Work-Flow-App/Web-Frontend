@@ -83,6 +83,17 @@ export const env = {
    * Google OAuth Client ID for Sign In with Google
    */
   googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
+
+  /**
+   * Paddle client-side token
+   * Sandbox tokens start with test_, production tokens start with live_
+   */
+  paddleToken: import.meta.env.VITE_PADDLE_TOKEN as string,
+
+  /**
+   * Paddle environment — 'sandbox' for testing, 'production' for live
+   */
+  paddleEnvironment: (import.meta.env.VITE_PADDLE_ENV || 'sandbox') as 'sandbox' | 'production',
 };
 
 export default env;

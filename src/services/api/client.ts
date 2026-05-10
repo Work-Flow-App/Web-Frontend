@@ -336,6 +336,17 @@ class ApiClient {
         return this.handle401Error(error, retryRequest);
       }
 
+      // Handle 402 Payment Required - redirect to subscribe page
+      if (response.status === 402 && typeof window !== 'undefined') {
+        const subscriptionPaths = ['/subscribe', '/subscription/'];
+        const onSubscriptionPage = subscriptionPaths.some((p) =>
+          window.location.pathname.startsWith(p)
+        );
+        if (!onSubscriptionPage) {
+          window.location.href = '/subscribe';
+        }
+      }
+
       throw error;
     }
 

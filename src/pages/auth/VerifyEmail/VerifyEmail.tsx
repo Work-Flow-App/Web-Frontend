@@ -23,6 +23,7 @@ export const VerifyEmail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const tid = searchParams.get('tid');
 
   const [status, setStatus] = useState<VerifyStatus>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,7 +36,7 @@ export const VerifyEmail: React.FC = () => {
     }
 
     authService
-      .verifyEmail(token)
+      .verifyEmail(token, tid)
       .then((response) => {
         const accessToken = response.data.accessToken;
         let userRole: string | null = null;
