@@ -162,9 +162,9 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         <S.DocumentsEmptyIcon>
           <AccessTimeIcon sx={{ fontSize: 32 }} />
         </S.DocumentsEmptyIcon>
-        <S.DocumentsEmptyText>No workflow steps found</S.DocumentsEmptyText>
+        <S.DocumentsEmptyText>No workfloow steps found</S.DocumentsEmptyText>
         <S.DocumentsEmptySubtext>
-          Work logs can be recorded once workflow steps are created for this job
+          Work logs can be recorded once workfloow steps are created for this job
         </S.DocumentsEmptySubtext>
       </S.DocumentsEmptyState>
     );

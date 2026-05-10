@@ -182,7 +182,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
         <Typography color="text.secondary" fontSize={14}>
-          No workflow steps found for this job.
+          No workfloow steps found for this job.
         </Typography>
       </Box>
     );

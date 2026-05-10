@@ -356,7 +356,7 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                 mb: rem(14),
               }}
             >
-              Workflow Pipeline
+              Workfloow Pipeline
             </Typography>
 
             <Box sx={{ display: 'flex', gap: rem(10), mb: rem(10) }}>

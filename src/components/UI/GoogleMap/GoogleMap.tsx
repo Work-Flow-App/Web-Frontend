@@ -149,10 +149,17 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     setDirectionsError(null);
   }, []);
 
+  const [manualAddressHint, setManualAddressHint] = useState<string | null>(null);
+
   const handlePlaceSelect = useCallback(
     (place: PlaceDetails) => {
-      setMapCenter(place.location);
-      setMapZoom(15);
+      if (place.isManualAddressOnly) {
+        setManualAddressHint(`Address saved as "${place.address}". Click on the map to set the pin location.`);
+      } else {
+        setManualAddressHint(null);
+        setMapCenter(place.location);
+        setMapZoom(15);
+      }
       onLocationSelect?.(place);
     },
     [onLocationSelect]
@@ -215,6 +222,11 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     <Box sx={{ width, height: resolvedHeight, display: 'flex', flexDirection: 'column', gap: 1 }}>
       {showSearchBox && (
         <PlacesAutocomplete onPlaceSelect={handlePlaceSelect} placeholder="Search for a location..." defaultValue={searchInitialValue} />
+      )}
+      {manualAddressHint && (
+        <Alert severity="info" onClose={() => setManualAddressHint(null)} sx={{ py: 0.5 }}>
+          {manualAddressHint}
+        </Alert>
       )}
       <MapContainer sx={{ flex: 1, minHeight: 0, width: '100%' }} className={className}>
         <MapWrapper>

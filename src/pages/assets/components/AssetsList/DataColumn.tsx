@@ -20,7 +20,7 @@ export interface AssetTableRow {
 /**
  * Generate asset columns for the table
  */
-export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
+export const generateAssetColumns = (fmt: (val?: number | null) => string): ITableColumn<AssetTableRow>[] => [
   {
     id: 'id',
     label: 'Asset ID',
@@ -42,7 +42,7 @@ export const generateAssetColumns = (): ITableColumn<AssetTableRow>[] => [
     accessor: 'purchasePrice',
     sortable: true,
     width: 'auto',
-    render: (row) => (row.purchasePrice ? `$${row.purchasePrice.toFixed(2)}` : '-'),
+    render: (row) => (row.purchasePrice != null ? fmt(row.purchasePrice) : '-'),
   },
   {
     id: 'purchaseDate',

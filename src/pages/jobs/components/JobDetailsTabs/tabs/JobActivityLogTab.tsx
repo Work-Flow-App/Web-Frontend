@@ -226,7 +226,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
         </S.DocumentsEmptyIcon>
         <S.DocumentsEmptyText>No activity log yet</S.DocumentsEmptyText>
         <S.DocumentsEmptySubtext>
-          Activity will be recorded as workflow steps are started and completed
+          Activity will be recorded as workfloow steps are started and completed
         </S.DocumentsEmptySubtext>
       </S.DocumentsEmptyState>
     );

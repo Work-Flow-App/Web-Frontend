@@ -347,7 +347,7 @@ export const WorkflowBuilderPage: React.FC = () => {
       };
 
       await workflowService.bulkUpdateWorkflow(Number(workflowId), payload);
-      showSuccess('Workflow saved successfully');
+      showSuccess('Workfloow saved successfully');
 
       const response = await workflowService.getWorkflowWithSteps(Number(workflowId));
       const data = response.data;
@@ -380,7 +380,7 @@ export const WorkflowBuilderPage: React.FC = () => {
   }
 
   if (!workflow) {
-    return <Typography>Workflow not found</Typography>;
+    return <Typography>Workfloow not found</Typography>;
   }
 
   const orderedStepIds = orderedSteps.map((s) => s.id);
@@ -388,10 +388,10 @@ export const WorkflowBuilderPage: React.FC = () => {
   return (
     <PageWrapper
       title={workflow.name}
-      description={workflow.description || 'Build your workflow by adding and arranging steps'}
+      description={workflow.description || 'Build your workfloow by adding and arranging steps'}
       actions={[
         {
-          label: 'Back to Workflows',
+          label: 'Back to Workfloows',
           onClick: () => navigate('/company/workflows'),
           variant: 'outlined',
           icon: <ArrowBackIcon />,
@@ -403,7 +403,7 @@ export const WorkflowBuilderPage: React.FC = () => {
           icon: <AddIcon />,
         },
         {
-          label: saving ? 'Saving...' : 'Save Workflow',
+          label: saving ? 'Saving...' : 'Save Workfloow',
           onClick: handleSaveWorkflow,
           variant: 'contained',
           color: 'primary',
@@ -443,7 +443,7 @@ export const WorkflowBuilderPage: React.FC = () => {
 
           {/* Target List - Workflow Order */}
           <S.Section>
-            <S.SectionTitle>Workflow Order</S.SectionTitle>
+            <S.SectionTitle>Workfloow Order</S.SectionTitle>
             <S.SectionDescription>
               Drag and drop to reorder steps. This is the order steps will be executed.
             </S.SectionDescription>

@@ -7,6 +7,7 @@ import type { WizardData } from '../AddJobWizard';
 import GoogleMap from '../../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../../components/UI/GoogleMap';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../../config/googleMaps';
+import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 
 interface Step3Props {
   onStepComplete: (data: Partial<WizardData>) => void;
@@ -101,6 +102,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
     updateActiveScreen,
     activeScreen,
   } = useGlobalModalInnerContext();
+  const { showError } = useSnackbar();
 
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
@@ -197,6 +199,10 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
 
   useEffect(() => {
     onConfirmRef.current = () => {
+      if (!selectedWorkflowId && !loadingWorkflows && workflows.length > 0) {
+        showError('Please select a workfloow before proceeding');
+        return;
+      }
       onStepComplete({
         assignedWorkerId: selectedWorkerId,
         workflowId: selectedWorkflowId,
@@ -211,7 +217,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       });
       updateActiveScreen(activeScreen + 1);
     };
-  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, selectedLocation, onStepComplete, updateActiveScreen, activeScreen]);
+  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, selectedLocation, onStepComplete, updateActiveScreen, activeScreen, showError, loadingWorkflows, workflows]);
 
   useEffect(() => {
     updateModalTitle('Assign Details');
@@ -235,10 +241,10 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       </SelectableSection>
 
       <SelectableSection
-        label="Workflow"
+        label={`Workfloow${!loadingWorkflows && workflowOptions.length > 0 ? ' *' : ''}`}
         loading={loadingWorkflows}
         isEmpty={!loadingWorkflows && workflowOptions.length === 0}
-        emptyMessage="No workflows found. Create a workflow from the Workflows section, or continue without one."
+        emptyMessage="No workfloows found. Create a workfloow from the Workfloows section, or continue without one."
       >
         {workflowOptions.map((w) => (
           <SelectableItem key={w.id} label={w.label} selected={selectedWorkflowId === w.id} onClick={() => handleWorkflowClick(w.id)} />

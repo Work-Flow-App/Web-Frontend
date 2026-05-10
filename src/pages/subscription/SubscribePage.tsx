@@ -14,7 +14,7 @@ import * as S from './SubscribePage.styles';
 const FEATURES = [
   { text: 'Unlimited workers', included: true },
   { text: 'Job management', included: true },
-  { text: 'Workflow builder', included: true },
+  { text: 'Workfloow builder', included: true },
   { text: 'Asset tracking', included: true },
   { text: 'Customer management', included: true },
   { text: 'Priority support', included: true },

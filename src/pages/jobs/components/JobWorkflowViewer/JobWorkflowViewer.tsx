@@ -85,10 +85,10 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
     return (
       <WorkflowContainer>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-          Job Workflow
+          Job Workfloow
         </Typography>
         <Typography variant="body2" sx={{ color: floowColors.grey[600] }}>
-          No workflow has been started for this job yet.
+          No workfloow has been started for this job yet.
         </Typography>
       </WorkflowContainer>
     );
@@ -103,7 +103,7 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Job Workflow
+            Job Workfloow
           </Typography>
           <Chip
             label={getWorkflowStatusLabel(jobWorkflow.status || '')}
@@ -125,7 +125,7 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
 
       {/* Workflow Steps */}
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-        Workflow Steps
+        Workfloow Steps
       </Typography>
       {steps.length === 0 ? (
         <Typography variant="body2" sx={{ color: floowColors.grey[500], textAlign: 'center', py: 4 }}>

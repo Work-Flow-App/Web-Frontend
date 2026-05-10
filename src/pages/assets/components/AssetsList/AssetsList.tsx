@@ -7,6 +7,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
@@ -18,6 +19,7 @@ export const AssetsList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
+  const { formatCurrency } = useCurrency();
 
   // Fetch assets
   const fetchAssets = useCallback(async () => {
@@ -184,8 +186,8 @@ export const AssetsList: React.FC = () => {
 
   // Generate columns
   const assetColumns = useMemo(() => {
-    return generateAssetColumns();
-  }, []);
+    return generateAssetColumns(formatCurrency);
+  }, [formatCurrency]);
 
   // Define table actions
   const tableActions: ITableAction<AssetTableRow>[] = useMemo(

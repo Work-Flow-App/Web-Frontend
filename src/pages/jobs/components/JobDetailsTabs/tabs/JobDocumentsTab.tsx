@@ -139,7 +139,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
         </S.DocumentsEmptyIcon>
         <S.DocumentsEmptyText>No documents yet</S.DocumentsEmptyText>
         <S.DocumentsEmptySubtext>
-          Documents uploaded in workflow steps and generated invoices will appear here
+          Documents uploaded in workfloow steps and generated invoices will appear here
         </S.DocumentsEmptySubtext>
       </S.DocumentsEmptyState>
     );

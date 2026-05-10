@@ -26,8 +26,8 @@ export const WorkflowForm: React.FC<WorkflowFormProps> = ({ isModal = false, wor
 
   useEffect(() => {
     if (isModal) {
-      const title = isEditMode ? 'Edit Workflow' : 'Create New Workflow';
-      const buttonText = isEditMode ? 'Update Workflow' : 'Create Workflow';
+      const title = isEditMode ? 'Edit Workfloow' : 'Create New Workfloow';
+      const buttonText = isEditMode ? 'Update Workfloow' : 'Create Workfloow';
 
       updateModalTitle(title);
       updateGlobalModalInnerConfig({
@@ -70,10 +70,10 @@ export const WorkflowForm: React.FC<WorkflowFormProps> = ({ isModal = false, wor
 
         if (isEditMode) {
           await workflowService.updateWorkflow(workflowId, payload);
-          showSuccess('Workflow updated successfully');
+          showSuccess('Workfloow updated successfully');
         } else {
           await workflowService.createWorkflow(payload);
-          showSuccess('Workflow created successfully');
+          showSuccess('Workfloow created successfully');
         }
 
         if (onSuccess) {

@@ -6,8 +6,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+// import PendingActionsIcon from '@mui/icons-material/PendingActions';
+// import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
@@ -45,14 +45,14 @@ export interface StepEventGroup {
 // ─── Color palette — uses floowColors design system ──────────────────────────
 
 const STEP_COLORS = [
-  floowColors.info.main,           // #2196F3 — blue
-  floowColors.warning.main,        // #FFA500 — orange
-  floowColors.chart.quaternary,    // #ff9800 — amber
-  floowColors.success.main,        // #00A63E — green
-  floowColors.indigo.main,         // #6366F1 — purple
-  floowColors.grey[500],           // #737373 — gray
-  floowColors.error.main,          // #FB2C36 — red
-  floowColors.chart.primary,       // #3f51b5 — indigo
+  floowColors.info.main, // #2196F3 — blue
+  floowColors.warning.main, // #FFA500 — orange
+  floowColors.chart.quaternary, // #ff9800 — amber
+  floowColors.success.main, // #00A63E — green
+  floowColors.indigo.main, // #6366F1 — purple
+  floowColors.grey[500], // #737373 — gray
+  floowColors.error.main, // #FB2C36 — red
+  floowColors.chart.primary, // #3f51b5 — indigo
 ];
 
 function getStepColor(index: number): string {
@@ -76,10 +76,7 @@ function getJobLabel(count: number, status: string | undefined): string {
 
 // ─── Build step groups from workflow templates + active job workflows ─────────
 
-function buildGroups(
-  templateSteps: WorkflowStepResponse[],
-  jobWorkflows: JobWorkflowResponse[],
-): StepEventGroup[] {
+function buildGroups(templateSteps: WorkflowStepResponse[], jobWorkflows: JobWorkflowResponse[]): StepEventGroup[] {
   // Map step name → base info from template
   const groupMap = new Map<string, StepEventGroup>();
 
@@ -138,7 +135,7 @@ function formatAmount(value: number): string {
 function StatBoxesRow({
   jobs,
   estimateSentTotal,
-  awaitingInvoiceTotal,
+  //awaitingInvoiceTotal,
 }: {
   jobs: JobResponse[];
   estimateSentTotal: number;
@@ -147,13 +144,21 @@ function StatBoxesRow({
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
-  const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
+  //const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
       {/* Box 1 — Estimate Sent */}
       <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <Typography
+          sx={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: floowColors.text.muted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+          }}
+        >
           Estimate Sent
         </Typography>
         <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
@@ -161,15 +166,21 @@ function StatBoxesRow({
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
-            up-trend
-          </Typography>
+          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>up-trend</Typography>
         </Box>
       </Box>
 
       {/* Box 2 — Work In Progress */}
       <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <Typography
+          sx={{
+            fontSize: '11px',
+            fontWeight: 700,
+            color: floowColors.text.muted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+          }}
+        >
           Work In Progress (Total Job)
         </Typography>
         <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
@@ -178,15 +189,18 @@ function StatBoxesRow({
         <LinearProgress
           variant="determinate"
           value={progressPct}
-          sx={{ borderRadius: '2px', height: '4px', bgcolor: floowColors.grey[100], '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main } }}
+          sx={{
+            borderRadius: '2px',
+            height: '4px',
+            bgcolor: floowColors.grey[100],
+            '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main },
+          }}
         />
-        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>
-          {progressPct}% Complete
-        </Typography>
+        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>{progressPct}% Complete</Typography>
       </Box>
 
       {/* Box 3 — Estimates Awaiting Approval */}
-      <Box sx={statCardSx}>
+      {/* <Box sx={statCardSx}>
         <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Estimates Awaiting Approval
         </Typography>
@@ -210,7 +224,7 @@ function StatBoxesRow({
             </>
           )}
         </Box>
-      </Box>
+      </Box> */}
     </Box>
   );
 }
@@ -258,13 +272,7 @@ function PipelineBar({
 
 // ─── Events List ──────────────────────────────────────────────────────────────
 
-function EventsList({
-  groups,
-  onSelectStep,
-}: {
-  groups: StepEventGroup[];
-  onSelectStep: (name: string) => void;
-}) {
+function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSelectStep: (name: string) => void }) {
   const maxCount = Math.max(...groups.map((g) => g.count), 1);
 
   if (groups.length === 0) {
@@ -320,15 +328,14 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
   const totalJobs = groups.reduce((s, g) => s + g.count, 0);
   const activeJobs = groups
     .flatMap((g) => g.jobWorkflows)
-    .filter(({ currentStep }) => currentStep.status === 'STARTED' || currentStep.status === 'ONGOING')
-    .length;
+    .filter(({ currentStep }) => currentStep.status === 'STARTED' || currentStep.status === 'ONGOING').length;
 
   const withJobs = groups.filter((g) => g.count > 0);
   const noJobs = groups.filter((g) => g.count === 0);
 
   return (
     <S.SummaryCard>
-      <S.SummaryTitle>Workflow Pipeline</S.SummaryTitle>
+      <S.SummaryTitle>Workfloow Pipeline</S.SummaryTitle>
 
       <S.SummaryStatRow>
         <div>
@@ -408,11 +415,15 @@ export const JobEventsSection: React.FC = () => {
         const customers: CustomerResponse[] = Array.isArray(customersRes.data) ? customersRes.data : [];
 
         const map = new Map<number, JobResponse>();
-        jobs.forEach((j) => { if (j.id != null) map.set(j.id, j); });
+        jobs.forEach((j) => {
+          if (j.id != null) map.set(j.id, j);
+        });
         setJobsMap(map);
 
         const cMap = new Map<number, CustomerResponse>();
-        customers.forEach((c) => { if (c.id != null) cMap.set(c.id, c); });
+        customers.forEach((c) => {
+          if (c.id != null) cMap.set(c.id, c);
+        });
         setCustomersMap(cMap);
 
         setAllJobs(jobs);
@@ -432,16 +443,18 @@ export const JobEventsSection: React.FC = () => {
         );
         const awaitingEstimateIds: number[] = [];
 
-        jobs.filter((j) => j.id != null).forEach((j, i) => {
-          const result = estimateResults[i];
-          if (result.status === 'fulfilled') {
-            const estimate = result.value.data;
-            sentTotal += estimate.grandTotal ?? 0;
-            if (awaitingJobIds.has(j.id!) && estimate.id != null) {
-              awaitingEstimateIds.push(estimate.id);
+        jobs
+          .filter((j) => j.id != null)
+          .forEach((j, i) => {
+            const result = estimateResults[i];
+            if (result.status === 'fulfilled') {
+              const estimate = result.value.data;
+              sentTotal += estimate.grandTotal ?? 0;
+              if (awaitingJobIds.has(j.id!) && estimate.id != null) {
+                awaitingEstimateIds.push(estimate.id);
+              }
             }
-          }
-        });
+          });
         setEstimateSentTotal(sentTotal);
 
         // Fetch invoices for awaiting-approval estimates and sum their totals
@@ -452,7 +465,9 @@ export const JobEventsSection: React.FC = () => {
         invoiceResults.forEach((result) => {
           if (result.status === 'fulfilled') {
             const invoices = Array.isArray(result.value.data) ? result.value.data : [];
-            invoices.forEach((inv) => { invoiceTotal += inv.grandTotal ?? 0; });
+            invoices.forEach((inv) => {
+              invoiceTotal += inv.grandTotal ?? 0;
+            });
           }
         });
         setAwaitingInvoiceTotal(invoiceTotal);
@@ -466,33 +481,41 @@ export const JobEventsSection: React.FC = () => {
   }, []);
 
   // Recompute groups whenever selected workflow changes
-  const recomputeGroups = useCallback(async (workflowId: number | null) => {
-    if (workflowId == null) { setGroups([]); return; }
-
-    // Jobs that belong to this workflow
-    const filteredJobs = allJobs.filter((j) => j.workflowId === workflowId && j.id != null);
-
-    // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
-    // returns stale or incomplete data; per-job fetch matches the Job Details page.
-    const jwResults = await Promise.allSettled(
-      filteredJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
-    );
-    const filteredJobWorkflows: JobWorkflowResponse[] = [];
-    jwResults.forEach((r) => {
-      if (r.status === 'fulfilled' && r.value?.data) {
-        filteredJobWorkflows.push(r.value.data);
+  const recomputeGroups = useCallback(
+    async (workflowId: number | null) => {
+      if (workflowId == null) {
+        setGroups([]);
+        return;
       }
-    });
 
-    // Template steps for this workflow
-    let templateSteps: WorkflowStepResponse[] = [];
-    try {
-      const stepsRes = await workflowService.getWorkflowSteps(workflowId);
-      templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
-    } catch { /* ignore */ }
+      // Jobs that belong to this workflow
+      const filteredJobs = allJobs.filter((j) => j.workflowId === workflowId && j.id != null);
 
-    setGroups(buildGroups(templateSteps, filteredJobWorkflows));
-  }, [allJobs]);
+      // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
+      // returns stale or incomplete data; per-job fetch matches the Job Details page.
+      const jwResults = await Promise.allSettled(
+        filteredJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
+      );
+      const filteredJobWorkflows: JobWorkflowResponse[] = [];
+      jwResults.forEach((r) => {
+        if (r.status === 'fulfilled' && r.value?.data) {
+          filteredJobWorkflows.push(r.value.data);
+        }
+      });
+
+      // Template steps for this workflow
+      let templateSteps: WorkflowStepResponse[] = [];
+      try {
+        const stepsRes = await workflowService.getWorkflowSteps(workflowId);
+        templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
+      } catch {
+        /* ignore */
+      }
+
+      setGroups(buildGroups(templateSteps, filteredJobWorkflows));
+    },
+    [allJobs]
+  );
 
   useEffect(() => {
     if (!loading) recomputeGroups(selectedWorkflowId);
@@ -554,7 +577,7 @@ export const JobEventsSection: React.FC = () => {
       <S.SectionHeader>
         {/* Left: title + workflow dropdown side by side */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <S.SectionTitle>Workflow Event</S.SectionTitle>
+          <S.SectionTitle>Workfloow Event</S.SectionTitle>
 
           {workflows.length > 0 && (
             <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -586,17 +609,19 @@ export const JobEventsSection: React.FC = () => {
         </Box>
 
         {/* Right: New Job button */}
-        <Button
-          startIcon={<AddIcon />}
-          endIcon={<KeyboardArrowDownIcon />}
-          onClick={handleAddJob}
-        >
+        <Button startIcon={<AddIcon />} endIcon={<KeyboardArrowDownIcon />} onClick={handleAddJob}>
           New Job
         </Button>
       </S.SectionHeader>
 
       {/* Stat boxes */}
-      {!loading && <StatBoxesRow jobs={allJobs} estimateSentTotal={estimateSentTotal} awaitingInvoiceTotal={awaitingInvoiceTotal} />}
+      {!loading && (
+        <StatBoxesRow
+          jobs={allJobs}
+          estimateSentTotal={estimateSentTotal}
+          awaitingInvoiceTotal={awaitingInvoiceTotal}
+        />
+      )}
 
       {/* Pipeline bar */}
       {loading ? (

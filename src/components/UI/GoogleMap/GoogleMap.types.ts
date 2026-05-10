@@ -37,6 +37,8 @@ export interface PlaceDetails {
   placeId?: string;
   workerData?: WorkerMarkerData;
   jobLocationData?: JobLocationMarkerData;
+  /** True when Google couldn't geocode the address — user should click map to set pin */
+  isManualAddressOnly?: boolean;
 }
 
 export interface GoogleMapProps {
