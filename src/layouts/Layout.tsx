@@ -264,7 +264,7 @@ export const Layout: React.FC = () => {
       children: [
         { id: 'jobs-list', label: 'All Jobs', icon: <WorkIcon />, href: '/company/jobs' },
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
-        { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
+        { id: 'workflows', label: 'Workfloows', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
@@ -276,7 +276,7 @@ export const Layout: React.FC = () => {
 
   const workerSidebarItems: SidebarItem[] = [
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
-    { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
+    { id: 'worker-job-workflows', label: 'My Workfloows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
   ];
 

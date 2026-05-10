@@ -15,7 +15,7 @@ export const workflowColumns: ITableColumn<WorkflowTableRow>[] = [
   },
   {
     id: 'name',
-    label: 'Workflow Name',
+    label: 'Workfloow Name',
     accessor: 'name',
     sortable: true,
     width: 'auto',

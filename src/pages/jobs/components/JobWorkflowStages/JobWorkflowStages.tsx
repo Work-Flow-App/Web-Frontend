@@ -310,7 +310,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       await workflowService.updateWorkflow(job.workflowId, {
         name: workflowNameValue.trim(),
       });
-      showSuccess('Workflow name updated successfully');
+      showSuccess('Workfloow name updated successfully');
       setEditingWorkflowName(false);
       fetchJobWorkflow();
     } catch (error) {
@@ -330,7 +330,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     return (
       <S.WorkflowSidebar>
         <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
+          <S.WorkflowSidebarTitle>Workfloow Name</S.WorkflowSidebarTitle>
         </S.WorkflowSidebarHeader>
         <Box display="flex" justifyContent="center" alignItems="center" py={4}>
           <CircularProgress size={32} />
@@ -343,13 +343,13 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     return (
       <S.WorkflowSidebar>
         <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
+          <S.WorkflowSidebarTitle>Workfloow Name</S.WorkflowSidebarTitle>
           <IconButton size="small">
             <EditIcon fontSize="small" />
           </IconButton>
         </S.WorkflowSidebarHeader>
         <Box px={2} py={3}>
-          <S.PlaceholderText>No workflow assigned to this job</S.PlaceholderText>
+          <S.PlaceholderText>No workfloow assigned to this job</S.PlaceholderText>
         </Box>
       </S.WorkflowSidebar>
     );
@@ -378,7 +378,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
             />
           ) : (
             <>
-              {workflow?.name || 'Workflow Name'}
+              {workflow?.name || 'Workfloow Name'}
               <Box
                 component="span"
                 sx={{

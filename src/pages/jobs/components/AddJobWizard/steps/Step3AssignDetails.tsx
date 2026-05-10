@@ -200,7 +200,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   useEffect(() => {
     onConfirmRef.current = () => {
       if (!selectedWorkflowId && !loadingWorkflows && workflows.length > 0) {
-        showError('Please select a workflow before proceeding');
+        showError('Please select a workfloow before proceeding');
         return;
       }
       onStepComplete({
@@ -241,10 +241,10 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       </SelectableSection>
 
       <SelectableSection
-        label={`Workflow${!loadingWorkflows && workflowOptions.length > 0 ? ' *' : ''}`}
+        label={`Workfloow${!loadingWorkflows && workflowOptions.length > 0 ? ' *' : ''}`}
         loading={loadingWorkflows}
         isEmpty={!loadingWorkflows && workflowOptions.length === 0}
-        emptyMessage="No workflows found. Create a workflow from the Workflows section, or continue without one."
+        emptyMessage="No workfloows found. Create a workfloow from the Workfloows section, or continue without one."
       >
         {workflowOptions.map((w) => (
           <SelectableItem key={w.id} label={w.label} selected={selectedWorkflowId === w.id} onClick={() => handleWorkflowClick(w.id)} />

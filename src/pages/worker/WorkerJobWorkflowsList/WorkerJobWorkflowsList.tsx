@@ -126,8 +126,8 @@ export const WorkerJobWorkflowsList: React.FC = () => {
           <AccountTreeOutlinedIcon />
           <span>
             {filter === 'ALL'
-              ? 'No workflows assigned to you yet.'
-              : `No ${formatStatusLabel(filter).toLowerCase()} workflows right now.`}
+              ? 'No workfloows assigned to you yet.'
+              : `No ${formatStatusLabel(filter).toLowerCase()} workfloows right now.`}
           </span>
         </M.EmptyState>
       ) : (

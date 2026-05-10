@@ -117,16 +117,16 @@ export const WorkflowsList: React.FC = () => {
         fieldName: 'deleteWorkflow',
         children: (
           <ConfirmationModal
-            title="Delete Workflow"
+            title="Delete Workfloow"
             message={`Are you sure you want to delete "${workflow.name}"?`}
-            description="This action cannot be undone. All workflow data and steps will be permanently deleted. Jobs using this workflow will not be affected."
+            description="This action cannot be undone. All workfloow data and steps will be permanently deleted. Jobs using this workfloow will not be affected."
             variant="danger"
             confirmButtonText="Delete"
             cancelButtonText="Cancel"
             onConfirm={async () => {
               try {
                 await workflowService.deleteWorkflow(workflow.id);
-                showSuccess(`Workflow "${workflow.name}" deleted successfully`);
+                showSuccess(`Workfloow "${workflow.name}" deleted successfully`);
                 resetGlobalModalOuterProps();
                 fetchWorkflows();
               } catch (error) {
@@ -165,18 +165,18 @@ export const WorkflowsList: React.FC = () => {
 
   return (
     <PageWrapper
-      title="Workflow Templates"
-      description="Create and manage reusable workflow templates for your jobs."
+      title="Workfloow Templates"
+      description="Create and manage reusable workfloow templates for your jobs."
       actions={[
         {
-          label: 'Create Workflow',
+          label: 'Create Workfloow',
           onClick: handleAddWorkflow,
           variant: 'contained',
           color: 'primary',
         },
       ]}
       showSearch
-      searchPlaceholder="Search workflows"
+      searchPlaceholder="Search workfloows"
     >
       <Table<WorkflowTableRow>
         columns={workflowColumns}
@@ -186,7 +186,7 @@ export const WorkflowsList: React.FC = () => {
         actions={tableActions}
         onRowClick={handleRowClick}
         loading={loading}
-        emptyMessage="No workflows found. Create your first workflow template to get started."
+        emptyMessage="No workfloows found. Create your first workfloow template to get started."
         rowsPerPage={10}
         showPagination={true}
         enableStickyLeft={true}

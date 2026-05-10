@@ -335,7 +335,7 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
   return (
     <S.SummaryCard>
-      <S.SummaryTitle>Workflow Pipeline</S.SummaryTitle>
+      <S.SummaryTitle>Workfloow Pipeline</S.SummaryTitle>
 
       <S.SummaryStatRow>
         <div>
@@ -577,7 +577,7 @@ export const JobEventsSection: React.FC = () => {
       <S.SectionHeader>
         {/* Left: title + workflow dropdown side by side */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <S.SectionTitle>Workflow Event</S.SectionTitle>
+          <S.SectionTitle>Workfloow Event</S.SectionTitle>
 
           {workflows.length > 0 && (
             <FormControl size="small" sx={{ minWidth: 180 }}>

@@ -162,7 +162,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
 
   const handleSave = async (data: ComplaintsFormValues) => {
     if (!firstStepId) {
-      showError('No workflow step found for this job');
+      showError('No workfloow step found for this job');
       return;
     }
     if (!data.description.trim() && pendingFiles.length === 0) {

@@ -48,8 +48,8 @@ export const JobFormSchema: IFields = {
   workflowId: {
     title: 'workflowId',
     defaultValue: null,
-    placeHolder: 'Select workflow (optional)',
-    label: 'Workflow',
+    placeHolder: 'Select workfloow (optional)',
+    label: 'Workfloow',
     isRequired: false,
   },
   addressStreet: {
