@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import { getPaddleInstance, CheckoutEventNames } from '@paddle/paddle-js';
+import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@paddle/paddle-js';
 import { PricingCard } from '../../components/UI/PricingCard';
 import { subscriptionService } from '../../services/api/subscription';
+import { companyService } from '../../services/api/company';
+import { getAffiliateTid } from '../../utils/tracking';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import * as S from './SubscribePage.styles';
@@ -27,8 +29,12 @@ export const SubscribePage: React.FC = () => {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const { data } = await subscriptionService.createCheckout();
+      const [{ data }, profileRes] = await Promise.all([
+        subscriptionService.createCheckout(),
+        companyService.getProfile(),
+      ]);
       const { transactionId } = data as Record<string, string>;
+      const profile = profileRes.data;
 
       const paddle = getPaddleInstance();
       if (!paddle) {
@@ -38,10 +44,16 @@ export const SubscribePage: React.FC = () => {
 
       paddle.Checkout.open({
         transactionId,
+        customData: {
+          companyId: profile.id ?? null,
+          email: profile.email ?? null,
+          fp_tid: getAffiliateTid(),
+        },
         settings: {
           successUrl: `${window.location.origin}/subscription/success`,
         },
-        eventCallback: (event) => {
+        // @ts-expect-error eventCallback is not in Paddle's CheckoutOpenOptions types but is supported at runtime
+        eventCallback: (event: PaddleEventData) => {
           if (event.name === CheckoutEventNames.CHECKOUT_COMPLETED) {
             refresh();
             navigate('/subscription/success');
