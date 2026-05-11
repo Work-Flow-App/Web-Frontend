@@ -7,7 +7,7 @@ import type {
   AssetAssignmentResponse,
   AssetAssignmentCreateRequest,
   AssetAssignmentReturnRequest,
-  PageAssetResponse,
+  PagedModelAssetResponse,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
@@ -20,7 +20,7 @@ export type {
   AssetAssignmentResponse,
   AssetAssignmentCreateRequest,
   AssetAssignmentReturnRequest,
-  PageAssetResponse,
+  PagedModelAssetResponse,
 };
 
 function getAssetApi(): AssetsApi {

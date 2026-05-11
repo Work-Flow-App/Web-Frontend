@@ -264,7 +264,7 @@ export const Layout: React.FC = () => {
       children: [
         { id: 'jobs-list', label: 'All Jobs', icon: <WorkIcon />, href: '/company/jobs' },
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
-        { id: 'workflows', label: 'Workflows', icon: <AccountTreeIcon />, href: '/company/workflows' },
+        { id: 'workflows', label: 'Workfloows', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },

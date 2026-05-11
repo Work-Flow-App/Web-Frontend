@@ -688,26 +688,15 @@ export interface LoginRequest {
 export interface LogoutRequest {
     'refreshToken': string;
 }
-export interface PageAssetResponse {
+export interface PageMetadata {
+    'size'?: number;
+    'number'?: number;
     'totalElements'?: number;
     'totalPages'?: number;
-    'size'?: number;
-    'content'?: Array<AssetResponse>;
-    'number'?: number;
-    'sort'?: SortObject;
-    'numberOfElements'?: number;
-    'pageable'?: PageableObject;
-    'first'?: boolean;
-    'last'?: boolean;
-    'empty'?: boolean;
 }
-export interface PageableObject {
-    'offset'?: number;
-    'sort'?: SortObject;
-    'unpaged'?: boolean;
-    'paged'?: boolean;
-    'pageNumber'?: number;
-    'pageSize'?: number;
+export interface PagedModelAssetResponse {
+    'content'?: Array<AssetResponse>;
+    'page'?: PageMetadata;
 }
 export interface PasswordResetResponse {
     'message'?: string;
@@ -741,11 +730,6 @@ export type SignupRequestRoleEnum = typeof SignupRequestRoleEnum[keyof typeof Si
 
 export interface SignupResponse {
     'message'?: string;
-}
-export interface SortObject {
-    'empty'?: boolean;
-    'unsorted'?: boolean;
-    'sorted'?: boolean;
 }
 export interface StepActivityResponse {
     'id'?: number;
@@ -1707,7 +1691,7 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PageAssetResponse>> {
+        async assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelAssetResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.assetList(page, size, archived, available, sort, dir, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetList']?.[localVarOperationServerIndex]?.url;
@@ -1797,7 +1781,7 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PageAssetResponse> {
+        assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelAssetResponse> {
             return localVarFp.assetList(page, size, archived, available, sort, dir, options).then((request) => request(axios, basePath));
         },
         /**
@@ -6268,6 +6252,39 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobGetArchived: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/jobs/archived`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6416,6 +6433,17 @@ export const JobsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async jobGetArchived(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetArchived(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGetArchived']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6494,6 +6522,14 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobGetArchived(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
+            return localVarFp.jobGetArchived(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -6565,6 +6601,15 @@ export class JobsApi extends BaseAPI {
      */
     public jobGetAll(options?: RawAxiosRequestConfig) {
         return JobsApiFp(this.configuration).jobGetAll(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public jobGetArchived(options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobGetArchived(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
