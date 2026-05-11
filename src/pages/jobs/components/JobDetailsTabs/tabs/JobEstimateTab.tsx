@@ -226,13 +226,14 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   }, [calcNet, newItem.vatRate]);
   const calcTotal = calcNet + calcVat;
 
-  // Map: lineItemId → invoice that contains it (for the identifier badge)
+  // Map: sourceLineItemId (or snapshot id) → invoice that contains it (for the identifier badge)
   // Must be before any early returns to satisfy Rules of Hooks
   const lineItemInvoiceMap = useMemo(() => {
     const map = new Map<number, InvoiceResponse>();
     invoices.forEach((inv) => {
       (inv.lineItems || []).forEach((li) => {
-        if (li.id !== undefined) map.set(li.id, inv);
+        const key = li.sourceLineItemId ?? li.id;
+        if (key !== undefined) map.set(key, inv);
       });
     });
     return map;
