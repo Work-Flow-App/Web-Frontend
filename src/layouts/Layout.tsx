@@ -276,7 +276,7 @@ export const Layout: React.FC = () => {
 
   const workerSidebarItems: SidebarItem[] = [
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
-    { id: 'worker-job-workflows', label: 'My Workfloows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
+    { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
   ];
 

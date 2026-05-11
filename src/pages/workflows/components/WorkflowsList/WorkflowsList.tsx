@@ -108,6 +108,43 @@ export const WorkflowsList: React.FC = () => {
     [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchWorkflows]
   );
 
+  // Handle archive workflow
+  const handleArchiveWorkflow = useCallback(
+    (workflow: WorkflowTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'archiveWorkflow',
+        children: (
+          <ConfirmationModal
+            title="Archive Workflow"
+            message={`Are you sure you want to archive "${workflow.name}"?`}
+            description="Archived workflows are removed from the active list and cannot be assigned to new jobs."
+            variant="default"
+            confirmButtonText="Archive"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await workflowService.archiveWorkflow(workflow.id);
+                showSuccess(`Workflow "${workflow.name}" archived successfully`);
+                resetGlobalModalOuterProps();
+                fetchWorkflows();
+              } catch (error) {
+                console.error('Error archiving workflow:', error);
+                showError(extractErrorMessage(error, 'Failed to archive workflow'));
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
+    },
+    [showSuccess, showError, fetchWorkflows, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
   // Handle delete workflow
   const handleDeleteWorkflow = useCallback(
     (workflow: WorkflowTableRow) => {
@@ -119,7 +156,7 @@ export const WorkflowsList: React.FC = () => {
           <ConfirmationModal
             title="Delete Workfloow"
             message={`Are you sure you want to delete "${workflow.name}"?`}
-            description="This action cannot be undone. All workfloow data and steps will be permanently deleted. Jobs using this workfloow will not be affected."
+            description="This action cannot be undone. All workflow data and steps will be permanently deleted."
             variant="danger"
             confirmButtonText="Delete"
             cancelButtonText="Cancel"
@@ -131,7 +168,12 @@ export const WorkflowsList: React.FC = () => {
                 fetchWorkflows();
               } catch (error) {
                 console.error('Error deleting workflow:', error);
-                showError(extractErrorMessage(error, 'Failed to delete workflow'));
+                const status = (error as { response?: { status?: number } }).response?.status;
+                if (status === 409) {
+                  showError('This workflow is used by active jobs. Archive or reassign those jobs before deleting the workflow.');
+                } else {
+                  showError(extractErrorMessage(error, 'Failed to delete workflow'));
+                }
                 resetGlobalModalOuterProps();
               }
             }}
@@ -154,13 +196,18 @@ export const WorkflowsList: React.FC = () => {
         onClick: handleEditWorkflow,
       },
       {
+        id: 'archive',
+        label: 'Archive',
+        onClick: handleArchiveWorkflow,
+      },
+      {
         id: 'delete',
         label: 'Delete',
         onClick: handleDeleteWorkflow,
         color: 'error' as const,
       },
     ],
-    [handleEditWorkflow, handleDeleteWorkflow]
+    [handleEditWorkflow, handleArchiveWorkflow, handleDeleteWorkflow]
   );
 
   return (

@@ -18,11 +18,10 @@ export const JobFormSchema: IFields = {
   },
   customerId: {
     title: 'customerId',
-    rule: InputValidationRules.DropDownRequired(),
     defaultValue: null,
     placeHolder: 'Select customer',
     label: 'Customer',
-    isRequired: true,
+    isRequired: false,
   },
   clientId: {
     title: 'clientId',

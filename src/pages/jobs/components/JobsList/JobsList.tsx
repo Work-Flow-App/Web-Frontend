@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
+import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
@@ -18,6 +20,7 @@ export const JobsList: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
@@ -88,12 +91,13 @@ const fetchAssets = async () => {
     fetchTemplateFields();
   }, [selectedTemplateId, showError]);
 
-  // Fetch jobs based on selected template
+  // Fetch jobs based on selected template / archived state
   const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
-      // Use template-specific API if a template is selected
-      const response = selectedTemplateId
+      const response = showArchived
+        ? await jobService.getArchivedJobs()
+        : selectedTemplateId
         ? await jobService.getJobsByTemplate(selectedTemplateId)
         : await jobService.getAllJobs();
       const jobsData = Array.isArray(response.data) ? response.data : [];
@@ -145,7 +149,7 @@ const fetchAssets = async () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, templates, customers, assets, showError]);
+  }, [selectedTemplateId, showArchived, templates, customers, assets, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
@@ -267,20 +271,57 @@ const fetchAssets = async () => {
         children: (
           <ConfirmationModal
             title="Delete Job"
-            message={`Are you sure you want to delete Job #${job.id}?`}
-            description="This action cannot be undone. All data associated with this job will be permanently deleted."
+            message={`Are you sure you want to delete Job #${job.jobRef ?? job.id}?`}
+            description="This action is permanent and cannot be undone."
             variant="danger"
             confirmButtonText="Delete"
             cancelButtonText="Cancel"
             onConfirm={async () => {
               try {
                 await jobService.deleteJob(job.id);
-                showSuccess(`Job #${job.id} deleted successfully`);
+                showSuccess(`Job #${job.jobRef ?? job.id} deleted successfully`);
                 resetGlobalModalOuterProps();
                 fetchJobs();
               } catch (error) {
                 console.error('Error deleting job:', error);
                 showError(extractErrorMessage(error, 'Failed to delete job'));
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => {
+              resetGlobalModalOuterProps();
+            }}
+          />
+        ),
+      });
+    },
+    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
+  // Handle archive job
+  const handleArchiveJob = useCallback(
+    (job: JobTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'archiveJob',
+        children: (
+          <ConfirmationModal
+            title="Archive Job"
+            message={`Are you sure you want to archive Job #${job.id}?`}
+            description="Archived jobs are removed from the active list. This action can be reviewed by your administrator."
+            variant="default"
+            confirmButtonText="Archive"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobService.archiveJob(job.id);
+                showSuccess(`Job #${job.id} archived successfully`);
+                resetGlobalModalOuterProps();
+                fetchJobs();
+              } catch (error) {
+                console.error('Error archiving job:', error);
+                showError(extractErrorMessage(error, 'Failed to archive job'));
                 resetGlobalModalOuterProps();
               }
             }}
@@ -302,14 +343,11 @@ const fetchAssets = async () => {
         label: 'Edit',
         onClick: handleEditJob,
       },
-      {
-        id: 'delete',
-        label: 'Delete',
-        onClick: handleDeleteJob,
-        color: 'error' as const,
-      },
+      ...(!showArchived
+        ? [{ id: 'archive', label: 'Archive', onClick: handleArchiveJob, color: 'error' as const }]
+        : [{ id: 'delete', label: 'Delete', onClick: handleDeleteJob, color: 'error' as const }]),
     ],
-    [handleEditJob, handleDeleteJob]
+    [handleEditJob, handleArchiveJob, handleDeleteJob, showArchived]
   );
 
   // Generate columns based on selected template fields
@@ -325,6 +363,11 @@ const fetchAssets = async () => {
     }));
   }, [templates]);
 
+  const archivedFilterOptions = [
+    { label: 'Active Jobs', value: 'active' },
+    { label: 'Archived Jobs', value: 'archived' },
+  ];
+
   return (
     <PageWrapper
       title="All Jobs"
@@ -337,12 +380,23 @@ const fetchAssets = async () => {
           color: 'primary',
         },
       ]}
-      dropdownOptions={templateOptions}
+      headerExtra={
+        <Box sx={{ minWidth: 160, display: 'flex', alignItems: 'center' }}>
+          <StandaloneDropdown
+            name="archivedFilter"
+            placeHolder="Active Jobs"
+            preFetchedOptions={archivedFilterOptions}
+            defaultValue={showArchived ? 'archived' : 'active'}
+            onChange={(value) => setShowArchived(value === 'archived')}
+            hideErrorMessage
+            size="medium"
+          />
+        </Box>
+      }
+      dropdownOptions={!showArchived ? templateOptions : []}
       dropdownValue={selectedTemplateId?.toString()}
       dropdownPlaceholder="All Jobs (No Template Filter)"
       onDropdownChange={(value) => setSelectedTemplateId(value ? Number(value) : null)}
-      showSearch
-      searchPlaceholder="Search jobs"
     >
       <Table<JobTableRow>
         columns={columns}
@@ -353,7 +407,9 @@ const fetchAssets = async () => {
         onRowClick={handleRowClick}
         loading={loading || loadingTemplates}
         emptyMessage={
-          selectedTemplateId
+          showArchived
+            ? 'No archived jobs found.'
+            : selectedTemplateId
             ? 'No jobs found for this template. Add your first job to get started.'
             : 'No jobs found. Add your first job to get started.'
         }

@@ -47,7 +47,7 @@ export type {
   AssetAssignmentResponse,
   AssetAssignmentCreateRequest,
   AssetAssignmentReturnRequest,
-  PageAssetResponse,
+  PagedModelAssetResponse,
 } from './asset';
 
 export { workflowService } from './workflow';
