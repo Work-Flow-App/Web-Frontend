@@ -257,30 +257,30 @@ const fetchAssets = async () => {
     [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchJobs]
   );
 
-  // Handle delete job
-  const handleDeleteJob = useCallback(
+  // Handle archive job
+  const handleArchiveJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
         isOpen: true,
         size: ModalSizes.SMALL,
-        fieldName: 'deleteJob',
+        fieldName: 'archiveJob',
         children: (
           <ConfirmationModal
-            title="Delete Job"
-            message={`Are you sure you want to delete Job #${job.id}?`}
-            description="This action cannot be undone. All data associated with this job will be permanently deleted."
-            variant="danger"
-            confirmButtonText="Delete"
+            title="Archive Job"
+            message={`Are you sure you want to archive Job #${job.id}?`}
+            description="Archived jobs are removed from the active list. This action can be reviewed by your administrator."
+            variant="default"
+            confirmButtonText="Archive"
             cancelButtonText="Cancel"
             onConfirm={async () => {
               try {
-                await jobService.deleteJob(job.id);
-                showSuccess(`Job #${job.id} deleted successfully`);
+                await jobService.archiveJob(job.id);
+                showSuccess(`Job #${job.id} archived successfully`);
                 resetGlobalModalOuterProps();
                 fetchJobs();
               } catch (error) {
-                console.error('Error deleting job:', error);
-                showError(extractErrorMessage(error, 'Failed to delete job'));
+                console.error('Error archiving job:', error);
+                showError(extractErrorMessage(error, 'Failed to archive job'));
                 resetGlobalModalOuterProps();
               }
             }}
@@ -303,13 +303,13 @@ const fetchAssets = async () => {
         onClick: handleEditJob,
       },
       {
-        id: 'delete',
-        label: 'Delete',
-        onClick: handleDeleteJob,
+        id: 'archive',
+        label: 'Archive',
+        onClick: handleArchiveJob,
         color: 'error' as const,
       },
     ],
-    [handleEditJob, handleDeleteJob]
+    [handleEditJob, handleArchiveJob]
   );
 
   // Generate columns based on selected template fields

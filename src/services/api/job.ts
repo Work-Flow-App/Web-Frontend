@@ -35,6 +35,10 @@ export const jobService = {
     return await getJobApi().jobUpdate(id, data);
   },
 
+  async archiveJob(id: number) {
+    return await getJobApi().jobArchive(id);
+  },
+
   async deleteJob(id: number) {
     return await getJobApi().jobDelete(id);
   },

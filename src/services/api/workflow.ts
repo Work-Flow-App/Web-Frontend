@@ -49,6 +49,10 @@ export const workflowService = {
     return await getWorkflowApi().workflowBulkUpdate(workflowId, data);
   },
 
+  async archiveWorkflow(id: number) {
+    return await getWorkflowApi().workflowArchive(id);
+  },
+
   async deleteWorkflow(id: number) {
     return await getWorkflowApi().workflowDelete(id);
   },
