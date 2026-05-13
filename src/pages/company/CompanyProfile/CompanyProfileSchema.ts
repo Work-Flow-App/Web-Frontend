@@ -108,7 +108,7 @@ export const CompanyProfileFormSchema: IFields = {
   },
   currency: {
     title: 'currency',
-    rule: InputValidationRules.String,
+    rule: InputValidationRules.ObjectNotRequired,
     defaultValue: '',
     placeHolder: 'Select currency',
     label: 'Currency',
