@@ -413,7 +413,7 @@ const fetchAssets = async () => {
             ? 'No jobs found for this template. Add your first job to get started.'
             : 'No jobs found. Add your first job to get started.'
         }
-        rowsPerPage={10}
+        rowsPerPage={100}
         showPagination={true}
         enableStickyLeft={true}
       />
