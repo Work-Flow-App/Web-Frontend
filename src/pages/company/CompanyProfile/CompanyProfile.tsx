@@ -146,7 +146,7 @@ export const CompanyProfile: React.FC = () => {
           postcode: data.postcode || undefined,
         },
         vatNumber: data.vatNumber || undefined,
-        currency: (data.currency as CompanyProfileResponseCurrencyEnum) || undefined,
+        currency: ((typeof data.currency === 'object' ? (data.currency as {value: string})?.value : data.currency) as CompanyProfileResponseCurrencyEnum) || undefined,
         bankDetails: {
           bankName: data.bankName || undefined,
           accountName: data.accountName || undefined,
@@ -155,6 +155,7 @@ export const CompanyProfile: React.FC = () => {
         },
       });
       setProfile(response.data);
+      reset(buildFormValues(response.data));
       setIsEditing(false);
       setSnackbar({ open: true, message: 'Profile updated successfully.', variant: 'success' });
     } catch (error) {
@@ -308,6 +309,7 @@ export const CompanyProfile: React.FC = () => {
                     fullWidth
                     disableClearable={false}
                     error={errors.currency}
+
                   />
                 </FieldsGrid>
               </>
