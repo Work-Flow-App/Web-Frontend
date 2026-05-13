@@ -939,6 +939,7 @@ export interface WorkerInviteResponse {
 }
 export interface WorkerPasswordResetRequest {
     'newPassword': string;
+    'newUsername'?: string;
 }
 export interface WorkerResponse {
     'id'?: number;
@@ -8834,11 +8835,11 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerResetWorkerPassword: async (id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerResetWorkerUsernamePassword: async (id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('workerResetWorkerPassword', 'id', id)
+            assertParamExists('workerResetWorkerUsernamePassword', 'id', id)
             // verify required parameter 'workerPasswordResetRequest' is not null or undefined
-            assertParamExists('workerResetWorkerPassword', 'workerPasswordResetRequest', workerPasswordResetRequest)
+            assertParamExists('workerResetWorkerUsernamePassword', 'workerPasswordResetRequest', workerPasswordResetRequest)
             const localVarPath = `/api/v1/workers/{id}/reset-password`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -9051,10 +9052,10 @@ export const WorkersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async workerResetWorkerPassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.workerResetWorkerPassword(id, workerPasswordResetRequest, options);
+        async workerResetWorkerUsernamePassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerResetWorkerUsernamePassword(id, workerPasswordResetRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerResetWorkerPassword']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerResetWorkerUsernamePassword']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -9160,8 +9161,8 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerResetWorkerPassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.workerResetWorkerPassword(id, workerPasswordResetRequest, options).then((request) => request(axios, basePath));
+        workerResetWorkerUsernamePassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workerResetWorkerUsernamePassword(id, workerPasswordResetRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -9265,8 +9266,8 @@ export class WorkersApi extends BaseAPI {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public workerResetWorkerPassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig) {
-        return WorkersApiFp(this.configuration).workerResetWorkerPassword(id, workerPasswordResetRequest, options).then((request) => request(this.axios, this.basePath));
+    public workerResetWorkerUsernamePassword(id: number, workerPasswordResetRequest: WorkerPasswordResetRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerResetWorkerUsernamePassword(id, workerPasswordResetRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
