@@ -8,6 +8,8 @@ import { Input } from '../../../components/UI/Forms/Input';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { companyService } from '../../../services/api';
 import type { CompanyProfileResponse } from '../../../services/api';
+import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
+import { Dropdown } from '../../../components/UI/Forms/Dropdown';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { CompanyProfileFormSchema } from './CompanyProfileSchema';
@@ -34,6 +36,11 @@ import { BillingSettings } from '../../settings/BillingSettings';
 
 const EMPTY = '—';
 
+const CURRENCY_OPTIONS = Object.values(CompanyProfileResponseCurrencyEnum).map((c) => ({
+  value: c,
+  label: c,
+}));
+
 export const CompanyProfile: React.FC = () => {
   const { fieldRules, placeHolders, fieldLabels } = useSchema(CompanyProfileFormSchema);
 
@@ -53,6 +60,7 @@ export const CompanyProfile: React.FC = () => {
       country: '',
       postcode: '',
       vatNumber: '',
+      currency: '',
       bankName: '',
       accountName: '',
       accountNo: '',
@@ -91,6 +99,7 @@ export const CompanyProfile: React.FC = () => {
     country: data.address?.country || '',
     postcode: data.address?.postcode || '',
     vatNumber: data.vatNumber || '',
+    currency: data.currency || '',
     bankName: data.bankDetails?.bankName || '',
     accountName: data.bankDetails?.accountName || '',
     accountNo: data.bankDetails?.accountNo || '',
@@ -137,6 +146,7 @@ export const CompanyProfile: React.FC = () => {
           postcode: data.postcode || undefined,
         },
         vatNumber: data.vatNumber || undefined,
+        currency: (data.currency as CompanyProfileResponseCurrencyEnum) || undefined,
         bankDetails: {
           bankName: data.bankName || undefined,
           accountName: data.accountName || undefined,
@@ -290,6 +300,15 @@ export const CompanyProfile: React.FC = () => {
                     fullWidth
                     error={errors.vatNumber}
                   />
+                  <Dropdown
+                    name="currency"
+                    label={fieldLabels.currency}
+                    placeHolder={placeHolders.currency}
+                    preFetchedOptions={CURRENCY_OPTIONS}
+                    fullWidth
+                    disableClearable={false}
+                    error={errors.currency}
+                  />
                 </FieldsGrid>
               </>
             ) : (
@@ -322,6 +341,10 @@ export const CompanyProfile: React.FC = () => {
                   <FieldRow>
                     <FieldLabel>VAT Number</FieldLabel>
                     <FieldValue>{profile?.vatNumber || EMPTY}</FieldValue>
+                  </FieldRow>
+                  <FieldRow>
+                    <FieldLabel>Currency</FieldLabel>
+                    <FieldValue>{profile?.currency || EMPTY}</FieldValue>
                   </FieldRow>
                 </FieldsGrid>
               </>

@@ -7,6 +7,7 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { lineItemService } from '../../../../services/api';
 import type { LineItemCreateRequest, LineItemResponse, LineItemUpdateRequest } from '../../../../services/api';
 
@@ -34,6 +35,7 @@ const defaultCoreOrSub = { label: 'CORE', value: 'CORE' };
 
 export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineItem, onSuccess }) => {
   const isEdit = !!lineItem;
+  const { currencyCode } = useCurrency();
 
   const methods = useForm<FormValues>({
     defaultValues: {
@@ -118,7 +120,7 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
               name="coreOrSub"
               preFetchedOptions={coreOrSubOptions}
               placeHolder="Select type"
-              defaultValue={defaultCoreOrSub}
+              defaultValue={defaultCoreOrSub.value}
               disableClearable
               disablePortal
               fullWidth
@@ -136,7 +138,7 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
         </FormField>
 
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormField label="Unit Price (£)" required>
+          <FormField label={`Unit Price (${currencyCode})`} required>
             <Input name="unitPrice" type="number" placeHolder="0.00" fullWidth inputProps={{ min: 0, step: 0.01 }} />
           </FormField>
           <FormField label="Quantity" required>

@@ -4,8 +4,7 @@ import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalM
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { estimateService } from '../../../../../services/api';
 import type { LineItemResponse } from '../../../../../services/api';
-
-const fmt = (v?: number) => (v !== undefined ? `£${v.toFixed(2)}` : '—');
+import { useCurrency } from '../../../../../contexts/CurrencyContext';
 
 const HEADERS = ['Product Code', 'Description', 'Unit Price', 'Qty', 'VAT %', 'Total'];
 const GRID = '100px 1fr 100px 60px 70px 100px';
@@ -21,6 +20,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   lineItems = [],
   onSuccess,
 }) => {
+  const { formatCurrency: fmt } = useCurrency();
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } =
     useGlobalModalInnerContext();
