@@ -5,7 +5,11 @@ import { Input } from '../../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../../components/UI/Forms/PasswordInput';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
 
-export const WorkerFormFields: React.FC = () => {
+interface WorkerFormFieldsProps {
+  showCredentials?: boolean;
+}
+
+export const WorkerFormFields: React.FC<WorkerFormFieldsProps> = ({ showCredentials = true }) => {
   // Generate schema using the utility
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(WorkerFormSchema);
 
@@ -53,22 +57,24 @@ export const WorkerFormFields: React.FC = () => {
         </FormField>
       </FormRow>
 
-      <FormRow>
-        <FormField label={fieldLabels.username} required={isRequireds.username}>
-          <Input
-            name={fieldTitles.username}
-            placeholder={placeHolders.username}
-            hideErrorMessage={false}
-          />
-        </FormField>
-        <FormField label={fieldLabels.password} required={isRequireds.password}>
-          <PasswordInput
-            name={fieldTitles.password}
-            placeholder={placeHolders.password}
-            hideErrorMessage={false}
-          />
-        </FormField>
-      </FormRow>
+      {showCredentials && (
+        <FormRow>
+          <FormField label={fieldLabels.username} required={isRequireds.username}>
+            <Input
+              name={fieldTitles.username}
+              placeholder={placeHolders.username}
+              hideErrorMessage={false}
+            />
+          </FormField>
+          <FormField label={fieldLabels.password} required={isRequireds.password}>
+            <PasswordInput
+              name={fieldTitles.password}
+              placeholder={placeHolders.password}
+              hideErrorMessage={false}
+            />
+          </FormField>
+        </FormRow>
+      )}
     </>
   );
 };

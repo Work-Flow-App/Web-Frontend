@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { WorkerFormSchema, type WorkerFormData } from '../../schema/WorkerFormSchema';
+import { WorkerFormSchema, WorkerEditFormSchema, type WorkerFormData } from '../../schema/WorkerFormSchema';
 import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { WorkerFormFields } from '../WorkerFormFields';
 import { Loader } from '../../../../components/UI';
@@ -48,8 +48,6 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
             email: worker.email || '',
             telephone: worker.telephone || '',
             mobile: worker.mobile || '',
-            username: worker.username || '',
-            password: '',
           });
         } catch (error) {
           console.error('Error fetching worker:', error);
@@ -116,12 +114,12 @@ export const SetupForm: React.FC<SetupFormProps> = ({ isModal = false, workerId,
 
   return (
     <SetupFormWrapper
-      schema={WorkerFormSchema}
+      schema={workerId ? WorkerEditFormSchema : WorkerFormSchema}
       defaultValues={workerData}
       onSubmit={handleSubmit}
       isModal={isModal}
     >
-      <WorkerFormFields />
+      <WorkerFormFields showCredentials={!workerId} />
     </SetupFormWrapper>
   );
 };
