@@ -9,6 +9,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
 // import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '../../../contexts/CurrencyContext';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import { AddJobWizard } from '../../jobs/components/AddJobWizard';
@@ -128,9 +129,6 @@ const statCardSx = {
   gap: '6px',
 };
 
-function formatAmount(value: number): string {
-  return value.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function StatBoxesRow({
   jobs,
@@ -141,6 +139,7 @@ function StatBoxesRow({
   estimateSentTotal: number;
   awaitingInvoiceTotal: number;
 }) {
+  const { formatCurrency } = useCurrency();
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
@@ -162,7 +161,7 @@ function StatBoxesRow({
           Estimate Sent
         </Typography>
         <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          £{formatAmount(estimateSentTotal)}
+          {formatCurrency(estimateSentTotal)}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />

@@ -4,6 +4,7 @@ import { companyService } from '../services/api';
 interface CurrencyContextValue {
   currencyCode: string;
   formatCurrency: (val?: number | null) => string;
+  refreshCurrency: () => void;
 }
 
 const DEFAULT_CURRENCY = 'GBP';
@@ -11,6 +12,7 @@ const DEFAULT_CURRENCY = 'GBP';
 const CurrencyContext = createContext<CurrencyContextValue>({
   currencyCode: DEFAULT_CURRENCY,
   formatCurrency: (val) => (val != null ? `£${val.toFixed(2)}` : '—'),
+  refreshCurrency: () => {},
 });
 
 export const useCurrency = () => useContext(CurrencyContext);
@@ -18,7 +20,7 @@ export const useCurrency = () => useContext(CurrencyContext);
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currencyCode, setCurrencyCode] = useState(DEFAULT_CURRENCY);
 
-  useEffect(() => {
+  const fetchCurrency = useCallback(() => {
     companyService
       .getProfile()
       .then((res) => {
@@ -28,6 +30,10 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
         // silently fall back to default
       });
   }, []);
+
+  useEffect(() => {
+    fetchCurrency();
+  }, [fetchCurrency]);
 
   const formatCurrency = useCallback(
     (val?: number | null): string => {
@@ -47,7 +53,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <CurrencyContext.Provider value={{ currencyCode, formatCurrency }}>
+    <CurrencyContext.Provider value={{ currencyCode, formatCurrency, refreshCurrency: fetchCurrency }}>
       {children}
     </CurrencyContext.Provider>
   );

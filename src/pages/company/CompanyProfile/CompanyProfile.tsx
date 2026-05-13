@@ -8,6 +8,7 @@ import { Input } from '../../../components/UI/Forms/Input';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { companyService } from '../../../services/api';
 import type { CompanyProfileResponse } from '../../../services/api';
+import { useCurrency } from '../../../contexts/CurrencyContext';
 import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
 import { Dropdown } from '../../../components/UI/Forms/Dropdown';
 import { useSchema } from '../../../utils/validation';
@@ -42,6 +43,7 @@ const CURRENCY_OPTIONS = Object.values(CompanyProfileResponseCurrencyEnum).map((
 }));
 
 export const CompanyProfile: React.FC = () => {
+  const { refreshCurrency } = useCurrency();
   const { fieldRules, placeHolders, fieldLabels } = useSchema(CompanyProfileFormSchema);
 
   const methods = useForm<CompanyProfileFormData>({
@@ -156,6 +158,7 @@ export const CompanyProfile: React.FC = () => {
       });
       setProfile(response.data);
       reset(buildFormValues(response.data));
+      refreshCurrency();
       setIsEditing(false);
       setSnackbar({ open: true, message: 'Profile updated successfully.', variant: 'success' });
     } catch (error) {
