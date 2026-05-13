@@ -59,6 +59,14 @@ export const WorkerFormSchema: IFields = {
   },
 };
 
+export const WorkerEditFormSchema: IFields = {
+  name: WorkerFormSchema.name,
+  initials: WorkerFormSchema.initials,
+  email: WorkerFormSchema.email,
+  telephone: WorkerFormSchema.telephone,
+  mobile: WorkerFormSchema.mobile,
+};
+
 export interface WorkerFormData {
   name: string;
   initials?: string;

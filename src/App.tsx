@@ -38,6 +38,7 @@ import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
 import { SubscriptionProvider } from './contexts/SubscriptionContext'
+import { CurrencyProvider } from './contexts/CurrencyContext'
 import env from './config/env'
 import './App.css'
 
@@ -54,6 +55,7 @@ function App() {
     <GlobalSnackbarProvider>
       <GlobalModalOuterContextProvider>
         <Router>
+          <CurrencyProvider>
           <SubscriptionProvider>
             <AppConfiguration />
             <Routes>
@@ -106,6 +108,7 @@ function App() {
           </Routes>
             <GlobalModal />
           </SubscriptionProvider>
+          </CurrencyProvider>
         </Router>
       </GlobalModalOuterContextProvider>
     </GlobalSnackbarProvider>

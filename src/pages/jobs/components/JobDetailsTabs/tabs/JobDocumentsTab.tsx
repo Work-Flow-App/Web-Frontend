@@ -12,6 +12,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { JobResponse, StepAttachmentResponse, JobWorkflowStepResponse, InvoiceResponse } from '../../../../../services/api';
 import { jobWorkflowService, stepActivityService, estimateService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../../contexts/CurrencyContext';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../../../components/UI/Button/IconButton';
 import * as S from '../../../JobDetailsPage.styles';
@@ -33,10 +34,9 @@ const getFileIcon = (fileType?: string) => {
   return <InsertDriveFileIcon sx={{ color: 'text.secondary' }} />;
 };
 
-const fmt = (v?: number) => (v !== undefined ? `£${v.toFixed(2)}` : '—');
-
 export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
   const { showSuccess, showError } = useSnackbar();
+  const { formatCurrency: fmt } = useCurrency();
   const [documents, setDocuments] = useState<DocumentWithStep[]>([]);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);

@@ -106,6 +106,14 @@ export const CompanyProfileFormSchema: IFields = {
     label: 'VAT Number',
     isRequired: false,
   },
+  currency: {
+    title: 'currency',
+    rule: InputValidationRules.ObjectNotRequired,
+    defaultValue: '',
+    placeHolder: 'Select currency',
+    label: 'Currency',
+    isRequired: false,
+  },
   bankName: {
     title: 'bankName',
     rule: InputValidationRules.String,
