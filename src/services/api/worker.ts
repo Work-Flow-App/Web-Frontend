@@ -140,7 +140,7 @@ export const workerService = {
   },
 
   async resetPassword(id: number, data: WorkerPasswordResetRequest) {
-    return await getWorkerApi().workerResetWorkerPassword(id, data);
+    return await getWorkerApi().workerResetWorkerUsernamePassword(id, data);
   },
 };
 

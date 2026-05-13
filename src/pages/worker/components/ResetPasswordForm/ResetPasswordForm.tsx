@@ -1,104 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { AxiosError } from 'axios';
+import { Input } from '../../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../../components/UI/Forms/PasswordInput';
 import { workerService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { FormContainer, FormWrapper } from '../InviteWorkerForm/InviteWorkerForm.styles';
+import { UsernameRow, UsernameValue } from './ResetPasswordForm.styles';
 
 interface ResetPasswordFormProps {
   workerId: number;
   workerName: string;
+  workerUsername: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-interface ResetPasswordFormData {
+interface ResetCredentialsFormData {
   newPassword: string;
-  confirmPassword: string;
+  newUsername: string;
 }
 
 const schema = yup.object({
   newPassword: yup
     .string()
     .required('Password is required')
-    .min(8, 'Must be at least 8 characters')
-    .matches(/[A-Z]/, 'Must contain an uppercase letter')
-    .matches(/[a-z]/, 'Must contain a lowercase letter')
-    .matches(/[0-9]/, 'Must contain a number')
-    .matches(/[^A-Za-z0-9]/, 'Must contain a special character'),
-  confirmPassword: yup
+    .min(8, 'Must be at least 8 characters'),
+  newUsername: yup
     .string()
-    .required('Please confirm the password')
-    .oneOf([yup.ref('newPassword')], 'Passwords do not match'),
+    .default('')
+    .test('username-format', 'Must be 3–20 characters with no spaces', (value) => {
+      if (!value?.trim()) return true;
+      const trimmed = value.trim();
+      return trimmed.length >= 3 && trimmed.length <= 20 && !/\s/.test(trimmed);
+    }),
 });
 
 export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   workerId,
   workerName,
+  workerUsername,
   onSuccess,
   onCancel,
 }) => {
-  const methods = useForm<ResetPasswordFormData>({
+  const methods = useForm<ResetCredentialsFormData>({
     resolver: yupResolver(schema),
-    defaultValues: { newPassword: '', confirmPassword: '' },
+    defaultValues: { newPassword: '', newUsername: '' },
     mode: 'onChange',
   });
 
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = methods;
-
+  const { handleSubmit, formState: { errors }, setError } = methods;
   const { showSuccess, showError } = useSnackbar();
-  const [, setLoading] = useState(false);
-
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
     useGlobalModalInnerContext();
 
+  const onSubmit = useCallback(
+    async (data: ResetCredentialsFormData) => {
+      try {
+        const trimmedUsername = data.newUsername?.trim();
+        await workerService.resetPassword(workerId, {
+          newPassword: data.newPassword,
+          ...(trimmedUsername ? { newUsername: trimmedUsername } : {}),
+        });
+        showSuccess(`Credentials updated for ${workerName}.`);
+        onSuccess?.();
+      } catch (error: unknown) {
+        if (error instanceof AxiosError && error.response?.status === 409) {
+          setError('newUsername', {
+            type: 'manual',
+            message: error.response.data?.message || 'Username already taken',
+          });
+          return;
+        }
+        showError(extractErrorMessage(error, 'Failed to update credentials.'));
+      }
+    },
+    [workerId, workerName, showSuccess, showError, onSuccess, setError]
+  );
+
   useEffect(() => {
-    updateModalTitle(`Reset Password — ${workerName}`);
+    updateModalTitle(`Reset Credentials — ${workerName}`);
     updateGlobalModalInnerConfig({
-      confirmModalButtonText: 'Reset Password',
+      confirmModalButtonText: 'Save Changes',
       cancelButtonText: 'Cancel',
     });
     updateOnClose(() => onCancel?.());
     updateOnConfirm(() => handleSubmit(onSubmit)());
-  }, [updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm, onCancel]);
-
-  const onSubmit = async (data: ResetPasswordFormData) => {
-    setLoading(true);
-    try {
-      await workerService.resetPassword(workerId, { newPassword: data.newPassword });
-      showSuccess(`Password reset for ${workerName}. Share the new password out-of-band.`);
-      onSuccess?.();
-    } catch (error: unknown) {
-      showError(extractErrorMessage(error, 'Failed to reset password. Please try again.'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm, onCancel, onSubmit, handleSubmit, workerName]);
 
   return (
     <FormProvider {...methods}>
       <FormContainer>
+        <UsernameRow>
+          Current Username: <UsernameValue>{workerUsername}</UsernameValue>
+        </UsernameRow>
         <FormWrapper>
           <PasswordInput
             name="newPassword"
             label="New Password"
-            placeholder="Enter new password"
+            placeholder="Min 8 characters"
             fullWidth
+            required
             error={errors.newPassword}
           />
-          <PasswordInput
-            name="confirmPassword"
-            label="Confirm Password"
-            placeholder="Confirm new password"
+          <Input
+            name="newUsername"
+            label="New Username (optional)"
+            placeholder="Leave blank to keep current"
             fullWidth
-            error={errors.confirmPassword}
+            error={errors.newUsername}
           />
         </FormWrapper>
       </FormContainer>

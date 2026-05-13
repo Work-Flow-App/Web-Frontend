@@ -161,6 +161,7 @@ export const PageList: React.FC = () => {
           <ResetPasswordForm
             workerId={worker.id}
             workerName={worker.name}
+            workerUsername={worker.username}
             onSuccess={() => resetGlobalModalOuterProps()}
             onCancel={() => resetGlobalModalOuterProps()}
           />
