@@ -111,7 +111,12 @@ const RightActions = ({
           <ListItemText>{isWorker ? 'My Profile' : 'Company Profile'}</ListItemText>
         </MenuItem>
         {!isWorker && (
-          <MenuItem onClick={() => { handleClose(); onViewSettings(); }}>
+          <MenuItem
+            onClick={() => {
+              handleClose();
+              onViewSettings();
+            }}
+          >
             <ListItemIcon>
               <SettingsIcon fontSize="small" />
             </ListItemIcon>
@@ -196,14 +201,14 @@ export const Layout: React.FC = () => {
   // Update initials from company name once profile loads (company users only)
   useEffect(() => {
     if (isWorker) return;
-    companyService.getProfile()
+    companyService
+      .getProfile()
       .then((response) => {
         const name = response.data.name;
         if (name) {
           const words = name.trim().split(/\s+/);
-          const initials = words.length >= 2
-            ? (words[0][0] + words[1][0]).toUpperCase()
-            : name.substring(0, 2).toUpperCase();
+          const initials =
+            words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
           setUserInitials(initials);
         }
       })
@@ -264,7 +269,7 @@ export const Layout: React.FC = () => {
       children: [
         { id: 'jobs-list', label: 'All Jobs', icon: <WorkIcon />, href: '/company/jobs' },
         { id: 'templates', label: 'Templates', icon: <DescriptionIcon />, href: '/company/jobs/templates' },
-        { id: 'workflows', label: 'Workfloows', icon: <AccountTreeIcon />, href: '/company/workflows' },
+        { id: 'workflows', label: 'Workfloow', icon: <AccountTreeIcon />, href: '/company/workflows' },
       ],
     },
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
@@ -320,9 +325,7 @@ export const Layout: React.FC = () => {
                       ? `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} left in trial`
                       : 'Trial ending soon'}
                   </S.TrialBadgeText>
-                  <S.TrialUpgradeButton onClick={() => navigate('/subscribe')}>
-                    Upgrade Now
-                  </S.TrialUpgradeButton>
+                  <S.TrialUpgradeButton onClick={() => navigate('/subscribe')}>Upgrade Now</S.TrialUpgradeButton>
                 </S.TrialBadge>
               )}
               <RightActions
