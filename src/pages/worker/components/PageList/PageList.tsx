@@ -5,6 +5,7 @@ import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { SetupForm } from '../SetupForm';
 import { InviteWorkerForm } from '../InviteWorkerForm';
+import { ResetPasswordForm } from '../ResetPasswordForm';
 import { workerService, type Worker } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
@@ -150,6 +151,25 @@ export const PageList: React.FC = () => {
     [showSuccess, showError, fetchWorkers, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
+  const handleResetPassword = useCallback(
+    (worker: WorkerTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'resetWorkerPassword',
+        children: (
+          <ResetPasswordForm
+            workerId={worker.id}
+            workerName={worker.name}
+            onSuccess={() => resetGlobalModalOuterProps()}
+            onCancel={() => resetGlobalModalOuterProps()}
+          />
+        ),
+      });
+    },
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
   // Define table actions
   const tableActions: ITableAction<WorkerTableRow>[] = useMemo(
     () => [
@@ -159,13 +179,18 @@ export const PageList: React.FC = () => {
         onClick: handleEditWorker,
       },
       {
+        id: 'resetPassword',
+        label: 'Reset Password',
+        onClick: handleResetPassword,
+      },
+      {
         id: 'delete',
         label: 'Delete',
         onClick: handleDeleteWorker,
         color: 'error' as const,
       },
     ],
-    [handleEditWorker, handleDeleteWorker]
+    [handleEditWorker, handleResetPassword, handleDeleteWorker]
   );
 
   return (

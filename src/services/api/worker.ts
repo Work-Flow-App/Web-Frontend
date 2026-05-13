@@ -4,11 +4,12 @@ import type {
   WorkerCreateRequest,
   WorkerUpdateRequest,
   WorkerInviteResponse,
+  WorkerPasswordResetRequest,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
-export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse };
+export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse, WorkerPasswordResetRequest };
 
 // Additional types for worker invitation system
 export interface WorkerInvitationRequest {
@@ -136,6 +137,10 @@ export const workerService = {
    */
   async checkInvitation(token: string) {
     return await getWorkerApi().workerCheckInvitation(token);
+  },
+
+  async resetPassword(id: number, data: WorkerPasswordResetRequest) {
+    return await getWorkerApi().workerResetWorkerPassword(id, data);
   },
 };
 
