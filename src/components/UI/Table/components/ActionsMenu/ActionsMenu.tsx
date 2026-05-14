@@ -41,8 +41,9 @@ const ActionsMenu = <T extends ITableRow = ITableRow>({ row, actions }: IActions
   const handleActionClick = useCallback(
     (action: ITableAction<T>, event: React.MouseEvent) => {
       event.stopPropagation();
-      action.onClick(row);
+      (document.activeElement as HTMLElement)?.blur();
       handleClose();
+      action.onClick(row);
     },
     [row, handleClose]
   );
@@ -66,6 +67,7 @@ const ActionsMenu = <T extends ITableRow = ITableRow>({ row, actions }: IActions
         anchorEl={anchorEl}
         open={isOpen}
         onClose={handleClose}
+        disableRestoreFocus
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'right',

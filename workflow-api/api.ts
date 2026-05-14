@@ -390,10 +390,10 @@ export interface JobCreateRequest {
     'templateId': number;
     'clientId'?: number;
     'customerId'?: number;
-    'assignedWorkerId'?: number;
+    'assignedWorkerIds'?: Array<number>;
     'workflowId'?: number;
     'status'?: JobCreateRequestStatusEnum;
-    'fieldValues'?: { [key: string]: any; };
+    'fieldValues'?: { [key: string]: string | number | boolean | object; };
     'assetIds'?: Array<number>;
     'address'?: AddressRequest;
 }
@@ -415,7 +415,7 @@ export interface JobResponse {
     'templateId'?: number;
     'clientId'?: number;
     'customerId'?: number;
-    'assignedWorkerId'?: number;
+    'assignedWorkerIds'?: Array<number>;
     'workflowId'?: number;
     'status'?: JobResponseStatusEnum;
     'archived'?: boolean;
@@ -501,13 +501,14 @@ export interface JobTemplateWithFieldsResponse {
     'fields'?: Array<JobTemplateFieldResponse>;
 }
 export interface JobUpdateRequest {
+    'templateId'?: number;
     'clientId'?: number;
     'customerId'?: number;
-    'assignedWorkerId'?: number;
+    'assignedWorkerIds'?: Array<number>;
     'workflowId'?: number;
     'status'?: JobUpdateRequestStatusEnum;
     'archived'?: boolean;
-    'fieldValues'?: { [key: string]: any; };
+    'fieldValues'?: { [key: string]: string | number | boolean | object; };
     'assetIds'?: Array<number>;
     'address'?: AddressRequest;
 }

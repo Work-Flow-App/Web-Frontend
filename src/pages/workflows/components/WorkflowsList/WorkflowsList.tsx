@@ -170,7 +170,9 @@ export const WorkflowsList: React.FC = () => {
                 console.error('Error deleting workflow:', error);
                 const status = (error as { response?: { status?: number } }).response?.status;
                 if (status === 409) {
-                  showError('This workflow is used by active jobs. Archive or reassign those jobs before deleting the workflow.');
+                  showError(
+                    'This workflow is used by active jobs. Archive or reassign those jobs before deleting the workflow.'
+                  );
                 } else {
                   showError(extractErrorMessage(error, 'Failed to delete workflow'));
                 }

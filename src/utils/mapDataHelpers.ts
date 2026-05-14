@@ -54,11 +54,11 @@ export async function prepareWorkerJobMarkers(
   const jobsByWorker = new Map<number, JobResponse[]>();
 
   jobs.forEach((job) => {
-    if (job.assignedWorkerId) {
-      const workerJobs = jobsByWorker.get(job.assignedWorkerId) || [];
+    (job.assignedWorkerIds ?? []).forEach((workerId) => {
+      const workerJobs = jobsByWorker.get(workerId) || [];
       workerJobs.push(job);
-      jobsByWorker.set(job.assignedWorkerId, workerJobs);
-    }
+      jobsByWorker.set(workerId, workerJobs);
+    });
   });
 
   // For each worker with jobs, create a marker
@@ -151,7 +151,7 @@ export async function prepareJobLocationMarkers(
 
     const client = clients.find((c) => c.id === job.clientId);
     const customer = customers.find((c) => c.id === job.customerId);
-    const worker = workers.find((w) => w.id === job.assignedWorkerId);
+    const worker = workers.find((w) => (job.assignedWorkerIds ?? []).includes(w.id!));
 
     const addressParts = [
       job.address.street,
