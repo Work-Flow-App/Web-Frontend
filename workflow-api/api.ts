@@ -591,7 +591,7 @@ export interface JobWorkflowStepUpdateRequest {
     'description'?: string;
     'orderIndex'?: number;
     'status'?: JobWorkflowStepUpdateRequestStatusEnum;
-    'assignedWorkerIds'?: Set<number>;
+    'assignedWorkerIds'?: Array<number>;
 }
 
 export const JobWorkflowStepUpdateRequestStatusEnum = {
