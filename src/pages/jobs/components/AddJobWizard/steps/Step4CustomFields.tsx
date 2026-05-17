@@ -193,9 +193,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
             if (Object.keys(fieldValues).length > 0) updatePayload.fieldValues = fieldValues;
             if (wizardData.customerId) updatePayload.customerId = wizardData.customerId;
             if (wizardData.clientId) updatePayload.clientId = wizardData.clientId;
-            if (wizardData.assignedWorkerId) updatePayload.assignedWorkerId = wizardData.assignedWorkerId;
-            if (wizardData.workflowId) updatePayload.workflowId = wizardData.workflowId;
-            updatePayload.assetIds = wizardData.assetIds ?? [];
+            if (wizardData.assetIds?.length) updatePayload.assetIds = wizardData.assetIds;
 
             await jobService.updateJob(jobId, updatePayload);
             showSuccess('Job updated successfully');
@@ -243,7 +241,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
             ...(customerId && { customerId }),
           };
           if (clientId) createPayload.clientId = clientId;
-          if (wizardData.assignedWorkerId) createPayload.assignedWorkerId = wizardData.assignedWorkerId;
+          if (wizardData.assignedWorkerIds?.length) createPayload.assignedWorkerIds = wizardData.assignedWorkerIds;
           if (wizardData.workflowId) createPayload.workflowId = wizardData.workflowId;
           if (wizardData.assetIds && wizardData.assetIds.length > 0) {
             createPayload.assetIds = wizardData.assetIds;

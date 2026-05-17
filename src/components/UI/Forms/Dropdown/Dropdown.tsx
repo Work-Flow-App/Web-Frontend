@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, memo, useCallback, useMemo } from 'react';
-import { TextField, CircularProgress, FormHelperText, InputLabel } from '@mui/material';
+import { TextField, CircularProgress, FormHelperText, InputLabel, Chip } from '@mui/material';
 import type { DropdownProps, DropdownOption } from './Dropdown.types';
 import * as S from './Dropdown.styles';
 import { useFormContext, useController, useWatch } from 'react-hook-form';
@@ -82,7 +82,10 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   const [hasError, setHasError] = useState<boolean>(false);
   const [inputFieldValue, setInputFieldValue] = useState<string>('');
   const [prevParentCache, setParentCache] = useState<DropdownOption | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
+
+  const isCurrentlyDisabled = isDisabled || disabled;
 
   // React Hook Form
   const methods = useFormContext?.() || {};
@@ -357,6 +360,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
   }, [isValueFetchableOnPress, apiHook, getLiveData]);
 
   const handleChange = useCallback((_event: React.SyntheticEvent, data: unknown) => {
+    if (isCurrentlyDisabled) return;
     if (multiple) {
       // Handle multiple selection
       const dropdownDataArray = data as DropdownOption[];
@@ -379,7 +383,7 @@ export const BaseDropdown = memo((props: DropdownProps) => {
       }
     }
     parentRef?.current?.focus();
-  }, [field, onChange, onValueChange, dependentFields, name, multiple]);
+  }, [field, onChange, onValueChange, dependentFields, name, multiple, isCurrentlyDisabled]);
 
   const handleIsOptionEqualToValue = useCallback((option: unknown, selectedOption: unknown): boolean => {
     if (!isOptionEqualToValue) return true;
@@ -432,12 +436,29 @@ export const BaseDropdown = memo((props: DropdownProps) => {
           id={id}
           options={options}
           multiple={multiple}
+          open={dropdownOpen}
           onOpen={() => {
+            if (isCurrentlyDisabled) return;
+            setDropdownOpen(true);
             fetchOptions();
           }}
           onClose={() => {
+            setDropdownOpen(false);
             clearOptions();
           }}
+          renderTags={multiple ? (value, getTagProps) =>
+            (value as DropdownOption[]).map((option, index) => {
+              const tagProps = getTagProps({ index });
+              return (
+                <Chip
+                  {...tagProps}
+                  key={tagProps.key}
+                  label={option.label}
+                  onDelete={(isDisabled || disabled) ? undefined : tagProps.onDelete}
+                />
+              );
+            })
+          : undefined}
           className={classNameString}
           loading={isLoading}
           dropdownSize={size}

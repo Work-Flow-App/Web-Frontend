@@ -13,6 +13,10 @@ export default defineConfig({
   base: '/',
   plugins: [react()],
   server: {
+    watch: {
+      usePolling: true,
+      interval: 500,
+    },
     proxy: {
       '/api': {
         target: 'https://api.dev2.workfloow.app',

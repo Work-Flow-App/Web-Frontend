@@ -29,7 +29,7 @@ export interface WizardData {
     mobile?: string;
     address?: string;
   };
-  assignedWorkerId?: number;
+  assignedWorkerIds?: number[];
   workflowId?: number;
   assetIds?: number[];
   fieldValues?: { [key: string]: string | number | boolean };
@@ -56,7 +56,8 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
   useEffect(() => {
     if (!jobId) return;
     setLoadingJob(true);
-    jobService.getJobById(jobId)
+    jobService
+      .getJobById(jobId)
       .then((res) => {
         const job = res.data;
         const fieldValues: { [key: string]: string | number | boolean } = {};
@@ -73,13 +74,19 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
           templateId: job.templateId,
           customerId: job.customerId,
           clientId: job.clientId,
-          assignedWorkerId: job.assignedWorkerId,
+          assignedWorkerIds: job.assignedWorkerIds ?? [],
           workflowId: job.workflowId,
           assetIds: loadedAssetIds,
           fieldValues,
           address: job.address
             ? {
-                fullAddress: [job.address.street, job.address.city, job.address.state, job.address.postalCode, job.address.country]
+                fullAddress: [
+                  job.address.street,
+                  job.address.city,
+                  job.address.state,
+                  job.address.postalCode,
+                  job.address.country,
+                ]
                   .filter(Boolean)
                   .join(', '),
                 latitude: job.address.latitude,
@@ -103,9 +110,16 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
       return <Step2Client onStepComplete={onStepComplete} initialData={wizardData} />;
     }
     if (activeScreen === 2) {
-      return <Step3AssignDetails onStepComplete={onStepComplete} initialData={wizardData} />;
+      return <Step3AssignDetails onStepComplete={onStepComplete} initialData={wizardData} isEditMode={!!jobId} />;
     }
-    return <Step4CustomFields wizardData={wizardData} onSuccess={onSuccess} jobId={jobId} originalAssetIds={originalAssetIds} />;
+    return (
+      <Step4CustomFields
+        wizardData={wizardData}
+        onSuccess={onSuccess}
+        jobId={jobId}
+        originalAssetIds={originalAssetIds}
+      />
+    );
   };
 
   if (loadingJob) return <Loader size={40} centered minHeight="380px" />;
@@ -120,9 +134,7 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
         ))}
       </Stepper>
 
-      <Box sx={{ minHeight: 380 }}>
-        {renderStep()}
-      </Box>
+      <Box sx={{ minHeight: 380 }}>{renderStep()}</Box>
     </Box>
   );
 };

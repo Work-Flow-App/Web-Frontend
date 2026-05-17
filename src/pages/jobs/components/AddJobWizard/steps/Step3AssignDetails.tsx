@@ -12,6 +12,7 @@ import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 interface Step3Props {
   onStepComplete: (data: Partial<WizardData>) => void;
   initialData: WizardData;
+  isEditMode?: boolean;
 }
 
 interface SelectableBoxProps {
@@ -26,10 +27,16 @@ const SelectableItem: React.FC<SelectableBoxProps> = ({ label, sublabel, selecte
     label={
       sublabel ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', py: 0.25 }}>
-          <Typography variant="caption" fontWeight={600} lineHeight={1.3}>{label}</Typography>
-          <Typography variant="caption" sx={{ opacity: 0.75, fontSize: '0.65rem' }}>{sublabel}</Typography>
+          <Typography variant="caption" fontWeight={600} lineHeight={1.3}>
+            {label}
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.75, fontSize: '0.65rem' }}>
+            {sublabel}
+          </Typography>
         </Box>
-      ) : label
+      ) : (
+        label
+      )
     }
     onClick={onClick}
     variant={selected ? 'filled' : 'outlined'}
@@ -55,13 +62,7 @@ interface SelectableSectionProps {
   isEmpty: boolean;
 }
 
-const SelectableSection: React.FC<SelectableSectionProps> = ({
-  label,
-  loading,
-  emptyMessage,
-  children,
-  isEmpty,
-}) => (
+const SelectableSection: React.FC<SelectableSectionProps> = ({ label, loading, emptyMessage, children, isEmpty }) => (
   <Box>
     <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
       {label}
@@ -81,7 +82,9 @@ const SelectableSection: React.FC<SelectableSectionProps> = ({
       }}
     >
       {loading ? (
-        <Typography variant="body2" color="text.disabled">Loading…</Typography>
+        <Typography variant="body2" color="text.disabled">
+          Loading…
+        </Typography>
       ) : isEmpty ? (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', px: 1 }}>
           {emptyMessage}
@@ -93,7 +96,7 @@ const SelectableSection: React.FC<SelectableSectionProps> = ({
   </Box>
 );
 
-export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initialData }) => {
+export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initialData, isEditMode = false }) => {
   const {
     updateModalTitle,
     updateGlobalModalInnerConfig,
@@ -111,7 +114,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   const [loadingWorkflows, setLoadingWorkflows] = useState(true);
   const [loadingAssets, setLoadingAssets] = useState(true);
 
-  const [selectedWorkerId, setSelectedWorkerId] = useState<number | undefined>(initialData.assignedWorkerId);
+  const [selectedWorkerIds, setSelectedWorkerIds] = useState<number[]>(initialData.assignedWorkerIds ?? []);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | undefined>(initialData.workflowId);
   const [selectedAssetIds, setSelectedAssetIds] = useState<number[]>(initialData.assetIds ?? []);
 
@@ -169,9 +172,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         const currentAssetIds = initialData.assetIds ?? [];
         setAssets(
           assetsData.filter(
-            (a: AssetResponse) =>
-              a.archived !== true &&
-              (a.available === true || currentAssetIds.includes(a.id!))
+            (a: AssetResponse) => a.archived !== true && (a.available === true || currentAssetIds.includes(a.id!))
           )
         );
       } catch (error) {
@@ -190,7 +191,8 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   const workflowOptions = useMemo(() => workflows.map((w) => ({ label: w.name || '', id: w.id! })), [workflows]);
   const assetOptions = useMemo(() => assets.map((a) => ({ label: a.name || '', id: a.id! })), [assets]);
 
-  const handleWorkerClick = (id: number) => setSelectedWorkerId((prev) => (prev === id ? undefined : id));
+  const handleWorkerClick = (id: number) =>
+    setSelectedWorkerIds((prev) => (prev.includes(id) ? prev.filter((w) => w !== id) : [...prev, id]));
   const handleWorkflowClick = (id: number) => setSelectedWorkflowId((prev) => (prev === id ? undefined : id));
   const handleAssetClick = (id: number) =>
     setSelectedAssetIds((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
@@ -204,7 +206,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         return;
       }
       onStepComplete({
-        assignedWorkerId: selectedWorkerId,
+        assignedWorkerIds: selectedWorkerIds,
         workflowId: selectedWorkflowId,
         assetIds: selectedAssetIds.length > 0 ? selectedAssetIds : undefined,
         address: selectedLocation
@@ -217,7 +219,18 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       });
       updateActiveScreen(activeScreen + 1);
     };
-  }, [selectedWorkerId, selectedWorkflowId, selectedAssetIds, selectedLocation, onStepComplete, updateActiveScreen, activeScreen, showError, loadingWorkflows, workflows]);
+  }, [
+    selectedWorkerIds,
+    selectedWorkflowId,
+    selectedAssetIds,
+    selectedLocation,
+    onStepComplete,
+    updateActiveScreen,
+    activeScreen,
+    showError,
+    loadingWorkflows,
+    workflows,
+  ]);
 
   useEffect(() => {
     updateModalTitle('Assign Details');
@@ -229,27 +242,41 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, width: '100%' }}>
-      <SelectableSection
-        label="Assign Worker"
-        loading={loadingWorkers}
-        isEmpty={!loadingWorkers && workerOptions.length === 0}
-        emptyMessage="No workers found. Add workers from the Workers section, or continue without assigning one."
-      >
-        {workerOptions.map((w) => (
-          <SelectableItem key={w.id} label={w.label} selected={selectedWorkerId === w.id} onClick={() => handleWorkerClick(w.id)} />
-        ))}
-      </SelectableSection>
+      <Box sx={{ opacity: isEditMode ? 0.6 : 1, pointerEvents: isEditMode ? 'none' : 'auto' }}>
+        <SelectableSection
+          label="Assign Worker"
+          loading={loadingWorkers}
+          isEmpty={!loadingWorkers && workerOptions.length === 0}
+          emptyMessage="No workers found. Add workers from the Workers section, or continue without assigning one."
+        >
+          {workerOptions.map((w) => (
+            <SelectableItem
+              key={w.id}
+              label={w.label}
+              selected={selectedWorkerIds.includes(w.id)}
+              onClick={() => handleWorkerClick(w.id)}
+            />
+          ))}
+        </SelectableSection>
+      </Box>
 
-      <SelectableSection
-        label={`Workfloow${!loadingWorkflows && workflowOptions.length > 0 ? ' *' : ''}`}
-        loading={loadingWorkflows}
-        isEmpty={!loadingWorkflows && workflowOptions.length === 0}
-        emptyMessage="No workfloows found. Create a workfloow from the Workfloows section, or continue without one."
-      >
-        {workflowOptions.map((w) => (
-          <SelectableItem key={w.id} label={w.label} selected={selectedWorkflowId === w.id} onClick={() => handleWorkflowClick(w.id)} />
-        ))}
-      </SelectableSection>
+      <Box sx={{ opacity: isEditMode ? 0.6 : 1, pointerEvents: isEditMode ? 'none' : 'auto' }}>
+        <SelectableSection
+          label={`Workfloow${!loadingWorkflows && workflowOptions.length > 0 ? ' *' : ''}`}
+          loading={loadingWorkflows}
+          isEmpty={!loadingWorkflows && workflowOptions.length === 0}
+          emptyMessage="No workfloows found. Create a workfloow from the Workfloows section, or continue without one."
+        >
+          {workflowOptions.map((w) => (
+            <SelectableItem
+              key={w.id}
+              label={w.label}
+              selected={selectedWorkflowId === w.id}
+              onClick={() => handleWorkflowClick(w.id)}
+            />
+          ))}
+        </SelectableSection>
+      </Box>
 
       <SelectableSection
         label="Assets"
@@ -258,7 +285,12 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         emptyMessage="All assets are currently assigned to other jobs, or none have been created yet."
       >
         {assetOptions.map((a) => (
-          <SelectableItem key={a.id} label={a.label} selected={selectedAssetIds.includes(a.id)} onClick={() => handleAssetClick(a.id)} />
+          <SelectableItem
+            key={a.id}
+            label={a.label}
+            selected={selectedAssetIds.includes(a.id)}
+            onClick={() => handleAssetClick(a.id)}
+          />
         ))}
       </SelectableSection>
 
