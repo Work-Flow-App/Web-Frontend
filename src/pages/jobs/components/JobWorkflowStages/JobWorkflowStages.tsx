@@ -9,6 +9,7 @@ import {
   FormControl,
   Chip,
   Collapse,
+  Autocomplete,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
@@ -236,15 +237,13 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
-  const handleAssignedChange = async (step: JobWorkflowStepResponse, workerId: number | '') => {
+  const handleAssignedChange = async (step: JobWorkflowStepResponse, workerIds: number[]) => {
     if (!step.id || !jobWorkflow?.id) return;
 
     try {
       setUpdatingStep(step.id);
-      // Convert to array for API - Set doesn't serialize properly to JSON
-      const workerIdsArray = workerId ? [workerId] : [];
       await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        assignedWorkerIds: workerIdsArray as any,
+        assignedWorkerIds: workerIds,
       });
       showSuccess('Assignment updated successfully');
       fetchJobWorkflow();
@@ -434,12 +433,13 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
           const statusInfo = getStatusInfo(step.status);
           const isLast = index === sortedSteps.length - 1;
           const isExpanded = step.id === expandedStepId;
-          const assignedWorker = step.assignedWorkerIds
-            ? Array.from(step.assignedWorkerIds)
-                .map((id) => workers.get(id))
-                .filter(Boolean)[0]
+          const assignedWorkerIdsList = Array.from(step.assignedWorkerIds || []);
+          const assignedWorker = assignedWorkerIdsList.length > 0
+            ? workers.get(assignedWorkerIdsList[0]) ?? null
             : null;
-          const assignedWorkerId = step.assignedWorkerIds ? Array.from(step.assignedWorkerIds)[0] : '';
+          const selectedWorkers = assignedWorkerIdsList
+            .map((id) => allWorkers.find((w) => w.id === id) ?? workers.get(id))
+            .filter((w): w is WorkerResponse => !!w);
 
           return (
             <Box
@@ -642,34 +642,54 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                     </S.StepDetailRow>
 
                     {/* Assigned Dropdown */}
-                    <S.StepDetailRow>
+                    <S.AssignedRow>
                       <span className="label">Assigned</span>
-                      <FormControl size="small" sx={{ minWidth: 140 }}>
-                        <Select
-                          value={assignedWorkerId || ''}
-                          onChange={(e: SelectChangeEvent<number | ''>) =>
-                            handleAssignedChange(step, e.target.value as number | '')
+                      <S.AssignedAutocompleteWrapper>
+                        <Autocomplete
+                          multiple
+                          fullWidth
+                          options={allWorkers}
+                          value={selectedWorkers}
+                          getOptionLabel={(option) => option.name || ''}
+                          isOptionEqualToValue={(option, value) => option.id === value.id}
+                          onChange={(_, newValue) =>
+                            handleAssignedChange(step, newValue.map((w) => w.id!))
                           }
                           disabled={updatingStep === step.id}
-                          displayEmpty
-                          sx={{
-                            fontSize: 12,
-                            '& .MuiSelect-select': {
-                              py: 0.5,
-                            },
+                          disablePortal
+                          disableCloseOnSelect
+                          size="small"
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              placeholder={selectedWorkers.length === 0 ? 'Unassigned' : ''}
+                              size="small"
+                            />
+                          )}
+                          renderOption={(props, option, { selected }) => {
+                            const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: React.Key };
+                            return (
+                              <S.WorkerMenuItem key={key} {...rest} selected={selected}>
+                                {option.name}
+                              </S.WorkerMenuItem>
+                            );
                           }}
-                        >
-                          <MenuItem value="" sx={{ fontSize: 12 }}>
-                            Unassigned
-                          </MenuItem>
-                          {allWorkers.map((worker) => (
-                            <MenuItem key={worker.id} value={worker.id} sx={{ fontSize: 12 }}>
-                              {worker.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </S.StepDetailRow>
+                          renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                              const tagProps = getTagProps({ index });
+                              return (
+                                <S.AssignedWorkerChip
+                                  {...tagProps}
+                                  key={tagProps.key}
+                                  label={option.name}
+                                  size="small"
+                                />
+                              );
+                            })
+                          }
+                        />
+                      </S.AssignedAutocompleteWrapper>
+                    </S.AssignedRow>
 
                     {/* Event Notes section */}
                     <S.EventNoteBox>

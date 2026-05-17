@@ -1,4 +1,4 @@
-import { Box, Typography, styled } from '@mui/material';
+import { Box, Typography, Chip, MenuItem, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 import { floowColors } from '../../theme/colors';
 
@@ -681,6 +681,37 @@ export const EventNoteTitle = styled('span')(({ theme }) => ({
   fontSize: rem(12),
   fontWeight: theme.typography.fontWeightSemiBold,
   color: theme.palette.text.primary,
+}));
+
+export const AssignedRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1, 0),
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  '& .label': {
+    fontWeight: theme.typography.fontWeightMedium,
+    paddingTop: theme.spacing(1),
+  },
+}));
+
+export const AssignedAutocompleteWrapper = styled(Box)(({ theme }) => ({
+  flex: 1,
+  minWidth: theme.spacing(20),
+  '& .MuiOutlinedInput-root': {
+    fontSize: rem(12),
+  },
+}));
+
+export const AssignedWorkerChip = styled(Chip)(() => ({
+  fontSize: rem(11),
+  height: 22,
+}));
+
+export const WorkerMenuItem = styled(MenuItem)(({ theme }) => ({
+  fontSize: rem(12),
+  padding: theme.spacing(0.75, 1.5),
 }));
 
 export const EventNoteEditButton = styled('button')(({ theme }) => ({
