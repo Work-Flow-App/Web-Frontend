@@ -88,15 +88,26 @@ export const Login: React.FC = () => {
         }
       }
 
+      // Reject admin accounts — this portal is for Company and Worker users only
+      const isAdmin = userRole === 'ROLE_ADMIN' || userRole === 'ADMIN';
+      if (isAdmin) {
+        await authService.logout();
+        setSnackbar({
+          open: true,
+          message: 'Admin accounts cannot access this portal. Please use the admin dashboard.',
+          variant: 'error',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Redirect based on user role after 1 second
       setTimeout(() => {
-        // Handle both ROLE_COMPANY and COMPANY formats from backend
         if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
           navigate('/company');
         } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
           navigate('/worker');
         } else {
-          // Default redirect to company page
           navigate('/company');
         }
       }, 1000);
@@ -136,6 +147,14 @@ export const Login: React.FC = () => {
       if (accessToken) {
         userRole = getRoleFromToken(accessToken);
         if (userRole) localStorage.setItem('user_role', userRole);
+      }
+
+      const isAdminGoogle = userRole === 'ROLE_ADMIN' || userRole === 'ADMIN';
+      if (isAdminGoogle) {
+        await authService.logout();
+        setSnackbar({ open: true, message: 'Admin accounts cannot access this portal. Please use the admin dashboard.', variant: 'error' });
+        setIsLoading(false);
+        return;
       }
 
       setTimeout(() => {
