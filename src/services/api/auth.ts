@@ -14,6 +14,7 @@ import type {
 } from '../../../workflow-api';
 import type { UserRole, AuthTokens, User } from '../../types/auth';
 import type { WorkerSignupRequest, WorkerSignupResponse } from './worker';
+import type { MemberSignupRequest, MemberSignupResponse } from './companyMember';
 
 /**
  * Authentication API Service
@@ -193,6 +194,13 @@ export const authService = {
    */
   async signupWorkerViaInvitation(data: WorkerSignupRequest): Promise<ApiResponse<WorkerSignupResponse>> {
     return await apiClient.post<WorkerSignupResponse>('/api/v1/auth/signup/worker', data);
+  },
+
+  /**
+   * Company member signup via invitation token
+   */
+  async signupCompanyMember(data: MemberSignupRequest): Promise<ApiResponse<MemberSignupResponse>> {
+    return await apiClient.post<MemberSignupResponse>('/api/v1/auth/signup/company-member', data);
   },
 };
 
