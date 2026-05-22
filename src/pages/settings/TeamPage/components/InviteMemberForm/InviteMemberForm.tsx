@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { Input } from '../../../../../components/UI/Forms/Input';
 import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
 import { companyMemberService } from '../../../../../services/api/companyMember';
@@ -10,6 +9,8 @@ import { MemberInviteRequestCompanyRoleEnum } from '../../../../../../workflow-a
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
+import { useSchema } from '../../../../../utils/validation';
+import { InviteMemberFormSchema } from './InviteMemberFormSchema';
 import { FormContainer, FormWrapper } from './InviteMemberForm.styles';
 
 interface InviteMemberFormProps {
@@ -21,14 +22,6 @@ interface InviteFormData {
   email: string;
 }
 
-const inviteSchema = yup.object({
-  email: yup
-    .string()
-    .required('Email is required')
-    .email('Invalid email format')
-    .max(100, 'Email must be at most 100 characters'),
-});
-
 const ROLE_OPTIONS = [
   { label: 'Manager', value: MemberInviteRequestCompanyRoleEnum.Manager },
   { label: 'Editor', value: MemberInviteRequestCompanyRoleEnum.Editor },
@@ -36,9 +29,11 @@ const ROLE_OPTIONS = [
 ];
 
 export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ onSuccess, onCancel }) => {
+  const { fieldRules, defaultValues, placeHolders, fieldLabels } = useSchema(InviteMemberFormSchema);
+
   const methods = useForm<InviteFormData>({
-    resolver: yupResolver(inviteSchema),
-    defaultValues: { email: '' },
+    resolver: yupResolver(fieldRules),
+    defaultValues,
     mode: 'onChange',
   });
 
@@ -83,9 +78,9 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ onSuccess, o
         <FormWrapper>
           <Input
             name="email"
-            label="Email Address"
+            label={fieldLabels.email}
             type="email"
-            placeholder="member@example.com"
+            placeholder={placeHolders.email}
             fullWidth
             error={errors.email}
           />
