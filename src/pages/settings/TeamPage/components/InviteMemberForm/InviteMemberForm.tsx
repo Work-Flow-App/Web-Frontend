@@ -64,7 +64,9 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ onSuccess, o
         companyRole: companyRoleRef.current,
       });
       showSuccess(
-        `Invitation sent to ${response.data.email}. Expires: ${new Date(response.data.expiresAt ?? '').toLocaleDateString()}`
+        response.data.expiresAt
+          ? `Invitation sent to ${response.data.email}. Expires: ${new Date(response.data.expiresAt).toLocaleDateString()}`
+          : `Invitation sent to ${response.data.email}.`
       );
       onSuccess?.();
     } catch (error) {

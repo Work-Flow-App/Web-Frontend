@@ -38,6 +38,7 @@ import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
+import { AuthProvider } from './contexts/AuthContext'
 import { SubscriptionProvider } from './contexts/SubscriptionContext'
 import { CompanyRoleProvider } from './contexts/CompanyRoleContext'
 import { CurrencyProvider } from './contexts/CurrencyContext'
@@ -56,6 +57,7 @@ function App() {
   return (
     <GlobalSnackbarProvider>
       <GlobalModalOuterContextProvider>
+        <AuthProvider>
         <Router>
           <CurrencyProvider>
           <SubscriptionProvider>
@@ -115,6 +117,7 @@ function App() {
           </SubscriptionProvider>
           </CurrencyProvider>
         </Router>
+        </AuthProvider>
       </GlobalModalOuterContextProvider>
     </GlobalSnackbarProvider>
   )
