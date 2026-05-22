@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { initializePaddle } from '@paddle/paddle-js'
 import { Signup } from './pages/auth/Signup'
 import { WorkerSignup } from './pages/auth/WorkerSignup'
+import { CompanyMemberSignup } from './pages/auth/CompanyMemberSignup'
 import { Login } from './pages/auth/Login'
 import { ForgotPassword } from './pages/auth/ForgotPassword'
 import { ResetPassword } from './pages/auth/ResetPassword'
@@ -37,7 +38,9 @@ import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
+import { AuthProvider } from './contexts/AuthContext'
 import { SubscriptionProvider } from './contexts/SubscriptionContext'
+import { CompanyRoleProvider } from './contexts/CompanyRoleContext'
 import { CurrencyProvider } from './contexts/CurrencyContext'
 import env from './config/env'
 import './App.css'
@@ -54,14 +57,17 @@ function App() {
   return (
     <GlobalSnackbarProvider>
       <GlobalModalOuterContextProvider>
+        <AuthProvider>
         <Router>
           <CurrencyProvider>
           <SubscriptionProvider>
+          <CompanyRoleProvider>
             <AppConfiguration />
             <Routes>
             {/* Public routes - No layout */}
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/worker" element={<WorkerSignup />} />
+            <Route path="/signup/company-member" element={<CompanyMemberSignup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signin" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -107,9 +113,11 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
             <GlobalModal />
+          </CompanyRoleProvider>
           </SubscriptionProvider>
           </CurrencyProvider>
         </Router>
+        </AuthProvider>
       </GlobalModalOuterContextProvider>
     </GlobalSnackbarProvider>
   )

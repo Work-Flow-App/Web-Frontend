@@ -9,9 +9,9 @@ import { Input } from '../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
-import { authService } from '../../../services/api';
 import { getRoleFromToken } from '../../../utils/jwt';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useSchema } from '../../../utils/validation';
 import { LoginFormSchema } from './LoginSchema';
 import {
@@ -46,6 +46,7 @@ export const Login: React.FC = () => {
   } = methods;
 
   const navigate = useNavigate();
+  const { login, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showResendLink, setShowResendLink] = useState(false);
   const [snackbar, setSnackbar] = useState<{
@@ -58,66 +59,37 @@ export const Login: React.FC = () => {
     variant: 'success',
   });
 
+  const redirectByRole = (role: string | null) => {
+    if (role === 'ROLE_COMPANY' || role === 'COMPANY') {
+      navigate('/company');
+    } else if (role === 'ROLE_WORKER' || role === 'WORKER') {
+      navigate('/worker');
+    } else {
+      navigate('/company');
+    }
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setSnackbar({ open: false, message: '', variant: 'success' });
 
     try {
-      const loginResponse = await authService.login({
-        userName: data.userName,
-        password: data.password,
-      });
+      const response = await login({ userName: data.userName, password: data.password });
+      const role = response.data.accessToken ? getRoleFromToken(response.data.accessToken) : null;
+      if (role) localStorage.setItem('user_role', role);
 
-      console.log('Login successful');
-
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: 'Login successful! Redirecting...',
-        variant: 'success',
-      });
-
-      // Extract role from JWT token
-      const accessToken = loginResponse.data.accessToken;
-      let userRole: string | null = null;
-
-      if (accessToken) {
-        userRole = getRoleFromToken(accessToken);
-        if (userRole) {
-          localStorage.setItem('user_role', userRole);
-        }
-      }
-
-      // Redirect based on user role after 1 second
-      setTimeout(() => {
-        // Handle both ROLE_COMPANY and COMPANY formats from backend
-        if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
-          navigate('/company');
-        } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
-          navigate('/worker');
-        } else {
-          // Default redirect to company page
-          navigate('/company');
-        }
-      }, 1000);
+      setSnackbar({ open: true, message: 'Login successful! Redirecting...', variant: 'success' });
+      setTimeout(() => redirectByRole(role), 1000);
     } catch (error: unknown) {
       console.error('Login failed:', error);
       const errorMessage = extractErrorMessage(error, 'Failed to sign in. Please try again.');
 
       if (errorMessage === 'User is disabled') {
         setShowResendLink(true);
-        setSnackbar({
-          open: true,
-          message: 'Please verify your email before logging in.',
-          variant: 'warning',
-        });
+        setSnackbar({ open: true, message: 'Please verify your email before logging in.', variant: 'warning' });
       } else {
         setShowResendLink(false);
-        setSnackbar({
-          open: true,
-          message: errorMessage,
-          variant: 'error',
-        });
+        setSnackbar({ open: true, message: errorMessage, variant: 'error' });
       }
     } finally {
       setIsLoading(false);
@@ -127,38 +99,18 @@ export const Login: React.FC = () => {
   const handleGoogleSuccess = async (credential: string) => {
     setIsLoading(true);
     try {
-      const googleResponse = await authService.loginWithGoogle(credential);
+      const response = await loginWithGoogle(credential);
+      const role = response.data.accessToken ? getRoleFromToken(response.data.accessToken) : null;
+      if (role) localStorage.setItem('user_role', role);
 
       setSnackbar({ open: true, message: 'Login successful! Redirecting...', variant: 'success' });
-
-      const accessToken = googleResponse.data.accessToken;
-      let userRole: string | null = null;
-      if (accessToken) {
-        userRole = getRoleFromToken(accessToken);
-        if (userRole) localStorage.setItem('user_role', userRole);
-      }
-
-      setTimeout(() => {
-        if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
-          navigate('/company');
-        } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
-          navigate('/worker');
-        } else {
-          navigate('/company');
-        }
-      }, 1000);
+      setTimeout(() => redirectByRole(role), 1000);
     } catch (error: unknown) {
       const errorMessage = extractErrorMessage(error, 'Google sign-in failed. Please try again.');
       setSnackbar({ open: true, message: errorMessage, variant: 'error' });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleForgotPassword = () => {
-    console.log('Forgot password clicked');
-    // Navigate to forgot password page
-    navigate('/forgot-password');
   };
 
   return (
@@ -192,7 +144,7 @@ export const Login: React.FC = () => {
                 error={errors.password}
               />
 
-              <ForgotPasswordLink onClick={handleForgotPassword}>
+              <ForgotPasswordLink onClick={() => navigate('/forgot-password')}>
                 Forgot Password?
               </ForgotPasswordLink>
 
@@ -220,11 +172,7 @@ export const Login: React.FC = () => {
                   }
                 }}
                 onError={() => {
-                  setSnackbar({
-                    open: true,
-                    message: 'Google sign-in was cancelled or failed.',
-                    variant: 'error',
-                  });
+                  setSnackbar({ open: true, message: 'Google sign-in was cancelled or failed.', variant: 'error' });
                 }}
                 width="100%"
                 text="signin_with"
@@ -242,10 +190,6 @@ export const Login: React.FC = () => {
                 Don't have an account? <Link to="/signup">Create an account</Link>
               </SignUpLink>
             </FormWrapper>
-
-            {/* <FooterText>
-              Design and developed by <a href="#">Jetnetix Solutions</a>
-            </FooterText> */}
           </FormContainer>
         </LeftSection>
 

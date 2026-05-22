@@ -51,6 +51,16 @@ export function getRoleFromToken(token: string): string | null {
 }
 
 /**
+ * Extract user ID from JWT token (parsed from 'sub' claim)
+ */
+export function getUserIdFromToken(token: string): number | null {
+  const payload = decodeJWT(token);
+  if (!payload?.sub) return null;
+  const id = parseInt(payload.sub, 10);
+  return isNaN(id) ? null : id;
+}
+
+/**
  * Check if token is expired
  */
 export function isTokenExpired(token: string): boolean {

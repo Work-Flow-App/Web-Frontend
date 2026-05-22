@@ -48,6 +48,8 @@ class ApiClient {
     '/auth/google',
     '/auth/signup',
     '/auth/signup/worker',
+    '/auth/signup/company-member',
+    '/companies/members/invitations/check',
     '/auth/refresh',
     '/auth/forgot-password',
     '/auth/reset-password',

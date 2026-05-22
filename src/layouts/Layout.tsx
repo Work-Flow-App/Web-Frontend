@@ -22,11 +22,10 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
-import { authService } from '../services/api/auth';
 import { companyService } from '../services/api/company';
-import { getRoleFromToken } from '../utils/jwt';
 import { useSessionRestore } from '../hooks/useSessionRestore';
 import { useSubscription } from '../contexts/SubscriptionContext';
+import { useAuth } from '../contexts/AuthContext';
 import { SubscriptionStatusResponseStatusEnum } from '../../workflow-api';
 import * as S from './Layout.styles';
 import { Place } from '@mui/icons-material';
@@ -165,6 +164,7 @@ export const Layout: React.FC = () => {
   // Wait for session restoration before rendering protected content
   const { isRestoring, hasSession } = useSessionRestore();
   const { status: subscriptionStatus, refresh: refreshSubscription } = useSubscription();
+  const { userRole, logout } = useAuth();
 
   // Re-fetch subscription status once session is confirmed — handles post-login race condition
   useEffect(() => {
@@ -179,20 +179,10 @@ export const Layout: React.FC = () => {
     return Math.ceil((new Date(subscriptionStatus.trialEndsAt).getTime() - Date.now()) / 86_400_000);
   }, [subscriptionStatus]);
 
-  // Get initial fallback from JWT role (e.g., ROLE_COMPANY -> CO)
   const roleInitials = useMemo(() => {
-    const token = authService.getAccessToken();
-    if (!token) return 'U';
-    const role = getRoleFromToken(token);
-    if (!role) return 'U';
-    return role.replace('ROLE_', '').substring(0, 2).toUpperCase();
-  }, []);
-
-  const userRole = useMemo(() => {
-    const token = authService.getAccessToken();
-    if (!token) return null;
-    return getRoleFromToken(token);
-  }, []);
+    if (!userRole) return 'U';
+    return userRole.replace('ROLE_', '').substring(0, 2).toUpperCase();
+  }, [userRole]);
 
   const isWorker = userRole === 'ROLE_WORKER' || userRole === 'WORKER';
 
@@ -235,14 +225,12 @@ export const Layout: React.FC = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = async () => {
     try {
-      await authService.logout();
-      navigate('/login');
+      await logout();
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if logout fails, clear tokens and redirect
+    } finally {
       navigate('/login');
     }
   };
