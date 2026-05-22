@@ -393,7 +393,7 @@ export interface JobCreateRequest {
     'assignedWorkerIds'?: Array<number>;
     'workflowId'?: number;
     'status'?: JobCreateRequestStatusEnum;
-    'fieldValues'?: { [key: string]: string | number | boolean | object; };
+    'fieldValues'?: { [key: string]: any; };
     'assetIds'?: Array<number>;
     'address'?: AddressRequest;
 }
@@ -501,14 +501,12 @@ export interface JobTemplateWithFieldsResponse {
     'fields'?: Array<JobTemplateFieldResponse>;
 }
 export interface JobUpdateRequest {
-    'templateId'?: number;
     'clientId'?: number;
     'customerId'?: number;
-    'assignedWorkerIds'?: Array<number>;
     'workflowId'?: number;
     'status'?: JobUpdateRequestStatusEnum;
     'archived'?: boolean;
-    'fieldValues'?: { [key: string]: string | number | boolean | object; };
+    'fieldValues'?: { [key: string]: any; };
     'assetIds'?: Array<number>;
     'address'?: AddressRequest;
 }
@@ -591,7 +589,7 @@ export interface JobWorkflowStepUpdateRequest {
     'description'?: string;
     'orderIndex'?: number;
     'status'?: JobWorkflowStepUpdateRequestStatusEnum;
-    'assignedWorkerIds'?: Array<number>;
+    'assignedWorkerIds'?: Set<number>;
 }
 
 export const JobWorkflowStepUpdateRequestStatusEnum = {
@@ -689,6 +687,132 @@ export interface LoginRequest {
 export interface LogoutRequest {
     'refreshToken': string;
 }
+export interface MemberInvitationCheckResponse {
+    'valid'?: boolean;
+    'email'?: string;
+    'companyName'?: string;
+    'companyRole'?: MemberInvitationCheckResponseCompanyRoleEnum;
+    'status'?: MemberInvitationCheckResponseStatusEnum;
+    'expiresAt'?: string;
+}
+
+export const MemberInvitationCheckResponseCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberInvitationCheckResponseCompanyRoleEnum = typeof MemberInvitationCheckResponseCompanyRoleEnum[keyof typeof MemberInvitationCheckResponseCompanyRoleEnum];
+export const MemberInvitationCheckResponseStatusEnum = {
+    Pending: 'PENDING',
+    Accepted: 'ACCEPTED',
+    Expired: 'EXPIRED'
+} as const;
+
+export type MemberInvitationCheckResponseStatusEnum = typeof MemberInvitationCheckResponseStatusEnum[keyof typeof MemberInvitationCheckResponseStatusEnum];
+
+export interface MemberInvitationStatusResponse {
+    'id'?: number;
+    'email'?: string;
+    'companyRole'?: MemberInvitationStatusResponseCompanyRoleEnum;
+    'status'?: MemberInvitationStatusResponseStatusEnum;
+    'createdAt'?: string;
+    'expiresAt'?: string;
+    'usedAt'?: string;
+}
+
+export const MemberInvitationStatusResponseCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberInvitationStatusResponseCompanyRoleEnum = typeof MemberInvitationStatusResponseCompanyRoleEnum[keyof typeof MemberInvitationStatusResponseCompanyRoleEnum];
+export const MemberInvitationStatusResponseStatusEnum = {
+    Pending: 'PENDING',
+    Accepted: 'ACCEPTED',
+    Expired: 'EXPIRED'
+} as const;
+
+export type MemberInvitationStatusResponseStatusEnum = typeof MemberInvitationStatusResponseStatusEnum[keyof typeof MemberInvitationStatusResponseStatusEnum];
+
+export interface MemberInviteRequest {
+    'email': string;
+    'companyRole': MemberInviteRequestCompanyRoleEnum;
+}
+
+export const MemberInviteRequestCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberInviteRequestCompanyRoleEnum = typeof MemberInviteRequestCompanyRoleEnum[keyof typeof MemberInviteRequestCompanyRoleEnum];
+
+export interface MemberInviteResponse {
+    'email'?: string;
+    'companyRole'?: MemberInviteResponseCompanyRoleEnum;
+    'message'?: string;
+    'expiresAt'?: string;
+}
+
+export const MemberInviteResponseCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberInviteResponseCompanyRoleEnum = typeof MemberInviteResponseCompanyRoleEnum[keyof typeof MemberInviteResponseCompanyRoleEnum];
+
+export interface MemberResponse {
+    'memberId'?: number;
+    'userId'?: number;
+    'username'?: string;
+    'email'?: string;
+    'name'?: string;
+    'companyRole'?: MemberResponseCompanyRoleEnum;
+    'active'?: boolean;
+    'joinedAt'?: string;
+}
+
+export const MemberResponseCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberResponseCompanyRoleEnum = typeof MemberResponseCompanyRoleEnum[keyof typeof MemberResponseCompanyRoleEnum];
+
+export interface MemberSignupRequest {
+    'invitationToken': string;
+    'email': string;
+    'username': string;
+    'password': string;
+    'name': string;
+}
+export interface MemberSignupResponse {
+    'memberId'?: number;
+    'username'?: string;
+    'email'?: string;
+    'companyName'?: string;
+    'companyRole'?: MemberSignupResponseCompanyRoleEnum;
+    'message'?: string;
+}
+
+export const MemberSignupResponseCompanyRoleEnum = {
+    CompanyAdmin: 'COMPANY_ADMIN',
+    Manager: 'MANAGER',
+    Editor: 'EDITOR',
+    Viewer: 'VIEWER'
+} as const;
+
+export type MemberSignupResponseCompanyRoleEnum = typeof MemberSignupResponseCompanyRoleEnum[keyof typeof MemberSignupResponseCompanyRoleEnum];
+
 export interface PageMetadata {
     'size'?: number;
     'number'?: number;
@@ -2255,6 +2379,45 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
         },
         /**
          * 
+         * @param {MemberSignupRequest} memberSignupRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authSignupCompanyMember: async (memberSignupRequest: MemberSignupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'memberSignupRequest' is not null or undefined
+            assertParamExists('authSignupCompanyMember', 'memberSignupRequest', memberSignupRequest)
+            const localVarPath = `/api/v1/auth/signup/company-member`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(memberSignupRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {WorkerSignupRequest} workerSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2449,6 +2612,18 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {MemberSignupRequest} memberSignupRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authSignupCompanyMember(memberSignupRequest: MemberSignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MemberSignupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authSignupCompanyMember(memberSignupRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.authSignupCompanyMember']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {WorkerSignupRequest} workerSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2562,6 +2737,15 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
         },
         /**
          * 
+         * @param {MemberSignupRequest} memberSignupRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authSignupCompanyMember(memberSignupRequest: MemberSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<MemberSignupResponse> {
+            return localVarFp.authSignupCompanyMember(memberSignupRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {WorkerSignupRequest} workerSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -2672,6 +2856,16 @@ export class AuthenticationApi extends BaseAPI {
      */
     public authSignup(signupRequest: SignupRequest, options?: RawAxiosRequestConfig) {
         return AuthenticationApiFp(this.configuration).authSignup(signupRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {MemberSignupRequest} memberSignupRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public authSignupCompanyMember(memberSignupRequest: MemberSignupRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).authSignupCompanyMember(memberSignupRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3294,6 +3488,447 @@ export class CompanyApi extends BaseAPI {
      */
     public companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig) {
         return CompanyApiFp(this.configuration).companyUpdateProfile(companyProfileUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * CompanyMembersApi - axios parameter creator
+ */
+export const CompanyMembersApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {{ [key: string]: string; }} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberChangeMemberRole: async (id: number, requestBody: { [key: string]: string; }, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyMemberChangeMemberRole', 'id', id)
+            // verify required parameter 'requestBody' is not null or undefined
+            assertParamExists('companyMemberChangeMemberRole', 'requestBody', requestBody)
+            const localVarPath = `/api/v1/companies/members/{id}/role`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(requestBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} token 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberCheckInvitation: async (token: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'token' is not null or undefined
+            assertParamExists('companyMemberCheckInvitation', 'token', token)
+            const localVarPath = `/api/v1/companies/members/invitations/check`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (token !== undefined) {
+                localVarQueryParameter['token'] = token;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {MemberInviteRequest} memberInviteRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberInviteMember: async (memberInviteRequest: MemberInviteRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'memberInviteRequest' is not null or undefined
+            assertParamExists('companyMemberInviteMember', 'memberInviteRequest', memberInviteRequest)
+            const localVarPath = `/api/v1/companies/members/invite`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(memberInviteRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberListInvitations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/members/invitations`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberListMembers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/members`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberRemoveMember: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyMemberRemoveMember', 'id', id)
+            const localVarPath = `/api/v1/companies/members/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * CompanyMembersApi - functional programming interface
+ */
+export const CompanyMembersApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = CompanyMembersApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {{ [key: string]: string; }} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberChangeMemberRole(id: number, requestBody: { [key: string]: string; }, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MemberResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberChangeMemberRole(id, requestBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberChangeMemberRole']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} token 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberCheckInvitation(token: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MemberInvitationCheckResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberCheckInvitation(token, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberCheckInvitation']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {MemberInviteRequest} memberInviteRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberInviteMember(memberInviteRequest: MemberInviteRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MemberInviteResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberInviteMember(memberInviteRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberInviteMember']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberListInvitations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MemberInvitationStatusResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberListInvitations(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberListInvitations']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberListMembers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MemberResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberListMembers(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberListMembers']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyMemberRemoveMember(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyMemberRemoveMember(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyMembersApi.companyMemberRemoveMember']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * CompanyMembersApi - factory interface
+ */
+export const CompanyMembersApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = CompanyMembersApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {{ [key: string]: string; }} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberChangeMemberRole(id: number, requestBody: { [key: string]: string; }, options?: RawAxiosRequestConfig): AxiosPromise<MemberResponse> {
+            return localVarFp.companyMemberChangeMemberRole(id, requestBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} token 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberCheckInvitation(token: string, options?: RawAxiosRequestConfig): AxiosPromise<MemberInvitationCheckResponse> {
+            return localVarFp.companyMemberCheckInvitation(token, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {MemberInviteRequest} memberInviteRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberInviteMember(memberInviteRequest: MemberInviteRequest, options?: RawAxiosRequestConfig): AxiosPromise<MemberInviteResponse> {
+            return localVarFp.companyMemberInviteMember(memberInviteRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberListInvitations(options?: RawAxiosRequestConfig): AxiosPromise<Array<MemberInvitationStatusResponse>> {
+            return localVarFp.companyMemberListInvitations(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberListMembers(options?: RawAxiosRequestConfig): AxiosPromise<Array<MemberResponse>> {
+            return localVarFp.companyMemberListMembers(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyMemberRemoveMember(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyMemberRemoveMember(id, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * CompanyMembersApi - object-oriented interface
+ */
+export class CompanyMembersApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} id 
+     * @param {{ [key: string]: string; }} requestBody 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberChangeMemberRole(id: number, requestBody: { [key: string]: string; }, options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberChangeMemberRole(id, requestBody, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} token 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberCheckInvitation(token: string, options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberCheckInvitation(token, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {MemberInviteRequest} memberInviteRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberInviteMember(memberInviteRequest: MemberInviteRequest, options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberInviteMember(memberInviteRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberListInvitations(options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberListInvitations(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberListMembers(options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberListMembers(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyMemberRemoveMember(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyMembersApiFp(this.configuration).companyMemberRemoveMember(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -5472,6 +6107,49 @@ export const JobWorkflowsApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {number} jobWorkflowId 
+         * @param {Array<number>} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobWorkflowAssignWorkersToAllSteps: async (jobWorkflowId: number, requestBody: Array<number>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'jobWorkflowId' is not null or undefined
+            assertParamExists('jobWorkflowAssignWorkersToAllSteps', 'jobWorkflowId', jobWorkflowId)
+            // verify required parameter 'requestBody' is not null or undefined
+            assertParamExists('jobWorkflowAssignWorkersToAllSteps', 'requestBody', requestBody)
+            const localVarPath = `/api/v1/job-workflows/{jobWorkflowId}/assign-workers`
+                .replace(`{${"jobWorkflowId"}}`, encodeURIComponent(String(jobWorkflowId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(requestBody, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} jobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5782,6 +6460,19 @@ export const JobWorkflowsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} jobWorkflowId 
+         * @param {Array<number>} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async jobWorkflowAssignWorkersToAllSteps(jobWorkflowId: number, requestBody: Array<number>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobWorkflowResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobWorkflowAssignWorkersToAllSteps(jobWorkflowId, requestBody, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobWorkflowsApi.jobWorkflowAssignWorkersToAllSteps']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} jobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5898,6 +6589,16 @@ export const JobWorkflowsApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
+         * @param {number} jobWorkflowId 
+         * @param {Array<number>} requestBody 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobWorkflowAssignWorkersToAllSteps(jobWorkflowId: number, requestBody: Array<number>, options?: RawAxiosRequestConfig): AxiosPromise<JobWorkflowResponse> {
+            return localVarFp.jobWorkflowAssignWorkersToAllSteps(jobWorkflowId, requestBody, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} jobId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5989,6 +6690,17 @@ export class JobWorkflowsApi extends BaseAPI {
      */
     public jobWorkflowAssignWorkerToAllSteps(jobWorkflowId: number, workerId: number, options?: RawAxiosRequestConfig) {
         return JobWorkflowsApiFp(this.configuration).jobWorkflowAssignWorkerToAllSteps(jobWorkflowId, workerId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} jobWorkflowId 
+     * @param {Array<number>} requestBody 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public jobWorkflowAssignWorkersToAllSteps(jobWorkflowId: number, requestBody: Array<number>, options?: RawAxiosRequestConfig) {
+        return JobWorkflowsApiFp(this.configuration).jobWorkflowAssignWorkersToAllSteps(jobWorkflowId, requestBody, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

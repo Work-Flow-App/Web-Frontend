@@ -98,5 +98,18 @@ export type {
   StepVisitLogSummaryResponse,
 } from './visitLog';
 
+export { companyMemberService } from './companyMember';
+export { MemberResponseCompanyRoleEnum as CompanyRoleEnum } from '../../../workflow-api';
+export type {
+  CompanyRole,
+  MemberResponse,
+  MemberInvitationCheckResponse,
+  MemberInvitationStatusResponse,
+  MemberInviteRequest,
+  MemberInviteResponse,
+  MemberSignupRequest,
+  MemberSignupResponse,
+} from './companyMember';
+
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';
