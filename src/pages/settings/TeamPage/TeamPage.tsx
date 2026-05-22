@@ -70,7 +70,7 @@ export const TeamPage: React.FC = () => {
           companyRole: inv.companyRole ?? '',
           status: inv.status ?? '',
           createdAt: inv.createdAt ?? '',
-          expiresAt: inv.expiresAt ?? '',
+          expiresAt: inv.expiresAt ?? null,
           usedAt: inv.usedAt ?? null,
         }))
       );

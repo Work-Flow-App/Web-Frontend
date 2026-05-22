@@ -20,7 +20,7 @@ export interface InvitationTableRow {
   companyRole: string;
   status: string;
   createdAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   usedAt: string | null;
 }
 
@@ -129,6 +129,6 @@ export const createInvitationColumns = (theme: Theme): ITableColumn<InvitationTa
     id: 'expiresAt',
     label: 'Expires',
     sortable: true,
-    render: (row) => new Date(row.expiresAt).toLocaleDateString(),
+    render: (row) => row.expiresAt ? new Date(row.expiresAt).toLocaleDateString() : '—',
   },
 ];

@@ -1,9 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { authService } from '../services/api/auth';
 import { companyMemberService } from '../services/api/companyMember';
 import type { CompanyRole, MemberResponse } from '../services/api/companyMember';
 import { MemberResponseCompanyRoleEnum } from '../../workflow-api';
-import { getRoleFromToken, decodeJWT } from '../utils/jwt';
+import { decodeJWT } from '../utils/jwt';
+import { useAuth } from './AuthContext';
 
 export interface CompanyRoleContextValue {
   companyRole: CompanyRole | null;
@@ -37,49 +37,46 @@ const MANAGER_ROLES: CompanyRole[] = [
 ];
 
 export const CompanyRoleProvider = ({ children }: { children: ReactNode }) => {
+  const { accessToken, userRole } = useAuth();
   const [companyRole, setCompanyRole] = useState<CompanyRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isCompanyUser = useCallback((): boolean => {
-    const token = authService.getAccessToken();
-    if (!token) return false;
-    const role = getRoleFromToken(token);
-    return role === 'ROLE_COMPANY' || role === 'COMPANY';
-  }, []);
-
   const refresh = useCallback(async (): Promise<void> => {
-    if (!isCompanyUser()) return;
-    const token = authService.getAccessToken();
-    if (!token) return;
+    if (!accessToken || (userRole !== 'ROLE_COMPANY' && userRole !== 'COMPANY')) {
+      setCompanyRole(null);
+      return;
+    }
 
-    // JWT sub may be username (string) or userId (number string) depending on backend config
-    const payload = decodeJWT(token);
+    const payload = decodeJWT(accessToken);
     const sub = payload?.sub ?? null;
 
     try {
       const { data } = await companyMemberService.getMembers();
       const members = data as MemberResponse[];
 
-      let me: MemberResponse | undefined;
+      let currentMember: MemberResponse | undefined;
 
-      // Try matching by username first (Spring Security default sub = username)
       if (sub) {
-        me = members.find((m) => m.username === sub);
+        currentMember = members.find((m) => m.username === sub);
       }
 
-      // Fall back to numeric userId if sub looks like a number
-      if (!me && sub) {
+      if (!currentMember && sub) {
         const numericId = parseInt(sub, 10);
         if (!isNaN(numericId)) {
-          me = members.find((m) => m.userId === numericId);
+          currentMember = members.find((m) => m.userId === numericId);
         }
       }
 
-      if (me?.companyRole) setCompanyRole(me.companyRole);
+      if (currentMember?.companyRole) {
+        setCompanyRole(currentMember.companyRole);
+      } else if (!currentMember) {
+        // Owner has ROLE_COMPANY but no company_members row — grant full admin access
+        setCompanyRole(MemberResponseCompanyRoleEnum.CompanyAdmin);
+      }
     } catch {
       // silently fail
     }
-  }, [isCompanyUser]);
+  }, [accessToken, userRole]);
 
   useEffect(() => {
     setIsLoading(true);

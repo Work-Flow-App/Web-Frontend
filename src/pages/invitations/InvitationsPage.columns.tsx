@@ -11,7 +11,7 @@ export interface InvitationTableRow {
   token: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
   createdAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   usedAt: string | null;
 }
 
@@ -80,7 +80,7 @@ export const createInvitationColumns = (
     id: 'expiresAt',
     label: 'Expires',
     sortable: true,
-    render: (row) => new Date(row.expiresAt).toLocaleDateString(),
+    render: (row) => row.expiresAt ? new Date(row.expiresAt).toLocaleDateString() : '—',
   },
   {
     id: 'usedAt',
