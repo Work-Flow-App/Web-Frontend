@@ -895,7 +895,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                                   variant="contained" color="success"
                                   disabled={isApproving}
                                   onClick={() => handleApproveItem(item.id!)}
-                                  style={{ minWidth: 0, padding: '2px 8px', fontSize: '0.7rem', height: 24 }}
+                                  sx={{ minWidth: 0, padding: '2px 8px', fontSize: '0.7rem', height: 24 }}
                                 >
                                   {isApproving ? <CircularProgress size={10} /> : 'Approve'}
                                 </Button>
