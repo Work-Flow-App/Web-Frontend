@@ -79,17 +79,25 @@ export type {
   StepAttachmentResponse,
 } from './stepActivity';
 
-export { estimateService } from './estimate';
+export { estimateService, EstimateLineItemResponseStatusEnum, LineItemStatusUpdateRequestStatusEnum } from './estimate';
 export type {
   EstimateResponse,
   EstimateUpdateRequest,
-  LineItemResponse,
+  EstimateLineItemResponse,
+  LineItemStatusUpdateRequest,
   LineItemCreateRequest,
+  LineItemUpdateRequest,
   InvoiceResponse,
+  EstimateDocumentCreateRequest,
+  EstimateDocumentResponse,
+  EstimateDocumentLineItemSnapshotResponse,
 } from './estimate';
 
+export { dashboardService } from './dashboard';
+export type { FinancialSummaryResponse } from './dashboard';
+
 export { lineItemService } from './lineItem';
-export type { LineItemUpdateRequest } from './lineItem';
+export type { LineItemResponse } from './lineItem';
 
 export { visitLogService } from './visitLog';
 export type {

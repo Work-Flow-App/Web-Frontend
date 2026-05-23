@@ -1,5 +1,3 @@
-import React from 'react';
-import { Chip } from '@mui/material';
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 
 export interface LineItemTableRow {
@@ -7,7 +5,6 @@ export interface LineItemTableRow {
   productCode: string;
   productDescription: string;
   additionalDetails: string;
-  coreOrSub: string;
   unitPrice: number;
   quantity: number;
   vatRate: number;
@@ -31,19 +28,6 @@ export const getColumns = (fmt: (val?: number | null) => string): ITableColumn<L
     accessor: 'productDescription',
     sortable: true,
     width: 'auto',
-  },
-  {
-    id: 'coreOrSub',
-    label: 'Type',
-    width: 'auto',
-    render: (row) => (
-      <Chip
-        label={row.coreOrSub}
-        size="small"
-        color={row.coreOrSub === 'CORE' ? 'primary' : 'default'}
-        variant="outlined"
-      />
-    ),
   },
   {
     id: 'unitPrice',
