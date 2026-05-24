@@ -263,12 +263,12 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                     </StyledTableCell>
                     <ActionsCell sx={COMPACT_CELL}>
                       <Tooltip title="Edit">
-                        <IconButton size="small" onClick={() => openModal(log)}>
+                        <IconButton size="small" onClick={() => openModal(log)} aria-label="Edit work log">
                           <EditIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Delete">
-                        <IconButton size="small" color="error" onClick={() => log.id && handleDelete(log.id)}>
+                        <IconButton size="small" color="error" onClick={() => log.id && handleDelete(log.id)} aria-label="Delete work log">
                           <DeleteIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>

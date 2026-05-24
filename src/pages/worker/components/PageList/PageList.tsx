@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -6,54 +6,36 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { SetupForm } from '../SetupForm';
 import { InviteWorkerForm } from '../InviteWorkerForm';
 import { ResetPasswordForm } from '../ResetPasswordForm';
-import { workerService, type Worker } from '../../../../services/api';
+import { workerService } from '../../../../services/api';
+import type { WorkerResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { useFetch } from '../../../../hooks';
 import { columns, type WorkerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
-  const [workers, setWorkers] = useState<WorkerTableRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Fetch workers from API
-  const fetchWorkers = useCallback(async () => {
-    try {
-      setLoading(true);
+  const { data: rawWorkers, loading, refetch: fetchWorkers } = useFetch(
+    () => workerService.getAllWorkers(),
+    [],
+    { onError: (err) => showError(extractErrorMessage(err, 'Failed to load workers')) }
+  );
 
-      // Use workerService to fetch workers
-      const response = await workerService.getAllWorkers();
-
-      // Get the workers array from response
-      const workersData = Array.isArray(response.data) ? response.data : [];
-
-      // Transform API response to table format
-      const transformedData: WorkerTableRow[] = workersData.map((worker: Worker) => ({
-        id: worker.id || 0,
-        name: worker.name || '',
-        email: worker.email || '',
-        username: worker.username || '',
-        telephone: worker.telephone || '',
-        mobile: worker.mobile || '',
-        initials: worker.initials || '',
-        addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '',
-      }));
-
-      setWorkers(transformedData);
-    } catch (error) {
-      console.error('Error fetching workers:', error);
-
-      showError(extractErrorMessage(error, 'Failed to load workers'));
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  // Load workers on mount
-  useEffect(() => {
-    fetchWorkers();
-  }, [fetchWorkers]);
+  const workers = useMemo((): WorkerTableRow[] => {
+    const workersData = Array.isArray(rawWorkers) ? rawWorkers : [];
+    return workersData.map((worker: WorkerResponse) => ({
+      id: worker.id || 0,
+      name: worker.name || '',
+      email: worker.email || '',
+      username: worker.username || '',
+      telephone: worker.telephone || '',
+      mobile: worker.mobile || '',
+      initials: worker.initials || '',
+      addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '',
+    }));
+  }, [rawWorkers]);
 
   // Handle add worker
   const handleAddWorker = () => {

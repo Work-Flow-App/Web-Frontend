@@ -90,13 +90,13 @@ export const StepCommentDialog: React.FC<StepCommentDialogProps> = ({ step, onCl
       <S.CommentDialogHeader>
         <S.CommentDialogTitle>Comment</S.CommentDialogTitle>
         <S.CommentDialogActions>
-          <IconButton size="small">
+          <IconButton size="small" aria-label="More options">
             <MoreHorizIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small">
+          <IconButton size="small" aria-label="Mark as resolved">
             <CheckCircleOutlineIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={onClose}>
+          <IconButton size="small" onClick={onClose} aria-label="Close">
             <CloseIcon fontSize="small" />
           </IconButton>
         </S.CommentDialogActions>
@@ -120,7 +120,7 @@ export const StepCommentDialog: React.FC<StepCommentDialogProps> = ({ step, onCl
                 </S.CommentAuthorAvatar>
                 <S.CommentAuthorName>User {comment.authorId}</S.CommentAuthorName>
                 <S.CommentTime>{formatTimeAgo(comment.createdAt)}</S.CommentTime>
-                <IconButton size="small" sx={{ ml: 'auto', p: 0.25 }}>
+                <IconButton size="small" sx={{ ml: 'auto', p: 0.25 }} aria-label="Comment options">
                   <MoreHorizIcon fontSize="small" />
                 </IconButton>
               </S.CommentHeader>

@@ -4,6 +4,7 @@ import { stepActivityService } from '../../../../services/api';
 import type { StepCommentResponse } from '../../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useFormSubmit } from '../../../../hooks';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { rem } from '../../../../components/UI/Typography/utility';
@@ -35,8 +36,8 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
   const [comments, setComments] = useState<StepCommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [addingNew, setAddingNew] = useState(false);
+  const { saving, withSaving } = useFormSubmit();
+  const { saving: addingNew, withSaving: withAddNew } = useFormSubmit();
 
   const newCommentMethods = useForm<NewCommentFormValues>({
     defaultValues: {
@@ -83,18 +84,17 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
   const handleSaveComment = async (commentId: number) => {
     const editContent = editCommentMethods.getValues('editContent');
     try {
-      setSaving(true);
-      await stepActivityService.updateComment(commentId, { content: editContent, type: StepCommentCreateRequestTypeEnum.InternalNote });
-      showSuccess('Comment updated successfully');
-      setEditingCommentId(null);
-      editCommentMethods.reset();
-      fetchComments();
-      onUpdate?.();
+      await withSaving(async () => {
+        await stepActivityService.updateComment(commentId, { content: editContent, type: StepCommentCreateRequestTypeEnum.InternalNote });
+        showSuccess('Comment updated successfully');
+        setEditingCommentId(null);
+        editCommentMethods.reset();
+        fetchComments();
+        onUpdate?.();
+      });
     } catch (error) {
       console.error('Error updating comment:', error);
       showError('Failed to update comment');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -103,17 +103,16 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     if (!newComment.trim()) return;
 
     try {
-      setAddingNew(true);
-      await stepActivityService.addComment(stepId, { content: newComment.trim(), type: StepCommentCreateRequestTypeEnum.InternalNote });
-      showSuccess('Comment added successfully');
-      newCommentMethods.reset();
-      fetchComments();
-      onUpdate?.();
+      await withAddNew(async () => {
+        await stepActivityService.addComment(stepId, { content: newComment.trim(), type: StepCommentCreateRequestTypeEnum.InternalNote });
+        showSuccess('Comment added successfully');
+        newCommentMethods.reset();
+        fetchComments();
+        onUpdate?.();
+      });
     } catch (error) {
       console.error('Error adding comment:', error);
       showError('Failed to add comment');
-    } finally {
-      setAddingNew(false);
     }
   };
 

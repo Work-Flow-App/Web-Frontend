@@ -5,6 +5,7 @@ import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { estimateService } from '../../../../../services/api';
 import type { EstimateLineItemResponse } from '../../../../../services/api';
 import { useCurrency } from '../../../../../contexts/CurrencyContext';
+import { ModalTableHeader, ModalTableRow } from './ModalTable.styles';
 
 const HEADERS = ['Product Code', 'Description', 'Unit Price', 'Qty', 'VAT %', 'Total'];
 const GRID = '100px 1fr 100px 60px 70px 100px';
@@ -105,17 +106,7 @@ export const CreateEstimateDocumentModal: React.FC<CreateEstimateDocumentModalPr
         placeholder="e.g. Thank you for your business. This estimate is valid for 30 days."
       />
 
-      <Box
-        sx={(theme) => ({
-          display: 'grid',
-          gridTemplateColumns: GRID,
-          gap: 1,
-          px: 1,
-          py: 1,
-          borderRadius: 1,
-          backgroundColor: theme.palette.action.selected,
-        })}
-      >
+      <ModalTableHeader sx={{ gridTemplateColumns: GRID }}>
         {HEADERS.map((h, i) => (
           <Typography
             key={h}
@@ -127,7 +118,7 @@ export const CreateEstimateDocumentModal: React.FC<CreateEstimateDocumentModalPr
             {h}
           </Typography>
         ))}
-      </Box>
+      </ModalTableHeader>
 
       {lineItems.length === 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
@@ -135,19 +126,7 @@ export const CreateEstimateDocumentModal: React.FC<CreateEstimateDocumentModalPr
         </Typography>
       ) : (
         lineItems.map((item, index) => (
-          <Box
-            key={item.id}
-            sx={(theme) => ({
-              display: 'grid',
-              gridTemplateColumns: GRID,
-              gap: 1,
-              px: 1,
-              py: 0.75,
-              alignItems: 'center',
-              borderRadius: 1,
-              backgroundColor: index % 2 === 0 ? theme.palette.action.hover : 'transparent',
-            })}
-          >
+          <ModalTableRow key={item.id} isEven={index % 2 === 0} sx={{ gridTemplateColumns: GRID }}>
             <Typography variant="body2">{item.productCode || '—'}</Typography>
             <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {item.productDescription || '—'}
@@ -160,7 +139,7 @@ export const CreateEstimateDocumentModal: React.FC<CreateEstimateDocumentModalPr
             <Typography variant="body2" fontWeight={500} sx={{ textAlign: 'right' }}>
               {fmt(item.totalAmount)}
             </Typography>
-          </Box>
+          </ModalTableRow>
         ))
       )}
 

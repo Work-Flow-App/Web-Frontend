@@ -1,7 +1,8 @@
 import { generateFormValidationSchema } from './inputSchema';
 
-type FieldRule = any;
-type DefaultValue = any;
+import type { AnySchema } from 'yup';
+type FieldRule = AnySchema;
+type DefaultValue = unknown;
 
 export interface IField {
   /**
@@ -51,7 +52,7 @@ export interface IField {
 }
 
 export interface IFieldRules {
-  [name: string]: any;
+  [name: string]: AnySchema;
 }
 
 export interface IDefaultValues {

@@ -144,6 +144,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             <IconButton
               onClick={handleGeolocation}
               disabled={isDetecting}
+              aria-label="Use my current location"
               sx={{
                 bgcolor: 'primary.main',
                 color: 'white',

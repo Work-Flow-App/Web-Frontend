@@ -3,7 +3,7 @@
  * These can be composed together for complex validation scenarios
  */
 
-export const required = (value: any) => (value ? null : 'Required');
+export const required = (value: unknown) => (value ? null : 'Required');
 
 export const maxLength = (max: number) => (value: string) =>
   value && value.length > max ? `Must be ${max} characters or less` : null;
@@ -11,7 +11,7 @@ export const maxLength = (max: number) => (value: string) =>
 export const minLength = (min: number) => (value: string) =>
   value && value.length < min ? `Must be at least ${min} characters or more` : null;
 
-export const number = (value: any) => (value && isNaN(Number(value)) ? 'Must be a number' : null);
+export const number = (value: unknown) => (value && isNaN(Number(value)) ? 'Must be a number' : null);
 
 export const textOnly = (value: string) => (value && !/^[A-Za-z]+$/i.test(value) ? 'Must be text only' : null);
 
@@ -36,7 +36,7 @@ export const phoneNumber = (value: string) =>
 export const url = (value: string) =>
   value && !/^https?:\/\/.+\..+/i.test(value) ? 'Invalid URL' : null;
 
-export const matchField = (fieldName: string, fieldValue: any) => (value: any) =>
+export const matchField = (fieldName: string, fieldValue: unknown) => (value: unknown) =>
   value !== fieldValue ? `Must match ${fieldName}` : null;
 
 export const strongPassword = (value: string) => {
@@ -110,17 +110,17 @@ export const fileType = (allowedTypes: string[]) => (file: File) => {
     : null;
 };
 
-export const arrayMinLength = (min: number) => (value: any[]) =>
+export const arrayMinLength = (min: number) => (value: unknown[]) =>
   value && value.length < min ? `Must have at least ${min} items` : null;
 
-export const arrayMaxLength = (max: number) => (value: any[]) =>
+export const arrayMaxLength = (max: number) => (value: unknown[]) =>
   value && value.length > max ? `Must have at most ${max} items` : null;
 
 /**
  * Compose multiple validators together
  * Returns the first error encountered, or null if all pass
  */
-export const composeValidators = (...validators: Array<(value: any) => string | null>) => (value: any) => {
+export const composeValidators = (...validators: Array<(value: unknown) => string | null>) => (value: unknown) => {
   for (const validator of validators) {
     const error = validator(value);
     if (error) return error;

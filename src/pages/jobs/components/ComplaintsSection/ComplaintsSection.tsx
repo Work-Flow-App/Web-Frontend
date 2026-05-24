@@ -211,6 +211,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
         <S.CollapsibleSectionActions>
           <MuiIconButton
             size="small"
+            aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
             sx={{
               transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease',

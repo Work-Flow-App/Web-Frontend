@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -7,46 +7,35 @@ import { SetupForm } from '../SetupForm';
 import { customerService, type CustomerResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { useFetch } from '../../../../hooks';
 import { columns, type CustomerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
-  const [customers, setCustomers] = useState<CustomerTableRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  const fetchCustomers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await customerService.getAllCustomers();
-      const customersData = Array.isArray(response.data) ? response.data : [];
+  const { data: rawCustomers, loading, refetch: fetchCustomers } = useFetch(
+    () => customerService.getAllCustomers(),
+    [],
+    { onError: (err) => showError(extractErrorMessage(err, 'Failed to load customers')) }
+  );
 
-      const transformedData: CustomerTableRow[] = customersData.map((customer: CustomerResponse) => {
-        const addr = customer.address;
-        const addressParts = [addr?.street, addr?.city, addr?.postalCode, addr?.country].filter(Boolean);
-        return {
-          id: customer.id || 0,
-          name: customer.name || '',
-          email: customer.email || '',
-          telephone: customer.telephone || '',
-          mobile: customer.mobile || '',
-          address: addressParts.join(', '),
-          addedOn: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '',
-        };
-      });
-
-      setCustomers(transformedData);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-      showError(extractErrorMessage(error, 'Failed to load customers'));
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+  const customers = useMemo((): CustomerTableRow[] => {
+    const customersData = Array.isArray(rawCustomers) ? rawCustomers : [];
+    return customersData.map((customer: CustomerResponse) => {
+      const addr = customer.address;
+      const addressParts = [addr?.street, addr?.city, addr?.postalCode, addr?.country].filter(Boolean);
+      return {
+        id: customer.id || 0,
+        name: customer.name || '',
+        email: customer.email || '',
+        telephone: customer.telephone || '',
+        mobile: customer.mobile || '',
+        address: addressParts.join(', '),
+        addedOn: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '',
+      };
+    });
+  }, [rawCustomers]);
 
   const handleAddCustomer = () => {
     setGlobalModalOuterProps({

@@ -341,12 +341,13 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               </Button>
             </>
           ) : (
-            <IconButton size="small" onClick={handleEditClick}>
+            <IconButton size="small" onClick={handleEditClick} aria-label="Edit job details">
               <EditIcon fontSize="small" />
             </IconButton>
           )}
           <IconButton
             size="small"
+            aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
             sx={{
               transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease',
