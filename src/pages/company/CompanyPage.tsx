@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import { JobEventsSection } from './components/JobEventsSection';
-import { PageContainer } from './CompanyPage.styles';
+import { PageContainer, SummaryCard } from './CompanyPage.styles';
 import { dashboardService } from '../../services/api';
 import type { FinancialSummaryResponse } from '../../services/api';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 const SummaryBox: React.FC<{ label: string; value?: number; color: string; fmt: (v?: number | null) => string }> = ({ label, value, color, fmt }) => (
-  <Box sx={(theme) => ({
-    flex: 1,
-    minWidth: 0,
-    p: 2.5,
-    borderRadius: 1.5,
-    border: `1px solid ${theme.palette.colors?.grey_200 ?? '#e0e0e0'}`,
-    backgroundColor: theme.palette.colors?.white ?? '#fff',
-    borderLeft: `4px solid ${color}`,
-  })}>
+  <SummaryCard accentcolor={color}>
     <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.7rem' }}>
       {label}
     </Typography>
     <Typography variant="h5" fontWeight={700} sx={{ mt: 0.5, color }}>
       {fmt(value)}
     </Typography>
-  </Box>
+  </SummaryCard>
 );
 
 export const CompanyPage: React.FC = () => {

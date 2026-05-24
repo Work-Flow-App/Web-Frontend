@@ -1461,6 +1461,22 @@ export const EstimateBreakdownBadge = styled(Box, {
   };
 });
 
+interface EstimateSummaryCardProps {
+  accentcolor?: string;
+}
+
+export const EstimateSummaryCard = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'accentcolor',
+})<EstimateSummaryCardProps>(({ theme, accentcolor }) => ({
+  flex: 1,
+  minWidth: rem(160),
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(1.5),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
+  borderLeft: `4px solid ${accentcolor || theme.palette.primary.main}`,
+}));
+
 // ============================================
 // Gantt Chart / Activity Log Styles
 // ============================================

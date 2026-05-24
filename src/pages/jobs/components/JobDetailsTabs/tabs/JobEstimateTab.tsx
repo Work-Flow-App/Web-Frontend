@@ -675,13 +675,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
           { label: 'Approved',         value: estimate.approvedValue,         color: '#10B981' },
           { label: 'Invoiced',         value: estimate.invoicedValue,         color: '#6366F1' },
         ].map(({ label, value, color }) => (
-          <Box key={label} sx={(theme) => ({
-            flex: 1, minWidth: 160,
-            p: 2, borderRadius: 1.5,
-            border: `1px solid ${theme.palette.colors?.grey_200 ?? '#e0e0e0'}`,
-            backgroundColor: theme.palette.colors?.white ?? '#fff',
-            borderLeft: `4px solid ${color}`,
-          })}>
+          <S.EstimateSummaryCard key={label} accentcolor={color}>
             <Typography variant="caption" color="text.secondary" fontWeight={600}
               sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.7rem' }}>
               {label}
@@ -689,7 +683,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
             <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5, color }}>
               {fmt(value)}
             </Typography>
-          </Box>
+          </S.EstimateSummaryCard>
         ))}
       </Box>
 
