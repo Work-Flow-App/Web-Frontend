@@ -1406,6 +1406,77 @@ export const EstimateEmptyState = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
+export const EstimatePageLayout = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: '1fr 290px',
+  gap: theme.spacing(2.5),
+  alignItems: 'start',
+  '@media (max-width: 1100px)': {
+    gridTemplateColumns: '1fr',
+  },
+}));
+
+export const EstimateSidebarCard = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: theme.spacing(1),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  overflow: 'hidden',
+  marginBottom: theme.spacing(1.5),
+}));
+
+export const EstimateSidebarCardTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+  color: theme.palette.text.secondary,
+  padding: theme.spacing(1.25, 2),
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+interface EstimateBreakdownBadgeProps {
+  badgecolor?: 'invoiced' | 'estimate' | 'available';
+}
+
+export const EstimateBreakdownBadge = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'badgecolor',
+})<EstimateBreakdownBadgeProps>(({ badgecolor = 'available' }) => {
+  const colors = {
+    invoiced: { bg: '#EDE9FE', text: '#5B21B6' },
+    estimate: { bg: '#FEF3C7', text: '#92400E' },
+    available: { bg: '#D1FAE5', text: '#065F46' },
+  };
+  const c = colors[badgecolor];
+  return {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    padding: `${rem(7)} ${rem(10)}`,
+    borderRadius: rem(6),
+    backgroundColor: c.bg,
+    color: c.text,
+    flex: 1,
+    minWidth: 0,
+    '& .amount': { fontSize: rem(14), fontWeight: Bold._700 },
+    '& .label': { fontSize: rem(10), fontWeight: Bold._500, marginTop: rem(2) },
+  };
+});
+
+interface EstimateSummaryCardProps {
+  accentcolor?: string;
+}
+
+export const EstimateSummaryCard = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'accentcolor',
+})<EstimateSummaryCardProps>(({ theme, accentcolor }) => ({
+  flex: 1,
+  minWidth: rem(160),
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(1.5),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
+  borderLeft: `4px solid ${accentcolor || theme.palette.primary.main}`,
+}));
+
 // ============================================
 // Gantt Chart / Activity Log Styles
 // ============================================

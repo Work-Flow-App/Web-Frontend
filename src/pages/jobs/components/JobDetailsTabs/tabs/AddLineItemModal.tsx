@@ -5,7 +5,6 @@ import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalM
 import { FormField } from '../../../../../components/UI/FormComponents';
 import { Input } from '../../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../../components/UI/Forms/TextArea';
-import { Dropdown } from '../../../../../components/UI/Forms/Dropdown';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../../contexts/CurrencyContext';
 import { estimateService } from '../../../../../services/api';
@@ -23,15 +22,7 @@ type FormValues = {
   unitPrice: string;
   quantity: string;
   vatRate: string;
-  coreOrSub: { label: string; value: string };
 };
-
-const coreOrSubOptions = [
-  { label: 'CORE', value: 'CORE' },
-  { label: 'SUB', value: 'SUB' },
-];
-
-const defaultCoreOrSub = { label: 'CORE', value: 'CORE' };
 
 export const AddLineItemModal: React.FC<AddLineItemModalProps> = ({ estimateId, onSuccess }) => {
   const { currencyCode } = useCurrency();
@@ -43,7 +34,6 @@ export const AddLineItemModal: React.FC<AddLineItemModalProps> = ({ estimateId, 
       unitPrice: '0',
       quantity: '1',
       vatRate: '0',
-      coreOrSub: defaultCoreOrSub,
     },
   });
   const { showError } = useSnackbar();
@@ -75,7 +65,6 @@ export const AddLineItemModal: React.FC<AddLineItemModalProps> = ({ estimateId, 
         unitPrice: parseFloat(values.unitPrice) || 0,
         quantity: parseInt(values.quantity) || 1,
         vatRate: parseFloat(values.vatRate) || 0,
-        coreOrSub: (values.coreOrSub?.value || 'CORE') as LineItemCreateRequest['coreOrSub'],
       };
 
       estimateService
@@ -88,23 +77,9 @@ export const AddLineItemModal: React.FC<AddLineItemModalProps> = ({ estimateId, 
   return (
     <FormProvider {...methods}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormField label="Product Code" required>
-            <Input name="productCode" placeHolder="e.g. PROD-001" fullWidth />
-          </FormField>
-          <FormField label="Type" required>
-            <Dropdown
-              name="coreOrSub"
-              preFetchedOptions={coreOrSubOptions}
-              placeHolder="Select type"
-              defaultValue={defaultCoreOrSub.value}
-              disableClearable
-              disablePortal
-              fullWidth
-              skipDefaultReset
-            />
-          </FormField>
-        </Box>
+        <FormField label="Product Code" required>
+          <Input name="productCode" placeHolder="e.g. PROD-001" fullWidth />
+        </FormField>
 
         <FormField label="Description" required>
           <Input name="productDescription" placeHolder="Product description" fullWidth />
