@@ -4,14 +4,14 @@ import { floowColors } from '../../../../theme/colors';
 import type { ConfirmationModalProps } from './IConfirmationModal';
 
 export const ModalContainer = styled(Box)({
-  padding: '16px',
+  padding: '1rem',
 });
 
 export const MessageText = styled(Typography, {
   shouldForwardProp: (prop) => prop !== 'colorVariant' && prop !== 'hasDescription',
 })<{ colorVariant?: ConfirmationModalProps['variant']; hasDescription?: boolean }>(
   ({ colorVariant, hasDescription }) => ({
-    marginBottom: hasDescription ? '16px' : 0,
+    marginBottom: hasDescription ? '1rem' : 0,
     color:
       colorVariant === 'warning'
         ? floowColors.warning.main
@@ -21,6 +21,7 @@ export const MessageText = styled(Typography, {
     fontWeight: colorVariant === 'danger' || colorVariant === 'warning' ? 500 : 400,
   })
 );
+
 export const DescriptionText = styled(Typography)({
   color: floowColors.text.secondary,
 });
