@@ -7,10 +7,11 @@ import type {
   IDefaultValues,
   IFieldIsRequired,
 } from './SchemaGenerator';
+import type { ObjectSchema, AnyObject } from 'yup';
 
 export interface ISchema {
   fieldTitles: IFieldTitles;
-  fieldRules: any;
+  fieldRules: ObjectSchema<AnyObject>;
   defaultValues: IDefaultValues;
   placeHolders: IFieldPlaceHolders;
   fieldLabels: IFieldTitles;

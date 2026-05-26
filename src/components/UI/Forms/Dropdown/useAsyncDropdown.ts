@@ -68,13 +68,13 @@ export const useAsyncDropdown = <T = any>(
       // Default transformation
       return data.map((item, index) => {
         if (typeof item === 'object' && item !== null) {
-          const obj = item as any;
+          const obj = item as Record<string, unknown>;
           // Try to find common label/value patterns
-          const label = obj.label || obj.name || obj.title || String(obj);
-          const value = obj.value || obj.id || obj.key || index;
+          const label = String(obj.label ?? obj.name ?? obj.title ?? obj);
+          const value = obj.value ?? obj.id ?? obj.key ?? index;
           return { label, value };
         }
-        return { label: String(item), value: item as any };
+        return { label: String(item), value: item as string | number };
       });
     },
     [transformFn]

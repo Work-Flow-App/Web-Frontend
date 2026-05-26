@@ -396,7 +396,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                 {routeInfo.distance} via driving
               </Typography>
             </Box>
-            <IconButton size="small" onClick={clearDirections} sx={{ ml: 'auto', p: 0.5 }}>
+            <IconButton size="small" onClick={clearDirections} sx={{ ml: 'auto', p: 0.5 }} aria-label="Clear directions">
               <CloseIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </RouteInfoPanel>

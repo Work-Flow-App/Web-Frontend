@@ -1,6 +1,9 @@
 import { object, string, number, date, ref, mixed, boolean, array, ValidationError } from 'yup';
+import type { TestContext, AnySchema } from 'yup';
 
-export const generateFormValidationSchema = (schema: any) => {
+type ObjectShape = Record<string, AnySchema>;
+
+export const generateFormValidationSchema = (schema: Record<string, AnySchema>) => {
   return object(schema).required();
 };
 
@@ -18,7 +21,7 @@ const checkUserEmail = (value?: string) => {
   return false;
 };
 
-const checkUserName = (value: string, { createError }: any) => {
+const checkUserName = (value: string, { createError }: TestContext) => {
   if (value) {
     const emailValidateRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const usernameRegex = /^[a-zA-Z0-9._-]+$/; // Allow alphanumeric, dots, underscores, and hyphens
@@ -35,11 +38,11 @@ const checkUserName = (value: string, { createError }: any) => {
   return false;
 };
 
-const checkEmailList = (value: string, { createError }: any) => {
+const checkEmailList = (value: string, { createError }: TestContext) => {
   if (value) {
     const emailValidateRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const emails = value.split(',');
-    let isValid: any = false;
+    let isValid: boolean | RegExpMatchArray | null = false;
 
     if (emails.length > 0) {
       for (let index = 0; index < emails.length; index++) {
@@ -61,7 +64,7 @@ const checkEmailList = (value: string, { createError }: any) => {
   return false;
 };
 
-const checkPassword = (value: string, { createError }: any) => {
+const checkPassword = (value: string, { createError }: TestContext) => {
   if (value) {
     const validRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+.\-=[\]{};':"\\|,.<>/?])[A-Za-z\d!@#$%^&*()_+.\-=[\]{};':"\\|,.<>/?]{6,}$/;
 
@@ -108,7 +111,7 @@ const dependencyValidation = (fieldName: string, defaultValue?: number) => {
   });
 };
 
-const dependencyTextFieldValidationWithArray = (fieldName: string, childSchema: any) => {
+const dependencyTextFieldValidationWithArray = (fieldName: string, childSchema: ObjectShape) => {
   return object().when(fieldName, (selectedValue) => {
     if (selectedValue[0] && selectedValue[0].value !== '0') {
       return InputValidationRules.ObjectArrayValidation(childSchema);
@@ -117,7 +120,7 @@ const dependencyTextFieldValidationWithArray = (fieldName: string, childSchema: 
   });
 };
 
-const dependencyValidationOfArrayWithIsSelectedFilter = (childSchema: any) => {
+const dependencyValidationOfArrayWithIsSelectedFilter = (childSchema: ObjectShape) => {
   return array()
     .of(
       object().shape({
@@ -166,11 +169,11 @@ const dependencyValidationOfArrayWithIsSelectedFilter = (childSchema: any) => {
     });
 };
 
-const dependencyObjectValidation = (childSchema: any) => {
+const dependencyObjectValidation = (childSchema: ObjectShape) => {
   return object().shape(childSchema);
 };
 
-const optionalObjectValidation = (childSchema: any) => {
+const optionalObjectValidation = (childSchema: ObjectShape) => {
   return mixed().test('is-valid-object', 'Invalid object data', function (value) {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
       return true; // skip validation if not a valid object
@@ -186,15 +189,15 @@ const optionalObjectValidation = (childSchema: any) => {
   });
 };
 
-const objectArrayValidation = (childSchema: any) => {
+const objectArrayValidation = (childSchema: ObjectShape) => {
   return array().of(object().shape(childSchema));
 };
 
-const objectArrayValidationWithAtLeastOneItem = (childSchema: any) => {
+const objectArrayValidationWithAtLeastOneItem = (childSchema: ObjectShape) => {
   return array().of(object().shape(childSchema)).min(1, 'At least one item is required');
 };
 
-const dependencyValidationWithSpecificValue = (fieldName: string, value: any) => {
+const dependencyValidationWithSpecificValue = (fieldName: string, value: unknown) => {
   return object().when(fieldName, (selectedValue) => {
     if (selectedValue[0] && selectedValue[0].value === value) {
       return InputValidationRules.StringRequired;
@@ -203,7 +206,7 @@ const dependencyValidationWithSpecificValue = (fieldName: string, value: any) =>
   });
 };
 
-const checkStringRequiredWhenRadioIsTrue = (fieldName: string, value: any) => {
+const checkStringRequiredWhenRadioIsTrue = (fieldName: string, value: unknown) => {
   return object().when(fieldName, (selectedValue) => {
     if (selectedValue[0] && selectedValue[0] === value) {
       return InputValidationRules.StringRequired;
@@ -232,9 +235,9 @@ const dependencyValidationWithSpecificValueForDropdown = (fieldName: string, val
 
 const dependencyValidationWithSpecificValueForDynamicInput = (
   fieldName: string,
-  conditionValues: any,
-  requiredRule: any,
-  notRequiredRule: any,
+  conditionValues: unknown[] | unknown,
+  requiredRule: AnySchema | AnySchema[],
+  notRequiredRule: AnySchema,
   labelChecked?: boolean
 ) => {
   return object().when(fieldName, (selectedValue) => {
@@ -260,8 +263,8 @@ const dependencyValidationWithSpecificValueForDynamicInput = (
 
 const dependencyValidationWithAnyValueForDynamicInput = (
   fieldName: string,
-  requiredRule: any,
-  notRequiredRule: any
+  requiredRule: AnySchema | AnySchema[],
+  notRequiredRule: AnySchema
 ) => {
   return object().when(fieldName, (selectedValue) => {
     if (selectedValue[0]) {
@@ -278,7 +281,7 @@ const dependencyValidationWithAnyValueForDynamicInput = (
 };
 
 const atLeastOneValidItem = (
-  childSchema: any,
+  childSchema: ObjectShape,
   errorMessage = 'At least one item must satisfy the validation rules.'
 ) => {
   return array().test('at-least-one-valid', errorMessage, (items) => {
@@ -320,9 +323,9 @@ const numberValidationWithMinMax = (min = 0, max = Infinity) => {
 
 const dependencyValidationForSingleFile = (
   fieldName: string,
-  conditionValue: any,
-  requiredRule: any,
-  notRequiredRule: any
+  conditionValue: string,
+  requiredRule: AnySchema,
+  notRequiredRule: AnySchema
 ) => {
   return object().when(fieldName, (selectedValue) => {
     if (selectedValue[0]) {
@@ -364,8 +367,8 @@ export const InputValidationRules = {
   RetypePasswordMatched: string()
     .required(`Required`)
     .oneOf([ref('newPassword'), ref('password')], "Password didn't matched."),
-  FileRequired: mixed().test('fileFormat', 'Invalid file format, only accept images.', (value: any) => {
-    return value && value.length;
+  FileRequired: mixed().test('fileFormat', 'Invalid file format, only accept images.', (value) => {
+    return !!(value && (value as { length?: number }).length);
   }),
   DropDownRequired: checkDropDownField,
   ObjectNotRequired: object().notRequired(),

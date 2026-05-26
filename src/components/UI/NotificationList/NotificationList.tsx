@@ -1,5 +1,5 @@
 import React from 'react';
-import type { INotificationList } from './INotificationList';
+import type { INotificationList, INotification } from './INotificationList';
 import { NotificationItem } from './NotificationItem';
 import {
   NotificationListContainer,
@@ -20,7 +20,7 @@ export const NotificationList: React.FC<INotificationList> = ({
   className,
   sx,
 }) => {
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: INotification) => {
     if (onNotificationClick) {
       onNotificationClick(notification);
     }

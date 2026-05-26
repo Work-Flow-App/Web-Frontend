@@ -594,6 +594,7 @@ export const ThemeSettings: React.FC = () => {
                     {/* Delete */}
                     <IconButton
                       size="small"
+                      aria-label="Delete theme"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeTheme(ct.id);

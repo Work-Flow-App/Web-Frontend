@@ -505,7 +505,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                   <TableRow sx={{ p: 0 }}>
                     <StyledTableCell colSpan={8} sx={{ p: 0, border: 0 }}>
                       <Collapse in={isExpanded} unmountOnExit>
-                        <Box sx={(theme) => ({ backgroundColor: theme.palette.action.hover, px: 2, py: 1 })}>
+                        <Box sx={{ backgroundColor: 'action.hover', px: 2, py: 1 }}>
                           <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 0.75 }}>
                             Line Items ({snapshots.length})
                           </Typography>
@@ -619,7 +619,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                   <TableRow sx={{ p: 0 }}>
                     <StyledTableCell colSpan={9} sx={{ p: 0, border: 0 }}>
                       <Collapse in={isExpanded} unmountOnExit>
-                        <Box sx={(theme) => ({ backgroundColor: theme.palette.action.hover, px: 2, py: 1 })}>
+                        <Box sx={{ backgroundColor: 'action.hover', px: 2, py: 1 }}>
                           <StyledTable size="small">
                             <StyledTableHead>
                               <TableRow>
@@ -688,12 +688,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       </Box>
 
       {/* ── Section 1: Line Items ── */}
-      <Box sx={(theme) => ({
-        backgroundColor: theme.palette.colors.white,
-        borderRadius: theme.spacing(1),
-        border: `1px solid ${theme.palette.colors.grey_200}`,
-        overflow: 'hidden',
-      })}>
+      <S.CollapsibleSection>
         {/* Header */}
         <Box sx={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -813,13 +808,13 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                           <Box sx={{ display: 'flex', gap: 0.5 }}>
                             <Tooltip title="Save">
                               <span>
-                                <IconButton size="small" color="primary" onClick={handleSaveEdit} disabled={editSaving}>
+                                <IconButton size="small" color="primary" onClick={handleSaveEdit} disabled={editSaving} aria-label="Save line item edit">
                                   {editSaving ? <CircularProgress size={12} /> : <CheckIcon sx={{ fontSize: '1rem' }} />}
                                 </IconButton>
                               </span>
                             </Tooltip>
                             <Tooltip title="Cancel">
-                              <IconButton size="small" onClick={handleCancelEdit} disabled={editSaving}>
+                              <IconButton size="small" onClick={handleCancelEdit} disabled={editSaving} aria-label="Cancel line item edit">
                                 <CloseIcon sx={{ fontSize: '1rem' }} />
                               </IconButton>
                             </Tooltip>
@@ -833,11 +828,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                     <StyledTableRow
                       key={item.id}
                       onClick={() => !invoiced && toggleRow(item.id!)}
-                      sx={(theme) => ({
+                      sx={{
                         cursor: invoiced ? 'default' : 'pointer',
                         opacity: invoiced ? 0.7 : 1,
                         ...(isSelected ? { backgroundColor: 'action.selected' } : {}),
-                      })}
+                      }}
                     >
                       <StyledTableCell sx={{ ...CC, width: 36, px: '8px' }}>
                         {invoiced ? (
@@ -897,7 +892,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                             </Tooltip>
                           )}
                           {!invoiced && (
-                            <IconButton size="small" onClick={(e) => handleMenuOpen(e, item.id!)}>
+                            <IconButton size="small" onClick={(e) => handleMenuOpen(e, item.id!)} aria-label="Line item actions">
                               <MoreVertIcon sx={{ fontSize: '1rem' }} />
                             </IconButton>
                           )}
@@ -985,13 +980,13 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       <Tooltip title="Save">
                         <span>
-                          <IconButton size="small" color="primary" onClick={handleSave} disabled={saving}>
+                          <IconButton size="small" color="primary" onClick={handleSave} disabled={saving} aria-label="Save new line item">
                             {saving ? <CircularProgress size={12} /> : <CheckIcon sx={{ fontSize: '1rem' }} />}
                           </IconButton>
                         </span>
                       </Tooltip>
                       <Tooltip title="Cancel">
-                        <IconButton size="small" onClick={handleCloseAddRow} disabled={saving}>
+                        <IconButton size="small" onClick={handleCloseAddRow} disabled={saving} aria-label="Cancel new line item">
                           <CloseIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
@@ -1003,18 +998,18 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
               {!showAddRow && (
                 <StyledTableRow
                   onClick={handleOpenAddRow}
-                  sx={(theme) => ({
+                  sx={{
                     cursor: 'pointer',
-                    '&:hover td': { backgroundColor: theme.palette.action.hover },
-                  })}
+                    '&:hover td': { backgroundColor: 'action.hover' },
+                  }}
                 >
                   <StyledTableCell colSpan={11} sx={{ ...CC, py: 1 }}>
-                    <Box sx={(theme) => ({
+                    <Box sx={{
                       display: 'inline-flex', alignItems: 'center', gap: 0.5,
                       px: 1.5, py: 0.5, borderRadius: 1,
-                      backgroundColor: theme.palette.primary.main,
-                      color: theme.palette.primary.contrastText,
-                    })}>
+                      backgroundColor: 'primary.main',
+                      color: 'primary.contrastText',
+                    }}>
                       <AddIcon sx={{ fontSize: '0.9rem' }} />
                       <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'inherit' }}>
                         Add line item
@@ -1028,11 +1023,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         </StyledTableContainer>
 
         {/* Totals row */}
-        <Box sx={(theme) => ({
+        <Box sx={{
           display: 'flex', justifyContent: 'flex-end', gap: 3,
-          px: 2, py: 1, borderTop: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.action.hover,
-        })}>
+          px: 2, py: 1, borderTop: '1px solid', borderColor: 'divider',
+          backgroundColor: 'action.hover',
+        }}>
           <Typography variant="body2" color="text.secondary">
             Net: <strong>{fmt(estimate.totalNet)}</strong>
           </Typography>
@@ -1044,7 +1039,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
             Total: {fmt(estimate.grandTotal)}
           </Typography>
         </Box>
-      </Box>
+      </S.CollapsibleSection>
 
       {/* Row context menu */}
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
@@ -1071,12 +1066,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
       </Menu>
 
       {/* ── Section 2: Documents ── */}
-      <Box sx={(theme) => ({
-        backgroundColor: theme.palette.colors.white,
-        borderRadius: theme.spacing(1),
-        border: `1px solid ${theme.palette.colors.grey_200}`,
-        overflow: 'hidden',
-      })}>
+      <S.CollapsibleSection>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
           <Tabs
             value={docTab}
@@ -1120,7 +1110,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
             </>
           )}
         </Box>
-      </Box>
+      </S.CollapsibleSection>
     </Box>
   );
 };

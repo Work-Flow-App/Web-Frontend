@@ -413,15 +413,15 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
         </S.WorkflowSidebarTitle>
         {editingWorkflowName ? (
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <IconButton size="small" onClick={handleCancelWorkflowNameEdit}>
+            <IconButton size="small" onClick={handleCancelWorkflowNameEdit} aria-label="Cancel workflow name edit">
               <CloseIcon fontSize="small" />
             </IconButton>
-            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName}>
+            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName} aria-label="Save workflow name">
               <SaveIcon fontSize="small" />
             </IconButton>
           </Box>
         ) : (
-          <IconButton size="small" onClick={handleEditWorkflowName}>
+          <IconButton size="small" onClick={handleEditWorkflowName} aria-label="Edit workflow name">
             <EditIcon fontSize="small" />
           </IconButton>
         )}
@@ -529,13 +529,14 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                           },
                         }}
                       />
-                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)}>
+                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)} aria-label="Cancel step name edit">
                         <CloseIcon sx={{ fontSize: 14 }} />
                       </IconButton>
                       <IconButton
                         size="small"
                         onClick={(e) => handleSaveStepName(step, e)}
                         disabled={updatingStep === step.id}
+                        aria-label="Save step name"
                       >
                         <SaveIcon sx={{ fontSize: 14 }} />
                       </IconButton>

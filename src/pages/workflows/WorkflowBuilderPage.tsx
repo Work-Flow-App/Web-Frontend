@@ -31,6 +31,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useFormSubmit } from '../../hooks';
 import { workflowService } from '../../services/api';
 import type { WorkflowStepResponse, WorkflowBulkUpdateRequest } from '../../services/api';
 import { Loader } from '../../components/UI';
@@ -84,10 +85,10 @@ const DraggableStepItem: React.FC<DraggableStepItemProps> = ({ step, onEdit, onD
       <S.StepItemName>{step.name}</S.StepItemName>
       {step.optional && <S.StepOptionalLabel>(Optional)</S.StepOptionalLabel>}
       <S.StepItemActions>
-        <IconButton size="small" onClick={handleEditClick}>
+        <IconButton size="small" onClick={handleEditClick} aria-label="Edit step">
           <EditIcon fontSize="small" />
         </IconButton>
-        <IconButton size="small" onClick={handleDeleteClick}>
+        <IconButton size="small" onClick={handleDeleteClick} aria-label="Delete step">
           <DeleteIcon fontSize="small" />
         </IconButton>
       </S.StepItemActions>
@@ -124,7 +125,7 @@ const SortableStepItem: React.FC<SortableStepItemProps> = ({ step, index, onRemo
           <DragIndicatorIcon fontSize="small" />
         </S.DragHandle>
         <S.OrderedStepNumber>{index + 1}</S.OrderedStepNumber>
-        <IconButton size="small" onClick={() => onRemove(step.id)}>
+        <IconButton size="small" onClick={() => onRemove(step.id)} aria-label="Remove step">
           <CloseIcon fontSize="small" />
         </IconButton>
       </S.OrderedStepHeader>
@@ -168,7 +169,7 @@ export const WorkflowBuilderPage: React.FC = () => {
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
   const [orderedSteps, setOrderedSteps] = useState<WorkflowStep[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { saving, withSaving } = useFormSubmit();
   const [editingStep, setEditingStep] = useState<WorkflowStep | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -332,40 +333,38 @@ export const WorkflowBuilderPage: React.FC = () => {
     if (!workflowId || !workflow) return;
 
     try {
-      setSaving(true);
+      await withSaving(async () => {
+        const payload: WorkflowBulkUpdateRequest = {
+          name: workflow.name,
+          description: workflow.description,
+          steps: orderedSteps.map((step) => ({
+            id: step.id > 1000000000000 ? undefined : step.id,
+            name: step.name,
+            description: step.description,
+            orderIndex: step.orderIndex,
+            optional: step.optional,
+          })),
+        };
 
-      const payload: WorkflowBulkUpdateRequest = {
-        name: workflow.name,
-        description: workflow.description,
-        steps: orderedSteps.map((step) => ({
-          id: step.id > 1000000000000 ? undefined : step.id,
-          name: step.name,
-          description: step.description,
-          orderIndex: step.orderIndex,
-          optional: step.optional,
-        })),
-      };
+        await workflowService.bulkUpdateWorkflow(Number(workflowId), payload);
+        showSuccess('Workfloow saved successfully');
 
-      await workflowService.bulkUpdateWorkflow(Number(workflowId), payload);
-      showSuccess('Workfloow saved successfully');
-
-      const response = await workflowService.getWorkflowWithSteps(Number(workflowId));
-      const data = response.data;
-      const stepsData = (data.steps || []).map((step, index) => ({
-        ...step,
-        id: step.id || 0,
-        workflowId: Number(workflowId),
-        name: step.name || '',
-        orderIndex: step.orderIndex ?? index,
-      }));
-      stepsData.sort((a, b) => a.orderIndex - b.orderIndex);
-      setSteps(stepsData);
-      setOrderedSteps(stepsData);
+        const response = await workflowService.getWorkflowWithSteps(Number(workflowId));
+        const data = response.data;
+        const stepsData = (data.steps || []).map((step, index) => ({
+          ...step,
+          id: step.id || 0,
+          workflowId: Number(workflowId),
+          name: step.name || '',
+          orderIndex: step.orderIndex ?? index,
+        }));
+        stepsData.sort((a, b) => a.orderIndex - b.orderIndex);
+        setSteps(stepsData);
+        setOrderedSteps(stepsData);
+      });
     } catch (error) {
       console.error('Error saving workflow:', error);
       showError('Failed to save workflow');
-    } finally {
-      setSaving(false);
     }
   };
 

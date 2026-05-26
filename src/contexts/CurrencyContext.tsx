@@ -26,8 +26,8 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
       .then((res) => {
         if (res.data?.currency) setCurrencyCode(res.data.currency);
       })
-      .catch(() => {
-        // silently fall back to default
+      .catch((err: unknown) => {
+        console.warn('[CurrencyContext] Failed to fetch currency, using default:', err);
       });
   }, []);
 

@@ -103,7 +103,7 @@ export const InvitationsPage: React.FC = () => {
         onDropdownChange={setStatusFilter}
         headerExtra={
           <Tooltip title="Refresh invitations">
-            <IconButton onClick={fetchInvitations} disabled={loading}>
+            <IconButton onClick={fetchInvitations} disabled={loading} aria-label="Refresh invitations">
               <RefreshIcon />
             </IconButton>
           </Tooltip>
