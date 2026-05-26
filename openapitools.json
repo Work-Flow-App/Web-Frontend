@@ -5,6 +5,6 @@
     "version": "7.17.0"
   },
   "generatorName": "typescript-axios",
-  "inputSpec": "https://api.dev.workfloow.app/api-docs",
+  "inputSpec": "https://api.dev2.workfloow.app/api-docs",
   "skipValidateSpec": true
 }
