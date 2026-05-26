@@ -1,83 +1,31 @@
 import { useEffect } from 'react';
 import { useGlobalModalInnerContext } from '../context';
-import { Box, Typography } from '@mui/material';
-import { floowColors } from '../../../../theme/colors';
-
-export interface ConfirmationModalProps {
-  /**
-   * The title of the confirmation modal
-   */
-  title?: string;
-
-  /**
-   * The message to display in the confirmation modal
-   */
-  message: string;
-
-  /**
-   * The text for the confirm button
-   * @default 'Confirm'
-   */
-  confirmButtonText?: string;
-
-  /**
-   * The text for the cancel button
-   * @default 'Cancel'
-   */
-  cancelButtonText?: string;
-
-  /**
-   * Callback when the user confirms
-   */
-  onConfirm: () => void;
-
-  /**
-   * Callback when the user cancels
-   */
-  onCancel?: () => void;
-
-  /**
-   * Additional description or details
-   */
-  description?: string;
-
-  /**
-   * Variant of the confirmation modal (affects styling/severity)
-   * @default 'default'
-   */
-  variant?: 'default' | 'warning' | 'danger';
-}
+import { ModalContainer, MessageText, DescriptionText } from './ConfirmationModal.style';
+import type { ConfirmationModalProps } from './IConfirmationModal';
+import { CONFIRMATION_MODAL_DEFAULTS } from '../Utils/GlobalConst';
 
 export const ConfirmationModal = ({
-  title = 'Confirm Action',
+  title = CONFIRMATION_MODAL_DEFAULTS.title,
   message,
-  confirmButtonText = 'Confirm',
-  cancelButtonText = 'Cancel',
+  confirmButtonText = CONFIRMATION_MODAL_DEFAULTS.confirmButtonText,
+  cancelButtonText = CONFIRMATION_MODAL_DEFAULTS.cancelButtonText,
   onConfirm,
   onCancel,
   description,
-  variant = 'default',
+  variant = CONFIRMATION_MODAL_DEFAULTS.variant,
 }: ConfirmationModalProps) => {
-  const {
-    updateModalTitle,
-    updateGlobalModalInnerConfig,
-    updateOnClose,
-    updateOnConfirm,
-  } = useGlobalModalInnerContext();
+  const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
+    useGlobalModalInnerContext();
 
   useEffect(() => {
-    // Configure modal
     updateModalTitle(title);
-
     updateGlobalModalInnerConfig({
       confirmModalButtonText: confirmButtonText,
       cancelButtonText: cancelButtonText,
     });
-
     updateOnClose(() => {
       onCancel?.();
     });
-
     updateOnConfirm(() => {
       onConfirm();
     });
@@ -93,34 +41,12 @@ export const ConfirmationModal = ({
     updateOnConfirm,
   ]);
 
-  const getMessageColor = () => {
-    switch (variant) {
-      case 'warning':
-        return floowColors.warning.main;
-      case 'danger':
-        return floowColors.error.main;
-      default:
-        return floowColors.text.primary;
-    }
-  };
-
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography
-        variant="body1"
-        sx={{
-          mb: description ? 2 : 0,
-          color: getMessageColor(),
-          fontWeight: variant === 'danger' || variant === 'warning' ? 500 : 400,
-        }}
-      >
+    <ModalContainer>
+      <MessageText variant="body1" colorVariant={variant} hasDescription={!!description}>
         {message}
-      </Typography>
-      {description && (
-        <Typography variant="body2" sx={{ color: floowColors.text.secondary }}>
-          {description}
-        </Typography>
-      )}
-    </Box>
+      </MessageText>
+      {description && <DescriptionText variant="body2">{description}</DescriptionText>}
+    </ModalContainer>
   );
 };
