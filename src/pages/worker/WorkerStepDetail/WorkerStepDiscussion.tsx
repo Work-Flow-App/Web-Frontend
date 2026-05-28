@@ -182,7 +182,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
               return (
                 <S.ActivityMessageRow key={item.id}>
                   <S.ActivityAvatar>
-                    {item.actorId ? String(item.actorId).slice(0, 2) : '?'}
+                    {item.actorUsername ? item.actorUsername.slice(0, 2).toUpperCase() : '?'}
                   </S.ActivityAvatar>
 
                   <S.ActivityMessageContent>

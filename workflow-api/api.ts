@@ -605,6 +605,8 @@ export interface JobWorkflowStepCreateRequest {
     'orderIndex'?: number;
     'status'?: JobWorkflowStepCreateRequestStatusEnum;
     'assignedWorkerIds'?: Set<number>;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 
 export const JobWorkflowStepCreateRequestStatusEnum = {
@@ -627,6 +629,9 @@ export interface JobWorkflowStepResponse {
     'status'?: JobWorkflowStepResponseStatusEnum;
     'startedAt'?: string;
     'completedAt'?: string;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
+    'slaStatus'?: JobWorkflowStepResponseSlaStatusEnum;
     'assignedWorkerIds'?: Set<number>;
 }
 
@@ -641,6 +646,14 @@ export const JobWorkflowStepResponseStatusEnum = {
 } as const;
 
 export type JobWorkflowStepResponseStatusEnum = typeof JobWorkflowStepResponseStatusEnum[keyof typeof JobWorkflowStepResponseStatusEnum];
+export const JobWorkflowStepResponseSlaStatusEnum = {
+    NotApplicable: 'NOT_APPLICABLE',
+    OnTrack: 'ON_TRACK',
+    AttentionNeeded: 'ATTENTION_NEEDED',
+    Breached: 'BREACHED'
+} as const;
+
+export type JobWorkflowStepResponseSlaStatusEnum = typeof JobWorkflowStepResponseSlaStatusEnum[keyof typeof JobWorkflowStepResponseSlaStatusEnum];
 
 export interface JobWorkflowStepUpdateRequest {
     'id'?: number;
@@ -649,6 +662,8 @@ export interface JobWorkflowStepUpdateRequest {
     'orderIndex'?: number;
     'status'?: JobWorkflowStepUpdateRequestStatusEnum;
     'assignedWorkerIds'?: Set<number>;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 
 export const JobWorkflowStepUpdateRequestStatusEnum = {
@@ -905,6 +920,7 @@ export interface StepActivityResponse {
     'type'?: string;
     'message'?: string;
     'actorId'?: number;
+    'actorUsername'?: string;
     'createdAt'?: string;
 }
 export interface StepAttachmentResponse {
@@ -915,6 +931,7 @@ export interface StepAttachmentResponse {
     'description'?: string;
     'type'?: StepAttachmentResponseTypeEnum;
     'uploadedBy'?: number;
+    'uploadedByUsername'?: string;
     'createdAt'?: string;
 }
 
@@ -967,6 +984,7 @@ export interface StepCommentResponse {
     'content'?: string;
     'type'?: StepCommentResponseTypeEnum;
     'authorId'?: number;
+    'authorUsername'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
@@ -990,6 +1008,7 @@ export interface StepTimelineItemResponse {
     'discussionType'?: StepTimelineItemResponseDiscussionTypeEnum;
     'description'?: string;
     'actorId'?: number;
+    'actorUsername'?: string;
     'createdAt'?: string;
 }
 
@@ -1168,6 +1187,8 @@ export interface WorkflowStepBulkRequest {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowStepCreateRequest {
     'workflowId'?: number;
@@ -1175,6 +1196,8 @@ export interface WorkflowStepCreateRequest {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowStepResponse {
     'id'?: number;
@@ -1183,6 +1206,8 @@ export interface WorkflowStepResponse {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowWithStepsResponse {
     'id'?: number;

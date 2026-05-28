@@ -2676,3 +2676,38 @@ export const ModalFormRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(2),
 }));
+
+// ============================================
+// SLA Timer Chip
+// ============================================
+
+type SlaVariant = 'on_track' | 'attention' | 'breached';
+
+const SLA_VARIANT_STYLES: Record<SlaVariant, { bg: string; color: string }> = {
+  on_track:  { bg: '#E8F5E9', color: '#2E7D32' },
+  attention: { bg: '#FFF3E0', color: '#E65100' },
+  breached:  { bg: '#FFEBEE', color: '#C62828' },
+};
+
+interface SlaTimerChipProps {
+  slaVariant?: SlaVariant;
+}
+
+export const SlaTimerChip = styled(Chip, {
+  shouldForwardProp: (prop) => prop !== 'slaVariant',
+})<SlaTimerChipProps>(({ slaVariant = 'on_track' }) => {
+  const { bg, color } = SLA_VARIANT_STYLES[slaVariant];
+  return {
+    height: rem(24),
+    fontSize: rem(11),
+    fontWeight: Bold._600,
+    backgroundColor: bg,
+    color,
+    borderRadius: rem(4),
+    fontFamily: 'monospace',
+    '& .MuiChip-icon': {
+      fontSize: `${rem(13)} !important`,
+      color: `${color} !important`,
+    },
+  };
+});

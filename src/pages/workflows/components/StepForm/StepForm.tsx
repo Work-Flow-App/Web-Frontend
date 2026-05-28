@@ -4,11 +4,15 @@ import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
 import { StepFormFields } from './StepFormFields';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
+const MINUTES_PER_DAY = 24 * 60;
+
 export interface StepFormStep {
   id: number;
   name: string;
   description?: string;
   optional?: boolean;
+  expectedDurationMinutes?: number;
+  maximumDurationMinutes?: number;
 }
 
 export interface StepFormProps {
@@ -41,10 +45,18 @@ export const StepForm: React.FC<StepFormProps> = ({
 
   useEffect(() => {
     if (initialStep) {
+      const hasTimer = !!(initialStep.expectedDurationMinutes || initialStep.maximumDurationMinutes);
       setStepData({
         name: initialStep.name || '',
         description: initialStep.description || '',
         optional: initialStep.optional || false,
+        enableTimer: hasTimer,
+        expectedDurationDays: initialStep.expectedDurationMinutes
+          ? initialStep.expectedDurationMinutes / MINUTES_PER_DAY
+          : undefined,
+        maximumDurationDays: initialStep.maximumDurationMinutes
+          ? initialStep.maximumDurationMinutes / MINUTES_PER_DAY
+          : undefined,
       });
     }
   }, [initialStep]);
@@ -56,6 +68,12 @@ export const StepForm: React.FC<StepFormProps> = ({
         name: data.name,
         description: data.description || undefined,
         optional: data.optional || false,
+        expectedDurationMinutes: data.enableTimer && data.expectedDurationDays
+          ? Math.round(data.expectedDurationDays * MINUTES_PER_DAY)
+          : undefined,
+        maximumDurationMinutes: data.enableTimer && data.maximumDurationDays
+          ? Math.round(data.maximumDurationDays * MINUTES_PER_DAY)
+          : undefined,
       };
 
       onSave(stepPayload);
