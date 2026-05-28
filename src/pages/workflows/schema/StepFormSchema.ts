@@ -24,10 +24,36 @@ export const StepFormSchema: IFields = {
     label: 'Optional step (can be skipped)',
     isRequired: false,
   },
+  enableTimer: {
+    title: 'enableTimer',
+    rule: InputValidationRules.BooleanNotRequired,
+    defaultValue: false,
+    label: 'Enable SLA Timer',
+    isRequired: false,
+  },
+  expectedDurationDays: {
+    title: 'expectedDurationDays',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: undefined,
+    placeHolder: 'e.g. 4',
+    label: 'Expected Duration (days)',
+    isRequired: false,
+  },
+  maximumDurationDays: {
+    title: 'maximumDurationDays',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: undefined,
+    placeHolder: 'e.g. 5',
+    label: 'Maximum Deadline (days)',
+    isRequired: false,
+  },
 };
 
 export interface StepFormData {
   name: string;
   description?: string;
   optional?: boolean;
+  enableTimer?: boolean;
+  expectedDurationDays?: number;
+  maximumDurationDays?: number;
 }

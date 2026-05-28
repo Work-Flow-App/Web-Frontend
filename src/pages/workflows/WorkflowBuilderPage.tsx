@@ -46,6 +46,8 @@ interface WorkflowStep extends WorkflowStepResponse {
   description?: string;
   orderIndex: number;
   optional?: boolean;
+  expectedDurationMinutes?: number;
+  maximumDurationMinutes?: number;
 }
 
 // Source list item (draggable from source to target)
@@ -284,7 +286,14 @@ export const WorkflowBuilderPage: React.FC = () => {
 
   const handleSaveStep = (stepData: StepFormStep) => {
     if (editingStep) {
-      const updatedStep = { ...editingStep, name: stepData.name, description: stepData.description, optional: stepData.optional };
+      const updatedStep = {
+        ...editingStep,
+        name: stepData.name,
+        description: stepData.description,
+        optional: stepData.optional,
+        expectedDurationMinutes: stepData.expectedDurationMinutes,
+        maximumDurationMinutes: stepData.maximumDurationMinutes,
+      };
       setSteps(steps.map((s) => (s.id === editingStep.id ? updatedStep : s)));
       setOrderedSteps(orderedSteps.map((s) => (s.id === editingStep.id ? updatedStep : s)));
       showSuccess('Step updated');
@@ -296,6 +305,8 @@ export const WorkflowBuilderPage: React.FC = () => {
         description: stepData.description,
         orderIndex: steps.length,
         optional: stepData.optional,
+        expectedDurationMinutes: stepData.expectedDurationMinutes,
+        maximumDurationMinutes: stepData.maximumDurationMinutes,
       };
       setSteps([...steps, newStep]);
       showSuccess('Step added');
@@ -343,6 +354,8 @@ export const WorkflowBuilderPage: React.FC = () => {
             description: step.description,
             orderIndex: step.orderIndex,
             optional: step.optional,
+            expectedDurationMinutes: step.expectedDurationMinutes,
+            maximumDurationMinutes: step.maximumDurationMinutes,
           })),
         };
 
