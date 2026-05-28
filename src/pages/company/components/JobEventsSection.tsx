@@ -129,7 +129,6 @@ const statCardSx = {
   gap: '6px',
 };
 
-
 function StatBoxesRow({
   jobs,
   estimateSentTotal,
@@ -146,9 +145,9 @@ function StatBoxesRow({
   //const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '16px' }}>
       {/* Box 1 — Estimate Sent */}
-      <Box sx={statCardSx}>
+      {/* <Box sx={statCardSx}>
         <Typography
           sx={{
             fontSize: '11px',
@@ -167,7 +166,7 @@ function StatBoxesRow({
           <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
           <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>up-trend</Typography>
         </Box>
-      </Box>
+      </Box> */}
 
       {/* Box 2 — Work In Progress */}
       <Box sx={statCardSx}>
