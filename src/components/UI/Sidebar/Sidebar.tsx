@@ -1,14 +1,40 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Box, IconButton, Collapse, Popover, List, ListItemButton, ListItemText, ListItemIcon, Typography } from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import { Collapse, Popover, List, ListItemText } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { SidebarWrapper, SidebarItemButton, IconWrapper, SidebarLogoSection, SidebarBackdrop } from './Sidebar.styles';
+import {
+  SidebarWrapper,
+  SidebarItemButton,
+  SidebarParentItemButton,
+  SidebarChildItemButton,
+  IconWrapper,
+  SidebarLogoSectionFlat,
+  SidebarBackdrop,
+  SidebarDesktopLogoRow,
+  SidebarMobileHeader,
+  SidebarMobileBrand,
+  SidebarBrandTextStack,
+  SidebarBrandName,
+  SidebarBrandSubtitle,
+  SidebarCloseButton,
+  SidebarCollapsedLogoRow,
+  SidebarNavItemWrapper,
+  SidebarParentItemContent,
+  SidebarChildItemsList,
+  SidebarNavLink,
+  SidebarPopoverContent,
+  SidebarPopoverLabel,
+  SidebarPopoverListItem,
+  SidebarPopoverListIcon,
+  SidebarCollapsedLogoSection,
+  sidebarPopoverPaperProps,
+  sidebarPopoverTextSlotProps,
+} from './Sidebar.styles';
 import type { SidebarProps, SidebarItem } from './Sidebar.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
-import { floowColors } from '../../../theme/colors';
-import { rem } from '../Typography/utility';
+
 
 export const Sidebar: React.FC<SidebarProps> = ({
   items,
@@ -50,9 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (activeItemId) {
       return activeItemId === item.id;
     }
-    // Auto-detect active item based on current route
     if (item.href) {
-      // Exact match for the href
       return location.pathname === item.href;
     }
     return false;
@@ -69,12 +93,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return false;
   };
 
-  // Handle menu item click
   const handleItemClick = (itemId: string) => {
     onItemClick?.(itemId);
   };
 
-  // Toggle submenu expansion
   const toggleExpanded = (itemId: string) => {
     setExpandedItems((prev) => {
       const newSet = new Set(prev);
@@ -101,99 +123,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <SidebarBackdrop isVisible={!isCollapsed} onClick={onToggleCollapse} role="presentation" />
 
       <SidebarWrapper isCollapsed={isCollapsed} className={className} sx={sx}>
-        {/* Logo Section - Desktop (without toggle button) */}
+        {/* Logo Section - Desktop */}
         {!isCollapsed && (
-          <Box
-            sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', justifyContent: 'center', width: '100%' }}
-          >
-            <SidebarLogoSection sx={{ flex: 1, margin: 0, padding: 0, border: 'none' }}>
+          <SidebarDesktopLogoRow>
+            <SidebarLogoSectionFlat>
               <FloowLogo variant="light" />
-            </SidebarLogoSection>
-          </Box>
+            </SidebarLogoSectionFlat>
+          </SidebarDesktopLogoRow>
         )}
 
         {/* Mobile Header - Logo + Close Button */}
         {!isCollapsed && (
-          <Box
-            sx={{
-              display: { xs: 'flex', sm: 'none' },
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: rem(8),
-              paddingBottom: rem(12),
-              marginBottom: rem(12),
-              borderBottom: `${rem(1)} solid ${floowColors.tailwind.gray[200]}`,
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: rem(10),
-                '& img': {
-                  height: rem(28),
-                  width: rem(28),
-                  objectFit: 'contain',
-                },
-              }}
-            >
+          <SidebarMobileHeader>
+            <SidebarMobileBrand>
               <FloowLogo iconOnly />
-              <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-                <Box
-                  sx={{
-                    fontFamily: 'Manrope, sans-serif',
-                    fontSize: rem(15),
-                    fontWeight: 800,
-                    color: floowColors.text.heading,
-                    letterSpacing: '-0.01em',
-                  }}
-                >
-                  Workfloww
-                </Box>
-                {subtitle && (
-                  <Box
-                    sx={{
-                      fontFamily: 'Manrope, sans-serif',
-                      fontSize: rem(10),
-                      fontWeight: 700,
-                      color: '#6366F1',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                    }}
-                  >
-                    {subtitle}
-                  </Box>
-                )}
-              </Box>
-            </Box>
-            <IconButton
-              onClick={onToggleCollapse}
-              sx={{
-                padding: rem(4),
-                minWidth: rem(36),
-                minHeight: rem(36),
-                color: floowColors.grey[700],
-                '&:hover': {
-                  backgroundColor: floowColors.grey[100],
-                  color: floowColors.grey[800],
-                },
-              }}
-              title="Close Sidebar"
-              aria-label="Close sidebar"
-            >
+              <SidebarBrandTextStack>
+                <SidebarBrandName>Workfloww</SidebarBrandName>
+                {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
+              </SidebarBrandTextStack>
+            </SidebarMobileBrand>
+            <SidebarCloseButton onClick={onToggleCollapse} title="Close Sidebar" aria-label="Close sidebar">
               <CloseIcon />
-            </IconButton>
-          </Box>
+            </SidebarCloseButton>
+          </SidebarMobileHeader>
         )}
 
         {/* Collapsed State - Show Icon Only */}
         {isCollapsed && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: rem(16) }}>
-            <SidebarLogoSection sx={{ margin: 0, padding: 0, border: 'none' }}>
+          <SidebarCollapsedLogoRow>
+            <SidebarCollapsedLogoSection>
               <FloowLogo iconOnly />
-            </SidebarLogoSection>
-          </Box>
+            </SidebarCollapsedLogoSection>
+          </SidebarCollapsedLogoRow>
         )}
 
         {/* Navigation Items */}
@@ -206,9 +167,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           // Item with children (parent menu)
           if (hasChildren) {
             return (
-              <Box key={item.id} sx={{ width: '100%' }}>
+              <SidebarNavItemWrapper key={item.id}>
                 {/* Parent item - only toggle expansion, no navigation */}
-                <SidebarItemButton
+                <SidebarParentItemButton
                   className={isActiveOrChildActive ? 'active' : ''}
                   onClick={(e: React.MouseEvent<HTMLElement>) => {
                     handleItemClick(item.id);
@@ -223,54 +184,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   aria-label={item.label}
                   title={isCollapsed ? item.label : undefined}
                   tabIndex={0}
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(12) }}>
+                  <SidebarParentItemContent>
                     {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
                     {!isCollapsed && <span>{item.label}</span>}
-                  </Box>
+                  </SidebarParentItemContent>
                   {!isCollapsed &&
                     (isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />)}
-                </SidebarItemButton>
+                </SidebarParentItemButton>
 
                 {/* Child items */}
                 {!isCollapsed && (
                   <Collapse in={isExpanded}>
-                    <Box sx={{ pl: rem(32), pt: rem(8) }}>
+                    <SidebarChildItemsList>
                       {item.children?.map((child) => {
                         const childActive = isItemActive(child);
                         if (child.href) {
                           return (
-                            <Link
+                            <SidebarNavLink
                               key={child.id}
                               to={child.href}
                               onClick={() => {
                                 handleItemClick(child.id);
                                 child.onClick?.();
                               }}
-                              style={{
-                                textDecoration: 'none',
-                                color: 'inherit',
-                                display: 'block',
-                                width: '100%',
-                              }}
                             >
-                              <SidebarItemButton
+                              <SidebarChildItemButton
                                 className={childActive ? 'active' : ''}
                                 role="menuitem"
                                 aria-label={child.label}
                                 aria-current={childActive ? 'page' : undefined}
                                 tabIndex={0}
-                                sx={{ fontSize: rem(13) }}
                               >
                                 {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
                                 <span>{child.label}</span>
-                              </SidebarItemButton>
-                            </Link>
+                              </SidebarChildItemButton>
+                            </SidebarNavLink>
                           );
                         }
                         return (
-                          <SidebarItemButton
+                          <SidebarChildItemButton
                             key={child.id}
                             className={childActive ? 'active' : ''}
                             onClick={() => {
@@ -281,35 +234,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             aria-label={child.label}
                             aria-current={childActive ? 'page' : undefined}
                             tabIndex={0}
-                            sx={{ fontSize: rem(13) }}
                           >
                             {child.icon && <IconWrapper>{child.icon}</IconWrapper>}
                             <span>{child.label}</span>
-                          </SidebarItemButton>
+                          </SidebarChildItemButton>
                         );
                       })}
-                    </Box>
+                    </SidebarChildItemsList>
                   </Collapse>
                 )}
-              </Box>
+              </SidebarNavItemWrapper>
             );
           }
 
           // Regular item without children
           if (item.href) {
             return (
-              <Link
+              <SidebarNavLink
                 key={item.id}
                 to={item.href}
                 onClick={() => {
                   handleItemClick(item.id);
                   item.onClick?.();
-                }}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  display: 'block',
-                  width: '100%',
                 }}
               >
                 <SidebarItemButton
@@ -323,7 +269,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {item.icon && <IconWrapper>{item.icon}</IconWrapper>}
                   {!isCollapsed && <span>{item.label}</span>}
                 </SidebarItemButton>
-              </Link>
+              </SidebarNavLink>
             );
           }
 
@@ -356,22 +302,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onClose={handlePopoverClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        slotProps={{ paper: { sx: { ml: rem(4), borderRadius: rem(8), minWidth: rem(180) } } }}
+        slotProps={{ paper: sidebarPopoverPaperProps }}
       >
         {popoverAnchor?.item && (
-          <Box sx={{ py: rem(8) }}>
-            <Typography
-              sx={{ px: rem(16), pb: rem(6), fontSize: rem(11), fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}
-            >
-              {popoverAnchor.item.label}
-            </Typography>
+          <SidebarPopoverContent>
+            <SidebarPopoverLabel>{popoverAnchor.item.label}</SidebarPopoverLabel>
             <List disablePadding>
               {popoverAnchor.item.children?.map((child) => {
                 const childActive = isItemActive(child);
                 return (
-                  <ListItemButton
+                  <SidebarPopoverListItem
                     key={child.id}
-                    component={child.href ? Link : 'div'}
+                    component={child.href ? SidebarNavLink : 'div'}
                     {...(child.href ? { to: child.href } : {})}
                     selected={childActive}
                     onClick={() => {
@@ -379,19 +321,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       child.onClick?.();
                       handlePopoverClose();
                     }}
-                    sx={{ px: rem(16), py: rem(8), gap: rem(4) }}
                   >
                     {child.icon && (
-                      <ListItemIcon sx={{ minWidth: rem(32), '& svg': { fontSize: rem(16) } }}>
-                        {child.icon}
-                      </ListItemIcon>
+                      <SidebarPopoverListIcon>{child.icon}</SidebarPopoverListIcon>
                     )}
-                    <ListItemText primary={child.label} slotProps={{ primary: { fontSize: rem(13), fontWeight: childActive ? 600 : 400 } }} />
-                  </ListItemButton>
+                    <ListItemText
+                      primary={child.label}
+                      slotProps={sidebarPopoverTextSlotProps(childActive)}
+                    />
+                  </SidebarPopoverListItem>
                 );
               })}
             </List>
-          </Box>
+          </SidebarPopoverContent>
         )}
       </Popover>
     </>
