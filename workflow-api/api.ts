@@ -303,15 +303,68 @@ export interface CustomerUpdateRequest {
     'address'?: CustomerAddressDto;
     'archived'?: boolean;
 }
+export interface EstimateDocumentCreateRequest {
+    'lineItemIds': Array<number>;
+    'validUntil'?: string;
+    'reference'?: string;
+    'notes'?: string;
+}
+export interface EstimateDocumentResponse {
+    'id'?: number;
+    'estimateId'?: number;
+    'companyId'?: number;
+    'documentNumber'?: string;
+    'validUntil'?: string;
+    'reference'?: string;
+    'notes'?: string;
+    'presignedUrl'?: string;
+    'lineItems'?: Array<JobLineItemSnapshotResponse>;
+    'totalNet'?: number;
+    'totalVat'?: number;
+    'grandTotal'?: number;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface EstimateLineItemResponse {
+    'id'?: number;
+    'estimateId'?: number;
+    'status'?: EstimateLineItemResponseStatusEnum;
+    'sourceLineItemId'?: number;
+    'productCode'?: string;
+    'productDescription'?: string;
+    'additionalDetails'?: string;
+    'unitPrice'?: number;
+    'quantity'?: number;
+    'vatRate'?: number;
+    'netAmount'?: number;
+    'vatAmount'?: number;
+    'totalAmount'?: number;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+
+export const EstimateLineItemResponseStatusEnum = {
+    Available: 'AVAILABLE',
+    WaitingApproval: 'WAITING_APPROVAL',
+    Approved: 'APPROVED',
+    Invoiced: 'INVOICED'
+} as const;
+
+export type EstimateLineItemResponseStatusEnum = typeof EstimateLineItemResponseStatusEnum[keyof typeof EstimateLineItemResponseStatusEnum];
+
 export interface EstimateResponse {
     'id'?: number;
     'jobId'?: number;
     'companyId'?: number;
     'notes'?: string;
-    'lineItems'?: Array<LineItemResponse>;
+    'lineItems'?: Array<EstimateLineItemResponse>;
+    'invoicedLineItemIds'?: Set<number>;
     'totalNet'?: number;
     'totalVat'?: number;
     'grandTotal'?: number;
+    'waitingApprovalValue'?: number;
+    'approvedValue'?: number;
+    'invoicedValue'?: number;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
@@ -337,6 +390,11 @@ export const FieldValueResponseTypeEnum = {
 
 export type FieldValueResponseTypeEnum = typeof FieldValueResponseTypeEnum[keyof typeof FieldValueResponseTypeEnum];
 
+export interface FinancialSummaryResponse {
+    'waitingApprovalValue'?: number;
+    'approvedValue'?: number;
+    'invoicedValue'?: number;
+}
 export interface ForgotPasswordRequest {
     'email': string;
 }
@@ -349,28 +407,6 @@ export interface InvoiceCreateRequest {
     'dueDate'?: string;
     'reference'?: string;
 }
-export interface InvoiceLineItemSnapshotResponse {
-    'id'?: number;
-    'sourceLineItemId'?: number;
-    'productCode'?: string;
-    'productDescription'?: string;
-    'additionalDetails'?: string;
-    'unitPrice'?: number;
-    'coreOrSub'?: InvoiceLineItemSnapshotResponseCoreOrSubEnum;
-    'quantity'?: number;
-    'vatRate'?: number;
-    'netAmount'?: number;
-    'vatAmount'?: number;
-    'totalAmount'?: number;
-}
-
-export const InvoiceLineItemSnapshotResponseCoreOrSubEnum = {
-    Core: 'CORE',
-    Sub: 'SUB'
-} as const;
-
-export type InvoiceLineItemSnapshotResponseCoreOrSubEnum = typeof InvoiceLineItemSnapshotResponseCoreOrSubEnum[keyof typeof InvoiceLineItemSnapshotResponseCoreOrSubEnum];
-
 export interface InvoiceResponse {
     'id'?: number;
     'estimateId'?: number;
@@ -379,7 +415,7 @@ export interface InvoiceResponse {
     'dueDate'?: string;
     'reference'?: string;
     'presignedUrl'?: string;
-    'lineItems'?: Array<InvoiceLineItemSnapshotResponse>;
+    'lineItems'?: Array<JobLineItemSnapshotResponse>;
     'totalNet'?: number;
     'totalVat'?: number;
     'grandTotal'?: number;
@@ -407,6 +443,29 @@ export const JobCreateRequestStatusEnum = {
 } as const;
 
 export type JobCreateRequestStatusEnum = typeof JobCreateRequestStatusEnum[keyof typeof JobCreateRequestStatusEnum];
+
+export interface JobLineItemSnapshotResponse {
+    'id'?: number;
+    'type'?: JobLineItemSnapshotResponseTypeEnum;
+    'sourceLineItemId'?: number;
+    'productCode'?: string;
+    'productDescription'?: string;
+    'additionalDetails'?: string;
+    'unitPrice'?: number;
+    'quantity'?: number;
+    'vatRate'?: number;
+    'netAmount'?: number;
+    'vatAmount'?: number;
+    'totalAmount'?: number;
+    'createdAt'?: string;
+}
+
+export const JobLineItemSnapshotResponseTypeEnum = {
+    Invoice: 'INVOICE',
+    EstimateDocument: 'ESTIMATE_DOCUMENT'
+} as const;
+
+export type JobLineItemSnapshotResponseTypeEnum = typeof JobLineItemSnapshotResponseTypeEnum[keyof typeof JobLineItemSnapshotResponseTypeEnum];
 
 export interface JobResponse {
     'id'?: number;
@@ -546,6 +605,8 @@ export interface JobWorkflowStepCreateRequest {
     'orderIndex'?: number;
     'status'?: JobWorkflowStepCreateRequestStatusEnum;
     'assignedWorkerIds'?: Set<number>;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 
 export const JobWorkflowStepCreateRequestStatusEnum = {
@@ -568,6 +629,9 @@ export interface JobWorkflowStepResponse {
     'status'?: JobWorkflowStepResponseStatusEnum;
     'startedAt'?: string;
     'completedAt'?: string;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
+    'slaStatus'?: JobWorkflowStepResponseSlaStatusEnum;
     'assignedWorkerIds'?: Set<number>;
 }
 
@@ -582,6 +646,14 @@ export const JobWorkflowStepResponseStatusEnum = {
 } as const;
 
 export type JobWorkflowStepResponseStatusEnum = typeof JobWorkflowStepResponseStatusEnum[keyof typeof JobWorkflowStepResponseStatusEnum];
+export const JobWorkflowStepResponseSlaStatusEnum = {
+    NotApplicable: 'NOT_APPLICABLE',
+    OnTrack: 'ON_TRACK',
+    AttentionNeeded: 'ATTENTION_NEEDED',
+    Breached: 'BREACHED'
+} as const;
+
+export type JobWorkflowStepResponseSlaStatusEnum = typeof JobWorkflowStepResponseSlaStatusEnum[keyof typeof JobWorkflowStepResponseSlaStatusEnum];
 
 export interface JobWorkflowStepUpdateRequest {
     'id'?: number;
@@ -590,6 +662,8 @@ export interface JobWorkflowStepUpdateRequest {
     'orderIndex'?: number;
     'status'?: JobWorkflowStepUpdateRequestStatusEnum;
     'assignedWorkerIds'?: Set<number>;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 
 export const JobWorkflowStepUpdateRequestStatusEnum = {
@@ -626,18 +700,9 @@ export interface LineItemCreateRequest {
     'productDescription': string;
     'additionalDetails'?: string;
     'unitPrice': number;
-    'coreOrSub': LineItemCreateRequestCoreOrSubEnum;
     'quantity': number;
     'vatRate': number;
 }
-
-export const LineItemCreateRequestCoreOrSubEnum = {
-    Core: 'CORE',
-    Sub: 'SUB'
-} as const;
-
-export type LineItemCreateRequestCoreOrSubEnum = typeof LineItemCreateRequestCoreOrSubEnum[keyof typeof LineItemCreateRequestCoreOrSubEnum];
-
 export interface LineItemResponse {
     'id'?: number;
     'companyId'?: number;
@@ -645,41 +710,35 @@ export interface LineItemResponse {
     'productDescription'?: string;
     'additionalDetails'?: string;
     'unitPrice'?: number;
-    'coreOrSub'?: LineItemResponseCoreOrSubEnum;
     'quantity'?: number;
     'vatRate'?: number;
     'netAmount'?: number;
     'vatAmount'?: number;
     'totalAmount'?: number;
-    'invoiced'?: boolean;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
+export interface LineItemStatusUpdateRequest {
+    'status': LineItemStatusUpdateRequestStatusEnum;
+}
 
-export const LineItemResponseCoreOrSubEnum = {
-    Core: 'CORE',
-    Sub: 'SUB'
+export const LineItemStatusUpdateRequestStatusEnum = {
+    Available: 'AVAILABLE',
+    WaitingApproval: 'WAITING_APPROVAL',
+    Approved: 'APPROVED',
+    Invoiced: 'INVOICED'
 } as const;
 
-export type LineItemResponseCoreOrSubEnum = typeof LineItemResponseCoreOrSubEnum[keyof typeof LineItemResponseCoreOrSubEnum];
+export type LineItemStatusUpdateRequestStatusEnum = typeof LineItemStatusUpdateRequestStatusEnum[keyof typeof LineItemStatusUpdateRequestStatusEnum];
 
 export interface LineItemUpdateRequest {
     'productCode'?: string;
     'productDescription'?: string;
     'additionalDetails'?: string;
     'unitPrice'?: number;
-    'coreOrSub'?: LineItemUpdateRequestCoreOrSubEnum;
     'quantity'?: number;
     'vatRate'?: number;
 }
-
-export const LineItemUpdateRequestCoreOrSubEnum = {
-    Core: 'CORE',
-    Sub: 'SUB'
-} as const;
-
-export type LineItemUpdateRequestCoreOrSubEnum = typeof LineItemUpdateRequestCoreOrSubEnum[keyof typeof LineItemUpdateRequestCoreOrSubEnum];
-
 export interface LoginRequest {
     'userName': string;
     'password': string;
@@ -861,6 +920,7 @@ export interface StepActivityResponse {
     'type'?: string;
     'message'?: string;
     'actorId'?: number;
+    'actorUsername'?: string;
     'createdAt'?: string;
 }
 export interface StepAttachmentResponse {
@@ -871,6 +931,7 @@ export interface StepAttachmentResponse {
     'description'?: string;
     'type'?: StepAttachmentResponseTypeEnum;
     'uploadedBy'?: number;
+    'uploadedByUsername'?: string;
     'createdAt'?: string;
 }
 
@@ -923,6 +984,7 @@ export interface StepCommentResponse {
     'content'?: string;
     'type'?: StepCommentResponseTypeEnum;
     'authorId'?: number;
+    'authorUsername'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
@@ -946,6 +1008,7 @@ export interface StepTimelineItemResponse {
     'discussionType'?: StepTimelineItemResponseDiscussionTypeEnum;
     'description'?: string;
     'actorId'?: number;
+    'actorUsername'?: string;
     'createdAt'?: string;
 }
 
@@ -1124,6 +1187,8 @@ export interface WorkflowStepBulkRequest {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowStepCreateRequest {
     'workflowId'?: number;
@@ -1131,6 +1196,8 @@ export interface WorkflowStepCreateRequest {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowStepResponse {
     'id'?: number;
@@ -1139,6 +1206,8 @@ export interface WorkflowStepResponse {
     'description'?: string;
     'orderIndex'?: number;
     'optional'?: boolean;
+    'expectedDurationMinutes'?: number;
+    'maximumDurationMinutes'?: number;
 }
 export interface WorkflowWithStepsResponse {
     'id'?: number;
@@ -4312,6 +4381,346 @@ export class CustomersApi extends BaseAPI {
 
 
 /**
+ * DashboardApi - axios parameter creator
+ */
+export const DashboardApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        dashboardGetFinancialSummary: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/dashboard/financial-summary`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * DashboardApi - functional programming interface
+ */
+export const DashboardApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = DashboardApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async dashboardGetFinancialSummary(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinancialSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.dashboardGetFinancialSummary(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DashboardApi.dashboardGetFinancialSummary']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * DashboardApi - factory interface
+ */
+export const DashboardApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = DashboardApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        dashboardGetFinancialSummary(options?: RawAxiosRequestConfig): AxiosPromise<FinancialSummaryResponse> {
+            return localVarFp.dashboardGetFinancialSummary(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * DashboardApi - object-oriented interface
+ */
+export class DashboardApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public dashboardGetFinancialSummary(options?: RawAxiosRequestConfig) {
+        return DashboardApiFp(this.configuration).dashboardGetFinancialSummary(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * EstimateDocumentsApi - axios parameter creator
+ */
+export const EstimateDocumentsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {EstimateDocumentCreateRequest} estimateDocumentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentGenerate: async (estimateId: number, estimateDocumentCreateRequest: EstimateDocumentCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'estimateId' is not null or undefined
+            assertParamExists('estimateDocumentGenerate', 'estimateId', estimateId)
+            // verify required parameter 'estimateDocumentCreateRequest' is not null or undefined
+            assertParamExists('estimateDocumentGenerate', 'estimateDocumentCreateRequest', estimateDocumentCreateRequest)
+            const localVarPath = `/api/v1/estimates/{estimateId}/documents`
+                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(estimateDocumentCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentGet: async (documentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'documentId' is not null or undefined
+            assertParamExists('estimateDocumentGet', 'documentId', documentId)
+            const localVarPath = `/api/v1/estimates/documents/{documentId}`
+                .replace(`{${"documentId"}}`, encodeURIComponent(String(documentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentListForEstimate: async (estimateId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'estimateId' is not null or undefined
+            assertParamExists('estimateDocumentListForEstimate', 'estimateId', estimateId)
+            const localVarPath = `/api/v1/estimates/{estimateId}/documents`
+                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * EstimateDocumentsApi - functional programming interface
+ */
+export const EstimateDocumentsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = EstimateDocumentsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {EstimateDocumentCreateRequest} estimateDocumentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async estimateDocumentGenerate(estimateId: number, estimateDocumentCreateRequest: EstimateDocumentCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateDocumentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateDocumentGenerate(estimateId, estimateDocumentCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EstimateDocumentsApi.estimateDocumentGenerate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async estimateDocumentGet(documentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateDocumentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateDocumentGet(documentId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EstimateDocumentsApi.estimateDocumentGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async estimateDocumentListForEstimate(estimateId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<EstimateDocumentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateDocumentListForEstimate(estimateId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EstimateDocumentsApi.estimateDocumentListForEstimate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * EstimateDocumentsApi - factory interface
+ */
+export const EstimateDocumentsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = EstimateDocumentsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {EstimateDocumentCreateRequest} estimateDocumentCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentGenerate(estimateId: number, estimateDocumentCreateRequest: EstimateDocumentCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateDocumentResponse> {
+            return localVarFp.estimateDocumentGenerate(estimateId, estimateDocumentCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentGet(documentId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateDocumentResponse> {
+            return localVarFp.estimateDocumentGet(documentId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateDocumentListForEstimate(estimateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<EstimateDocumentResponse>> {
+            return localVarFp.estimateDocumentListForEstimate(estimateId, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * EstimateDocumentsApi - object-oriented interface
+ */
+export class EstimateDocumentsApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} estimateId 
+     * @param {EstimateDocumentCreateRequest} estimateDocumentCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public estimateDocumentGenerate(estimateId: number, estimateDocumentCreateRequest: EstimateDocumentCreateRequest, options?: RawAxiosRequestConfig) {
+        return EstimateDocumentsApiFp(this.configuration).estimateDocumentGenerate(estimateId, estimateDocumentCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} documentId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public estimateDocumentGet(documentId: number, options?: RawAxiosRequestConfig) {
+        return EstimateDocumentsApiFp(this.configuration).estimateDocumentGet(documentId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} estimateId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public estimateDocumentListForEstimate(estimateId: number, options?: RawAxiosRequestConfig) {
+        return EstimateDocumentsApiFp(this.configuration).estimateDocumentListForEstimate(estimateId, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * EstimatesApi - axios parameter creator
  */
 export const EstimatesApiAxiosParamCreator = function (configuration?: Configuration) {
@@ -4514,18 +4923,18 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
         /**
          * 
          * @param {number} estimateId 
-         * @param {number} lineItemId 
+         * @param {number} estimateLineItemId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        estimateUnlink: async (estimateId: number, lineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        estimateUnlink: async (estimateId: number, estimateLineItemId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'estimateId' is not null or undefined
             assertParamExists('estimateUnlink', 'estimateId', estimateId)
-            // verify required parameter 'lineItemId' is not null or undefined
-            assertParamExists('estimateUnlink', 'lineItemId', lineItemId)
-            const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{lineItemId}`
+            // verify required parameter 'estimateLineItemId' is not null or undefined
+            assertParamExists('estimateUnlink', 'estimateLineItemId', estimateLineItemId)
+            const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{estimateLineItemId}`
                 .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)))
-                .replace(`{${"lineItemId"}}`, encodeURIComponent(String(lineItemId)));
+                .replace(`{${"estimateLineItemId"}}`, encodeURIComponent(String(estimateLineItemId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -4589,6 +4998,100 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(estimateUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemUpdateRequest} lineItemUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateUpdateEstimateLineItem: async (estimateId: number, estimateLineItemId: number, lineItemUpdateRequest: LineItemUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'estimateId' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItem', 'estimateId', estimateId)
+            // verify required parameter 'estimateLineItemId' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItem', 'estimateLineItemId', estimateLineItemId)
+            // verify required parameter 'lineItemUpdateRequest' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItem', 'lineItemUpdateRequest', lineItemUpdateRequest)
+            const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{estimateLineItemId}`
+                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)))
+                .replace(`{${"estimateLineItemId"}}`, encodeURIComponent(String(estimateLineItemId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(lineItemUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemStatusUpdateRequest} lineItemStatusUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateUpdateEstimateLineItemStatus: async (estimateId: number, estimateLineItemId: number, lineItemStatusUpdateRequest: LineItemStatusUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'estimateId' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItemStatus', 'estimateId', estimateId)
+            // verify required parameter 'estimateLineItemId' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItemStatus', 'estimateLineItemId', estimateLineItemId)
+            // verify required parameter 'lineItemStatusUpdateRequest' is not null or undefined
+            assertParamExists('estimateUpdateEstimateLineItemStatus', 'lineItemStatusUpdateRequest', lineItemStatusUpdateRequest)
+            const localVarPath = `/api/v1/estimates/{estimateId}/line-items/{estimateLineItemId}/status`
+                .replace(`{${"estimateId"}}`, encodeURIComponent(String(estimateId)))
+                .replace(`{${"estimateLineItemId"}}`, encodeURIComponent(String(estimateLineItemId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(lineItemStatusUpdateRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4669,12 +5172,12 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {number} estimateId 
-         * @param {number} lineItemId 
+         * @param {number} estimateLineItemId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUnlink(estimateId, lineItemId, options);
+        async estimateUnlink(estimateId: number, estimateLineItemId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUnlink(estimateId, estimateLineItemId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUnlink']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4690,6 +5193,34 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUpdate(id, estimateUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUpdate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemUpdateRequest} lineItemUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async estimateUpdateEstimateLineItem(estimateId: number, estimateLineItemId: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUpdateEstimateLineItem(estimateId, estimateLineItemId, lineItemUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUpdateEstimateLineItem']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemStatusUpdateRequest} lineItemStatusUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async estimateUpdateEstimateLineItemStatus(estimateId: number, estimateLineItemId: number, lineItemStatusUpdateRequest: LineItemStatusUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateUpdateEstimateLineItemStatus(estimateId, estimateLineItemId, lineItemStatusUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateUpdateEstimateLineItemStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -4751,12 +5282,12 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
         /**
          * 
          * @param {number} estimateId 
-         * @param {number} lineItemId 
+         * @param {number} estimateLineItemId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
-            return localVarFp.estimateUnlink(estimateId, lineItemId, options).then((request) => request(axios, basePath));
+        estimateUnlink(estimateId: number, estimateLineItemId: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateUnlink(estimateId, estimateLineItemId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -4767,6 +5298,28 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          */
         estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
             return localVarFp.estimateUpdate(id, estimateUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemUpdateRequest} lineItemUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateUpdateEstimateLineItem(estimateId: number, estimateLineItemId: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateUpdateEstimateLineItem(estimateId, estimateLineItemId, lineItemUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} estimateId 
+         * @param {number} estimateLineItemId 
+         * @param {LineItemStatusUpdateRequest} lineItemStatusUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        estimateUpdateEstimateLineItemStatus(estimateId: number, estimateLineItemId: number, lineItemStatusUpdateRequest: LineItemStatusUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
+            return localVarFp.estimateUpdateEstimateLineItemStatus(estimateId, estimateLineItemId, lineItemStatusUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -4830,12 +5383,12 @@ export class EstimatesApi extends BaseAPI {
     /**
      * 
      * @param {number} estimateId 
-     * @param {number} lineItemId 
+     * @param {number} estimateLineItemId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public estimateUnlink(estimateId: number, lineItemId: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).estimateUnlink(estimateId, lineItemId, options).then((request) => request(this.axios, this.basePath));
+    public estimateUnlink(estimateId: number, estimateLineItemId: number, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateUnlink(estimateId, estimateLineItemId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4847,6 +5400,30 @@ export class EstimatesApi extends BaseAPI {
      */
     public estimateUpdate(id: number, estimateUpdateRequest: EstimateUpdateRequest, options?: RawAxiosRequestConfig) {
         return EstimatesApiFp(this.configuration).estimateUpdate(id, estimateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} estimateId 
+     * @param {number} estimateLineItemId 
+     * @param {LineItemUpdateRequest} lineItemUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public estimateUpdateEstimateLineItem(estimateId: number, estimateLineItemId: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateUpdateEstimateLineItem(estimateId, estimateLineItemId, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} estimateId 
+     * @param {number} estimateLineItemId 
+     * @param {LineItemStatusUpdateRequest} lineItemStatusUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public estimateUpdateEstimateLineItemStatus(estimateId: number, estimateLineItemId: number, lineItemStatusUpdateRequest: LineItemStatusUpdateRequest, options?: RawAxiosRequestConfig) {
+        return EstimatesApiFp(this.configuration).estimateUpdateEstimateLineItemStatus(estimateId, estimateLineItemId, lineItemStatusUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

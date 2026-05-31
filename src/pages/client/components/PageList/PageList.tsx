@@ -1,56 +1,38 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { SetupForm } from '../SetupForm';
-import { companyClientService, type ClientResponse } from '../../../../services/api';
+import { companyClientService } from '../../../../services/api';
+import type { ClientResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { useFetch } from '../../../../hooks';
 import { columns, type ClientTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
-  const [clients, setClients] = useState<ClientTableRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Fetch clients from API
-  const fetchClients = useCallback(async () => {
-    try {
-      setLoading(true);
+  const { data: rawClients, loading, refetch: fetchClients } = useFetch(
+    () => companyClientService.getAllClients(),
+    [],
+    { onError: (err) => showError(extractErrorMessage(err, 'Failed to load clients')) }
+  );
 
-      // Use companyClientService to fetch clients
-      const response = await companyClientService.getAllClients();
-
-      // Get the clients array from response
-      const clientsData = Array.isArray(response.data) ? response.data : [];
-
-      // Transform API response to table format
-      const transformedData: ClientTableRow[] = clientsData.map((client: ClientResponse) => ({
-        id: client.id || 0,
-        name: client.name || '',
-        email: client.email || '',
-        telephone: client.telephone || '',
-        mobile: client.mobile || '',
-        address: client.address || '',
-        addedOn: client.createdAt ? new Date(client.createdAt).toLocaleDateString() : '',
-      }));
-
-      setClients(transformedData);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-
-      showError(extractErrorMessage(error, 'Failed to load clients'));
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  // Load clients on mount
-  useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+  const clients = useMemo((): ClientTableRow[] => {
+    const clientsData = Array.isArray(rawClients) ? rawClients : [];
+    return clientsData.map((client: ClientResponse) => ({
+      id: client.id || 0,
+      name: client.name || '',
+      email: client.email || '',
+      telephone: client.telephone || '',
+      mobile: client.mobile || '',
+      address: client.address || '',
+      addedOn: client.createdAt ? new Date(client.createdAt).toLocaleDateString() : '',
+    }));
+  }, [rawClients]);
 
   // Handle add client
   const handleAddClient = () => {

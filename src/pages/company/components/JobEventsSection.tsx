@@ -5,11 +5,11 @@ import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+//import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
 // import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
-import { useCurrency } from '../../../contexts/CurrencyContext';
+//import { useCurrency } from '../../../contexts/CurrencyContext';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import { AddJobWizard } from '../../jobs/components/AddJobWizard';
@@ -129,26 +129,25 @@ const statCardSx = {
   gap: '6px',
 };
 
-
 function StatBoxesRow({
   jobs,
-  estimateSentTotal,
+  // estimateSentTotal,
   //awaitingInvoiceTotal,
 }: {
   jobs: JobResponse[];
   estimateSentTotal: number;
   awaitingInvoiceTotal: number;
 }) {
-  const { formatCurrency } = useCurrency();
+  //const { formatCurrency } = useCurrency();
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
   //const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '16px' }}>
       {/* Box 1 — Estimate Sent */}
-      <Box sx={statCardSx}>
+      {/* <Box sx={statCardSx}>
         <Typography
           sx={{
             fontSize: '11px',
@@ -167,7 +166,7 @@ function StatBoxesRow({
           <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
           <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>up-trend</Typography>
         </Box>
-      </Box>
+      </Box> */}
 
       {/* Box 2 — Work In Progress */}
       <Box sx={statCardSx}>

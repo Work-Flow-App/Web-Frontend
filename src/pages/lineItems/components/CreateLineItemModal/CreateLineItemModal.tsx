@@ -5,7 +5,6 @@ import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModa
 import { FormField } from '../../../../components/UI/FormComponents';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
-import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { lineItemService } from '../../../../services/api';
@@ -23,15 +22,7 @@ type FormValues = {
   unitPrice: string;
   quantity: string;
   vatRate: string;
-  coreOrSub: { label: string; value: string };
 };
-
-const coreOrSubOptions = [
-  { label: 'CORE', value: 'CORE' },
-  { label: 'SUB', value: 'SUB' },
-];
-
-const defaultCoreOrSub = { label: 'CORE', value: 'CORE' };
 
 export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineItem, onSuccess }) => {
   const isEdit = !!lineItem;
@@ -45,9 +36,6 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
       unitPrice: String(lineItem?.unitPrice ?? '0'),
       quantity: String(lineItem?.quantity ?? '1'),
       vatRate: String(lineItem?.vatRate ?? '0'),
-      coreOrSub: lineItem?.coreOrSub
-        ? { label: lineItem.coreOrSub, value: lineItem.coreOrSub }
-        : defaultCoreOrSub,
     },
   });
   const { showError } = useSnackbar();
@@ -72,8 +60,6 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
         return;
       }
 
-      const coreOrSubValue = (values.coreOrSub?.value || 'CORE') as LineItemCreateRequest['coreOrSub'];
-
       if (isEdit && lineItem?.id) {
         const payload: LineItemUpdateRequest = {
           productCode: values.productCode,
@@ -82,7 +68,6 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
           unitPrice: parseFloat(values.unitPrice) || 0,
           quantity: parseInt(values.quantity) || 1,
           vatRate: parseFloat(values.vatRate) || 0,
-          coreOrSub: coreOrSubValue as LineItemUpdateRequest['coreOrSub'],
         };
 
         lineItemService
@@ -97,7 +82,6 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
           unitPrice: parseFloat(values.unitPrice) || 0,
           quantity: parseInt(values.quantity) || 1,
           vatRate: parseFloat(values.vatRate) || 0,
-          coreOrSub: coreOrSubValue,
         };
 
         lineItemService
@@ -111,23 +95,9 @@ export const CreateLineItemModal: React.FC<CreateLineItemModalProps> = ({ lineIt
   return (
     <FormProvider {...methods}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormField label="Product Code" required>
-            <Input name="productCode" placeHolder="e.g. PROD-001" fullWidth />
-          </FormField>
-          <FormField label="Type" required>
-            <Dropdown
-              name="coreOrSub"
-              preFetchedOptions={coreOrSubOptions}
-              placeHolder="Select type"
-              defaultValue={defaultCoreOrSub.value}
-              disableClearable
-              disablePortal
-              fullWidth
-              skipDefaultReset
-            />
-          </FormField>
-        </Box>
+        <FormField label="Product Code" required>
+          <Input name="productCode" placeHolder="e.g. PROD-001" fullWidth />
+        </FormField>
 
         <FormField label="Description" required>
           <Input name="productDescription" placeHolder="Product description" fullWidth />

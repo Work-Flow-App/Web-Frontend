@@ -37,6 +37,7 @@ import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
 import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { SubscriptionProvider } from './contexts/SubscriptionContext'
@@ -63,6 +64,7 @@ function App() {
           <SubscriptionProvider>
           <CompanyRoleProvider>
             <AppConfiguration />
+            <ErrorBoundary>
             <Routes>
             {/* Public routes - No layout */}
             <Route path="/signup" element={<Signup />} />
@@ -112,6 +114,7 @@ function App() {
 
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
+            </ErrorBoundary>
             <GlobalModal />
           </CompanyRoleProvider>
           </SubscriptionProvider>

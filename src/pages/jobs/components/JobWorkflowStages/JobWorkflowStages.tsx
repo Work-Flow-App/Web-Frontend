@@ -10,21 +10,85 @@ import {
   Chip,
   Collapse,
   Autocomplete,
+  Tooltip,
 } from '@mui/material';
+
 import type { SelectChangeEvent } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import TimerIcon from '@mui/icons-material/Timer';
 import type { JobResponse, WorkerResponse, WorkflowResponse } from '../../../../services/api';
 import { jobWorkflowService, workerService, workflowService } from '../../../../services/api';
 import type { JobWorkflowResponse, JobWorkflowStepResponse } from '../../../../services/api';
-import { JobWorkflowStepResponseStatusEnum } from '../../../../../workflow-api';
+import { JobWorkflowStepResponseStatusEnum, JobWorkflowStepResponseSlaStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { StepCommentsSection } from './StepCommentsSection';
 import { StepAttachmentsSection } from './StepAttachmentsSection';
 import * as S from '../../JobDetailsPage.styles';
+
+// Live countdown timer for SLA deadline
+const SlaTimer: React.FC<{ step: JobWorkflowStepResponse }> = ({ step }) => {
+  const [display, setDisplay] = useState('');
+
+  useEffect(() => {
+    if (!step.startedAt || !step.maximumDurationMinutes) return;
+
+    const tick = () => {
+      const start = new Date(step.startedAt!);
+      const deadline = new Date(start.getTime() + step.maximumDurationMinutes! * 60_000);
+      const ms = deadline.getTime() - Date.now();
+
+      if (ms <= 0) {
+        setDisplay('Breached');
+        return;
+      }
+
+      const d = Math.floor(ms / 86_400_000);
+      const h = Math.floor((ms % 86_400_000) / 3_600_000);
+      const m = Math.floor((ms % 3_600_000) / 60_000);
+      const s = Math.floor((ms % 60_000) / 1_000);
+      setDisplay(`${d}d ${h}h ${m}m ${s}s`);
+    };
+
+    tick();
+    const id = setInterval(tick, 1_000);
+    return () => clearInterval(id);
+  }, [step.startedAt, step.maximumDurationMinutes]);
+
+  if (
+    !step.startedAt ||
+    !step.maximumDurationMinutes ||
+    step.slaStatus === JobWorkflowStepResponseSlaStatusEnum.NotApplicable ||
+    step.status === JobWorkflowStepResponseStatusEnum.Completed ||
+    step.status === JobWorkflowStepResponseStatusEnum.Skipped
+  ) {
+    return null;
+  }
+
+  const sla = step.slaStatus;
+  const isBreached = sla === JobWorkflowStepResponseSlaStatusEnum.Breached || display === 'Breached';
+  const slaVariant = isBreached
+    ? 'breached'
+    : sla === JobWorkflowStepResponseSlaStatusEnum.AttentionNeeded
+      ? 'attention'
+      : 'on_track';
+
+  const label = isBreached && display === 'Breached' ? 'SLA BREACHED' : (display || '...');
+
+  return (
+    <Tooltip title="Time remaining until SLA breach" placement="top">
+      <S.SlaTimerChip
+        icon={<TimerIcon />}
+        label={label}
+        size="small"
+        slaVariant={slaVariant}
+      />
+    </Tooltip>
+  );
+};
 
 interface JobWorkflowStagesProps {
   job: JobResponse;
@@ -413,15 +477,15 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
         </S.WorkflowSidebarTitle>
         {editingWorkflowName ? (
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <IconButton size="small" onClick={handleCancelWorkflowNameEdit}>
+            <IconButton size="small" onClick={handleCancelWorkflowNameEdit} aria-label="Cancel workflow name edit">
               <CloseIcon fontSize="small" />
             </IconButton>
-            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName}>
+            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName} aria-label="Save workflow name">
               <SaveIcon fontSize="small" />
             </IconButton>
           </Box>
         ) : (
-          <IconButton size="small" onClick={handleEditWorkflowName}>
+          <IconButton size="small" onClick={handleEditWorkflowName} aria-label="Edit workflow name">
             <EditIcon fontSize="small" />
           </IconButton>
         )}
@@ -529,13 +593,14 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                           },
                         }}
                       />
-                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)}>
+                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)} aria-label="Cancel step name edit">
                         <CloseIcon sx={{ fontSize: 14 }} />
                       </IconButton>
                       <IconButton
                         size="small"
                         onClick={(e) => handleSaveStepName(step, e)}
                         disabled={updatingStep === step.id}
+                        aria-label="Save step name"
                       >
                         <SaveIcon sx={{ fontSize: 14 }} />
                       </IconButton>
@@ -599,6 +664,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                       }}
                     />
                   )}
+                  <SlaTimer step={step} />
                 </Box>
 
                 {/* Expanded Details */}

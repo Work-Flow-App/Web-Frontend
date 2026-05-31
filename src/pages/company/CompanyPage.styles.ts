@@ -113,6 +113,22 @@ export const LoadingContainer = styled(Box)(() => ({
   minHeight: rem(200),
 }));
 
+interface SummaryCardProps {
+  accentcolor?: string;
+}
+
+export const SummaryCard = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'accentcolor',
+})<SummaryCardProps>(({ theme, accentcolor }) => ({
+  flex: 1,
+  minWidth: 0,
+  padding: rem(20),
+  borderRadius: rem(12),
+  border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
+  backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
+  borderLeft: `4px solid ${accentcolor || theme.palette.primary.main}`,
+}));
+
 export const Title = styled(Typography)(({ theme }) => ({
   fontSize: rem(32),
   fontWeight: theme.typography.fontWeightBold || 700,

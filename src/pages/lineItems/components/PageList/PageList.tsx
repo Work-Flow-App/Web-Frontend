@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -9,48 +9,37 @@ import type { LineItemResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { useFetch } from '../../../../hooks';
 import { getColumns, type LineItemTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
-  const [lineItems, setLineItems] = useState<LineItemTableRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
   const { formatCurrency } = useCurrency();
   const columns = useMemo(() => getColumns(formatCurrency), [formatCurrency]);
 
-  const fetchLineItems = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await lineItemService.getAll();
-      const data = Array.isArray(response.data) ? response.data : [];
+  const { data: rawLineItems, loading, refetch: fetchLineItems } = useFetch(
+    () => lineItemService.getAll(),
+    [],
+    { onError: (err) => showError(extractErrorMessage(err, 'Failed to load line items')) }
+  );
 
-      const rows: LineItemTableRow[] = data.map((item: LineItemResponse) => ({
-        id: item.id || 0,
-        productCode: item.productCode || '',
-        productDescription: item.productDescription || '',
-        additionalDetails: item.additionalDetails || '',
-        coreOrSub: item.coreOrSub || '',
-        unitPrice: item.unitPrice || 0,
-        quantity: item.quantity || 0,
-        vatRate: item.vatRate || 0,
-        netAmount: item.netAmount || 0,
-        vatAmount: item.vatAmount || 0,
-        totalAmount: item.totalAmount || 0,
-        createdAt: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '',
-      }));
-
-      setLineItems(rows);
-    } catch (error) {
-      showError(extractErrorMessage(error, 'Failed to load line items'));
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
-
-  useEffect(() => {
-    fetchLineItems();
-  }, [fetchLineItems]);
+  const lineItems = useMemo((): LineItemTableRow[] => {
+    const data = Array.isArray(rawLineItems) ? rawLineItems : [];
+    return data.map((item: LineItemResponse) => ({
+      id: item.id || 0,
+      productCode: item.productCode || '',
+      productDescription: item.productDescription || '',
+      additionalDetails: item.additionalDetails || '',
+      unitPrice: item.unitPrice || 0,
+      quantity: item.quantity || 0,
+      vatRate: item.vatRate || 0,
+      netAmount: item.netAmount || 0,
+      vatAmount: item.vatAmount || 0,
+      totalAmount: item.totalAmount || 0,
+      createdAt: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '',
+    }));
+  }, [rawLineItems]);
 
   const handleCreateLineItem = useCallback(() => {
     setGlobalModalOuterProps({
@@ -75,7 +64,6 @@ export const PageList: React.FC = () => {
         productCode: lineItem.productCode,
         productDescription: lineItem.productDescription,
         additionalDetails: lineItem.additionalDetails,
-        coreOrSub: lineItem.coreOrSub as LineItemResponse['coreOrSub'],
         unitPrice: lineItem.unitPrice,
         quantity: lineItem.quantity,
         vatRate: lineItem.vatRate,

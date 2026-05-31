@@ -10,13 +10,13 @@ import { ModalTableHeader, ModalTableRow } from './ModalTable.styles';
 const HEADERS = ['Product Code', 'Description', 'Unit Price', 'Qty', 'VAT %', 'Total'];
 const GRID = '100px 1fr 100px 60px 70px 100px';
 
-export interface CreateInvoiceModalProps {
+export interface CreateEstimateDocumentModalProps {
   estimateId: number;
   lineItems?: EstimateLineItemResponse[];
   onSuccess: () => void;
 }
 
-export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
+export const CreateEstimateDocumentModal: React.FC<CreateEstimateDocumentModalProps> = ({
   estimateId,
   lineItems = [],
   onSuccess,
@@ -26,18 +26,19 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } =
     useGlobalModalInnerContext();
 
-  const [dueDate, setDueDate] = useState('');
+  const [validUntil, setValidUntil] = useState('');
   const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    updateModalTitle('Create Invoice');
+    updateModalTitle('Generate Estimate PDF');
     setSkipResetModal?.(true);
   }, [updateModalTitle, setSkipResetModal]);
 
   useEffect(() => {
     updateGlobalModalInnerConfig({
-      confirmModalButtonText: isGenerating ? 'Generating invoice...' : 'Generate Invoice',
+      confirmModalButtonText: isGenerating ? 'Generating...' : 'Generate Estimate PDF',
       isConfirmDisabled: isGenerating,
     });
   }, [updateGlobalModalInnerConfig, isGenerating]);
@@ -46,27 +47,27 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     updateOnConfirm(async () => {
       setIsGenerating(true);
       try {
-        const res = await estimateService.generateInvoice(estimateId, {
+        const res = await estimateService.generateEstimateDocument(estimateId, {
           lineItemIds: lineItems.map((li) => li.id!),
-          dueDate: dueDate || undefined,
+          validUntil: validUntil || undefined,
           reference: reference || undefined,
+          notes: notes || undefined,
         });
         const url = res.data?.presignedUrl;
         if (url) {
           window.open(url, '_blank', 'noopener,noreferrer');
         }
-        showSuccess('Invoice generated successfully');
+        showSuccess('Estimate PDF generated successfully');
         onSuccess();
       } catch (err: unknown) {
-        console.error('Generate invoice error:', err);
         const msg =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to generate invoice. Please try again.';
+          'Failed to generate estimate PDF. Please try again.';
         showError(msg);
         setIsGenerating(false);
       }
     });
-  }, [updateOnConfirm, estimateId, lineItems, dueDate, reference, showSuccess, showError, onSuccess]);
+  }, [updateOnConfirm, estimateId, lineItems, validUntil, reference, notes, showSuccess, showError, onSuccess]);
 
   const totalNet = lineItems.reduce((s, li) => s + (li.netAmount ?? 0), 0);
   const totalVat = lineItems.reduce((s, li) => s + (li.vatAmount ?? 0), 0);
@@ -74,14 +75,13 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {/* Due Date & Reference */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
         <TextField
-          label="Due Date"
+          label="Valid Until"
           type="date"
           size="small"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
+          value={validUntil}
+          onChange={(e) => setValidUntil(e.target.value)}
           slotProps={{ inputLabel: { shrink: true } }}
         />
         <TextField
@@ -90,12 +90,22 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           size="small"
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-          inputProps={{ maxLength: 100 }}
+          slotProps={{ htmlInput: { maxLength: 100 } }}
           placeholder="Enter reference"
         />
       </Box>
+      <TextField
+        label="Notes"
+        multiline
+        minRows={2}
+        maxRows={5}
+        size="small"
+        fullWidth
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="e.g. Thank you for your business. This estimate is valid for 30 days."
+      />
 
-      {/* Header row */}
       <ModalTableHeader sx={{ gridTemplateColumns: GRID }}>
         {HEADERS.map((h, i) => (
           <Typography
@@ -110,7 +120,6 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         ))}
       </ModalTableHeader>
 
-      {/* Data rows */}
       {lineItems.length === 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
           No line items selected
@@ -136,7 +145,6 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
       <Divider />
 
-      {/* Totals */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
         <Typography variant="body2" color="text.secondary">Subtotal: {fmt(totalNet)}</Typography>
         <Typography variant="body2" color="text.secondary">VAT: {fmt(totalVat)}</Typography>
