@@ -5,11 +5,11 @@ import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+//import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
 // import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
-import { useCurrency } from '../../../contexts/CurrencyContext';
+//import { useCurrency } from '../../../contexts/CurrencyContext';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import { AddJobWizard } from '../../jobs/components/AddJobWizard';
@@ -131,14 +131,14 @@ const statCardSx = {
 
 function StatBoxesRow({
   jobs,
-  estimateSentTotal,
+  // estimateSentTotal,
   //awaitingInvoiceTotal,
 }: {
   jobs: JobResponse[];
   estimateSentTotal: number;
   awaitingInvoiceTotal: number;
 }) {
-  const { formatCurrency } = useCurrency();
+  //const { formatCurrency } = useCurrency();
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
