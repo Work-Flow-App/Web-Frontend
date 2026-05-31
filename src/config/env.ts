@@ -5,45 +5,40 @@
 
 const STORAGE_KEY = 'app_environment_config';
 
-/**
- * Get valid environment URLs based on current mode
- */
+// In DEV mode use sessionStorage so preferences reset each browser session,
+// ensuring localhost is always the default when running locally.
+const getStorage = (): Storage => (import.meta.env.DEV ? sessionStorage : localStorage);
+
 const getValidUrls = (): string[] => {
-  const localUrl = import.meta.env.VITE_API_LOCAL_URL ||
-                   (import.meta.env.DEV ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:5173');
+  const localUrl = import.meta.env.VITE_API_LOCAL_URL || 'http://localhost:5173';
   const devUrl = 'https://api.dev2.workfloow.app';
   const prodUrl = import.meta.env.VITE_API_PRODUCTION_URL || 'https://api.workfloow.app';
   return [localUrl, devUrl, prodUrl];
 };
 
-/**
- * Get API base URL from localStorage override or fallback to env variable
- */
 const getApiBaseUrl = (): string => {
-  // Default to local URL in development mode, production URL in production mode
+  const localUrl = import.meta.env.VITE_API_LOCAL_URL || 'http://localhost:5173';
   const defaultUrl = import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.DEV ? 'http://localhost:5173' : 'https://api.dev2.workfloow.app');
+    (import.meta.env.DEV ? localUrl : 'https://api.dev2.workfloow.app');
 
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const storage = getStorage();
+    const stored = storage.getItem(STORAGE_KEY);
     if (stored) {
       const config = JSON.parse(stored);
       if (config?.environment?.value) {
         const validUrls = getValidUrls();
-
-        // Validate that stored URL is one of the valid options
         if (validUrls.includes(config.environment.value)) {
           return config.environment.value;
         } else {
-          // Clear invalid stored config
           console.warn('Stored config has invalid URL, clearing:', config.environment.value);
-          localStorage.removeItem(STORAGE_KEY);
+          storage.removeItem(STORAGE_KEY);
         }
       }
     }
   } catch (e) {
     console.error('Failed to parse stored config:', e);
-    localStorage.removeItem(STORAGE_KEY);
+    getStorage().removeItem(STORAGE_KEY);
   }
 
   return defaultUrl;

@@ -9,6 +9,8 @@ interface ConfigurationModalProps {
 
 const STORAGE_KEY = 'app_environment_config';
 
+const getStorage = (): Storage => (import.meta.env.DEV ? sessionStorage : localStorage);
+
 const ENVIRONMENT_OPTIONS = [
   { label: 'Local', value: 'http://localhost:5173' },
   { label: 'Dev', value: 'https://api.dev2.workfloow.app' },
@@ -16,7 +18,7 @@ const ENVIRONMENT_OPTIONS = [
 ];
 
 const getStoredConfig = (): EnvironmentConfig => {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = getStorage().getItem(STORAGE_KEY);
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -24,9 +26,7 @@ const getStoredConfig = (): EnvironmentConfig => {
       console.error('Failed to parse stored config:', e);
     }
   }
-  return {
-    environment: ENVIRONMENT_OPTIONS[0],
-  };
+  return { environment: ENVIRONMENT_OPTIONS[0] };
 };
 
 export const ConfigurationModal = ({ onConfirm, onCancel }: ConfigurationModalProps) => {

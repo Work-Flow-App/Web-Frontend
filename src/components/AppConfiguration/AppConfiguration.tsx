@@ -5,6 +5,8 @@ import { ConfigurationScreen } from './ConfigurationScreen';
 
 const STORAGE_KEY = 'app_environment_config';
 
+const getStorage = (): Storage => (import.meta.env.DEV ? sessionStorage : localStorage);
+
 export interface EnvironmentConfig {
   environment: {
     label: string;
@@ -18,8 +20,8 @@ export const AppConfiguration = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleConfirm = useCallback((config: EnvironmentConfig) => {
-    // Get previous configuration
-    const prevConfigStr = localStorage.getItem(STORAGE_KEY);
+    const storage = getStorage();
+    const prevConfigStr = storage.getItem(STORAGE_KEY);
     let prevConfig: EnvironmentConfig | null = null;
 
     if (prevConfigStr) {
@@ -30,8 +32,7 @@ export const AppConfiguration = () => {
       }
     }
 
-    // Save new configuration
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    storage.setItem(STORAGE_KEY, JSON.stringify(config));
 
     // If environment changed, reload the page
     if (!prevConfig || prevConfig.environment.value !== config.environment.value) {
