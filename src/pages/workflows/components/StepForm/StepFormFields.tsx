@@ -1,6 +1,11 @@
 import React from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import TimerIcon from '@mui/icons-material/Timer';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { InputAdornment } from '@mui/material';
 import { StepFormSchema } from '../../schema/StepFormSchema';
 import { useSchema } from '../../../../utils/validation';
 import { Input, TextArea, Checkbox } from '../../../../components/UI/Forms';
@@ -56,31 +61,87 @@ export const StepFormFields: React.FC = () => {
 
       {enableTimer && (
         <S.TimerFieldsContainer>
-          <FormField label={fieldLabels.expectedDurationDays} required={isRequireds.expectedDurationDays}>
-            <Input
-              name={fieldTitles.expectedDurationDays}
-              placeholder={placeHolders.expectedDurationDays}
-              hideErrorMessage={false}
-              type="number"
-              inputProps={{ min: 1, step: 1 }}
-            />
-            <S.FieldHint variant="caption" hintVariant="warning">
-              Step turns orange after this period
-            </S.FieldHint>
-          </FormField>
+          <S.TimerGrid>
+            {/* Expected Duration */}
+            <S.TimerFieldBlock>
+              <S.TimerFieldLabel>
+                <S.TimerFieldLabelIcon>
+                  <AccessTimeIcon />
+                </S.TimerFieldLabelIcon>
+                {fieldLabels.expectedDurationDays}
+              </S.TimerFieldLabel>
+              <S.DurationInputRow>
+                <Input
+                  name={fieldTitles.expectedDurationDays}
+                  placeholder={placeHolders.expectedDurationDays}
+                  hideErrorMessage={false}
+                  type="number"
+                  inputProps={{ min: 0, step: 1 }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <S.DurationUnit>days</S.DurationUnit>
+                    </InputAdornment>
+                  }
+                />
+                <Input
+                  name={fieldTitles.expectedDurationHours}
+                  placeholder={placeHolders.expectedDurationHours}
+                  hideErrorMessage={false}
+                  type="number"
+                  inputProps={{ min: 0, max: 23, step: 1 }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <S.DurationUnit>hrs</S.DurationUnit>
+                    </InputAdornment>
+                  }
+                />
+              </S.DurationInputRow>
+              <S.FieldHint hintVariant="warning">
+                <WarningAmberIcon />
+                Step turns orange after this period
+              </S.FieldHint>
+            </S.TimerFieldBlock>
 
-          <FormField label={fieldLabels.maximumDurationDays} required={isRequireds.maximumDurationDays}>
-            <Input
-              name={fieldTitles.maximumDurationDays}
-              placeholder={placeHolders.maximumDurationDays}
-              hideErrorMessage={false}
-              type="number"
-              inputProps={{ min: 1, step: 1 }}
-            />
-            <S.FieldHint variant="caption" hintVariant="error">
-              SLA breach alert after this period
-            </S.FieldHint>
-          </FormField>
+            {/* Maximum Deadline */}
+            <S.TimerFieldBlock>
+              <S.TimerFieldLabel>
+                <S.TimerFieldLabelIcon>
+                  <ScheduleIcon />
+                </S.TimerFieldLabelIcon>
+                {fieldLabels.maximumDurationDays}
+              </S.TimerFieldLabel>
+              <S.DurationInputRow>
+                <Input
+                  name={fieldTitles.maximumDurationDays}
+                  placeholder={placeHolders.maximumDurationDays}
+                  hideErrorMessage={false}
+                  type="number"
+                  inputProps={{ min: 0, step: 1 }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <S.DurationUnit>days</S.DurationUnit>
+                    </InputAdornment>
+                  }
+                />
+                <Input
+                  name={fieldTitles.maximumDurationHours}
+                  placeholder={placeHolders.maximumDurationHours}
+                  hideErrorMessage={false}
+                  type="number"
+                  inputProps={{ min: 0, max: 23, step: 1 }}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <S.DurationUnit>hrs</S.DurationUnit>
+                    </InputAdornment>
+                  }
+                />
+              </S.DurationInputRow>
+              <S.FieldHint hintVariant="error">
+                <ErrorOutlineIcon />
+                SLA breach alert after this period
+              </S.FieldHint>
+            </S.TimerFieldBlock>
+          </S.TimerGrid>
         </S.TimerFieldsContainer>
       )}
     </>

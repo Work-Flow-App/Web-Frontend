@@ -35,16 +35,32 @@ export const StepFormSchema: IFields = {
     title: 'expectedDurationDays',
     rule: InputValidationRules.NumberNotRequired,
     defaultValue: undefined,
-    placeHolder: 'e.g. 4',
-    label: 'Expected Duration (days)',
+    placeHolder: '0',
+    label: 'Expected Duration',
+    isRequired: false,
+  },
+  expectedDurationHours: {
+    title: 'expectedDurationHours',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: undefined,
+    placeHolder: '0',
+    label: 'hrs',
     isRequired: false,
   },
   maximumDurationDays: {
     title: 'maximumDurationDays',
     rule: InputValidationRules.NumberNotRequired,
     defaultValue: undefined,
-    placeHolder: 'e.g. 5',
-    label: 'Maximum Deadline (days)',
+    placeHolder: '0',
+    label: 'Maximum Deadline',
+    isRequired: false,
+  },
+  maximumDurationHours: {
+    title: 'maximumDurationHours',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: undefined,
+    placeHolder: '0',
+    label: 'hrs',
     isRequired: false,
   },
 };
@@ -55,5 +71,7 @@ export interface StepFormData {
   optional?: boolean;
   enableTimer?: boolean;
   expectedDurationDays?: number;
+  expectedDurationHours?: number;
   maximumDurationDays?: number;
+  maximumDurationHours?: number;
 }
