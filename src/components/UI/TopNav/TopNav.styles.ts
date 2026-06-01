@@ -144,3 +144,19 @@ export const RightSection = styled(Box)(({ theme }) => ({
     gap: rem(6),
   },
 }));
+
+export const LogoWrapper = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '& > div': {
+    gap: 0,
+  },
+  '& img': {
+    height: rem(28),
+    width: 'auto',
+    maxWidth: '120px',
+    objectFit: 'contain',
+    display: 'block',
+  },
+});

@@ -1,5 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { TableRow, TableCell, TextField } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { CSSProperties } from 'react';
 
 export const ColumnHeaderRow = styled(TableRow)(({ theme }) => ({
   background: theme.palette.mode === 'dark' ? theme.palette.colors.grey_200 : theme.palette.colors.grey_50,
@@ -45,3 +47,85 @@ export const SearchCellWrapper = styled(TableCell)<{ width?: string }>(({ width 
   boxSizing: 'border-box',
   verticalAlign: 'middle',
 }));
+
+// ─── CheckboxCell inline style (used with `style` prop) ───────────────────────
+
+export const getCheckboxCellStickyHeaderStyle = (bg: string, zIndex: number): CSSProperties => ({
+  position: 'sticky',
+  left: 0,
+  zIndex,
+  background: bg,
+});
+
+// ─── StyledHeaderCell sx styles ───────────────────────────────────────────────
+
+export const getFirstColumnStickyHeaderSx = (
+  headerBg: string,
+  headerHoverBg: string,
+  borderColor: string,
+  hasSelectable: boolean,
+  sortable: boolean
+): SxProps<Theme> => ({
+  position: 'sticky',
+  left: hasSelectable ? '48px' : 0,
+  zIndex: 5,
+  background: headerBg,
+  boxShadow: `1px 0 0 0 ${borderColor}`,
+  cursor: sortable ? 'pointer' : 'default',
+  '&:hover': {
+    background: sortable ? headerHoverBg : headerBg,
+  },
+});
+
+export const getColumnHeaderSx = (
+  headerBg: string,
+  headerHoverBg: string,
+  sortable: boolean
+): SxProps<Theme> => ({
+  background: headerBg,
+  cursor: sortable ? 'pointer' : 'default',
+  '&:hover': {
+    background: sortable ? headerHoverBg : headerBg,
+  },
+});
+
+export const getCheckboxCellHeaderSx = (headerBg: string): SxProps<Theme> => ({
+  background: headerBg,
+});
+
+// ─── ActionsCell sx styles ────────────────────────────────────────────────────
+
+export const getActionsCellStickyHeaderSx = (
+  bg: string,
+  borderColor: string
+): SxProps<Theme> => ({
+  position: 'sticky',
+  right: 0,
+  zIndex: 3,
+  background: bg,
+  borderLeft: `1px solid ${borderColor}`,
+});
+
+export const getActionsCellDefaultHeaderSx = (bg: string): SxProps<Theme> => ({
+  background: bg,
+});
+
+// ─── SearchCellWrapper sticky style (used with `style` prop) ──────────────────
+
+export const getFirstColumnStickySearchStyle = (
+  bg: string,
+  borderColor: string,
+  hasSelectable: boolean
+): CSSProperties => ({
+  position: 'sticky',
+  left: hasSelectable ? '48px' : 0,
+  zIndex: 3,
+  background: bg,
+  boxShadow: `1px 0 0 0 ${borderColor}`,
+});
+
+// ─── CheckboxCell search row sx ───────────────────────────────────────────────
+
+export const getCheckboxCellSearchSx = (bodyBg: string): SxProps<Theme> => ({
+  background: bodyBg,
+});

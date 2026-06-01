@@ -3,6 +3,7 @@ import { Menu, MenuItem } from '@mui/material';
 import type { ITableAction, ITableRow } from '../../ITable';
 import { ActionButton } from '../../Table.styles';
 import { MoreOptionsIcon } from '../../icons';
+import { getMenuItemStyles } from './ActionsMenu.styles';
 
 interface IActionsMenuProps<T = ITableRow> {
   /** The row data */
@@ -85,16 +86,7 @@ const ActionsMenu = <T extends ITableRow = ITableRow>({ row, actions }: IActions
               key={action.id}
               onClick={(e) => handleActionClick(action, e)}
               disabled={isDisabled}
-              sx={{
-                color: action.color === 'error' ? 'error.main' :
-                       action.color === 'warning' ? 'warning.main' :
-                       action.color === 'success' ? 'success.main' :
-                       action.color === 'primary' ? 'primary.main' :
-                       'inherit',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
+              sx={getMenuItemStyles(action)}
             >
               {action.icon && <span>{action.icon}</span>}
               {action.label}

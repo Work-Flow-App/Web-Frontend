@@ -1,4 +1,5 @@
-import { styled, Box, TextField } from '@mui/material';
+import { styled, Box, TextField, Typography, Button, Chip, IconButton } from '@mui/material';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import { rem, Bold } from '../Typography/utility';
 
 export const MapContainer = styled(Box)(({ theme }) => ({
@@ -9,7 +10,6 @@ export const MapContainer = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
   border: `${rem(1)} solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
-  // LoadScript renders a plain <div> with no height — force it to fill
   '& > div': { height: '100%' },
 }));
 
@@ -34,15 +34,9 @@ export const StyledSearchInput = styled(TextField)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: theme.spacing(1),
   '& .MuiOutlinedInput-root': {
-    '& fieldset': {
-      borderColor: theme.palette.divider,
-    },
-    '&:hover fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
+    '& fieldset': { borderColor: theme.palette.divider },
+    '&:hover fieldset': { borderColor: theme.palette.primary.main },
+    '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
   },
 }));
 
@@ -96,3 +90,163 @@ export const MarkerInfoWindow = styled(Box)(({ theme }) => ({
     color: theme.palette.text.secondary,
   },
 }));
+
+export const MapOuterBox = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+});
+
+export const InfoWindowRoot = styled(Box)({
+  minWidth: 220,
+  maxWidth: 300,
+});
+
+export const InfoWindowHeader = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 4,
+});
+
+export const InfoWindowRow = styled(Box)({
+  display: 'flex',
+  gap: 4,
+  marginBottom: 2,
+});
+
+export const InfoWindowStatusDot = styled(Box)<{ statusColor: string }>(({ statusColor }) => ({
+  width: 8,
+  height: 8,
+  borderRadius: '50%',
+  flexShrink: 0,
+  backgroundColor: statusColor,
+}));
+
+export const WorkerJobRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  paddingTop: 4,
+  paddingBottom: 4,
+  borderTop: '1px solid #eee',
+});
+
+export const DirectionsButtonBox = styled(Box)({
+  marginTop: 8,
+});
+
+export const RouteInfoIconBox = styled(Box)({
+  flex: 1,
+  minWidth: 0,
+});
+
+// ─── Styled Typography variants ─────────────────────────────────────────────
+
+export const JobIdText = styled(Typography)({
+  fontWeight: 700,
+  color: '#1976d2',
+});
+
+export const AddressCaptionText = styled(Typography)({
+  display: 'block',
+  color: '#555',
+  marginBottom: 4,
+});
+
+export const LabelCaptionText = styled(Typography)({
+  color: '#888',
+  fontWeight: 600,
+});
+
+export const ValueCaptionText = styled(Typography)({
+  color: '#555',
+});
+
+export const WorkerNameText = styled(Typography)({
+  fontWeight: 700,
+  marginBottom: 4,
+});
+
+export const WorkerContactText = styled(Typography)({
+  display: 'block',
+  color: '#555',
+});
+
+export const WorkerAddressText = styled(Typography)({
+  display: 'block',
+  color: '#888',
+  marginBottom: 8,
+});
+
+export const WorkerPhoneText = styled(Typography)({
+  display: 'block',
+  color: '#555',
+  marginBottom: 8,
+});
+
+export const JobIdChipText = styled(Typography)({
+  fontWeight: 600,
+  color: '#1976d2',
+});
+
+export const JobClientText = styled(Typography)({
+  color: '#555',
+});
+
+export const DirectionsErrorText = styled(Typography)({
+  display: 'block',
+  marginTop: 4,
+});
+
+export const RouteDurationText = styled(Typography)({
+  fontWeight: 700,
+  color: '#1976d2',
+  display: 'block',
+  lineHeight: 1.2,
+});
+
+export const RouteDistanceText = styled(Typography)({
+  color: '#555',
+  display: 'block',
+  lineHeight: 1.2,
+});
+
+// ─── Styled MUI components ───────────────────────────────────────────────────
+
+export const JobStatusChip = styled(Chip)<{ statusColor: string }>(({ statusColor }) => ({
+  height: 18,
+  fontSize: '0.6rem',
+  backgroundColor: statusColor,
+  color: '#fff',
+  fontWeight: 600,
+}));
+
+export const WorkerJobChip = styled(Chip)<{ statusColor: string }>(({ statusColor }) => ({
+  height: 16,
+  fontSize: '0.6rem',
+  backgroundColor: statusColor,
+  color: '#fff',
+  marginLeft: 'auto',
+}));
+
+export const DirectionsButton = styled(Button)({
+  fontSize: '0.72rem',
+  paddingTop: 5,
+  paddingBottom: 5,
+  textTransform: 'none',
+});
+
+export const RouteCarIcon = styled(DirectionsCarIcon)({
+  color: '#1976d2',
+  fontSize: 22,
+  flexShrink: 0,
+});
+
+export const ClearDirectionsButton = styled(IconButton)({
+  marginLeft: 'auto',
+  padding: 4,
+  '& .MuiSvgIcon-root': {
+    fontSize: 16,
+  },
+});

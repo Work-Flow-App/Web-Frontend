@@ -122,3 +122,9 @@ export const PageContent = styled(Box)(({ theme: { palette, spacing } }) => ({
   padding: `0 ${spacing(2.5)}`,
   paddingBottom: spacing(2.5),
 }));
+
+export const DropdownWrapper = styled(Box)({
+  minWidth: 200,
+  display: 'flex',
+  alignItems: 'center',
+});

@@ -47,9 +47,7 @@ export const NotificationList: React.FC<INotificationList> = ({
       {/* Notification Items */}
       <NotificationItems>
         {notifications.length === 0 ? (
-          <NotificationTitle sx={{ textAlign: 'center', width: '100%', py: 2 }}>
-            No notifications
-          </NotificationTitle>
+           <NotificationTitle>No notifications</NotificationTitle>
         ) : (
           notifications.map((notification, index) => (
             <NotificationItem

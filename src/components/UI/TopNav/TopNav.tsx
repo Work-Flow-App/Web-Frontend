@@ -1,11 +1,10 @@
 import React from 'react';
-import { IconButton, Box } from '@mui/material';
+import { IconButton} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection } from './TopNav.styles';
+import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection,LogoWrapper} from './TopNav.styles';
 import type { TopNavProps } from './TopNav.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { floowColors } from '../../../theme/colors';
-import { rem } from '../Typography/utility';
 
 /**
  * TopNav Component
@@ -56,23 +55,9 @@ export const TopNav: React.FC<TopNavProps> = ({
 
         {/* Center Section - Mobile Logo (shown only on mobile) */}
         <CenterSection>
-          <Box sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            '& > div': {
-              gap: 0,
-            },
-            '& img': {
-              height: rem(28),
-              width: 'auto',
-              maxWidth: '120px',
-              objectFit: 'contain',
-              display: 'block',
-            },
-          }}>
+          <LogoWrapper>
             <FloowLogo variant="white" iconOnly />
-          </Box>
+          </LogoWrapper>
         </CenterSection>
 
         {/* Right Content Section - Search Input + Notifications, User Profile, Actions */}

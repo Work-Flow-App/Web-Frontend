@@ -15,6 +15,16 @@ import {
 } from '../../Table.styles';
 import { MoreOptionsIcon } from '../../icons';
 import { ActionsMenu } from '../ActionsMenu';
+import {
+  getCheckboxCellStickyStyles,
+  getCheckboxCellDefaultStyles,
+  getFirstColumnStickyStyles,
+  getActionsCellStickyStyles,
+  getActionsCellDefaultStyles,
+  getLoadingCellStyles,
+  getEmptyCellStyles,
+  getStyledTableRowStyles,
+} from './DataTableBody.styles';
 
 /**
  * DataTableBody component for rendering table data rows
@@ -94,7 +104,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   if (loading && paginatedRows.length === 0) {
     return (
       <StyledTableRow>
-        <StyledTableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '3rem 1.25rem', position: 'relative' }}>
+        <StyledTableCell colSpan={totalColumns} sx={getLoadingCellStyles()}>
           <LoadingOverlay>
             <Loader size={40} centered={false} />
           </LoadingOverlay>
@@ -107,7 +117,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   if (!loading && paginatedRows.length === 0) {
     return (
       <StyledTableRow>
-        <StyledTableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '3rem 1.25rem' }}>
+        <StyledTableCell colSpan={totalColumns} sx={getEmptyCellStyles()}>
           <EmptyState>{emptyMessage}</EmptyState>
         </StyledTableCell>
       </StyledTableRow>
@@ -127,9 +137,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
           key={row.id}
           onClick={(e) => handleRowClick(row, e)}
           title={onRowClick ? 'Click to view details' : undefined}
-          sx={{
-            cursor: onRowClick ? 'pointer' : 'default',
-          }}
+          sx={getStyledTableRowStyles(!!onRowClick)}
         >
           {enableStickyLeft ? (
             <>
@@ -137,17 +145,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               {selectable && (
                 <CheckboxCell
                   onClick={(e) => { e.stopPropagation(); toggleRowSelection(row.id); }}
-                  sx={{
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 10,
-                    cursor: 'pointer',
-                    backgroundColor: bodyBg,
-                    transition: 'background-color 0.2s ease',
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  }}
+                  sx={getCheckboxCellStickyStyles(bodyBg, bodyHoverBg)}
                 >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
@@ -160,17 +158,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                 <StyledTableCell
                   width={firstColumn.width}
                   align={firstColumn.align}
-                  sx={{
-                    position: 'sticky',
-                    left: selectable ? '48px' : 0,
-                    zIndex: 10,
-                    backgroundColor: bodyBg,
-                    boxShadow: `1px 0 0 0 ${borderColor}`,
-                    transition: 'background-color 0.2s ease',
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  }}
+                  sx={getFirstColumnStickyStyles(bodyBg, bodyHoverBg, borderColor, selectable)}
                 >
                   {firstColumn.render
                     ? firstColumn.render(row)
@@ -194,22 +182,10 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               {/* Sticky Right Section: Actions */}
               {showActions && (
                 <ActionsCell
-                  sx={enableStickyRight ? {
-                    position: 'sticky',
-                    right: 0,
-                    zIndex: 2,
-                    backgroundColor: bodyBg,
-                    borderLeft: `1px solid ${borderColor}`,
-                    transition: 'background-color 0.2s ease',
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  } : {
-                    backgroundColor: bodyBg,
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  }}
+                  sx={enableStickyRight
+                    ? getActionsCellStickyStyles(bodyBg, bodyHoverBg, borderColor)
+                    : getActionsCellDefaultStyles(bodyBg, bodyHoverBg)
+                  }
                 >
                   {actions && actions.length > 0 ? (
                     <ActionsMenu row={row} actions={actions} />
@@ -228,13 +204,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
               {selectable && (
                 <CheckboxCell
                   onClick={(e) => { e.stopPropagation(); toggleRowSelection(row.id); }}
-                  sx={{
-                    cursor: 'pointer',
-                    backgroundColor: bodyBg,
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  }}
+                  sx={getCheckboxCellDefaultStyles(bodyBg, bodyHoverBg)}
                 >
                   <CustomCheckbox
                     checked={selectedRows.includes(row.id)}
@@ -254,22 +224,10 @@ const DataTableBody: React.FC<IDataTableBody> = ({
 
               {showActions && (
                 <ActionsCell
-                  sx={enableStickyRight ? {
-                    position: 'sticky',
-                    right: 0,
-                    zIndex: 2,
-                    backgroundColor: bodyBg,
-                    borderLeft: `1px solid ${borderColor}`,
-                    transition: 'background-color 0.2s ease',
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  } : {
-                    backgroundColor: bodyBg,
-                    'tr:hover &': {
-                      backgroundColor: bodyHoverBg,
-                    },
-                  }}
+                  sx={enableStickyRight
+                    ? getActionsCellStickyStyles(bodyBg, bodyHoverBg, borderColor)
+                    : getActionsCellDefaultStyles(bodyBg, bodyHoverBg)
+                  }
                 >
                   {actions && actions.length > 0 ? (
                     <ActionsMenu row={row} actions={actions} />
