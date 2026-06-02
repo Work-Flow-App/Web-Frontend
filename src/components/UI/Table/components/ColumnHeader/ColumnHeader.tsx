@@ -14,6 +14,14 @@ import {
   ColumnSearchRow,
   ColumnSearchInput,
   SearchCellWrapper,
+  getCheckboxCellStickyHeaderStyle,
+  getFirstColumnStickyHeaderSx,
+  getColumnHeaderSx,
+  getCheckboxCellHeaderSx,
+  getActionsCellStickyHeaderSx,
+  getActionsCellDefaultHeaderSx,
+  getFirstColumnStickySearchStyle,
+  getCheckboxCellSearchSx,
 } from './ColumnHeader.styles';
 import { SortIcon } from '../../icons';
 
@@ -76,12 +84,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
           <>
             {/* Sticky Left Section: Checkbox */}
             {selectable && (
-              <CheckboxCell style={{
-                position: 'sticky',
-                left: 0,
-                zIndex: 5,
-                background: headerBg,
-              }}>
+              <CheckboxCell style={getCheckboxCellStickyHeaderStyle(headerBg, 5)}>
                 <CustomCheckbox
                   checked={isAllSelected}
                   indeterminate={isIndeterminate}
@@ -96,17 +99,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 width={firstColumn.width}
                 align={firstColumn.align}
                 onClick={() => firstColumn.sortable && handleSort(firstColumn.id)}
-                sx={{
-                  position: 'sticky',
-                  left: selectable ? '48px' : 0,
-                  zIndex: 5,
-                  background: headerBg,
-                  boxShadow: `1px 0 0 0 ${borderColor}`,
-                  cursor: firstColumn.sortable ? 'pointer' : 'default',
-                  '&:hover': {
-                    background: firstColumn.sortable ? headerHoverBg : headerBg,
-                  }
-                }}
+                sx={getFirstColumnStickyHeaderSx(headerBg, headerHoverBg, borderColor, selectable, !!firstColumn.sortable)}
               >
                 <HeaderContent>
                   {firstColumn.label}
@@ -122,13 +115,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 width={column.width}
                 align={column.align}
                 onClick={() => column.sortable && handleSort(column.id)}
-                sx={{
-                  background: headerBg,
-                  cursor: column.sortable ? 'pointer' : 'default',
-                  '&:hover': {
-                    background: column.sortable ? headerHoverBg : headerBg,
-                  }
-                }}
+                sx={getColumnHeaderSx(headerBg, headerHoverBg, !!column.sortable)}
               >
                 <HeaderContent>
                   {column.label}
@@ -140,13 +127,10 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
             {/* Sticky Right Section: Actions */}
             {showActions && (
               <ActionsCell
-                sx={enableStickyRight ? {
-                  position: 'sticky',
-                  right: 0,
-                  zIndex: 3,
-                  background: headerBg,
-                  borderLeft: `1px solid ${borderColor}`,
-                } : { background: headerBg }}
+                sx={enableStickyRight
+                  ? getActionsCellStickyHeaderSx(headerBg, borderColor)
+                  : getActionsCellDefaultHeaderSx(headerBg)
+                }
               >
                 Actions
               </ActionsCell>
@@ -155,7 +139,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
         ) : (
           <>
             {selectable && (
-              <CheckboxCell sx={{ background: headerBg }}>
+              <CheckboxCell sx={getCheckboxCellHeaderSx(headerBg)}>
                 <CustomCheckbox
                   checked={isAllSelected}
                   indeterminate={isIndeterminate}
@@ -170,13 +154,7 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                 width={column.width}
                 align={column.align}
                 onClick={() => column.sortable && handleSort(column.id)}
-                sx={{
-                  background: headerBg,
-                  cursor: column.sortable ? 'pointer' : 'default',
-                  '&:hover': {
-                    background: column.sortable ? headerHoverBg : headerBg,
-                  }
-                }}
+                sx={getColumnHeaderSx(headerBg, headerHoverBg, !!column.sortable)}
               >
                 <HeaderContent>
                   {column.label}
@@ -187,13 +165,10 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
 
             {showActions && (
               <ActionsCell
-                sx={enableStickyRight ? {
-                  position: 'sticky',
-                  right: 0,
-                  zIndex: 3,
-                  background: headerBg,
-                  borderLeft: `1px solid ${borderColor}`,
-                } : { background: headerBg }}
+                sx={enableStickyRight
+                  ? getActionsCellStickyHeaderSx(headerBg, borderColor)
+                  : getActionsCellDefaultHeaderSx(headerBg)
+                }
               >
                 Actions
               </ActionsCell>
@@ -209,25 +184,14 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
             <>
               {/* Sticky Left Section: Checkbox */}
               {selectable && (
-                <CheckboxCell style={{
-                  position: 'sticky',
-                  left: 0,
-                  zIndex: 3,
-                  background: bodyBg,
-                }} />
+                <CheckboxCell style={getCheckboxCellStickyHeaderStyle(bodyBg, 3)} />
               )}
 
               {/* Sticky Left Section: First Column Search */}
               {firstColumn && (
                 <SearchCellWrapper
                   width={firstColumn.width}
-                  style={{
-                    position: 'sticky',
-                    left: selectable ? '48px' : 0,
-                    zIndex: 3,
-                    background: bodyBg,
-                    boxShadow: `1px 0 0 0 ${borderColor}`,
-                  }}
+                  style={getFirstColumnStickySearchStyle(bodyBg, borderColor, selectable)}
                 >
                   <ColumnSearchInput
                     size="small"
@@ -255,19 +219,16 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
               {/* Sticky Right Section: Actions Search Cell */}
               {showActions && (
                 <ActionsCell
-                  sx={enableStickyRight ? {
-                    position: 'sticky',
-                    right: 0,
-                    zIndex: 3,
-                    background: bodyBg,
-                    borderLeft: `1px solid ${borderColor}`,
-                  } : { background: bodyBg }}
+                  sx={enableStickyRight
+                    ? getActionsCellStickyHeaderSx(bodyBg, borderColor)
+                    : getActionsCellDefaultHeaderSx(bodyBg)
+                  }
                 />
               )}
             </>
           ) : (
             <>
-              {selectable && <CheckboxCell sx={{ background: bodyBg }} />}
+              {selectable && <CheckboxCell sx={getCheckboxCellSearchSx(bodyBg)} />}
 
               {columns.map((column) => (
                 <SearchCellWrapper key={`search-${column.id}`} width={column.width}>
@@ -283,13 +244,10 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
 
               {showActions && (
                 <ActionsCell
-                  sx={enableStickyRight ? {
-                    position: 'sticky',
-                    right: 0,
-                    zIndex: 3,
-                    background: bodyBg,
-                    borderLeft: `1px solid ${borderColor}`,
-                  } : { background: bodyBg }}
+                  sx={enableStickyRight
+                    ? getActionsCellStickyHeaderSx(bodyBg, borderColor)
+                    : getActionsCellDefaultHeaderSx(bodyBg)
+                  }
                 />
               )}
             </>

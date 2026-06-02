@@ -52,6 +52,10 @@ export const NotificationTitle = styled(Box)(() => ({
   fontFamily: 'Manrope, sans-serif',
   color: floowColors.black,
   lineHeight: 1.5,
+  textAlign: 'center',
+  width: '100%',
+  paddingTop: 16,
+  paddingBottom: 16,
 }));
 
 export const ClearAllButton = styled(Box)(() => ({
