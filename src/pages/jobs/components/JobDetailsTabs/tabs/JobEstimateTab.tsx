@@ -271,8 +271,25 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
         status: LineItemStatusUpdateRequestStatusEnum.Approved,
       });
       setEstimate(res.data);
+      await fetchEstimateDocs(estimate.id);
     } catch {
       showError('Failed to approve item');
+    } finally {
+      setApprovingIds((prev) => { const next = new Set(prev); next.delete(itemId); return next; });
+    }
+  };
+
+  const handleRejectItem = async (itemId: number) => {
+    if (!estimate?.id) return;
+    setApprovingIds((prev) => new Set(prev).add(itemId));
+    try {
+      const res = await estimateService.updateLineItemStatus(estimate.id, itemId, {
+        status: LineItemStatusUpdateRequestStatusEnum.Available,
+      });
+      setEstimate(res.data);
+      await fetchEstimateDocs(estimate.id);
+    } catch {
+      showError('Failed to reject item');
     } finally {
       setApprovingIds((prev) => { const next = new Set(prev); next.delete(itemId); return next; });
     }
@@ -878,18 +895,32 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                       <ActionsCell sx={CC} onClick={(e) => e.stopPropagation()}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           {status === 'WAITING_APPROVAL' && (
-                            <Tooltip title="Approve">
-                              <span>
-                                <Button
-                                  variant="contained" color="success"
-                                  disabled={isApproving}
-                                  onClick={() => handleApproveItem(item.id!)}
-                                  sx={{ minWidth: 0, padding: '2px 8px', fontSize: '0.7rem', height: 24 }}
-                                >
-                                  {isApproving ? <CircularProgress size={10} /> : 'Approve'}
-                                </Button>
-                              </span>
-                            </Tooltip>
+                            isApproving ? (
+                              <CircularProgress size={14} />
+                            ) : (
+                              <>
+                                <Tooltip title="Approve">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleApproveItem(item.id!)}
+                                    aria-label="Approve line item"
+                                    sx={{ color: 'success.main', p: 0.25 }}
+                                  >
+                                    <CheckIcon sx={{ fontSize: '1.1rem' }} />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Reject">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleRejectItem(item.id!)}
+                                    aria-label="Reject line item"
+                                    sx={{ color: 'error.main', p: 0.25 }}
+                                  >
+                                    <CloseIcon sx={{ fontSize: '1.1rem' }} />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )
                           )}
                           {!invoiced && (
                             <IconButton size="small" onClick={(e) => handleMenuOpen(e, item.id!)} aria-label="Line item actions">
