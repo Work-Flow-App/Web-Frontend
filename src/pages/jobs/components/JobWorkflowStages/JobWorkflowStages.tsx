@@ -165,6 +165,21 @@ const getStatusInfo = (status?: string) => {
   }
 };
 
+const formatStepDate = (isoString?: string) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const strTime = `${hours.toString().padStart(2, '0')}:${minutes}${ampm}`;
+  return `${day}/${month}/${year} (${strTime})`;
+};
+
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
@@ -706,6 +721,24 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                         </Select>
                       </FormControl>
                     </S.StepDetailRow>
+
+                    {/* Dates section */}
+                    {step.startedAt && (
+                      <S.StepDetailRow>
+                        <span className="label">Started At</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                          {formatStepDate(step.startedAt)}
+                        </span>
+                      </S.StepDetailRow>
+                    )}
+                    {step.completedAt && (
+                      <S.StepDetailRow>
+                        <span className="label">Completed At</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                          {formatStepDate(step.completedAt)}
+                        </span>
+                      </S.StepDetailRow>
+                    )}
 
                     {/* Assigned Dropdown */}
                     <S.AssignedRow>
