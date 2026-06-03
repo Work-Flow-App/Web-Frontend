@@ -180,6 +180,18 @@ const formatStepDate = (isoString?: string) => {
   return `${day}/${month}/${year} (${strTime})`;
 };
 
+const formatDuration = (minutes?: number) => {
+  if (minutes == null) return '';
+  const days = Math.floor(minutes / (24 * 60));
+  const hours = Math.floor((minutes % (24 * 60)) / 60);
+  
+  const parts = [];
+  if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+  if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+  
+  return parts.length > 0 ? parts.join(' ') : '0 hours';
+};
+
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
@@ -685,6 +697,24 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                 {/* Expanded Details */}
                 <Collapse in={isExpanded}>
                   <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
+                    {/* Duration section */}
+                    {step.expectedDurationMinutes != null && (
+                      <S.StepDetailRow>
+                        <span className="label">Expected Duration Time</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                          {formatDuration(step.expectedDurationMinutes)}
+                        </span>
+                      </S.StepDetailRow>
+                    )}
+                    {step.maximumDurationMinutes != null && (
+                      <S.StepDetailRow>
+                        <span className="label">Maximum Duration Time</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                          {formatDuration(step.maximumDurationMinutes)}
+                        </span>
+                      </S.StepDetailRow>
+                    )}
+
                     {/* Status Dropdown */}
                     <S.StepDetailRow>
                       <span className="label">Status</span>
