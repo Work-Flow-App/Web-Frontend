@@ -209,6 +209,10 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
   const [savingWorkflowName, setSavingWorkflowName] = useState(false);
   const [editingStepNameId, setEditingStepNameId] = useState<number | null>(null);
   const [stepNameValue, setStepNameValue] = useState('');
+  const [editingDurationStepId, setEditingDurationStepId] = useState<number | null>(null);
+  const [editingDurationType, setEditingDurationType] = useState<'expected' | 'maximum' | null>(null);
+  const [editDays, setEditDays] = useState<number | string>('');
+  const [editHours, setEditHours] = useState<number | string>('');
 
   const fetchJobWorkflow = useCallback(async () => {
     if (!job.id) {
@@ -382,6 +386,50 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     } catch (error) {
       console.error('Error updating step name:', error);
       showError('Failed to update step name');
+    } finally {
+      setUpdatingStep(null);
+    }
+  };
+
+  const handleEditDuration = (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (step.id) {
+      setEditingDurationStepId(step.id);
+      setEditingDurationType(type);
+      const minutes = type === 'expected' ? step.expectedDurationMinutes : step.maximumDurationMinutes;
+      const m = minutes || 0;
+      setEditDays(Math.floor(m / (24 * 60)));
+      setEditHours(Math.floor((m % (24 * 60)) / 60));
+    }
+  };
+
+  const handleCancelEditDuration = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingDurationStepId(null);
+    setEditingDurationType(null);
+  };
+
+  const handleSaveDuration = async (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    if (!step.id || !jobWorkflow?.id) return;
+
+    const totalMinutes = (Number(editDays) || 0) * 24 * 60 + (Number(editHours) || 0) * 60;
+
+    try {
+      setUpdatingStep(step.id);
+      const payload = type === 'expected' 
+        ? { expectedDurationMinutes: totalMinutes } 
+        : { maximumDurationMinutes: totalMinutes };
+        
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, payload);
+      showSuccess(`${type === 'expected' ? 'Expected' : 'Maximum'} duration updated`);
+      setEditingDurationStepId(null);
+      setEditingDurationType(null);
+      fetchJobWorkflow();
+      onStepUpdate?.();
+    } catch (error) {
+      console.error('Error updating duration:', error);
+      showError('Failed to update duration');
     } finally {
       setUpdatingStep(null);
     }
@@ -701,17 +749,65 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                     {step.expectedDurationMinutes != null && (
                       <S.StepDetailRow>
                         <span className="label">Expected Duration Time</span>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
-                          {formatDuration(step.expectedDurationMinutes)}
-                        </span>
+                        {editingDurationStepId === step.id && editingDurationType === 'expected' ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={(e) => e.stopPropagation()}>
+                            <TextField 
+                              type="number" size="small" value={editDays} onChange={(e) => setEditDays(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
+                              sx={{ width: 50, '& .MuiOutlinedInput-input': { py: 0.25, px: 0.5, fontSize: 12, textAlign: 'center' } }} 
+                            />
+                            <span style={{ fontSize: 12 }}>day</span>
+                            <TextField 
+                              type="number" size="small" value={editHours} onChange={(e) => setEditHours(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
+                              sx={{ width: 50, '& .MuiOutlinedInput-input': { py: 0.25, px: 0.5, fontSize: 12, textAlign: 'center' } }} 
+                            />
+                            <span style={{ fontSize: 12 }}>hours</span>
+                            <IconButton size="small" onClick={(e) => handleCancelEditDuration(e)}><CloseIcon sx={{ fontSize: 14 }} /></IconButton>
+                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'expected', e)} disabled={updatingStep === step.id}><SaveIcon sx={{ fontSize: 14 }} /></IconButton>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                              {formatDuration(step.expectedDurationMinutes)}
+                            </span>
+                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'expected', e)} sx={{ p: 0.25 }}>
+                              <EditIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        )}
                       </S.StepDetailRow>
                     )}
                     {step.maximumDurationMinutes != null && (
                       <S.StepDetailRow>
                         <span className="label">Maximum Duration Time</span>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
-                          {formatDuration(step.maximumDurationMinutes)}
-                        </span>
+                        {editingDurationStepId === step.id && editingDurationType === 'maximum' ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={(e) => e.stopPropagation()}>
+                            <TextField 
+                              type="number" size="small" value={editDays} onChange={(e) => setEditDays(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
+                              sx={{ width: 50, '& .MuiOutlinedInput-input': { py: 0.25, px: 0.5, fontSize: 12, textAlign: 'center' } }} 
+                            />
+                            <span style={{ fontSize: 12 }}>day</span>
+                            <TextField 
+                              type="number" size="small" value={editHours} onChange={(e) => setEditHours(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
+                              sx={{ width: 50, '& .MuiOutlinedInput-input': { py: 0.25, px: 0.5, fontSize: 12, textAlign: 'center' } }} 
+                            />
+                            <span style={{ fontSize: 12 }}>hours</span>
+                            <IconButton size="small" onClick={(e) => handleCancelEditDuration(e)}><CloseIcon sx={{ fontSize: 14 }} /></IconButton>
+                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'maximum', e)} disabled={updatingStep === step.id}><SaveIcon sx={{ fontSize: 14 }} /></IconButton>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span style={{ fontSize: 12, fontWeight: 500, color: '#333' }}>
+                              {formatDuration(step.maximumDurationMinutes)}
+                            </span>
+                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'maximum', e)} sx={{ p: 0.25 }}>
+                              <EditIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        )}
                       </S.StepDetailRow>
                     )}
 
