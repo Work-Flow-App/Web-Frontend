@@ -40,9 +40,10 @@ export const CompanyPage: React.FC = () => {
           </Box>
         ) : (
           <>
-            <SummaryBox label="Waiting Approval" value={summary?.waitingApprovalValue} color="#F59E0B" fmt={fmt} />
-            <SummaryBox label="Approved" value={summary?.approvedValue} color="#10B981" fmt={fmt} />
-            <SummaryBox label="Invoiced" value={summary?.invoicedValue} color="#6366F1" fmt={fmt} />
+            <SummaryBox label="Waiting Approval (WIP)" value={summary?.waitingApprovalValue} color="#F59E0B" fmt={fmt} />
+            <SummaryBox label="Approved (WIP)" value={summary?.approvedValue} color="#10B981" fmt={fmt} />
+            <SummaryBox label="Invoiced (WIP)" value={summary?.invoicedValue} color="#6366F1" fmt={fmt} />
+            <SummaryBox label="All-Time Invoiced" value={summary?.allTimeInvoicedValue} color="#0EA5E9" fmt={fmt} />
           </>
         )}
       </Box>

@@ -394,6 +394,7 @@ export interface FinancialSummaryResponse {
     'waitingApprovalValue'?: number;
     'approvedValue'?: number;
     'invoicedValue'?: number;
+    'allTimeInvoicedValue'?: number;
 }
 export interface ForgotPasswordRequest {
     'email': string;
