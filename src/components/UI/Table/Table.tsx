@@ -5,7 +5,7 @@ import { TitleHeader } from './components/TitleHeader';
 import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
-import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody } from './Table.styles';
+import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer } from './Table.styles';
 import { Box } from '@mui/material';
 import CustomiseColumnsButton from './components/CustomiseColumns/CustomiseColumnsButton';
 
@@ -96,7 +96,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   const hasTitleHeader = Boolean(title || titleActions);
 
   const headerActions = hasTitleHeader ? (
-    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+    <HeaderActionsContainer>
       {titleActions}
       {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
         <CustomiseColumnsButton
@@ -104,7 +104,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
           onChange={onVisibleColumnsChange}
         />
       )}
-    </Box>
+    </HeaderActionsContainer>
   ) : undefined;
 
   return (
@@ -119,12 +119,12 @@ const TableInner = <T extends ITableRow = ITableRow>({
 
       {/* Render independently if there is no title header */}
       {!hasTitleHeader && customiseColumns && allColumnLabels && onVisibleColumnsChange && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 1.5 }}>
+        <IndependentActionsContainer>
           <CustomiseColumnsButton
             columns={allColumnLabels}
             onChange={onVisibleColumnsChange}
           />
-        </Box>
+        </IndependentActionsContainer>
       )}
 
       <StyledTableContainer>
