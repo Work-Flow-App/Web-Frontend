@@ -646,6 +646,8 @@ export const StepDetailRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
   padding: theme.spacing(1, 0),
   fontSize: rem(12),
   color: theme.palette.text.secondary,
