@@ -9,14 +9,25 @@ interface StyledDropdownProps {
   fullWidth?: boolean;
 }
 
-export const AutocompleteWrapper = styled(Box)({
+export const AutocompleteWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  gap: rem(8),
+  gap: rem(3),
   position: 'relative',
   width: '100%',
-});
+
+  '& .MuiInputLabel-root': {
+    position: 'static',
+    transform: 'none',
+    fontSize: rem(11),
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.palette.text.secondary,
+    lineHeight: 1.2,
+    userSelect: 'none',
+    '&.Mui-error': { color: theme.palette.error.main },
+  },
+}));
 
 export const AutocompleteInnerWrapper = styled(Box)({
   display: 'flex',
@@ -69,15 +80,15 @@ export const MuiAutocomplete = styled(Autocomplete, {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: `${rem(10)} ${rem(20)}`,
+      padding: `0 ${rem(12)}`,
       gap: rem(4),
-      minHeight: rem(44),
+      height: rem(36),
       background: floowColors.form.input.bg,
       border: `${rem(1)} solid ${floowColors.form.input.border}`,
-      borderRadius: rem(6),
-      fontSize: rem(14),
+      borderRadius: rem(8),
+      fontSize: rem(13),
       fontWeight: 400,
-      transition: 'all 0.2s ease-in-out',
+      transition: 'border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
 
       '&:hover': {
         background: floowColors.grey[100],
@@ -99,7 +110,6 @@ export const MuiAutocomplete = styled(Autocomplete, {
         cursor: 'not-allowed',
       },
 
-      // Remove default outline
       '&::before, &::after': {
         display: 'none',
       },
@@ -110,7 +120,7 @@ export const MuiAutocomplete = styled(Autocomplete, {
 
       '& input': {
         padding: '0 !important',
-        fontSize: rem(14),
+        fontSize: rem(13),
         fontWeight: 400,
         color: palette.text?.primary || floowColors.black,
 
@@ -190,12 +200,12 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
     },
 
     '& .MuiAutocomplete-option': {
-      padding: `${rem(10)} ${rem(20)}`,
-      fontSize: rem(14),
+      padding: `${rem(8)} ${rem(14)}`,
+      fontSize: rem(13),
       fontWeight: 400,
       transition: 'all 0.15s ease-in-out',
       borderRadius: rem(4),
-      margin: `${rem(2)} 0`,
+      margin: `${rem(2)} ${rem(4)}`,
 
       '&:hover': {
         background: `${palette.primary?.main || floowColors.blue.dark}10`,
@@ -217,8 +227,8 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
     },
 
     '& .MuiAutocomplete-noOptions': {
-      padding: `${rem(12)} ${rem(20)}`,
-      fontSize: rem(14),
+      padding: `${rem(10)} ${rem(14)}`,
+      fontSize: rem(13),
       color: palette.text?.secondary || floowColors.grey[600],
     },
   };
