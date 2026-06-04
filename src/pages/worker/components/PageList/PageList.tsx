@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Box } from '@mui/material';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -12,6 +13,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useFetch } from '../../../../hooks';
 import { columns, type WorkerTableRow } from './DataColumn';
+import CustomiseColumnsButton from '../../../../components/UI/Table/CustomiseColumns/CustomiseColumnsButton';
 
 export const PageList: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -36,6 +38,13 @@ export const PageList: React.FC = () => {
       addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '',
     }));
   }, [rawWorkers]);
+
+  const allColumnLabels = useMemo(() => columns.map((c) => c.label), []);
+  const [visibleColumnLabels, setVisibleColumnLabels] = useState<string[]>(allColumnLabels);
+
+  const visibleTableColumns = useMemo(() => {
+    return columns.filter((c) => visibleColumnLabels.includes(c.label));
+  }, [visibleColumnLabels]);
 
   // Handle add worker
   const handleAddWorker = () => {
@@ -197,8 +206,15 @@ export const PageList: React.FC = () => {
       showSearch
       searchPlaceholder="Search workers"
     >
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <CustomiseColumnsButton
+          columns={allColumnLabels}
+          onChange={(newVisible) => setVisibleColumnLabels(newVisible)}
+        />
+      </Box>
+
       <Table<WorkerTableRow>
-        columns={columns}
+        columns={visibleTableColumns}
         data={workers}
         selectable
         showActions
