@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import type { ITable, ITableRow } from './ITable';
 import { DataTableContextProvider } from './context';
 import { TitleHeader } from './components/TitleHeader';
@@ -6,6 +6,8 @@ import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
 import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody } from './Table.styles';
+import { Box } from '@mui/material';
+import CustomiseColumnsButton from './components/CustomiseColumns/CustomiseColumnsButton';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -60,6 +62,8 @@ export interface IEnhancedTable<T = ITableRow> extends Omit<ITable<T>, 'sortConf
   enableStickyRight?: boolean;
   /** Callback when row is clicked */
   onRowClick?: (row: T) => void;
+  /** Enable column customization */
+  customiseColumns?: boolean;
 }
 
 const TableInner = <T extends ITableRow = ITableRow>({
@@ -82,14 +86,46 @@ const TableInner = <T extends ITableRow = ITableRow>({
   enableStickyRight = false,
   width = '100%',
   className,
-}: Omit<IEnhancedTable<T>, 'columns' | 'data'>) => {
+  customiseColumns = false,
+  allColumnLabels,
+  onVisibleColumnsChange,
+}: Omit<IEnhancedTable<T>, 'columns' | 'data'> & {
+  allColumnLabels?: string[];
+  onVisibleColumnsChange?: (visible: string[]) => void;
+}) => {
+  const hasTitleHeader = Boolean(title || titleActions);
+
+  const headerActions = hasTitleHeader ? (
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      {titleActions}
+      {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
+        <CustomiseColumnsButton
+          columns={allColumnLabels}
+          onChange={onVisibleColumnsChange}
+        />
+      )}
+    </Box>
+  ) : undefined;
+
   return (
     <TableWrapper width={width} className={className}>
       {/* Title Header */}
-      <TitleHeader
-        title={title}
-        actions={titleActions}
-      />
+      {hasTitleHeader && (
+        <TitleHeader
+          title={title}
+          actions={headerActions}
+        />
+      )}
+
+      {/* Render independently if there is no title header */}
+      {!hasTitleHeader && customiseColumns && allColumnLabels && onVisibleColumnsChange && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mb: 1.5 }}>
+          <CustomiseColumnsButton
+            columns={allColumnLabels}
+            onChange={onVisibleColumnsChange}
+          />
+        </Box>
+      )}
 
       <StyledTableContainer>
         <StyledTable>
@@ -140,15 +176,29 @@ const Table = <T extends ITableRow = ITableRow>({
   columns,
   data,
   rowsPerPage = 10,
+  customiseColumns = false,
   ...props
 }: IEnhancedTable<T>) => {
+  const allColumnLabels = useMemo(() => columns.map((c) => c.label), [columns]);
+  const [visibleColumnLabels, setVisibleColumnLabels] = useState<string[]>(allColumnLabels);
+
+  const visibleTableColumns = useMemo(() => {
+    if (!customiseColumns) return columns;
+    return columns.filter((c) => visibleColumnLabels.includes(c.label));
+  }, [columns, customiseColumns, visibleColumnLabels]);
+
   return (
     <DataTableContextProvider<T>
       initialData={data}
-      initialColumns={columns}
+      initialColumns={visibleTableColumns}
       initialRowsPerPage={rowsPerPage}
     >
-      <TableInner<T> {...props} />
+      <TableInner<T> 
+        customiseColumns={customiseColumns}
+        allColumnLabels={allColumnLabels}
+        onVisibleColumnsChange={setVisibleColumnLabels}
+        {...props} 
+      />
     </DataTableContextProvider>
   );
 };
