@@ -28,8 +28,10 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { StepCommentsSection } from './StepCommentsSection';
 import { StepAttachmentsSection } from './StepAttachmentsSection';
 import * as S from '../../JobDetailsPage.styles';
+import { styles } from './JobWorkflowStages.styles';
 
-// Live countdown timer for SLA deadline
+// ─── SLA Timer ────────────────────────────────────────────────────────────────
+
 const SlaTimer: React.FC<{ step: JobWorkflowStepResponse }> = ({ step }) => {
   const [display, setDisplay] = useState('');
 
@@ -90,148 +92,124 @@ const SlaTimer: React.FC<{ step: JobWorkflowStepResponse }> = ({ step }) => {
   );
 };
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface JobWorkflowStagesProps {
   job: JobResponse;
   onStepUpdate?: () => void;
 }
 
-// Get status display info based on API status enum
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const getStatusInfo = (status?: string) => {
   switch (status) {
     case JobWorkflowStepResponseStatusEnum.Completed:
-      return {
-        label: 'COMPLETED',
-        isCompleted: true,
-        isInProgress: false,
-        isDelayed: false,
-        chipBg: '#E8F5E9',
-        chipColor: '#2E7D32',
-      };
+      return { label: 'COMPLETED', isCompleted: true,  isInProgress: false, isDelayed: false, chipBg: '#E8F5E9', chipColor: '#2E7D32' };
     case JobWorkflowStepResponseStatusEnum.Started:
-      return {
-        label: 'STARTED',
-        isCompleted: false,
-        isInProgress: true,
-        isDelayed: false,
-        chipBg: '#E3F2FD',
-        chipColor: '#1565C0',
-      };
+      return { label: 'STARTED',   isCompleted: false, isInProgress: true,  isDelayed: false, chipBg: '#E3F2FD', chipColor: '#1565C0' };
     case JobWorkflowStepResponseStatusEnum.Ongoing:
-      return {
-        label: 'ONGOING',
-        isCompleted: false,
-        isInProgress: true,
-        isDelayed: false,
-        chipBg: '#E3F2FD',
-        chipColor: '#1565C0',
-      };
+      return { label: 'ONGOING',   isCompleted: false, isInProgress: true,  isDelayed: false, chipBg: '#E3F2FD', chipColor: '#1565C0' };
     case JobWorkflowStepResponseStatusEnum.Pending:
-      return {
-        label: 'PENDING',
-        isCompleted: false,
-        isInProgress: false,
-        isDelayed: false,
-        chipBg: '#FFF8E1',
-        chipColor: '#F9A825',
-      };
+      return { label: 'PENDING',   isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#FFF8E1', chipColor: '#F9A825' };
     case JobWorkflowStepResponseStatusEnum.Skipped:
-      return {
-        label: 'SKIPPED',
-        isCompleted: false,
-        isInProgress: false,
-        isDelayed: true,
-        chipBg: '#FFEBEE',
-        chipColor: '#C62828',
-      };
+      return { label: 'SKIPPED',   isCompleted: false, isInProgress: false, isDelayed: true,  chipBg: '#FFEBEE', chipColor: '#C62828' };
     case JobWorkflowStepResponseStatusEnum.Initiated:
-      return {
-        label: 'INITIATED',
-        isCompleted: false,
-        isInProgress: false,
-        isDelayed: false,
-        chipBg: '#F3E5F5',
-        chipColor: '#7B1FA2',
-      };
+      return { label: 'INITIATED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F3E5F5', chipColor: '#7B1FA2' };
     case JobWorkflowStepResponseStatusEnum.NotStarted:
     default:
-      return {
-        label: 'NOT_STARTED',
-        isCompleted: false,
-        isInProgress: false,
-        isDelayed: false,
-        chipBg: '#F5F5F5',
-        chipColor: '#616161',
-      };
+      return { label: 'NOT_STARTED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F5F5F5', chipColor: '#616161' };
   }
 };
 
+const formatStepDate = (isoString?: string) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const day     = date.getDate().toString().padStart(2, '0');
+  const month   = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year    = date.getFullYear();
+  let   hours   = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm    = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  return `${day}/${month}/${year} (${hours.toString().padStart(2, '0')}:${minutes}${ampm})`;
+};
+
+const formatDuration = (minutes?: number) => {
+  if (minutes == null) return '';
+  const days  = Math.floor(minutes / (24 * 60));
+  const hours = Math.floor((minutes % (24 * 60)) / 60);
+  const parts: string[] = [];
+  if (days  > 0) parts.push(`${days} day${days   > 1 ? 's' : ''}`);
+  if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
+  return parts.length > 0 ? parts.join(' ') : '0 hours';
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
-  const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
-  const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [expandedStepId, setExpandedStepId] = useState<number | null>(null);
-  const [workers, setWorkers] = useState<Map<number, WorkerResponse>>(new Map());
-  const [allWorkers, setAllWorkers] = useState<WorkerResponse[]>([]);
-  const [editingStepId, setEditingStepId] = useState<number | null>(null);
-  const [editingNotes, setEditingNotes] = useState<string>('');
-  const [savingNotes, setSavingNotes] = useState(false);
-  const [updatingStep, setUpdatingStep] = useState<number | null>(null);
+  const [jobWorkflow, setJobWorkflow]               = useState<JobWorkflowResponse | null>(null);
+  const [workflow, setWorkflow]                     = useState<WorkflowResponse | null>(null);
+  const [loading, setLoading]                       = useState(true);
+  const [expandedStepId, setExpandedStepId]         = useState<number | null>(null);
+  const [workers, setWorkers]                       = useState<Map<number, WorkerResponse>>(new Map());
+  const [allWorkers, setAllWorkers]                 = useState<WorkerResponse[]>([]);
+  const [editingStepId, setEditingStepId]           = useState<number | null>(null);
+  const [editingNotes, setEditingNotes]             = useState<string>('');
+  const [savingNotes, setSavingNotes]               = useState(false);
+  const [updatingStep, setUpdatingStep]             = useState<number | null>(null);
   const [editingWorkflowName, setEditingWorkflowName] = useState(false);
-  const [workflowNameValue, setWorkflowNameValue] = useState('');
+  const [workflowNameValue, setWorkflowNameValue]   = useState('');
   const [savingWorkflowName, setSavingWorkflowName] = useState(false);
-  const [editingStepNameId, setEditingStepNameId] = useState<number | null>(null);
-  const [stepNameValue, setStepNameValue] = useState('');
+  const [editingStepNameId, setEditingStepNameId]   = useState<number | null>(null);
+  const [stepNameValue, setStepNameValue]           = useState('');
+  const [editingDurationStepId, setEditingDurationStepId] = useState<number | null>(null);
+  const [editingDurationType, setEditingDurationType]     = useState<'expected' | 'maximum' | null>(null);
+  const [editDays, setEditDays]   = useState<number | string>('');
+  const [editHours, setEditHours] = useState<number | string>('');
+
+  // ─── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchJobWorkflow = useCallback(async () => {
-    if (!job.id) {
-      setLoading(false);
-      return;
-    }
+    if (!job.id) { setLoading(false); return; }
 
     try {
       setLoading(true);
       const response = await jobWorkflowService.getJobWorkflowByJobId(job.id);
       setJobWorkflow(response.data);
 
-      // Fetch workflow details to get the name
       if (job.workflowId) {
         const workflowResponse = await workflowService.getWorkflowById(job.workflowId);
         setWorkflow(workflowResponse.data);
         setWorkflowNameValue(workflowResponse.data.name || '');
       }
 
-      // Fetch workers for assigned worker IDs
       const workerIds = new Set<number>();
       response.data.steps?.forEach((step) => {
         step.assignedWorkerIds?.forEach((id) => workerIds.add(id));
       });
 
       if (workerIds.size > 0) {
-        const workerPromises = Array.from(workerIds).map((id) => workerService.getWorkerById(id).catch(() => null));
+        const workerPromises = Array.from(workerIds).map((id) =>
+          workerService.getWorkerById(id).catch(() => null)
+        );
         const workerResponses = await Promise.all(workerPromises);
         const workerMap = new Map<number, WorkerResponse>();
         workerResponses.forEach((res) => {
-          if (res?.data?.id) {
-            workerMap.set(res.data.id, res.data);
-          }
+          if (res?.data?.id) workerMap.set(res.data.id, res.data);
         });
         setWorkers(workerMap);
       }
 
-      // Fetch all workers for dropdown
       const allWorkersResponse = await workerService.getAllWorkers();
       setAllWorkers(allWorkersResponse.data || []);
 
-      // Auto-expand the first non-completed step
       const activeStep = response.data.steps?.find(
         (step) =>
           step.status !== JobWorkflowStepResponseStatusEnum.Completed &&
           step.status !== JobWorkflowStepResponseStatusEnum.Skipped
       );
-      if (activeStep?.id) {
-        setExpandedStepId(activeStep.id);
-      }
+      if (activeStep?.id) setExpandedStepId(activeStep.id);
     } catch {
       console.log('No workflow found for job:', job.id);
       setJobWorkflow(null);
@@ -240,35 +218,25 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   }, [job.id, job.workflowId]);
 
-  useEffect(() => {
-    fetchJobWorkflow();
-  }, [fetchJobWorkflow]);
+  useEffect(() => { fetchJobWorkflow(); }, [fetchJobWorkflow]);
 
-  const toggleStep = (stepId: number) => {
+  // ─── Handlers ───────────────────────────────────────────────────────────────
+
+  const toggleStep = (stepId: number) =>
     setExpandedStepId(expandedStepId === stepId ? null : stepId);
-  };
 
   const handleEditNotes = (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (step.id) {
-      setEditingStepId(step.id);
-      setEditingNotes(step.description || '');
-    }
+    if (step.id) { setEditingStepId(step.id); setEditingNotes(step.description || ''); }
   };
 
-  const handleCancelEdit = () => {
-    setEditingStepId(null);
-    setEditingNotes('');
-  };
+  const handleCancelEdit = () => { setEditingStepId(null); setEditingNotes(''); };
 
   const handleSaveNotes = async (step: JobWorkflowStepResponse) => {
     if (!step.id || !jobWorkflow?.id) return;
-
     try {
       setSavingNotes(true);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        description: editingNotes,
-      });
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { description: editingNotes });
       showSuccess('Notes updated successfully');
       setEditingStepId(null);
       setEditingNotes('');
@@ -284,12 +252,9 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
 
   const handleStatusChange = async (step: JobWorkflowStepResponse, newStatus: string) => {
     if (!step.id || !jobWorkflow?.id) return;
-
     try {
       setUpdatingStep(step.id);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        status: newStatus as any,
-      });
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { status: newStatus as any });
       showSuccess('Status updated successfully');
       fetchJobWorkflow();
       onStepUpdate?.();
@@ -303,12 +268,9 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
 
   const handleAssignedChange = async (step: JobWorkflowStepResponse, workerIds: number[]) => {
     if (!step.id || !jobWorkflow?.id) return;
-
     try {
       setUpdatingStep(step.id);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        assignedWorkerIds: workerIds,
-      });
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { assignedWorkerIds: workerIds });
       showSuccess('Assignment updated successfully');
       fetchJobWorkflow();
       onStepUpdate?.();
@@ -320,16 +282,32 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
-  const handleEditWorkflowName = () => {
-    setEditingWorkflowName(true);
+  const handleEditWorkflowName = () => setEditingWorkflowName(true);
+
+  const handleCancelWorkflowNameEdit = () => {
+    setEditingWorkflowName(false);
+    setWorkflowNameValue(workflow?.name || '');
+  };
+
+  const handleSaveWorkflowName = async () => {
+    if (!job.workflowId || !workflowNameValue.trim()) return;
+    try {
+      setSavingWorkflowName(true);
+      await workflowService.updateWorkflow(job.workflowId, { name: workflowNameValue.trim() });
+      showSuccess('Workflow name updated successfully');
+      setEditingWorkflowName(false);
+      fetchJobWorkflow();
+    } catch (error) {
+      console.error('Error updating workflow name:', error);
+      showError('Failed to update workflow name');
+    } finally {
+      setSavingWorkflowName(false);
+    }
   };
 
   const handleEditStepName = (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (step.id) {
-      setEditingStepNameId(step.id);
-      setStepNameValue(step.name || '');
-    }
+    if (step.id) { setEditingStepNameId(step.id); setStepNameValue(step.name || ''); }
   };
 
   const handleCancelStepNameEdit = (e: React.MouseEvent) => {
@@ -341,12 +319,9 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
   const handleSaveStepName = async (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!step.id || !jobWorkflow?.id || !stepNameValue.trim()) return;
-
     try {
       setUpdatingStep(step.id);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        name: stepNameValue.trim(),
-      });
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { name: stepNameValue.trim() });
       showSuccess('Step name updated successfully');
       setEditingStepNameId(null);
       setStepNameValue('');
@@ -360,66 +335,95 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
-  const handleCancelWorkflowNameEdit = () => {
-    setEditingWorkflowName(false);
-    setWorkflowNameValue(workflow?.name || '');
-  };
-
-  const handleSaveWorkflowName = async () => {
-    if (!job.workflowId || !workflowNameValue.trim()) return;
-
-    try {
-      setSavingWorkflowName(true);
-      await workflowService.updateWorkflow(job.workflowId, {
-        name: workflowNameValue.trim(),
-      });
-      showSuccess('Workfloow name updated successfully');
-      setEditingWorkflowName(false);
-      fetchJobWorkflow();
-    } catch (error) {
-      console.error('Error updating workflow name:', error);
-      showError('Failed to update workflow name');
-    } finally {
-      setSavingWorkflowName(false);
+  const handleEditDuration = (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (step.id) {
+      setEditingDurationStepId(step.id);
+      setEditingDurationType(type);
+      const minutes = type === 'expected' ? step.expectedDurationMinutes : step.maximumDurationMinutes;
+      const m = minutes || 0;
+      setEditDays(Math.floor(m / (24 * 60)));
+      setEditHours(Math.floor((m % (24 * 60)) / 60));
     }
   };
 
-  // Sort steps by orderIndex from API
+  const handleCancelEditDuration = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingDurationStepId(null);
+    setEditingDurationType(null);
+  };
+
+  const handleSaveDuration = async (
+    step: JobWorkflowStepResponse,
+    type: 'expected' | 'maximum',
+    e: React.MouseEvent | React.KeyboardEvent,
+  ) => {
+    e.stopPropagation();
+    if (!step.id || !jobWorkflow?.id) return;
+    const totalMinutes = (Number(editDays) || 0) * 24 * 60 + (Number(editHours) || 0) * 60;
+    try {
+      setUpdatingStep(step.id);
+      const payload = type === 'expected'
+        ? { expectedDurationMinutes: totalMinutes }
+        : { maximumDurationMinutes: totalMinutes };
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, payload);
+      showSuccess(`${type === 'expected' ? 'Expected' : 'Maximum'} duration updated`);
+      setEditingDurationStepId(null);
+      setEditingDurationType(null);
+      fetchJobWorkflow();
+      onStepUpdate?.();
+    } catch (error) {
+      console.error('Error updating duration:', error);
+      showError('Failed to update duration');
+    } finally {
+      setUpdatingStep(null);
+    }
+  };
+
+  // ─── Derived state ───────────────────────────────────────────────────────────
+
   const sortedSteps = jobWorkflow?.steps
     ? [...jobWorkflow.steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
     : [];
+
+  // ─── Loading state ───────────────────────────────────────────────────────────
 
   if (loading) {
     return (
       <S.WorkflowSidebar>
         <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workfloow Name</S.WorkflowSidebarTitle>
+          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
         </S.WorkflowSidebarHeader>
-        <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+        <Box sx={styles.loadingContainer}>
           <CircularProgress size={32} />
         </Box>
       </S.WorkflowSidebar>
     );
   }
 
+  // ─── Empty state ─────────────────────────────────────────────────────────────
+
   if (!jobWorkflow || sortedSteps.length === 0) {
     return (
       <S.WorkflowSidebar>
         <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workfloow Name</S.WorkflowSidebarTitle>
+          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
           <IconButton size="small">
             <EditIcon fontSize="small" />
           </IconButton>
         </S.WorkflowSidebarHeader>
         <Box px={2} py={3}>
-          <S.PlaceholderText>No workfloow assigned to this job</S.PlaceholderText>
+          <S.PlaceholderText>No workflow assigned to this job</S.PlaceholderText>
         </Box>
       </S.WorkflowSidebar>
     );
   }
 
+  // ─── Main render ─────────────────────────────────────────────────────────────
+
   return (
     <S.WorkflowSidebar>
+      {/* ── Header ── */}
       <S.WorkflowSidebarHeader>
         <S.WorkflowSidebarTitle>
           {editingWorkflowName ? (
@@ -428,46 +432,16 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
               value={workflowNameValue}
               onChange={(e) => setWorkflowNameValue(e.target.value)}
               autoFocus
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  fontSize: 14,
-                  fontWeight: 600,
-                },
-                '& .MuiOutlinedInput-input': {
-                  py: 0.5,
-                  px: 1,
-                },
-              }}
+              sx={styles.workflowNameTextField}
             />
           ) : (
             <>
-              {workflow?.name || 'Workfloow Name'}
-              <Box
-                component="span"
-                sx={{
-                  display: 'inline-flex',
-                  gap: 0.5,
-                  ml: 1,
-                }}
-              >
+              {workflow?.name || 'Workflow Name'}
+              <Box component="span" sx={styles.workflowNameAvatarRow}>
                 {Array.from(workers.values())
                   .slice(0, 2)
                   .map((worker) => (
-                    <Box
-                      key={worker.id}
-                      sx={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 10,
-                        fontWeight: 600,
-                      }}
-                    >
+                    <Box key={worker.id} sx={styles.workerAvatar}>
                       {worker.initials || worker.name?.substring(0, 2).toUpperCase()}
                     </Box>
                   ))}
@@ -475,8 +449,9 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
             </>
           )}
         </S.WorkflowSidebarTitle>
+
         {editingWorkflowName ? (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Box sx={styles.workflowNameEditButtons}>
             <IconButton size="small" onClick={handleCancelWorkflowNameEdit} aria-label="Cancel workflow name edit">
               <CloseIcon fontSize="small" />
             </IconButton>
@@ -491,72 +466,39 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
         )}
       </S.WorkflowSidebarHeader>
 
-      {/* Timeline List */}
-      <Box sx={{ px: 2, py: 1, overflowY: 'auto', flex: 1 }}>
+      {/* ── Timeline list ── */}
+      <Box sx={styles.timelineList}>
         {sortedSteps.map((step, index) => {
           const statusInfo = getStatusInfo(step.status);
-          const isLast = index === sortedSteps.length - 1;
+          const isLast     = index === sortedSteps.length - 1;
           const isExpanded = step.id === expandedStepId;
+
           const assignedWorkerIdsList = Array.from(step.assignedWorkerIds || []);
-          const assignedWorker = assignedWorkerIdsList.length > 0
+          const assignedWorker        = assignedWorkerIdsList.length > 0
             ? workers.get(assignedWorkerIdsList[0]) ?? null
             : null;
           const selectedWorkers = assignedWorkerIdsList
             .map((id) => allWorkers.find((w) => w.id === id) ?? workers.get(id))
             .filter((w): w is WorkerResponse => !!w);
 
+          // Resolve which node style to use
+          const nodeStyle = statusInfo.isCompleted
+            ? styles.timelineNodeCompleted
+            : statusInfo.isInProgress
+              ? styles.timelineNodeInProgress
+              : statusInfo.isDelayed
+                ? styles.timelineNodeDelayed
+                : styles.timelineNodeDefault;
+
           return (
-            <Box
-              key={step.id || index}
-              sx={{
-                display: 'flex',
-                position: 'relative',
-              }}
-            >
-              {/* Timeline line - continuous through the entire step */}
+            <Box key={step.id || index} sx={styles.stepRow}>
+              {/* Connector line */}
               {!isLast && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    left: 13,
-                    top: 28,
-                    bottom: 0,
-                    width: 2,
-                    backgroundColor: statusInfo.isCompleted ? '#4CAF50' : '#E0E0E0',
-                  }}
-                />
+                <Box sx={statusInfo.isCompleted ? styles.timelineLineCompleted : styles.timelineLinePending} />
               )}
 
-              {/* Timeline node */}
-              <Box
-                onClick={() => step.id && toggleStep(step.id)}
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: statusInfo.isCompleted
-                    ? '#4CAF50'
-                    : statusInfo.isInProgress
-                      ? '#4CAF50'
-                      : statusInfo.isDelayed
-                        ? '#F44336'
-                        : '#E0E0E0',
-                  color: statusInfo.isCompleted || statusInfo.isInProgress || statusInfo.isDelayed ? 'white' : '#666',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  flexShrink: 0,
-                  cursor: 'pointer',
-                  position: 'relative',
-                  zIndex: 1,
-                  transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'scale(1.1)',
-                  },
-                }}
-              >
+              {/* Node */}
+              <Box onClick={() => step.id && toggleStep(step.id)} sx={nodeStyle}>
                 {statusInfo.isCompleted ? (
                   <CheckIcon sx={{ fontSize: 16 }} />
                 ) : statusInfo.isInProgress ? (
@@ -569,7 +511,8 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
               </Box>
 
               {/* Step content */}
-              <Box sx={{ ml: 1.5, flex: 1, pb: 2, minWidth: 0 }}>
+              <Box sx={styles.stepContent}>
+
                 {/* Step title */}
                 <S.StepTitleContainer>
                   {editingStepNameId === step.id ? (
@@ -581,19 +524,9 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                         onChange={(e) => setStepNameValue(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
                         autoFocus
-                        sx={{
-                          flex: 1,
-                          '& .MuiOutlinedInput-root': {
-                            fontSize: 14,
-                            fontWeight: 600,
-                          },
-                          '& .MuiOutlinedInput-input': {
-                            py: 0.25,
-                            px: 0.5,
-                          },
-                        }}
+                        sx={styles.stepNameTextField}
                       />
-                      <IconButton size="small" onClick={(e) => handleCancelStepNameEdit(e)} aria-label="Cancel step name edit">
+                      <IconButton size="small" onClick={handleCancelStepNameEdit} aria-label="Cancel step name edit">
                         <CloseIcon sx={{ fontSize: 14 }} />
                       </IconButton>
                       <IconButton
@@ -618,72 +551,116 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                 </S.StepTitleContainer>
 
                 {/* Step description */}
-                <Box
-                  sx={{
-                    fontSize: 12,
-                    color: '#888',
-                    mb: 1,
-                  }}
-                >
+                <Box sx={styles.stepDescription}>
                   {step.description || 'No description'}
                 </Box>
 
-                {/* Status and assignment chips - clickable to expand */}
-                <Box
-                  onClick={() => step.id && toggleStep(step.id)}
-                  sx={{
-                    display: 'flex',
-                    gap: 0.5,
-                    flexWrap: 'wrap',
-                    cursor: 'pointer',
-                  }}
-                >
+                {/* Chips row */}
+                <Box onClick={() => step.id && toggleStep(step.id)} sx={styles.chipsRow}>
                   <Chip
                     label={statusInfo.label}
                     size="small"
                     sx={{
-                      height: 24,
-                      fontSize: 11,
-                      fontWeight: 600,
+                      ...styles.statusChip,
                       backgroundColor: statusInfo.chipBg,
                       color: statusInfo.chipColor,
-                      borderRadius: '4px',
                     }}
                   />
                   {assignedWorker && (
-                    <Chip
-                      label="YOU"
-                      size="small"
-                      sx={{
-                        height: 24,
-                        fontSize: 11,
-                        fontWeight: 600,
-                        backgroundColor: '#F5F5F5',
-                        color: '#616161',
-                        borderRadius: '4px',
-                      }}
-                    />
+                    <Chip label="YOU" size="small" sx={styles.assignedChip} />
                   )}
                   <SlaTimer step={step} />
                 </Box>
 
-                {/* Expanded Details */}
+                {/* Expanded details */}
                 <Collapse in={isExpanded}>
-                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
-                    {/* Status Dropdown */}
+                  <Box sx={styles.expandedPanel}>
+
+                    {/* Expected duration */}
+                    {step.expectedDurationMinutes != null && (
+                      <S.StepDetailRow>
+                        <span className="label">Expected Duration Time</span>
+                        {editingDurationStepId === step.id && editingDurationType === 'expected' ? (
+                          <Box sx={styles.durationEditRow} onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="number" size="small" value={editDays}
+                              onChange={(e) => setEditDays(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
+                              sx={styles.durationTextField}
+                            />
+                            <span style={styles.durationLabel}>day</span>
+                            <TextField
+                              type="number" size="small" value={editHours}
+                              onChange={(e) => setEditHours(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
+                              sx={styles.durationTextField}
+                            />
+                            <span style={styles.durationLabel}>hours</span>
+                            <IconButton size="small" onClick={handleCancelEditDuration}>
+                              <CloseIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'expected', e)} disabled={updatingStep === step.id}>
+                              <SaveIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Box sx={styles.durationValueBox}>
+                            <span style={styles.durationValueText}>{formatDuration(step.expectedDurationMinutes)}</span>
+                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'expected', e)} sx={styles.durationEditIconButton}>
+                              <EditIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        )}
+                      </S.StepDetailRow>
+                    )}
+
+                    {/* Maximum duration */}
+                    {step.maximumDurationMinutes != null && (
+                      <S.StepDetailRow>
+                        <span className="label">Maximum Duration Time</span>
+                        {editingDurationStepId === step.id && editingDurationType === 'maximum' ? (
+                          <Box sx={styles.durationEditRow} onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="number" size="small" value={editDays}
+                              onChange={(e) => setEditDays(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
+                              sx={styles.durationTextField}
+                            />
+                            <span style={styles.durationLabel}>day</span>
+                            <TextField
+                              type="number" size="small" value={editHours}
+                              onChange={(e) => setEditHours(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
+                              sx={styles.durationTextField}
+                            />
+                            <span style={styles.durationLabel}>hours</span>
+                            <IconButton size="small" onClick={handleCancelEditDuration}>
+                              <CloseIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'maximum', e)} disabled={updatingStep === step.id}>
+                              <SaveIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          <Box sx={styles.durationValueBox}>
+                            <span style={styles.durationValueText}>{formatDuration(step.maximumDurationMinutes)}</span>
+                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'maximum', e)} sx={styles.durationEditIconButton}>
+                              <EditIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+                        )}
+                      </S.StepDetailRow>
+                    )}
+
+                    {/* Status dropdown */}
                     <S.StepDetailRow>
                       <span className="label">Status</span>
-                      <FormControl size="small" sx={{ minWidth: 140 }}>
+                      <FormControl size="small" sx={styles.statusSelect}>
                         <Select
                           value={step.status || JobWorkflowStepResponseStatusEnum.NotStarted}
                           onChange={(e: SelectChangeEvent) => handleStatusChange(step, e.target.value)}
                           disabled={updatingStep === step.id}
-                          sx={{
-                            fontSize: 12,
-                            '& .MuiSelect-select': {
-                              py: 0.5,
-                            },
-                          }}
+                          sx={styles.statusSelectInput}
                         >
                           {Object.entries(JobWorkflowStepResponseStatusEnum).map(([key, value]) => {
                             const info = getStatusInfo(value);
@@ -693,9 +670,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                                   label={info.label}
                                   size="small"
                                   sx={{
-                                    height: 20,
-                                    fontSize: 10,
-                                    fontWeight: 600,
+                                    ...styles.statusMenuItemChip,
                                     backgroundColor: info.chipBg,
                                     color: info.chipColor,
                                   }}
@@ -707,7 +682,21 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                       </FormControl>
                     </S.StepDetailRow>
 
-                    {/* Assigned Dropdown */}
+                    {/* Dates */}
+                    {step.startedAt && (
+                      <S.StepDetailRow>
+                        <span className="label">Started At</span>
+                        <span style={styles.dateValueText}>{formatStepDate(step.startedAt)}</span>
+                      </S.StepDetailRow>
+                    )}
+                    {step.completedAt && (
+                      <S.StepDetailRow>
+                        <span className="label">Completed At</span>
+                        <span style={styles.dateValueText}>{formatStepDate(step.completedAt)}</span>
+                      </S.StepDetailRow>
+                    )}
+
+                    {/* Assigned */}
                     <S.AssignedRow>
                       <span className="label">Assigned</span>
                       <S.AssignedAutocompleteWrapper>
@@ -757,12 +746,12 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                       </S.AssignedAutocompleteWrapper>
                     </S.AssignedRow>
 
-                    {/* Event Notes section */}
+                    {/* Notes */}
                     <S.EventNoteBox>
                       <S.EventNoteHeader>
                         <S.EventNoteTitle>Notes</S.EventNoteTitle>
                         {editingStepId === step.id ? (
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Box sx={styles.notesEditButtonRow}>
                             <S.EventNoteEditButton onClick={() => handleCancelEdit()} style={{ color: '#666' }}>
                               Cancel
                             </S.EventNoteEditButton>
@@ -784,21 +773,17 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
                           onChange={(e) => setEditingNotes(e.target.value)}
                           placeholder="Enter notes..."
                           onClick={(e) => e.stopPropagation()}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              fontSize: 12,
-                            },
-                          }}
+                          sx={styles.notesTextField}
                         />
                       ) : (
                         <S.EventNoteContent>{step.description || 'No notes added yet.'}</S.EventNoteContent>
                       )}
                     </S.EventNoteBox>
 
-                    {/* Attachments section */}
+                    {/* Attachments */}
                     {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
 
-                    {/* Comments section */}
+                    {/* Comments */}
                     {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
                   </Box>
                 </Collapse>

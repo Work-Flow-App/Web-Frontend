@@ -1,15 +1,21 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Autocomplete, TextField, CircularProgress, Typography, Box } from '@mui/material';
-import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
-import type { PlacesAutocompleteProps } from './GoogleMap.types';
-
-const MANUAL_VALUE = '__manual__';
-
-interface LocationOption {
-  value: string;
-  label: string;
-  isManual?: boolean;
-}
+import { Autocomplete, TextField, CircularProgress } from '@mui/material';
+import type { PlacesAutocompleteProps, LocationOption} from './PlacesAutocomplete.types';
+import {
+  ManualOptionWrapper,
+  ManualOptionTextBox,
+  ManualOptionIcon,
+  ManualOptionTitle,
+  ManualOptionSubtitle,
+  RegularOptionText,
+} from './PlacesAutocomplete.styles';
+import {
+  MANUAL_VALUE,
+  DEBOUNCE_DELAY_MS,
+  MIN_SEARCH_LENGTH,
+  PLACE_DETAIL_FIELDS,
+  getNoOptionsText,
+} from './PlacesAutocompleteConst';
 
 const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
   onPlaceSelect,
@@ -50,7 +56,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
   const buildOptions = useCallback(
     (predictions: google.maps.places.AutocompletePrediction[], query: string): LocationOption[] => {
       const opts: LocationOption[] = predictions.map((p) => ({ value: p.place_id, label: p.description }));
-      if (query.length >= 2) {
+      if (query.length >= MIN_SEARCH_LENGTH) {
         opts.push({ value: MANUAL_VALUE, label: query, isManual: true });
       }
       return opts;
@@ -60,7 +66,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
 
   const fetchPredictions = useCallback(
     (query: string) => {
-      if (!query || query.length < 2) {
+      if (!query || query.length < MIN_SEARCH_LENGTH) {
         setOptions([]);
         setLoading(false);
         return;
@@ -89,11 +95,11 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
     (_: React.SyntheticEvent, newInput: string) => {
       setInputValue(newInput);
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      if (!newInput || newInput.length < 2) {
+      if (!newInput || newInput.length < MIN_SEARCH_LENGTH) {
         setOptions([]);
         return;
       }
-      debounceTimer.current = setTimeout(() => fetchPredictions(newInput), 300);
+      debounceTimer.current = setTimeout(() => fetchPredictions(newInput), DEBOUNCE_DELAY_MS);
     },
     [fetchPredictions]
   );
@@ -115,7 +121,6 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
                 placeId: results[0].place_id,
               });
             } else {
-              // Geocoder failed — pass address only; user can click map to pin
               onPlaceSelect({
                 address: option.label,
                 location: { lat: 0, lng: 0 },
@@ -138,7 +143,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
 
       if (!placesService.current) return;
       placesService.current.getDetails(
-        { placeId: option.value, fields: ['name', 'formatted_address', 'geometry', 'place_id'] },
+        { placeId: option.value, fields: [...PLACE_DETAIL_FIELDS] },
         (place, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
             onPlaceSelect({
@@ -167,11 +172,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
       onInputChange={handleInputChange}
       onChange={handleChange}
       loading={loading}
-      noOptionsText={
-        inputValue.length < 2
-          ? 'Type at least 2 characters to search…'
-          : 'No suggestions found — try "Enter manually" below'
-      }
+      noOptionsText={getNoOptionsText(inputValue)}
       isOptionEqualToValue={(opt, val) => opt.value === val.value}
       disablePortal
       fullWidth
@@ -180,23 +181,19 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
         if (option.isManual) {
           return (
             <li key={key} {...rest}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.25 }}>
-                <EditLocationAltIcon sx={{ fontSize: 18, color: 'primary.main', flexShrink: 0 }} />
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', lineHeight: 1.3 }}>
-                    Enter manually
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.2 }}>
-                    "{option.label}"
-                  </Typography>
-                </Box>
-              </Box>
+              <ManualOptionWrapper>
+                <ManualOptionIcon />
+                <ManualOptionTextBox>
+                  <ManualOptionTitle variant="body2">Enter manually</ManualOptionTitle>
+                  <ManualOptionSubtitle variant="caption">"{option.label}"</ManualOptionSubtitle>
+                </ManualOptionTextBox>
+              </ManualOptionWrapper>
             </li>
           );
         }
         return (
           <li key={key} {...rest}>
-            <Typography variant="body2">{option.label}</Typography>
+            <RegularOptionText variant="body2">{option.label}</RegularOptionText>
           </li>
         );
       }}

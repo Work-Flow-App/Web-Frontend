@@ -3,6 +3,19 @@ import { Box, TableContainer, Table, TableHead, TableBody, TableRow, TableCell }
 import type { IStyledTableProps, IStyledTableCellProps, IStyledCheckboxProps, IStyledStatusPillProps } from './ITable';
 import { floowColors } from '../../../theme/colors';
 
+export const HeaderActionsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+  alignItems: 'center',
+}));
+
+export const IndependentActionsContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  width: '100%',
+  marginBottom: theme.spacing(1.5),
+}));
+
 export const TableWrapper = styled(Box)<IStyledTableProps>(({ width }) => ({
   display: 'flex',
   flexDirection: 'column',

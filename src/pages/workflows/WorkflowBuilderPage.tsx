@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, IconButton } from '@mui/material';
+import { Typography } from '@mui/material';
 import {
   DndContext,
   closestCenter,
@@ -8,27 +8,25 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  useDroppable,
-  useDraggable,
+  DragOverlay,
   type DragEndEvent,
   type DragStartEvent,
-  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../hooks';
@@ -50,116 +48,97 @@ interface WorkflowStep extends WorkflowStepResponse {
   maximumDurationMinutes?: number;
 }
 
-// Source list item (draggable from source to target)
-interface DraggableStepItemProps {
-  step: WorkflowStep;
-  onEdit: (step: WorkflowStep) => void;
-  onDelete: (stepId: number) => void;
-  isInOrder: boolean;
-}
+// ─── Sortable step row ────────────────────────────────────────────────────────
 
-const DraggableStepItem: React.FC<DraggableStepItemProps> = ({ step, onEdit, onDelete, isInOrder }) => {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `source-${step.id}`,
-    data: { type: 'source', step },
-  });
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit(step);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete(step.id);
-  };
-
-  return (
-    <S.StepItem
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className={`${isDragging ? 'dragging' : ''} ${isInOrder ? 'in-order' : ''}`}
-    >
-      <S.DragHandle>
-        <DragIndicatorIcon fontSize="small" />
-      </S.DragHandle>
-      <S.StepItemName>{step.name}</S.StepItemName>
-      {step.optional && <S.StepOptionalLabel>(Optional)</S.StepOptionalLabel>}
-      <S.StepItemActions>
-        <IconButton size="small" onClick={handleEditClick} aria-label="Edit step">
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <IconButton size="small" onClick={handleDeleteClick} aria-label="Delete step">
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </S.StepItemActions>
-    </S.StepItem>
-  );
-};
-
-// Target list item (sortable within target list)
 interface SortableStepItemProps {
   step: WorkflowStep;
   index: number;
-  onRemove: (stepId: number) => void;
+  onEdit: (step: WorkflowStep) => void;
+  onDelete: (stepId: number) => void;
 }
 
-const SortableStepItem: React.FC<SortableStepItemProps> = ({ step, index, onRemove }) => {
+const SortableStepItem: React.FC<SortableStepItemProps> = ({ step, index, onEdit, onDelete }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `order-${step.id}`,
     data: { type: 'order', step },
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEl);
+
+  // dnd-kit requires inline style for the CSS transform — cannot be a styled-component
+  const dndStyle = { transform: CSS.Transform.toString(transform), transition };
+
+  const stepColor = S.STEP_COLORS[index % S.STEP_COLORS.length];
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleMenuClose = () => setAnchorEl(null);
+
+  const handleEdit = () => {
+    handleMenuClose();
+    onEdit(step);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    onDelete(step.id);
   };
 
   return (
-    <S.OrderedStepCard
-      ref={setNodeRef}
-      style={style}
-      className={isDragging ? 'dragging' : ''}
-    >
-      <S.OrderedStepHeader>
-        <S.DragHandle {...attributes} {...listeners}>
-          <DragIndicatorIcon fontSize="small" />
-        </S.DragHandle>
-        <S.OrderedStepNumber>{index + 1}</S.OrderedStepNumber>
-        <IconButton size="small" onClick={() => onRemove(step.id)} aria-label="Remove step">
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </S.OrderedStepHeader>
-      <S.OrderedStepName>{step.name}</S.OrderedStepName>
-      {step.description && (
-        <S.OrderedStepDescription>{step.description}</S.OrderedStepDescription>
-      )}
-    </S.OrderedStepCard>
+    <S.StepRow ref={setNodeRef} style={dndStyle} className={isDragging ? 'dragging' : ''}>
+      {/* Col 1 — drag grip */}
+      <S.StepDragGrip className="step-drag-grip" {...attributes} {...listeners}>
+        <DragIndicatorIcon fontSize="small" />
+      </S.StepDragGrip>
+
+      {/* Col 2 — numbered circle on the rail */}
+      <S.StepNumberColumn>
+        <S.StepNumberBadge stepcolor={stepColor}>{index + 1}</S.StepNumberBadge>
+      </S.StepNumberColumn>
+
+      {/* Col 3 — step card with colored left border */}
+      <S.StepCardBody className="step-card-body" stepcolor={stepColor}>
+        <S.StepTitleRow>
+          <S.StepTitle>{step.name}</S.StepTitle>
+        </S.StepTitleRow>
+        {step.description && <S.StepDescription>{step.description}</S.StepDescription>}
+      </S.StepCardBody>
+
+      {/* Col 4 — context menu trigger */}
+      <S.StepKebabButton
+        className="step-kebab"
+        size="small"
+        onClick={handleMenuOpen}
+        aria-label="Step options"
+      >
+        <MoreVertIcon fontSize="small" />
+      </S.StepKebabButton>
+
+      <S.StepContextMenu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <S.StepEditMenuItem onClick={handleEdit}>
+          <EditIcon />
+          Edit
+        </S.StepEditMenuItem>
+        <S.StepDeleteMenuItem onClick={handleDelete}>
+          <DeleteIcon />
+          Delete
+        </S.StepDeleteMenuItem>
+      </S.StepContextMenu>
+    </S.StepRow>
   );
 };
 
-// Droppable area for workflow order
-interface DroppableOrderAreaProps {
-  children: React.ReactNode;
-  isEmpty: boolean;
-}
-
-const DroppableOrderArea: React.FC<DroppableOrderAreaProps> = ({ children, isEmpty }) => {
-  const { setNodeRef, isOver } = useDroppable({
-    id: 'order-area',
-  });
-
-  return (
-    <S.WorkflowOrderBox ref={setNodeRef} className={isOver ? 'drag-over' : ''}>
-      {isEmpty ? (
-        <S.EmptyOrderState>Drag steps here to set the workflow order</S.EmptyOrderState>
-      ) : (
-        children
-      )}
-    </S.WorkflowOrderBox>
-  );
-};
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export const WorkflowBuilderPage: React.FC = () => {
   const { workflowId } = useParams<{ workflowId: string }>();
@@ -169,37 +148,24 @@ export const WorkflowBuilderPage: React.FC = () => {
 
   const [workflow, setWorkflow] = useState<{ id: number; name: string; description?: string } | null>(null);
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
-  const [orderedSteps, setOrderedSteps] = useState<WorkflowStep[]>([]);
   const [loading, setLoading] = useState(true);
   const { saving, withSaving } = useFormSubmit();
-  const [editingStep, setEditingStep] = useState<WorkflowStep | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   useEffect(() => {
     const fetchWorkflow = async () => {
       if (!workflowId) return;
-
       try {
         setLoading(true);
         const response = await workflowService.getWorkflowWithSteps(Number(workflowId));
         const data = response.data;
 
-        setWorkflow({
-          id: data.id || 0,
-          name: data.name || '',
-          description: data.description,
-        });
+        setWorkflow({ id: data.id || 0, name: data.name || '', description: data.description });
 
         const stepsData = (data.steps || []).map((step, index) => ({
           ...step,
@@ -211,7 +177,6 @@ export const WorkflowBuilderPage: React.FC = () => {
 
         stepsData.sort((a, b) => a.orderIndex - b.orderIndex);
         setSteps(stepsData);
-        setOrderedSteps(stepsData);
       } catch (error) {
         console.error('Error fetching workflow:', error);
         showError('Failed to load workflow');
@@ -230,72 +195,39 @@ export const WorkflowBuilderPage: React.FC = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-
     if (!over) return;
 
-    const activeData = active.data.current;
-    const overId = over.id as string;
     const activeIdStr = active.id as string;
+    const overId = over.id as string;
 
-    // Dragging from source list
-    if (activeIdStr.startsWith('source-')) {
-      const draggedStep = activeData?.step as WorkflowStep;
-      if (!draggedStep) return;
-
-      const isAlreadyInOrder = orderedSteps.some((s) => s.id === draggedStep.id);
-      if (isAlreadyInOrder) return;
-
-      // Dropped on the order area (empty or container)
-      if (overId === 'order-area') {
-        setOrderedSteps([...orderedSteps, draggedStep].map((s, i) => ({ ...s, orderIndex: i })));
-        return;
-      }
-
-      // Dropped on an existing ordered step
-      if (overId.startsWith('order-')) {
-        const overIndex = orderedSteps.findIndex((s) => `order-${s.id}` === overId);
-        if (overIndex !== -1) {
-          const newOrderedSteps = [...orderedSteps];
-          newOrderedSteps.splice(overIndex + 1, 0, draggedStep);
-          setOrderedSteps(newOrderedSteps.map((s, i) => ({ ...s, orderIndex: i })));
-        }
-        return;
-      }
-    }
-
-    // Reordering within order list
     if (activeIdStr.startsWith('order-') && overId.startsWith('order-')) {
-      const oldIndex = orderedSteps.findIndex((s) => `order-${s.id}` === activeIdStr);
-      const newIndex = orderedSteps.findIndex((s) => `order-${s.id}` === overId);
-
+      const oldIndex = steps.findIndex((s) => `order-${s.id}` === activeIdStr);
+      const newIndex = steps.findIndex((s) => `order-${s.id}` === overId);
       if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-        const newOrderedSteps = arrayMove(orderedSteps, oldIndex, newIndex);
-        setOrderedSteps(newOrderedSteps.map((s, i) => ({ ...s, orderIndex: i })));
+        setSteps(arrayMove(steps, oldIndex, newIndex).map((s, i) => ({ ...s, orderIndex: i })));
       }
     }
-  };
-
-  const handleRemoveFromOrder = (stepId: number) => {
-    setOrderedSteps(orderedSteps.filter((s) => s.id !== stepId).map((s, i) => ({ ...s, orderIndex: i })));
   };
 
   const handleCloseModal = () => {
     resetGlobalModalOuterProps();
-    setEditingStep(null);
   };
 
   const handleSaveStep = (stepData: StepFormStep) => {
-    if (editingStep) {
-      const updatedStep = {
-        ...editingStep,
+    // ID-based lookup avoids stale-closure issues — StepForm passes initialStep.id
+    // when editing, or Date.now() for new steps.
+    const existing = steps.find((s) => s.id === stepData.id);
+
+    if (existing) {
+      const updatedStep: WorkflowStep = {
+        ...existing,
         name: stepData.name,
         description: stepData.description,
         optional: stepData.optional,
         expectedDurationMinutes: stepData.expectedDurationMinutes,
         maximumDurationMinutes: stepData.maximumDurationMinutes,
       };
-      setSteps(steps.map((s) => (s.id === editingStep.id ? updatedStep : s)));
-      setOrderedSteps(orderedSteps.map((s) => (s.id === editingStep.id ? updatedStep : s)));
+      setSteps(steps.map((s) => (s.id === stepData.id ? updatedStep : s)));
       showSuccess('Step updated');
     } else {
       const newStep: WorkflowStep = {
@@ -315,7 +247,6 @@ export const WorkflowBuilderPage: React.FC = () => {
   };
 
   const handleAddStep = () => {
-    setEditingStep(null);
     setGlobalModalOuterProps({
       isOpen: true,
       children: <StepForm initialStep={null} onSave={handleSaveStep} isEditing={false} />,
@@ -325,7 +256,6 @@ export const WorkflowBuilderPage: React.FC = () => {
   };
 
   const handleEditStep = (step: WorkflowStep) => {
-    setEditingStep(step);
     setGlobalModalOuterProps({
       isOpen: true,
       children: <StepForm initialStep={step} onSave={handleSaveStep} isEditing={true} />,
@@ -335,8 +265,7 @@ export const WorkflowBuilderPage: React.FC = () => {
   };
 
   const handleDeleteStep = (stepId: number) => {
-    setSteps(steps.filter((s) => s.id !== stepId));
-    setOrderedSteps(orderedSteps.filter((s) => s.id !== stepId).map((s, i) => ({ ...s, orderIndex: i })));
+    setSteps(steps.filter((s) => s.id !== stepId).map((s, i) => ({ ...s, orderIndex: i })));
     showSuccess('Step removed');
   };
 
@@ -348,7 +277,7 @@ export const WorkflowBuilderPage: React.FC = () => {
         const payload: WorkflowBulkUpdateRequest = {
           name: workflow.name,
           description: workflow.description,
-          steps: orderedSteps.map((step) => ({
+          steps: steps.map((step) => ({
             id: step.id > 1000000000000 ? undefined : step.id,
             name: step.name,
             description: step.description,
@@ -360,7 +289,7 @@ export const WorkflowBuilderPage: React.FC = () => {
         };
 
         await workflowService.bulkUpdateWorkflow(Number(workflowId), payload);
-        showSuccess('Workfloow saved successfully');
+        showSuccess('Workflow saved successfully');
 
         const response = await workflowService.getWorkflowWithSteps(Number(workflowId));
         const data = response.data;
@@ -373,7 +302,6 @@ export const WorkflowBuilderPage: React.FC = () => {
         }));
         stepsData.sort((a, b) => a.orderIndex - b.orderIndex);
         setSteps(stepsData);
-        setOrderedSteps(stepsData);
       });
     } catch (error) {
       console.error('Error saving workflow:', error);
@@ -383,39 +311,29 @@ export const WorkflowBuilderPage: React.FC = () => {
 
   const getActiveStep = (): WorkflowStep | null => {
     if (!activeId) return null;
-    const stepId = parseInt(activeId.replace('source-', '').replace('order-', ''));
-    return steps.find((s) => s.id === stepId) || orderedSteps.find((s) => s.id === stepId) || null;
+    const stepId = parseInt(activeId.replace('order-', ''));
+    return steps.find((s) => s.id === stepId) || null;
   };
 
-  if (loading) {
-    return <Loader />;
-  }
+  if (loading) return <Loader />;
+  if (!workflow) return <Typography>Workflow not found</Typography>;
 
-  if (!workflow) {
-    return <Typography>Workfloow not found</Typography>;
-  }
-
-  const orderedStepIds = orderedSteps.map((s) => s.id);
+  const activeStep = getActiveStep();
+  const activeStepIndex = activeStep ? steps.findIndex((s) => s.id === activeStep.id) : -1;
 
   return (
     <PageWrapper
       title={workflow.name}
-      description={workflow.description || 'Build your workfloow by adding and arranging steps'}
+      description={workflow.description || 'Build your workflow by adding and arranging steps'}
       actions={[
         {
-          label: 'Back to Workfloows',
+          label: 'Back to Workflows',
           onClick: () => navigate('/company/workflows'),
           variant: 'outlined',
           icon: <ArrowBackIcon />,
         },
         {
-          label: 'Add Step',
-          onClick: handleAddStep,
-          variant: 'outlined',
-          icon: <AddIcon />,
-        },
-        {
-          label: saving ? 'Saving...' : 'Save Workfloow',
+          label: saving ? 'Saving...' : 'Save Workflow',
           onClick: handleSaveWorkflow,
           variant: 'contained',
           color: 'primary',
@@ -429,59 +347,80 @@ export const WorkflowBuilderPage: React.FC = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <S.BuilderContainer>
-          {/* Source List - Available Steps */}
-          <S.Section>
-            <S.SectionTitle>Available Steps</S.SectionTitle>
-            <S.SectionDescription>
-              Drag steps from here to the workflow order below
-            </S.SectionDescription>
-            <S.AvailableStepsList>
-              {steps.length === 0 ? (
-                <S.EmptyOrderState>No steps created. Click "Add Step" to create one.</S.EmptyOrderState>
-              ) : (
-                steps.map((step) => (
-                  <DraggableStepItem
+        <S.StepsCard>
+          {/* Header — title, step count pill, drag hint */}
+          <S.StepsCardHeader>
+            <S.StepsCardTitleRow>
+              <S.StepsCardTitle>Workflow Steps</S.StepsCardTitle>
+              <S.StepsCountBadge>
+                {steps.length} {steps.length === 1 ? 'step' : 'steps'}
+              </S.StepsCountBadge>
+            </S.StepsCardTitleRow>
+            <S.StepsCardSubtitle>
+              <InfoOutlinedIcon />
+              Drag the handle to reorder — the flow runs top to bottom
+            </S.StepsCardSubtitle>
+          </S.StepsCardHeader>
+
+          {/* Rail + ordered step list */}
+          <S.StepsRailWrapper>
+            <S.StepsRail />
+
+            <SortableContext
+              items={steps.map((s) => `order-${s.id}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              <S.StepsList>
+                {steps.map((step, index) => (
+                  <SortableStepItem
                     key={step.id}
                     step={step}
+                    index={index}
                     onEdit={handleEditStep}
                     onDelete={handleDeleteStep}
-                    isInOrder={orderedStepIds.includes(step.id)}
                   />
-                ))
-              )}
-            </S.AvailableStepsList>
-          </S.Section>
-
-          {/* Target List - Workflow Order */}
-          <S.Section>
-            <S.SectionTitle>Workfloow Order</S.SectionTitle>
-            <S.SectionDescription>
-              Drag and drop to reorder steps. This is the order steps will be executed.
-            </S.SectionDescription>
-            <SortableContext items={orderedSteps.map((s) => `order-${s.id}`)} strategy={horizontalListSortingStrategy}>
-              <DroppableOrderArea isEmpty={orderedSteps.length === 0}>
-                {orderedSteps.map((step, index) => (
-                  <React.Fragment key={step.id}>
-                    <SortableStepItem step={step} index={index} onRemove={handleRemoveFromOrder} />
-                    {index < orderedSteps.length - 1 && (
-                      <S.StepConnector>
-                        <ArrowForwardIcon fontSize="inherit" />
-                      </S.StepConnector>
-                    )}
-                  </React.Fragment>
                 ))}
-              </DroppableOrderArea>
+              </S.StepsList>
             </SortableContext>
-          </S.Section>
-        </S.BuilderContainer>
 
+            {steps.length === 0 && (
+              <S.EmptyStepsHint>No steps yet — click below to add your first step</S.EmptyStepsHint>
+            )}
+
+            {/* Single add control — dashed node at the end of the rail */}
+            <S.AddNodeWrapper onClick={handleAddStep}>
+              <span />
+              <S.AddNodeCircle className="add-node-circle">
+                <AddIcon fontSize="small" />
+              </S.AddNodeCircle>
+              <S.AddNodeLabel className="add-node-label">Add step</S.AddNodeLabel>
+            </S.AddNodeWrapper>
+          </S.StepsRailWrapper>
+        </S.StepsCard>
+
+        {/* Drag overlay — floating ghost of the dragged row */}
         <DragOverlay>
-          {activeId && getActiveStep() && (
-            <S.StepItem style={{ opacity: 0.9, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-              <DragIndicatorIcon fontSize="small" />
-              <S.StepItemName>{getActiveStep()?.name}</S.StepItemName>
-            </S.StepItem>
+          {activeStep && (
+            <S.DragOverlayRow>
+              <S.StepDragGrip>
+                <DragIndicatorIcon fontSize="small" />
+              </S.StepDragGrip>
+              <S.StepNumberColumn>
+                <S.StepNumberBadge stepcolor={S.STEP_COLORS[activeStepIndex % S.STEP_COLORS.length]}>
+                  {activeStepIndex + 1}
+                </S.StepNumberBadge>
+              </S.StepNumberColumn>
+              <S.StepCardBody
+                stepcolor={S.STEP_COLORS[activeStepIndex % S.STEP_COLORS.length]}
+              >
+                <S.StepTitleRow>
+                  <S.StepTitle>{activeStep.name}</S.StepTitle>
+                </S.StepTitleRow>
+                {activeStep.description && (
+                  <S.StepDescription>{activeStep.description}</S.StepDescription>
+                )}
+              </S.StepCardBody>
+            </S.DragOverlayRow>
           )}
         </DragOverlay>
       </DndContext>

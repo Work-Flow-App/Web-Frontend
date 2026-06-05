@@ -1,22 +1,15 @@
-import React, { createContext, useState, useMemo, useCallback, type ReactNode } from 'react';
+import React, { createContext, useState, useMemo, useCallback } from 'react';
 import type { ITableRow, ITableColumn, ISortConfig } from '../ITable';
+import type { 
+  IPaginationModalContext, 
+  IDataRowsContext, 
+  IDataColumnContext, 
+  IDataTableContextProviderProps 
+} from './IDataTableContext';
 
 // ============================================
 // Pagination Context
 // ============================================
-
-interface IPaginationModalContext {
-  currentPage: number;
-  totalPages: number;
-  rowsPerPage: number;
-  totalRows: number;
-  setCurrentPage: (page: number) => void;
-  setRowsPerPage: (rows: number) => void;
-  setTotalRows: (total: number) => void;
-  goToPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-}
 
 const PaginationModalContext = createContext<IPaginationModalContext | undefined>(undefined);
 
@@ -24,50 +17,13 @@ const PaginationModalContext = createContext<IPaginationModalContext | undefined
 // DataRows Context
 // ============================================
 
-interface IDataRowsContext<T = ITableRow> {
-  rows: T[];
-  filteredRows: T[];
-  selectedRows: (string | number)[];
-  sortConfig: ISortConfig | null;
-  globalSearchQuery: string;
-  setRows: (rows: T[]) => void;
-  setSelectedRows: (ids: (string | number)[]) => void;
-  setSortConfig: (config: ISortConfig | null) => void;
-  setGlobalSearchQuery: (query: string) => void;
-  toggleRowSelection: (id: string | number) => void;
-  toggleAllRows: () => void;
-  clearSelection: () => void;
-  isAllSelected: boolean;
-  isIndeterminate: boolean;
-}
-
 const DataRowsContext = createContext<IDataRowsContext | undefined>(undefined);
 
 // ============================================
 // DataColumn Context
 // ============================================
 
-interface IDataColumnContext<T = ITableRow> {
-  columns: ITableColumn<T>[];
-  columnSearchQueries: Record<string, string>;
-  setColumns: (columns: ITableColumn<T>[]) => void;
-  setColumnSearchQuery: (columnId: string, query: string) => void;
-  clearColumnSearchQuery: (columnId: string) => void;
-  clearAllColumnSearches: () => void;
-}
-
 const DataColumnContext = createContext<IDataColumnContext | undefined>(undefined);
-
-// ============================================
-// Provider Props
-// ============================================
-
-interface IDataTableContextProviderProps<T = ITableRow> {
-  children: ReactNode;
-  initialData?: T[];
-  initialColumns?: ITableColumn<T>[];
-  initialRowsPerPage?: number;
-}
 
 // ============================================
 // Combined Provider

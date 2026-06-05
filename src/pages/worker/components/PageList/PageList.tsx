@@ -199,6 +199,7 @@ export const PageList: React.FC = () => {
     >
       <Table<WorkerTableRow>
         columns={columns}
+        customiseColumns={true}
         data={workers}
         selectable
         showActions
