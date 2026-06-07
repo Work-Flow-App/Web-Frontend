@@ -141,3 +141,44 @@ export const Title = styled(Typography)(({ theme }) => ({
     fontSize: rem(26),
   },
 }));
+
+export const SummaryCardsContainer = styled(Box)(() => ({
+  display: 'flex',
+  gap: rem(16),
+  marginBottom: rem(24),
+  flexWrap: 'wrap',
+}));
+
+export const SummaryLoadingContainer = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  paddingTop: rem(16),
+  paddingBottom: rem(16),
+}));
+
+export const SummaryHeader = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(4),
+}));
+
+export const SummaryLabelText = styled(Typography)(({ theme }) => ({
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  fontSize: '0.7rem',
+  fontWeight: 600,
+  color: theme.palette.text.secondary,
+}));
+
+interface SummaryValueTextProps {
+  stylecolor: string;
+}
+
+export const SummaryValueText = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== 'stylecolor',
+})<SummaryValueTextProps>(({ stylecolor }) => ({
+  marginTop: rem(4),
+  fontWeight: 700,
+  color: stylecolor,
+}));

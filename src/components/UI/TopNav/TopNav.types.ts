@@ -16,6 +16,11 @@ export interface TopNavProps {
   rightContent?: ReactNode;
 
   /**
+   * Whether the sidebar is currently collapsed
+   */
+  isCollapsed?: boolean;
+
+  /**
    * Callback to toggle sidebar (mobile only)
    */
   onToggleSidebar?: () => void;
