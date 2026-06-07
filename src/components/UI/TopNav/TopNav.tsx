@@ -1,10 +1,11 @@
 import React from 'react';
 import { IconButton} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection,LogoWrapper} from './TopNav.styles';
 import type { TopNavProps } from './TopNav.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
 import { floowColors } from '../../../theme/colors';
+import { SidebarCollapse } from './icon/SidebarCollapse';
+import { SidebarExpand } from './icon/SidebarExpand';
 
 /**
  * TopNav Component
@@ -28,6 +29,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   searchContent,
   rightContent,
   onToggleSidebar,
+  isCollapsed,
   className,
   sx,
 }) => {
@@ -49,7 +51,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             aria-label="Toggle sidebar menu"
             title="Toggle sidebar"
           >
-            <MenuIcon />
+            {isCollapsed ? <SidebarExpand /> : <SidebarCollapse />}
           </IconButton>
         </LeftSection>
 
