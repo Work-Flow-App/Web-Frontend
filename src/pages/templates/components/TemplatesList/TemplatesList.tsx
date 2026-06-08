@@ -10,6 +10,9 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateTemplateColumns, type TemplateTableRow } from './DataColumn';
 import { TemplateForm } from '../TemplateForm/TemplateForm';
+import { TollTip } from '../../../../components/UI/TollTip/TollTip';
+import { TOOLTIP_MESSAGES } from './ToolTipConst';
+import { TitleContainer } from './TemplatesList.styles';
 
 export const TemplatesList: React.FC = () => {
   const [templates, setTemplates] = useState<TemplateTableRow[]>([]);
@@ -272,7 +275,12 @@ export const TemplatesList: React.FC = () => {
 
   return (
     <PageWrapper
-      title="Job Templates"
+      title={
+        <TitleContainer>
+          Job Templates
+          <TollTip message={TOOLTIP_MESSAGES.JOB_TEMPLATES} />
+        </TitleContainer>
+      }
       description="Create and manage job templates with custom fields."
       actions={[
         {

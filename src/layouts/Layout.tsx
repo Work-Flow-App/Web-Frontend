@@ -303,6 +303,7 @@ export const Layout: React.FC = () => {
       <S.PageRightSection>
         {/* Persistent TopNav */}
         <TopNav
+          isCollapsed={isSidebarCollapsed}
           rightContent={
             <>
               {trialDaysLeft !== null && (

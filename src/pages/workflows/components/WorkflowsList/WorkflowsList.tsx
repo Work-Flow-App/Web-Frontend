@@ -10,6 +10,9 @@ import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { workflowColumns } from './DataColumn';
 import type { WorkflowTableRow } from '../../../../types/workflow';
 import { WorkflowForm } from '../WorkflowForm/WorkflowForm';
+import { TollTip } from '../../../../components/UI/TollTip/TollTip';
+import { TOOLTIP_MESSAGES } from './ToolTipConst';
+import { TitleContainer } from './WorkflowsList.styles';
 
 export const WorkflowsList: React.FC = () => {
   const navigate = useNavigate();
@@ -214,7 +217,12 @@ export const WorkflowsList: React.FC = () => {
 
   return (
     <PageWrapper
-      title="Workfloow Templates"
+      title={
+        <TitleContainer>
+          Workfloow Templates
+          <TollTip message={TOOLTIP_MESSAGES.WORKFLOW_TEMPLATES} />
+        </TitleContainer>
+      }
       description="Create and manage reusable workfloow templates for your jobs."
       actions={[
         {
