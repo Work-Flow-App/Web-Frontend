@@ -1,9 +1,7 @@
 import React from 'react';
-import { IconButton} from '@mui/material';
-import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection,LogoWrapper} from './TopNav.styles';
+import { TopNavOuterWrapper, TopNavWrapper, RightSection, LeftSection, CenterSection, SearchSection,LogoWrapper, SidebarToggleButton} from './TopNav.styles';
 import type { TopNavProps } from './TopNav.types';
 import { FloowLogo } from '../FloowLogo/FloowLogo';
-import { floowColors } from '../../../theme/colors';
 import { SidebarCollapse } from './icon/SidebarCollapse';
 import { SidebarExpand } from './icon/SidebarExpand';
 
@@ -43,16 +41,14 @@ export const TopNav: React.FC<TopNavProps> = ({
       <TopNavWrapper>
         {/* Left Section - Sidebar Toggle (Mobile & Desktop) */}
         <LeftSection>
-          <IconButton
+          <SidebarToggleButton
             onClick={onToggleSidebar}
-            sx={{
-              color: floowColors.grey[300],
-            }}
+            size="large"
             aria-label="Toggle sidebar menu"
             title="Toggle sidebar"
           >
             {isCollapsed ? <SidebarExpand /> : <SidebarCollapse />}
-          </IconButton>
+          </SidebarToggleButton>
         </LeftSection>
 
         {/* Center Section - Mobile Logo (shown only on mobile) */}

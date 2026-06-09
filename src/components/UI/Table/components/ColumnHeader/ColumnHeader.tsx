@@ -22,8 +22,10 @@ import {
   getActionsCellDefaultHeaderSx,
   getFirstColumnStickySearchStyle,
   getCheckboxCellSearchSx,
+  ActionsHeaderContent,
 } from './ColumnHeader.styles';
 import { SortIcon } from '../../icons';
+import CustomiseColumnsButton from '../CustomiseColumns/CustomiseColumnsButton';
 
 /**
  * ColumnHeader component for table column headers and column search
@@ -44,6 +46,9 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
   showActions = false,
   enableStickyLeft = false,
   enableStickyRight = false,
+  customiseColumns = false,
+  allColumnLabels,
+  onVisibleColumnsChange,
   className,
 }) => {
   const theme = useTheme();
@@ -132,7 +137,15 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   : getActionsCellDefaultHeaderSx(headerBg)
                 }
               >
-                Actions
+                <ActionsHeaderContent>
+                  Actions
+                  {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
+                    <CustomiseColumnsButton
+                      columns={allColumnLabels}
+                      onChange={onVisibleColumnsChange}
+                    />
+                  )}
+                </ActionsHeaderContent>
               </ActionsCell>
             )}
           </>
@@ -170,7 +183,15 @@ const ColumnHeader: React.FC<IColumnHeader> = ({
                   : getActionsCellDefaultHeaderSx(headerBg)
                 }
               >
-                Actions
+                <ActionsHeaderContent>
+                  Actions
+                  {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
+                    <CustomiseColumnsButton
+                      columns={allColumnLabels}
+                      onChange={onVisibleColumnsChange}
+                    />
+                  )}
+                </ActionsHeaderContent>
               </ActionsCell>
             )}
           </>

@@ -6,8 +6,6 @@ import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
 import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer } from './Table.styles';
-import { Box } from '@mui/material';
-import CustomiseColumnsButton from './components/CustomiseColumns/CustomiseColumnsButton';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -98,12 +96,6 @@ const TableInner = <T extends ITableRow = ITableRow>({
   const headerActions = hasTitleHeader ? (
     <HeaderActionsContainer>
       {titleActions}
-      {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
-        <CustomiseColumnsButton
-          columns={allColumnLabels}
-          onChange={onVisibleColumnsChange}
-        />
-      )}
     </HeaderActionsContainer>
   ) : undefined;
 
@@ -117,15 +109,6 @@ const TableInner = <T extends ITableRow = ITableRow>({
         />
       )}
 
-      {/* Render independently if there is no title header */}
-      {!hasTitleHeader && customiseColumns && allColumnLabels && onVisibleColumnsChange && (
-        <IndependentActionsContainer>
-          <CustomiseColumnsButton
-            columns={allColumnLabels}
-            onChange={onVisibleColumnsChange}
-          />
-        </IndependentActionsContainer>
-      )}
 
       <StyledTableContainer>
         <StyledTable>
@@ -137,6 +120,9 @@ const TableInner = <T extends ITableRow = ITableRow>({
               showActions={showActions}
               enableStickyLeft={enableStickyLeft}
               enableStickyRight={enableStickyRight}
+              customiseColumns={customiseColumns}
+              allColumnLabels={allColumnLabels}
+              onVisibleColumnsChange={onVisibleColumnsChange}
             />
           </StyledTableHead>
 

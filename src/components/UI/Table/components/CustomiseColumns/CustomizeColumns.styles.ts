@@ -1,15 +1,11 @@
 import { styled } from '@mui/material/styles';
-import { Box, Button, Popover, Switch, Typography } from '@mui/material';
+import { Box, Button, Popover, Switch, Typography, IconButton } from '@mui/material';
 
-export const CustomiseButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  fontWeight: 600,
-  color: theme.palette.text.primary,
-  borderColor: theme.palette.divider,
-  borderRadius: theme.spacing(1),
+export const FilterIconButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  padding: '4px',
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
-    borderColor: theme.palette.text.secondary,
   },
 }));
 

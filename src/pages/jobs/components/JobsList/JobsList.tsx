@@ -403,6 +403,7 @@ const fetchAssets = async () => {
         data={jobs}
         selectable
         showActions
+        customiseColumns={true}
         actions={tableActions}
         onRowClick={handleRowClick}
         loading={loading || loadingTemplates}
