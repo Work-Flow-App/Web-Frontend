@@ -1,10 +1,11 @@
-import { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Button } from '../Button';
 import { Search } from '../Search';
 import { StandaloneDropdown } from '../Forms/Dropdown';
 import type { PageWrapperProps } from './PageWrapper.types';
 import * as S from './PageWrapper.styles';
 import FilterIcon from './Icons/FilterIcon.tsx';
+import { PageWrapperSlotContext } from './context/PageWrapperSlotContext';
 
 
 
@@ -43,20 +44,20 @@ const PageWrapperContent = memo(
               </S.HeaderLeft>
 
               <S.HeaderRight>
-                {actions.map((action) => (
-                  <Button
-                    key={action.label}
-                    onClick={action.onClick}
-                    variant={action.variant || 'contained'}
-                    color={action.color || 'primary'}
-                    disabled={action.disabled}
-                    startIcon={action.icon}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
-
-                {headerExtra}
+                {actions
+                  .filter((a) => !a.component)
+                  .map((action) => (
+                    <Button
+                      key={action.label}
+                      onClick={action.onClick}
+                      variant={action.variant || 'contained'}
+                      color={action.color || 'primary'}
+                      disabled={action.disabled}
+                      startIcon={action.icon}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
 
                 {dropdownOptions && dropdownOptions.length > 0 && (
                   <S.DropdownWrapper>
@@ -85,6 +86,14 @@ const PageWrapperContent = memo(
                     <FilterIcon />
                   </S.FilterButton>
                 )}
+
+                {actions
+                  .filter((a) => a.component)
+                  .map((action) => (
+                    <React.Fragment key={action.label}>{action.component}</React.Fragment>
+                  ))}
+
+                {headerExtra}
               </S.HeaderRight>
             </S.HeaderContent>
           </S.PageHeader>
@@ -97,8 +106,19 @@ const PageWrapperContent = memo(
 
 PageWrapperContent.displayName = 'PageWrapperContent';
 
-export const PageWrapper = memo((props: PageWrapperProps) => {
-  return <PageWrapperContent {...props} />;
+export const PageWrapper = memo(({ headerExtra, ...props }: PageWrapperProps) => {
+  const [slotHeaderExtra, setSlotHeaderExtra] = useState<ReactNode>(null);
+
+  const slotContextValue = useMemo(
+    () => ({ setHeaderExtra: setSlotHeaderExtra }),
+    [] // setSlotHeaderExtra is a stable useState setter
+  );
+
+  return (
+    <PageWrapperSlotContext.Provider value={slotContextValue}>
+      <PageWrapperContent {...props} headerExtra={headerExtra ?? slotHeaderExtra} />
+    </PageWrapperSlotContext.Provider>
+  );
 });
 
 PageWrapper.displayName = 'PageWrapper';

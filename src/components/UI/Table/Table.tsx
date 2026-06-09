@@ -1,12 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { usePageWrapperSlot } from '../PageWrapper';
 import type { ITable, ITableRow } from './ITable';
 import { DataTableContextProvider } from './context';
 import { TitleHeader } from './components/TitleHeader';
 import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
-import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer } from './Table.styles';
-import { Box } from '@mui/material';
+import {
+  TableWrapper,
+  StyledTableContainer,
+  StyledTable,
+  StyledTableHead,
+  StyledTableBody,
+  HeaderActionsContainer,
+  IndependentActionsContainer,
+} from './Table.styles';
 import CustomiseColumnsButton from './components/CustomiseColumns/CustomiseColumnsButton';
 
 /**
@@ -89,9 +97,11 @@ const TableInner = <T extends ITableRow = ITableRow>({
   customiseColumns = false,
   allColumnLabels,
   onVisibleColumnsChange,
+  hasPageWrapperSlot = false,
 }: Omit<IEnhancedTable<T>, 'columns' | 'data'> & {
   allColumnLabels?: string[];
   onVisibleColumnsChange?: (visible: string[]) => void;
+  hasPageWrapperSlot?: boolean;
 }) => {
   const hasTitleHeader = Boolean(title || titleActions);
 
@@ -99,10 +109,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
     <HeaderActionsContainer>
       {titleActions}
       {customiseColumns && allColumnLabels && onVisibleColumnsChange && (
-        <CustomiseColumnsButton
-          columns={allColumnLabels}
-          onChange={onVisibleColumnsChange}
-        />
+        <CustomiseColumnsButton columns={allColumnLabels} onChange={onVisibleColumnsChange} />
       )}
     </HeaderActionsContainer>
   ) : undefined;
@@ -110,20 +117,12 @@ const TableInner = <T extends ITableRow = ITableRow>({
   return (
     <TableWrapper width={width} className={className}>
       {/* Title Header */}
-      {hasTitleHeader && (
-        <TitleHeader
-          title={title}
-          actions={headerActions}
-        />
-      )}
+      {hasTitleHeader && <TitleHeader title={title} actions={headerActions} />}
 
-      {/* Render independently if there is no title header */}
-      {!hasTitleHeader && customiseColumns && allColumnLabels && onVisibleColumnsChange && (
+      {/* Render independently if there is no title header and no PageWrapper slot */}
+      {!hasTitleHeader && !hasPageWrapperSlot && customiseColumns && allColumnLabels && onVisibleColumnsChange && (
         <IndependentActionsContainer>
-          <CustomiseColumnsButton
-            columns={allColumnLabels}
-            onChange={onVisibleColumnsChange}
-          />
+          <CustomiseColumnsButton columns={allColumnLabels} onChange={onVisibleColumnsChange} />
         </IndependentActionsContainer>
       )}
 
@@ -187,17 +186,28 @@ const Table = <T extends ITableRow = ITableRow>({
     return columns.filter((c) => visibleColumnLabels.includes(c.label));
   }, [columns, customiseColumns, visibleColumnLabels]);
 
+  const pageWrapperSlot = usePageWrapperSlot();
+
+  useEffect(() => {
+    if (!customiseColumns || !pageWrapperSlot) return;
+    pageWrapperSlot.setHeaderExtra(
+      <CustomiseColumnsButton columns={allColumnLabels} onChange={setVisibleColumnLabels} />
+    );
+    return () => pageWrapperSlot.setHeaderExtra(null);
+  }, [customiseColumns, pageWrapperSlot, allColumnLabels]);
+
   return (
     <DataTableContextProvider<T>
       initialData={data}
       initialColumns={visibleTableColumns}
       initialRowsPerPage={rowsPerPage}
     >
-      <TableInner<T> 
+      <TableInner<T>
         customiseColumns={customiseColumns}
         allColumnLabels={allColumnLabels}
         onVisibleColumnsChange={setVisibleColumnLabels}
-        {...props} 
+        hasPageWrapperSlot={!!pageWrapperSlot}
+        {...props}
       />
     </DataTableContextProvider>
   );

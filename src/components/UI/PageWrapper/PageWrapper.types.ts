@@ -5,10 +5,11 @@ import type { DropdownOption } from '../Forms/Dropdown';
 export interface PageAction {
   label: string;
   icon?: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   variant?: ButtonVariant;
   color?: ButtonColor;
   disabled?: boolean;
+  component?: ReactNode;
 }
 
 export interface PageWrapperProps {
@@ -33,10 +34,10 @@ export interface PageWrapperProps {
 export interface PageWrapperContextValue {
   title: string;
   description?: string;
+  actions: PageAction[];
   setTitle: (title: string) => void;
   setDescription: (description: string) => void;
   addAction: (action: PageAction) => void;
   removeAction: (label: string) => void;
   clearActions: () => void;
-  setHeaderExtra: (extra: ReactNode) => void;
 }

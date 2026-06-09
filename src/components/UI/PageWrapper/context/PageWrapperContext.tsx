@@ -3,6 +3,7 @@ import type { PageWrapperContextValue, PageAction } from '../PageWrapper.types';
 
 const PageWrapperContext = createContext<PageWrapperContextValue | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePageWrapperContext = () => {
   const context = useContext(PageWrapperContext);
   if (!context) {
@@ -25,7 +26,6 @@ export const PageWrapperProvider = ({
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [actions, setActions] = useState<PageAction[]>([]);
-  const [headerExtra, setHeaderExtra] = useState<ReactNode>(null);
 
   const addAction = useCallback((action: PageAction) => {
     setActions((prev) => [...prev, action]);
@@ -42,12 +42,12 @@ export const PageWrapperProvider = ({
   const value: PageWrapperContextValue = {
     title,
     description,
+    actions,
     setTitle,
     setDescription,
     addAction,
     removeAction,
     clearActions,
-    setHeaderExtra,
   };
 
   return <PageWrapperContext.Provider value={value}>{children}</PageWrapperContext.Provider>;

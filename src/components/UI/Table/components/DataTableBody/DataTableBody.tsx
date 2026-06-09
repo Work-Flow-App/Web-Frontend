@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { IDataTableBody } from './IDataTableBody';
+import type { ITableRow } from '../../ITable';
 import { useDataRow, useDataColumn, usePagination } from '../../context';
 import { Loader } from '../../../Loader';
 import {
@@ -39,7 +40,7 @@ import {
  * />
  * ```
  */
-const DataTableBody: React.FC<IDataTableBody> = ({
+const DataTableBody = <T extends ITableRow = ITableRow>({
   selectable = false,
   showActions = false,
   actions,
@@ -50,7 +51,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   emptyMessage = 'No data available',
   enableStickyLeft = false,
   enableStickyRight = false,
-}) => {
+}: IDataTableBody<T>) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const bodyBg = isDark ? theme.palette.background.paper : theme.palette.colors.white;
@@ -188,9 +189,9 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                   }
                 >
                   {actions && actions.length > 0 ? (
-                    <ActionsMenu row={row} actions={actions} />
+                    <ActionsMenu row={row as T} actions={actions} />
                   ) : renderActions ? (
-                    renderActions(row)
+                    renderActions(row as T)
                   ) : (
                     <ActionButton onClick={(e) => handleActionClick(row, e)}>
                       <MoreOptionsIcon />
@@ -230,9 +231,9 @@ const DataTableBody: React.FC<IDataTableBody> = ({
                   }
                 >
                   {actions && actions.length > 0 ? (
-                    <ActionsMenu row={row} actions={actions} />
+                    <ActionsMenu row={row as T} actions={actions} />
                   ) : renderActions ? (
-                    renderActions(row)
+                    renderActions(row as T)
                   ) : (
                     <ActionButton onClick={(e) => handleActionClick(row, e)}>
                       <MoreOptionsIcon />

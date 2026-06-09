@@ -17,11 +17,13 @@ export const PageList: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  const { data: rawWorkers, loading, refetch: fetchWorkers } = useFetch(
-    () => workerService.getAllWorkers(),
-    [],
-    { onError: (err) => showError(extractErrorMessage(err, 'Failed to load workers')) }
-  );
+  const {
+    data: rawWorkers,
+    loading,
+    refetch: fetchWorkers,
+  } = useFetch(() => workerService.getAllWorkers(), [], {
+    onError: (err) => showError(extractErrorMessage(err, 'Failed to load workers')),
+  });
 
   const workers = useMemo((): WorkerTableRow[] => {
     const workersData = Array.isArray(rawWorkers) ? rawWorkers : [];

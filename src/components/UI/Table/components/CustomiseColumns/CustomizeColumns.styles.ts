@@ -1,15 +1,17 @@
 import { styled } from '@mui/material/styles';
-import { Box, Button, Popover, Switch, Typography } from '@mui/material';
+import { Box, IconButton, Popover, Switch, Typography } from '@mui/material';
+import { rem } from '../../../Typography/utility';
 
-export const CustomiseButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  fontWeight: 600,
+export const CustomiseButton = styled(IconButton)(({ theme }) => ({
+  width: rem(48),
+  height: rem(48),
+  borderRadius: rem(6),
+  border: `1px solid ${theme.palette.colors?.grey_100 || theme.palette.divider}`,
+  background: theme.palette.colors?.white || theme.palette.background.paper,
   color: theme.palette.text.primary,
-  borderColor: theme.palette.divider,
-  borderRadius: theme.spacing(1),
   '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-    borderColor: theme.palette.text.secondary,
+    borderColor: theme.palette.colors?.grey_200 || theme.palette.grey[200],
+    background: theme.palette.colors?.grey_50 || theme.palette.grey[50],
   },
 }));
 
