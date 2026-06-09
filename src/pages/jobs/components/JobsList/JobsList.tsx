@@ -400,6 +400,7 @@ const fetchAssets = async () => {
     >
       <Table<JobTableRow>
         columns={columns}
+        customiseColumns={true}
         data={jobs}
         selectable
         showActions

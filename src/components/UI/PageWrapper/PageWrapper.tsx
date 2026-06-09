@@ -116,7 +116,12 @@ export const PageWrapper = memo(({ headerExtra, ...props }: PageWrapperProps) =>
 
   return (
     <PageWrapperSlotContext.Provider value={slotContextValue}>
-      <PageWrapperContent {...props} headerExtra={headerExtra ?? slotHeaderExtra} />
+      <PageWrapperContent
+        {...props}
+        headerExtra={
+          headerExtra || slotHeaderExtra ? <>{headerExtra}{slotHeaderExtra}</> : undefined
+        }
+      />
     </PageWrapperSlotContext.Provider>
   );
 });
