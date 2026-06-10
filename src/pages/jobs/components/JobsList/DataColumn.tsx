@@ -1,5 +1,25 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
+import { StatusChip } from './JobsList.styles';
+
+const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const normalizedStatus = status?.toUpperCase() || '';
+  switch (normalizedStatus) {
+    case 'COMPLETED':
+      return 'success';
+    case 'STARTED':
+    case 'ONGOING':
+      return 'primary';
+    case 'PENDING':
+    case 'INITIATED':
+      return 'warning';
+    case 'SKIPPED':
+      return 'error';
+    case 'NOT_STARTED':
+    default:
+      return 'default';
+  }
+};
 
 export interface JobTableRow {
   id: number;
@@ -71,7 +91,16 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       accessor: 'status',
       sortable: true,
       width: 'auto',
-      render: (row) => row.status || '-',
+      render: (row) => {
+        const statusText = row.status || 'UNKNOWN';
+        return (
+          <StatusChip
+            label={statusText.replace(/_/g, ' ')}
+            color={getStatusColor(statusText)}
+            size="small"
+          />
+        );
+      },
     },
   ];
 
