@@ -6,8 +6,8 @@ import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, assetService, customerService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, assetService, customerService, workflowService, companyClientService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse, WorkflowResponse, ClientResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
@@ -19,6 +19,8 @@ export const JobsList: React.FC = () => {
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
+  const [clients, setClients] = useState<ClientResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
@@ -64,9 +66,31 @@ const fetchAssets = async () => {
       }
     };
 
+    const fetchWorkflows = async () => {
+      try {
+        const response = await workflowService.getAllWorkflows();
+        const workflowsData = Array.isArray(response.data) ? response.data : [];
+        setWorkflows(workflowsData);
+      } catch (error) {
+        console.error('Error fetching workflows:', error);
+      }
+    };
+
+    const fetchClients = async () => {
+      try {
+        const response = await companyClientService.getAllClients();
+        const clientsData = Array.isArray(response.data) ? response.data : [];
+        setClients(clientsData);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
+
     fetchTemplates();
     fetchAssets();
     fetchCustomers();
+    fetchWorkflows();
+    fetchClients();
   }, [showError]);
 
   // Fetch template fields when template is selected
@@ -106,6 +130,8 @@ const fetchAssets = async () => {
       const transformedData: JobTableRow[] = jobsData.map((job: JobResponse) => {
         const template = templates.find((t) => t.id === job.templateId);
         const customer = customers.find((c) => c.id === job.customerId);
+        const workflow = workflows.find((w) => w.id === job.workflowId);
+        const client = clients.find((c) => c.id === job.clientId);
 
         // Extract values from FieldValueResponse objects
         const fieldValues: { [key: string]: string } = {};
@@ -134,6 +160,10 @@ const fetchAssets = async () => {
           templateName: template?.name || '-',
           customerId: job.customerId,
           customerName: customer?.name || '-',
+          workflowName: workflow?.name || '-',
+          clientName: client?.name || '-',
+          jobValue: '',
+          postCode: customer?.address?.postalCode || '-',
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
           fieldValues,
@@ -149,7 +179,7 @@ const fetchAssets = async () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, showArchived, templates, customers, assets, showError]);
+  }, [selectedTemplateId, showArchived, templates, customers, assets, workflows, clients, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
