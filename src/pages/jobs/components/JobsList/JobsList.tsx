@@ -162,7 +162,7 @@ const fetchAssets = async () => {
           customerName: customer?.name || '-',
           workflowName: workflow?.name || '-',
           clientName: client?.name || '-',
-          jobValue: '',
+          jobValue: job.estimateTotalNet?.toString() || '-',
           postCode: customer?.address?.postalCode || '-',
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
