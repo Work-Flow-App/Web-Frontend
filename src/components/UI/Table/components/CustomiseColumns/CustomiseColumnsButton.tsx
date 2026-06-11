@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
-import { FilterIconButton } from './CustomizeColumns.styles';
+import { IconButton } from '../../../Button';
 import CustomiseColumns from './CustomiseColumns';
 
 export interface CustomiseColumnsButtonProps {
@@ -28,13 +28,15 @@ const CustomiseColumnsButton: React.FC<CustomiseColumnsButtonProps> = ({
 
   return (
     <>
-      <FilterIconButton
-        aria-describedby={id}
+      <IconButton
+        aria-label="customise columns"
         onClick={handleClick}
         size="small"
+        variant="text"
+        color="secondary"
       >
         <FilterListRoundedIcon fontSize="small" />
-      </FilterIconButton>
+      </IconButton>
       
       <CustomiseColumns
         id={id}

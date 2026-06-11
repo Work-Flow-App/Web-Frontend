@@ -12,6 +12,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { AddJobWizard } from '../AddJobWizard';
+import { useFetch } from '../../../../hooks';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
@@ -19,8 +20,21 @@ export const JobsList: React.FC = () => {
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
-  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
-  const [clients, setClients] = useState<ClientResponse[]>([]);
+
+  const { data: workflowsData } = useFetch<WorkflowResponse[]>(
+    () => workflowService.getAllWorkflows(),
+    [],
+    { onError: (error) => console.error('Error fetching workflows:', error) }
+  );
+  const workflows = useMemo(() => Array.isArray(workflowsData) ? workflowsData : [], [workflowsData]);
+
+  const { data: clientsData } = useFetch<ClientResponse[]>(
+    () => companyClientService.getAllClients(),
+    [],
+    { onError: (error) => console.error('Error fetching clients:', error) }
+  );
+  const clients = useMemo(() => Array.isArray(clientsData) ? clientsData : [], [clientsData]);
+
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
@@ -66,31 +80,9 @@ const fetchAssets = async () => {
       }
     };
 
-    const fetchWorkflows = async () => {
-      try {
-        const response = await workflowService.getAllWorkflows();
-        const workflowsData = Array.isArray(response.data) ? response.data : [];
-        setWorkflows(workflowsData);
-      } catch (error) {
-        console.error('Error fetching workflows:', error);
-      }
-    };
-
-    const fetchClients = async () => {
-      try {
-        const response = await companyClientService.getAllClients();
-        const clientsData = Array.isArray(response.data) ? response.data : [];
-        setClients(clientsData);
-      } catch (error) {
-        console.error('Error fetching clients:', error);
-      }
-    };
-
     fetchTemplates();
     fetchAssets();
     fetchCustomers();
-    fetchWorkflows();
-    fetchClients();
   }, [showError]);
 
   // Fetch template fields when template is selected

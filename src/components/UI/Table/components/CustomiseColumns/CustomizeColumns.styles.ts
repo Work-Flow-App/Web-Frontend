@@ -1,13 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { Box, Button, Popover, Switch, Typography, IconButton } from '@mui/material';
-
-export const FilterIconButton = styled(IconButton)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  padding: '4px',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
+import { Box,  Popover, Switch, Typography } from '@mui/material';
 
 export const StyledPopover = styled(Popover)(({ theme }) => ({
   '& .MuiPaper-root': {
