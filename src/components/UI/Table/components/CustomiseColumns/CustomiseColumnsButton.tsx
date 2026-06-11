@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ViewColumn } from '@mui/icons-material';
-import { CustomiseButton } from './CustomizeColumns.styles';
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
+import { IconButton } from '../../../Button';
 import CustomiseColumns from './CustomiseColumns';
 
 export interface CustomiseColumnsButtonProps {
@@ -28,15 +28,15 @@ const CustomiseColumnsButton: React.FC<CustomiseColumnsButtonProps> = ({
 
   return (
     <>
-      <CustomiseButton
-        aria-describedby={id}
-        variant="outlined"
-        size="small"
+      <IconButton
+        aria-label="customise columns"
         onClick={handleClick}
-        startIcon={<ViewColumn />}
+        size="small"
+        variant="text"
+        color="secondary"
       >
-        Columns
-      </CustomiseButton>
+        <FilterListRoundedIcon fontSize="small" />
+      </IconButton>
       
       <CustomiseColumns
         id={id}

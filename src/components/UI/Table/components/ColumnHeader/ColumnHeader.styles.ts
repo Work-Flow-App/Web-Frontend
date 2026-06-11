@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { TableRow, TableCell, TextField } from '@mui/material';
+import { TableRow, TableCell, TextField, Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { CSSProperties } from 'react';
 
@@ -108,6 +108,12 @@ export const getActionsCellStickyHeaderSx = (
 
 export const getActionsCellDefaultHeaderSx = (bg: string): SxProps<Theme> => ({
   background: bg,
+});
+
+export const ActionsHeaderContent = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
 });
 
 // ─── SearchCellWrapper sticky style (used with `style` prop) ──────────────────
