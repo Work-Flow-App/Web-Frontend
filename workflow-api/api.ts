@@ -484,6 +484,8 @@ export interface JobResponse {
     'fieldValues'?: { [key: string]: FieldValueResponse; };
     'assetIds'?: Array<number>;
     'address'?: AddressResponse;
+    'estimateId'?: number;
+    'estimateTotalNet'?: number;
 }
 
 export const JobResponseStatusEnum = {

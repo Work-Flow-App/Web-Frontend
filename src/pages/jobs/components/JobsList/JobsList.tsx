@@ -6,12 +6,13 @@ import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, assetService, customerService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, assetService, customerService, workflowService, companyClientService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse, WorkflowResponse, ClientResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { AddJobWizard } from '../AddJobWizard';
+import { useFetch } from '../../../../hooks';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +20,21 @@ export const JobsList: React.FC = () => {
   const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [assets, setAssets] = useState<AssetResponse[]>([]);
+
+  const { data: workflowsData } = useFetch<WorkflowResponse[]>(
+    () => workflowService.getAllWorkflows(),
+    [],
+    { onError: (error) => console.error('Error fetching workflows:', error) }
+  );
+  const workflows = useMemo(() => Array.isArray(workflowsData) ? workflowsData : [], [workflowsData]);
+
+  const { data: clientsData } = useFetch<ClientResponse[]>(
+    () => companyClientService.getAllClients(),
+    [],
+    { onError: (error) => console.error('Error fetching clients:', error) }
+  );
+  const clients = useMemo(() => Array.isArray(clientsData) ? clientsData : [], [clientsData]);
+
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
@@ -106,6 +122,8 @@ const fetchAssets = async () => {
       const transformedData: JobTableRow[] = jobsData.map((job: JobResponse) => {
         const template = templates.find((t) => t.id === job.templateId);
         const customer = customers.find((c) => c.id === job.customerId);
+        const workflow = workflows.find((w) => w.id === job.workflowId);
+        const client = clients.find((c) => c.id === job.clientId);
 
         // Extract values from FieldValueResponse objects
         const fieldValues: { [key: string]: string } = {};
@@ -134,6 +152,10 @@ const fetchAssets = async () => {
           templateName: template?.name || '-',
           customerId: job.customerId,
           customerName: customer?.name || '-',
+          workflowName: workflow?.name || '-',
+          clientName: client?.name || '-',
+          jobValue: job.estimateTotalNet?.toString() || '-',
+          postCode: customer?.address?.postalCode || '-',
           status: job.status || '-',
           createdAt: job.createdAt || new Date().toISOString(),
           fieldValues,
@@ -149,7 +171,7 @@ const fetchAssets = async () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTemplateId, showArchived, templates, customers, assets, showError]);
+  }, [selectedTemplateId, showArchived, templates, customers, assets, workflows, clients, showError]);
 
   // Load jobs when template changes
   useEffect(() => {
@@ -403,6 +425,7 @@ const fetchAssets = async () => {
         data={jobs}
         selectable
         showActions
+        customiseColumns={true}
         actions={tableActions}
         onRowClick={handleRowClick}
         loading={loading || loadingTemplates}

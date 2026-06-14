@@ -11,4 +11,10 @@ export interface IColumnHeader {
   enableStickyLeft?: boolean;
   /** Enable sticky right columns (for actions) */
   enableStickyRight?: boolean;
+  /** Enable column customization */
+  customiseColumns?: boolean;
+  /** All available column labels */
+  allColumnLabels?: string[];
+  /** Callback for when visible columns change */
+  onVisibleColumnsChange?: (visible: string[]) => void;
 }

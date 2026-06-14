@@ -1,4 +1,4 @@
-import { styled, Box } from '@mui/material';
+import { styled, Box, IconButton } from '@mui/material';
 import { rem } from '../Typography/utility';
 
 /**
@@ -160,3 +160,12 @@ export const LogoWrapper = styled(Box)({
     display: 'block',
   },
 });
+
+export const SidebarToggleButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.colors?.grey_300 || 'rgba(255, 255, 255, 0.7)',
+  marginLeft: theme.spacing(-2.5),
+  '& svg': {
+    width: 35,
+    height: 35,
+  },
+}));
