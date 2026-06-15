@@ -473,10 +473,14 @@ export interface JobResponse {
     'jobRef'?: number;
     'companyId'?: number;
     'templateId'?: number;
+    'templateName'?: string;
     'clientId'?: number;
+    'clientName'?: string;
     'customerId'?: number;
-    'assignedWorkerIds'?: Array<number>;
+    'customerName'?: string;
     'workflowId'?: number;
+    'workflowName'?: string;
+    'assignedWorkerIds'?: Array<number>;
     'status'?: JobResponseStatusEnum;
     'archived'?: boolean;
     'createdAt'?: string;
@@ -881,8 +885,17 @@ export interface PageMetadata {
     'totalElements'?: number;
     'totalPages'?: number;
 }
+export interface Pageable {
+    'page'?: number;
+    'size'?: number;
+    'sort'?: Array<string>;
+}
 export interface PagedModelAssetResponse {
     'content'?: Array<AssetResponse>;
+    'page'?: PageMetadata;
+}
+export interface PagedModelJobResponse {
+    'content'?: Array<JobResponse>;
     'page'?: PageMetadata;
 }
 export interface PasswordResetResponse {
@@ -7516,10 +7529,24 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
+         * @param {Pageable} pageable 
+         * @param {string} [search] 
+         * @param {string} [customerName] 
+         * @param {string} [clientName] 
+         * @param {string} [workflowName] 
+         * @param {string} [templateName] 
+         * @param {JobGetAllStatusEnum} [status] 
+         * @param {boolean} [archived] 
+         * @param {number} [minNet] 
+         * @param {number} [maxNet] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        jobGetAll: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        jobGetAll: async (pageable: Pageable, search?: string, customerName?: string, clientName?: string, workflowName?: string, templateName?: string, status?: JobGetAllStatusEnum, archived?: boolean, minNet?: number, maxNet?: number, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pageable' is not null or undefined
+            assertParamExists('jobGetAll', 'pageable', pageable)
             const localVarPath = `/api/v1/jobs`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7535,6 +7562,60 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
             // authentication bearerAuth required
             // http bearer authentication required
             await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (search !== undefined) {
+                localVarQueryParameter['search'] = search;
+            }
+
+            if (customerName !== undefined) {
+                localVarQueryParameter['customerName'] = customerName;
+            }
+
+            if (clientName !== undefined) {
+                localVarQueryParameter['clientName'] = clientName;
+            }
+
+            if (workflowName !== undefined) {
+                localVarQueryParameter['workflowName'] = workflowName;
+            }
+
+            if (templateName !== undefined) {
+                localVarQueryParameter['templateName'] = templateName;
+            }
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (archived !== undefined) {
+                localVarQueryParameter['archived'] = archived;
+            }
+
+            if (minNet !== undefined) {
+                localVarQueryParameter['minNet'] = minNet;
+            }
+
+            if (maxNet !== undefined) {
+                localVarQueryParameter['maxNet'] = maxNet;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
+            }
+
+            if (pageable !== undefined) {
+                for (const [key, value] of Object.entries(pageable)) {
+                    localVarQueryParameter[key] = value;
+                }
+            }
 
 
     
@@ -7719,11 +7800,23 @@ export const JobsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {Pageable} pageable 
+         * @param {string} [search] 
+         * @param {string} [customerName] 
+         * @param {string} [clientName] 
+         * @param {string} [workflowName] 
+         * @param {string} [templateName] 
+         * @param {JobGetAllStatusEnum} [status] 
+         * @param {boolean} [archived] 
+         * @param {number} [minNet] 
+         * @param {number} [maxNet] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async jobGetAll(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<JobResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetAll(options);
+        async jobGetAll(pageable: Pageable, search?: string, customerName?: string, clientName?: string, workflowName?: string, templateName?: string, status?: JobGetAllStatusEnum, archived?: boolean, minNet?: number, maxNet?: number, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelJobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetAll(pageable, search, customerName, clientName, workflowName, templateName, status, archived, minNet, maxNet, startDate, endDate, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGetAll']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -7811,11 +7904,23 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
+         * @param {Pageable} pageable 
+         * @param {string} [search] 
+         * @param {string} [customerName] 
+         * @param {string} [clientName] 
+         * @param {string} [workflowName] 
+         * @param {string} [templateName] 
+         * @param {JobGetAllStatusEnum} [status] 
+         * @param {boolean} [archived] 
+         * @param {number} [minNet] 
+         * @param {number} [maxNet] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        jobGetAll(options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
-            return localVarFp.jobGetAll(options).then((request) => request(axios, basePath));
+        jobGetAll(pageable: Pageable, search?: string, customerName?: string, clientName?: string, workflowName?: string, templateName?: string, status?: JobGetAllStatusEnum, archived?: boolean, minNet?: number, maxNet?: number, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelJobResponse> {
+            return localVarFp.jobGetAll(pageable, search, customerName, clientName, workflowName, templateName, status, archived, minNet, maxNet, startDate, endDate, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -7893,11 +7998,23 @@ export class JobsApi extends BaseAPI {
 
     /**
      * 
+     * @param {Pageable} pageable 
+     * @param {string} [search] 
+     * @param {string} [customerName] 
+     * @param {string} [clientName] 
+     * @param {string} [workflowName] 
+     * @param {string} [templateName] 
+     * @param {JobGetAllStatusEnum} [status] 
+     * @param {boolean} [archived] 
+     * @param {number} [minNet] 
+     * @param {number} [maxNet] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public jobGetAll(options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).jobGetAll(options).then((request) => request(this.axios, this.basePath));
+    public jobGetAll(pageable: Pageable, search?: string, customerName?: string, clientName?: string, workflowName?: string, templateName?: string, status?: JobGetAllStatusEnum, archived?: boolean, minNet?: number, maxNet?: number, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobGetAll(pageable, search, customerName, clientName, workflowName, templateName, status, archived, minNet, maxNet, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -7931,6 +8048,14 @@ export class JobsApi extends BaseAPI {
     }
 }
 
+export const JobGetAllStatusEnum = {
+    New: 'NEW',
+    Pending: 'PENDING',
+    InProgress: 'IN_PROGRESS',
+    Completed: 'COMPLETED',
+    Cancelled: 'CANCELLED'
+} as const;
+export type JobGetAllStatusEnum = typeof JobGetAllStatusEnum[keyof typeof JobGetAllStatusEnum];
 
 
 /**

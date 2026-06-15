@@ -6,8 +6,8 @@ import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, assetService, customerService, workflowService, companyClientService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, CustomerResponse, WorkflowResponse, ClientResponse } from '../../../../services/api';
+import { jobService, jobTemplateService, assetService } from '../../../../services/api';
+import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, PagedModelAssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
@@ -16,171 +16,90 @@ import { useFetch } from '../../../../hooks';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
-  const [jobs, setJobs] = useState<JobTableRow[]>([]);
-  const [templates, setTemplates] = useState<JobTemplateResponse[]>([]);
-  const [customers, setCustomers] = useState<CustomerResponse[]>([]);
-  const [assets, setAssets] = useState<AssetResponse[]>([]);
-
-  const { data: workflowsData } = useFetch<WorkflowResponse[]>(
-    () => workflowService.getAllWorkflows(),
-    [],
-    { onError: (error) => console.error('Error fetching workflows:', error) }
-  );
-  const workflows = useMemo(() => Array.isArray(workflowsData) ? workflowsData : [], [workflowsData]);
-
-  const { data: clientsData } = useFetch<ClientResponse[]>(
-    () => companyClientService.getAllClients(),
-    [],
-    { onError: (error) => console.error('Error fetching clients:', error) }
-  );
-  const clients = useMemo(() => Array.isArray(clientsData) ? clientsData : [], [clientsData]);
-
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
-  const [templateFields, setTemplateFields] = useState<JobTemplateFieldResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  // Fetch templates, clients, and workers on mount
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        setLoadingTemplates(true);
-        const response = await jobTemplateService.getAllTemplates();
-        const templatesData = Array.isArray(response.data) ? response.data : [];
-        setTemplates(templatesData);
-      } catch (error) {
-        console.error('Error fetching templates:', error);
-        showError('Failed to load templates');
-      } finally {
-        setLoadingTemplates(false);
-      }
-    };
+  const { data: templatesData, loading: loadingTemplates } = useFetch<JobTemplateResponse[]>(
+    () => jobTemplateService.getAllTemplates(),
+    [],
+    { onError: () => showError('Failed to load templates') }
+  );
+  const templates = useMemo(() => templatesData ?? [], [templatesData]);
 
-const fetchAssets = async () => {
-      try {
-        const response = await assetService.getAllAssets(0, 1000);
-        const assetsData = response.data.content || [];
-        setAssets(assetsData);
-      } catch (error) {
-        console.error('Error fetching assets:', error);
-      }
-    };
+  const { data: assetsPage } = useFetch<PagedModelAssetResponse>(
+    () => assetService.getAllAssets(0, 1000),
+    [],
+    { onError: (error) => console.error('Error fetching assets:', error) }
+  );
+  const assets = useMemo<AssetResponse[]>(() => assetsPage?.content ?? [], [assetsPage]);
 
-    const fetchCustomers = async () => {
-      try {
-        const response = await customerService.getAllCustomers();
-        const customersData = Array.isArray(response.data) ? response.data : [];
-        setCustomers(customersData);
-      } catch (error) {
-        console.error('Error fetching customers:', error);
-      }
-    };
-
-    fetchTemplates();
-    fetchAssets();
-    fetchCustomers();
-  }, [showError]);
-
-  // Fetch template fields when template is selected
-  useEffect(() => {
-    const fetchTemplateFields = async () => {
-      if (!selectedTemplateId) {
-        setTemplateFields([]);
-        return;
-      }
-
-      try {
-        const response = await jobTemplateService.getTemplateFields(selectedTemplateId);
-        const fieldsData = Array.isArray(response.data) ? response.data : [];
-        setTemplateFields(fieldsData);
-      } catch (error) {
-        console.error('Error fetching template fields:', error);
-        showError('Failed to load template fields');
-        setTemplateFields([]);
-      }
-    };
-
-    fetchTemplateFields();
-  }, [selectedTemplateId, showError]);
-
-  // Fetch jobs based on selected template / archived state
-  const fetchJobs = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = showArchived
-        ? await jobService.getArchivedJobs()
-        : selectedTemplateId
-        ? await jobService.getJobsByTemplate(selectedTemplateId)
-        : await jobService.getAllJobs();
-      const jobsData = Array.isArray(response.data) ? response.data : [];
-
-      // Transform API response to table format
-      const transformedData: JobTableRow[] = jobsData.map((job: JobResponse) => {
-        const template = templates.find((t) => t.id === job.templateId);
-        const customer = customers.find((c) => c.id === job.customerId);
-        const workflow = workflows.find((w) => w.id === job.workflowId);
-        const client = clients.find((c) => c.id === job.clientId);
-
-        // Extract values from FieldValueResponse objects
-        const fieldValues: { [key: string]: string } = {};
-        if (job.fieldValues) {
-          Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
-            if (fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse) {
-              fieldValues[key] = String(fieldValueResponse.value);
-            } else if (fieldValueResponse) {
-              fieldValues[key] = String(fieldValueResponse);
-            }
-          });
-        }
-
-        // Map asset IDs to asset names
-        const assetNames = job.assetIds && job.assetIds.length > 0
-          ? job.assetIds
-              .map(assetId => assets.find(a => a.id === assetId)?.name)
-              .filter(Boolean)
-              .join(', ')
-          : undefined;
-
-        return {
-          id: job.id || 0,
-          jobRef: job.jobRef,
-          templateId: job.templateId,
-          templateName: template?.name || '-',
-          customerId: job.customerId,
-          customerName: customer?.name || '-',
-          workflowName: workflow?.name || '-',
-          clientName: client?.name || '-',
-          jobValue: job.estimateTotalNet?.toString() || '-',
-          postCode: customer?.address?.postalCode || '-',
-          status: job.status || '-',
-          createdAt: job.createdAt || new Date().toISOString(),
-          fieldValues,
-          assetIds: job.assetIds,
-          assetNames,
-        };
-      });
-
-      setJobs(transformedData);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-      showError(extractErrorMessage(error, 'Failed to load jobs'));
-    } finally {
-      setLoading(false);
+  const { data: templateFieldsData } = useFetch<JobTemplateFieldResponse[]>(
+    () => jobTemplateService.getTemplateFields(selectedTemplateId!),
+    [selectedTemplateId],
+    {
+      skip: !selectedTemplateId,
+      onError: (error) => showError(extractErrorMessage(error, 'Failed to load template fields')),
     }
-  }, [selectedTemplateId, showArchived, templates, customers, assets, workflows, clients, showError]);
+  );
+  const templateFields = useMemo(() => templateFieldsData ?? [], [templateFieldsData]);
 
-  // Load jobs when template changes
-  useEffect(() => {
-    if (!loadingTemplates) {
-      fetchJobs();
+  const { data: rawJobs, loading, refetch: fetchJobs } = useFetch<JobResponse[]>(
+    () => showArchived
+      ? jobService.getArchivedJobs()
+      : selectedTemplateId
+      ? jobService.getJobsByTemplate(selectedTemplateId)
+      : jobService.getAllJobs(),
+    [selectedTemplateId, showArchived],
+    {
+      skip: loadingTemplates,
+      onError: (error) => showError(extractErrorMessage(error, 'Failed to load jobs')),
     }
-  }, [selectedTemplateId, loadingTemplates, fetchJobs]);
+  );
 
-  // Show "No Templates Available" modal when page loads if no templates exist
+  const jobs = useMemo<JobTableRow[]>(() => {
+    return (rawJobs ?? []).map((job: JobResponse) => {
+      const fieldValues: { [key: string]: string } = {};
+      if (job.fieldValues) {
+        Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
+          if (fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse) {
+            fieldValues[key] = String(fieldValueResponse.value);
+          } else if (fieldValueResponse) {
+            fieldValues[key] = String(fieldValueResponse);
+          }
+        });
+      }
+
+      const assetNames = job.assetIds && job.assetIds.length > 0
+        ? job.assetIds
+            .map(assetId => assets.find(a => a.id === assetId)?.name)
+            .filter(Boolean)
+            .join(', ')
+        : undefined;
+
+      return {
+        id: job.id || 0,
+        jobRef: job.jobRef,
+        templateId: job.templateId,
+        templateName: job.templateName || '-',
+        customerId: job.customerId,
+        customerName: job.customerName || '-',
+        workflowName: job.workflowName || '-',
+        clientName: job.clientName || '-',
+        jobValue: job.estimateTotalNet?.toString() || '-',
+        postCode: job.address?.postalCode || '-',
+        status: job.status || '-',
+        createdAt: job.createdAt || new Date().toISOString(),
+        fieldValues,
+        assetIds: job.assetIds,
+        assetNames,
+      };
+    });
+  }, [rawJobs, assets]);
+
+  // Show "No Templates Available" modal once on load if no templates exist
   useEffect(() => {
     if (!loadingTemplates && templates.length === 0 && !hasShownNoTemplateModal) {
       setHasShownNoTemplateModal(true);
@@ -200,18 +119,14 @@ const fetchAssets = async () => {
               resetGlobalModalOuterProps();
               navigate('/company/jobs/templates?openAddModal=true');
             }}
-            onCancel={() => {
-              resetGlobalModalOuterProps();
-            }}
+            onCancel={() => resetGlobalModalOuterProps()}
           />
         ),
       });
     }
   }, [loadingTemplates, templates.length, hasShownNoTemplateModal, setGlobalModalOuterProps, resetGlobalModalOuterProps, navigate]);
 
-  // Handle add job
   const handleAddJob = () => {
-    // Check if templates exist
     if (templates.length === 0) {
       setGlobalModalOuterProps({
         isOpen: true,
@@ -227,12 +142,9 @@ const fetchAssets = async () => {
             cancelButtonText="Cancel"
             onConfirm={() => {
               resetGlobalModalOuterProps();
-              // Navigate to templates page
               navigate('/company/jobs/templates?openAddModal=true');
             }}
-            onCancel={() => {
-              resetGlobalModalOuterProps();
-            }}
+            onCancel={() => resetGlobalModalOuterProps()}
           />
         ),
       });
@@ -254,15 +166,11 @@ const fetchAssets = async () => {
     });
   };
 
-  // Handle row click - navigate to job details
   const handleRowClick = useCallback(
-    (job: JobTableRow) => {
-      navigate(`/company/jobs/${job.id}/details`);
-    },
+    (job: JobTableRow) => navigate(`/company/jobs/${job.id}/details`),
     [navigate]
   );
 
-  // Handle edit job
   const handleEditJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
@@ -283,7 +191,6 @@ const fetchAssets = async () => {
     [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchJobs]
   );
 
-  // Handle delete job
   const handleDeleteJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
@@ -310,9 +217,7 @@ const fetchAssets = async () => {
                 resetGlobalModalOuterProps();
               }
             }}
-            onCancel={() => {
-              resetGlobalModalOuterProps();
-            }}
+            onCancel={() => resetGlobalModalOuterProps()}
           />
         ),
       });
@@ -320,7 +225,6 @@ const fetchAssets = async () => {
     [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
-  // Handle archive job
   const handleArchiveJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
@@ -347,9 +251,7 @@ const fetchAssets = async () => {
                 resetGlobalModalOuterProps();
               }
             }}
-            onCancel={() => {
-              resetGlobalModalOuterProps();
-            }}
+            onCancel={() => resetGlobalModalOuterProps()}
           />
         ),
       });
@@ -357,14 +259,9 @@ const fetchAssets = async () => {
     [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
-  // Define table actions
   const tableActions: ITableAction<JobTableRow>[] = useMemo(
     () => [
-      {
-        id: 'edit',
-        label: 'Edit',
-        onClick: handleEditJob,
-      },
+      { id: 'edit', label: 'Edit', onClick: handleEditJob },
       ...(!showArchived
         ? [{ id: 'archive', label: 'Archive', onClick: handleArchiveJob, color: 'error' as const }]
         : [{ id: 'delete', label: 'Delete', onClick: handleDeleteJob, color: 'error' as const }]),
@@ -372,18 +269,12 @@ const fetchAssets = async () => {
     [handleEditJob, handleArchiveJob, handleDeleteJob, showArchived]
   );
 
-  // Generate columns based on selected template fields
-  const columns = useMemo(() => {
-    return generateJobColumns(templateFields);
-  }, [templateFields]);
+  const columns = useMemo(() => generateJobColumns(templateFields), [templateFields]);
 
-  // Template dropdown options
-  const templateOptions = useMemo(() => {
-    return templates.map((template) => ({
-      label: template.name || '',
-      value: template.id?.toString() || '',
-    }));
-  }, [templates]);
+  const templateOptions = useMemo(
+    () => templates.map((t) => ({ label: t.name || '', value: t.id?.toString() || '' })),
+    [templates]
+  );
 
   const archivedFilterOptions = [
     { label: 'Active Jobs', value: 'active' },
