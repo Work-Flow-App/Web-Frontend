@@ -47,7 +47,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
   const baseColumns: ITableColumn<JobTableRow>[] = [
     {
       id: 'workflowName',
-      label: 'Workfloow',
+      label: 'Workflow',
       accessor: 'workflowName',
       sortable: true,
       width: 'auto',
