@@ -16,7 +16,8 @@ function getJobApi(): JobsApi {
 
 export const jobService = {
   async getAllJobs() {
-    return await getJobApi().jobGetAll();
+    const response = await getJobApi().jobGetAll({ page: 0, size: 1000 });
+    return { ...response, data: response.data?.content ?? [] };
   },
 
   async getArchivedJobs() {
