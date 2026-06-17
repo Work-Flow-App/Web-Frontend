@@ -14,9 +14,36 @@ function getJobApi(): JobsApi {
   return new JobsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
+export interface JobFilterOptions {
+  search?: string;
+  customerName?: string;
+  clientName?: string;
+  workflowName?: string;
+  templateName?: string;
+  status?: any;
+  archived?: boolean;
+  minNet?: number;
+  maxNet?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
 export const jobService = {
-  async getAllJobs() {
-    const response = await getJobApi().jobGetAll({ page: 0, size: 1000, sort: ['createdAt,desc'] });
+  async getAllJobs(filters?: JobFilterOptions) {
+    const response = await getJobApi().jobGetAll(
+      { page: 0, size: 1000, sort: ['createdAt,desc'] },
+      filters?.search,
+      filters?.customerName,
+      filters?.clientName,
+      filters?.workflowName,
+      filters?.templateName,
+      filters?.status,
+      filters?.archived,
+      filters?.minNet,
+      filters?.maxNet,
+      filters?.startDate,
+      filters?.endDate
+    );
     return { ...response, data: response.data?.content ?? [] };
   },
 

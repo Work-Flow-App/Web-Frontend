@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box } from '@mui/material';
+// import { Box } from '@mui/material';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
+import { KeyboardArrowDown, KeyboardArrowUp, Clear } from '@mui/icons-material';
+import { ListItemText, Collapse, List } from '@mui/material';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { jobService, jobTemplateService, assetService } from '../../../../services/api';
+// import { JobGetAllStatusEnum } from '../../../../workflow-api';
+import { FilterContainer, CustomFilterButton, FilterPopover, FilterList, CategoryListItem, SubListItem, FilterIconWrapper, ClearIconButton, ArrowIconWrapper, FilterButtonText } from './JobsList.styles';
 import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, PagedModelAssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
@@ -19,6 +23,9 @@ export const JobsList: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [tableFilter, setTableFilter] = useState<{ type: string, value: string } | null>(null);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -47,11 +54,11 @@ export const JobsList: React.FC = () => {
   const templateFields = useMemo(() => templateFieldsData ?? [], [templateFieldsData]);
 
   const { data: rawJobs, loading, refetch: fetchJobs } = useFetch<JobResponse[]>(
-    () => showArchived
-      ? jobService.getArchivedJobs()
-      : selectedTemplateId
-      ? jobService.getJobsByTemplate(selectedTemplateId)
-      : jobService.getAllJobs(),
+    () => {
+      if (showArchived) return jobService.getArchivedJobs();
+      if (selectedTemplateId) return jobService.getJobsByTemplate(selectedTemplateId);
+      return jobService.getAllJobs();
+    },
     [selectedTemplateId, showArchived],
     {
       skip: loadingTemplates,
@@ -59,8 +66,32 @@ export const JobsList: React.FC = () => {
     }
   );
 
+  const uniqueWorkflows = useMemo(() => Array.from(new Set((rawJobs || []).map(j => j.workflowName).filter(Boolean))), [rawJobs]);
+  const uniqueCustomers = useMemo(() => Array.from(new Set((rawJobs || []).map(j => j.customerName).filter(Boolean))), [rawJobs]);
+  const uniqueClients = useMemo(() => Array.from(new Set((rawJobs || []).map(j => j.clientName).filter(Boolean))), [rawJobs]);
+  const uniqueStatuses = useMemo(() => Array.from(new Set((rawJobs || []).map(j => j.status).filter(Boolean))), [rawJobs]);
+
+  const filterCategories = useMemo(() => [
+    { id: 'Workflow', label: 'Workflow', options: uniqueWorkflows },
+    { id: 'Customer', label: 'Customer', options: uniqueCustomers },
+    { id: 'Client', label: 'Client', options: uniqueClients },
+    { id: 'Status', label: 'Status', options: uniqueStatuses },
+  ], [uniqueWorkflows, uniqueCustomers, uniqueClients, uniqueStatuses]);
+
   const jobs = useMemo<JobTableRow[]>(() => {
-    return (rawJobs ?? []).map((job: JobResponse) => {
+    let filteredRawJobs = rawJobs ?? [];
+
+    if (tableFilter) {
+      filteredRawJobs = filteredRawJobs.filter(job => {
+        if (tableFilter.type === 'Workflow') return job.workflowName === tableFilter.value;
+        if (tableFilter.type === 'Customer') return job.customerName === tableFilter.value;
+        if (tableFilter.type === 'Client') return job.clientName === tableFilter.value;
+        if (tableFilter.type === 'Status') return job.status === tableFilter.value;
+        return true;
+      });
+    }
+
+    return filteredRawJobs.map((job: JobResponse) => {
       const fieldValues: { [key: string]: string } = {};
       if (job.fieldValues) {
         Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
@@ -294,7 +325,73 @@ export const JobsList: React.FC = () => {
         },
       ]}
       headerExtra={
-        <Box sx={{ minWidth: 160, display: 'flex', alignItems: 'center' }}>
+        <FilterContainer>
+          <CustomFilterButton 
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            disableRipple
+          >
+            <FilterButtonText>
+              {tableFilter ? `${tableFilter.type}: ${tableFilter.value}` : 'Filter By...'}
+            </FilterButtonText>
+            <FilterIconWrapper>
+              {tableFilter && (
+                <ClearIconButton 
+                  size="small"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setTableFilter(null); 
+                  }}
+                >
+                  <Clear fontSize="inherit" />
+                </ClearIconButton>
+              )}
+              <ArrowIconWrapper>
+                <KeyboardArrowDown fontSize="inherit" />
+              </ArrowIconWrapper>
+            </FilterIconWrapper>
+          </CustomFilterButton>
+
+          <FilterPopover
+            open={Boolean(anchorEl)}
+            anchorEl={anchorEl}
+            onClose={() => setAnchorEl(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          >
+            <FilterList>
+              {filterCategories.map(category => (
+                <React.Fragment key={category.id}>
+                  <CategoryListItem onClick={() => setExpandedCategory(expandedCategory === category.id ? null : category.id)}>
+                    <ListItemText primary={category.label} />
+                    {expandedCategory === category.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                  </CategoryListItem>
+                  
+                  <Collapse in={expandedCategory === category.id} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {category.options.length === 0 ? (
+                        <SubListItem disabled>
+                          <ListItemText primary="No options available" />
+                        </SubListItem>
+                      ) : (
+                        category.options.map(option => (
+                          <SubListItem 
+                            key={String(option)} 
+                            selected={tableFilter?.type === category.id && tableFilter?.value === option}
+                            onClick={() => {
+                              setTableFilter({ type: category.id, value: String(option) });
+                              setAnchorEl(null);
+                            }}
+                          >
+                            <ListItemText primary={String(option)} />
+                          </SubListItem>
+                        ))
+                      )}
+                    </List>
+                  </Collapse>
+                </React.Fragment>
+              ))}
+            </FilterList>
+          </FilterPopover>
+
           <StandaloneDropdown
             name="archivedFilter"
             placeHolder="Active Jobs"
@@ -304,7 +401,7 @@ export const JobsList: React.FC = () => {
             hideErrorMessage
             size="medium"
           />
-        </Box>
+        </FilterContainer>
       }
       dropdownOptions={!showArchived ? templateOptions : []}
       dropdownValue={selectedTemplateId?.toString()}
