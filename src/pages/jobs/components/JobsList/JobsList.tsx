@@ -6,8 +6,24 @@ import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { jobService, jobTemplateService, assetService } from '../../../../services/api';
-import type { JobResponse, JobTemplateResponse, JobTemplateFieldResponse, AssetResponse, PagedModelAssetResponse } from '../../../../services/api';
+import {
+  jobService,
+  jobTemplateService,
+  assetService,
+  customerService,
+  companyClientService,
+  workflowService,
+} from '../../../../services/api';
+import type {
+  JobResponse,
+  JobTemplateResponse,
+  JobTemplateFieldResponse,
+  AssetResponse,
+  PagedModelAssetResponse,
+  CustomerResponse,
+  ClientResponse,
+  WorkflowResponse,
+} from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
@@ -29,12 +45,25 @@ export const JobsList: React.FC = () => {
   );
   const templates = useMemo(() => templatesData ?? [], [templatesData]);
 
-  const { data: assetsPage } = useFetch<PagedModelAssetResponse>(
-    () => assetService.getAllAssets(0, 1000),
-    [],
-    { onError: (error) => console.error('Error fetching assets:', error) }
-  );
+  const { data: assetsPage } = useFetch<PagedModelAssetResponse>(() => assetService.getAllAssets(0, 1000), [], {
+    onError: (error) => console.error('Error fetching assets:', error),
+  });
   const assets = useMemo<AssetResponse[]>(() => assetsPage?.content ?? [], [assetsPage]);
+
+  const { data: customersData } = useFetch<CustomerResponse[]>(() => customerService.getAllCustomers(), [], {
+    onError: (error) => console.error('Error fetching customers:', error),
+  });
+  const customers = useMemo<CustomerResponse[]>(() => customersData ?? [], [customersData]);
+
+  const { data: clientsData } = useFetch<ClientResponse[]>(() => companyClientService.getAllClients(), [], {
+    onError: (error) => console.error('Error fetching clients:', error),
+  });
+  const clients = useMemo<ClientResponse[]>(() => clientsData ?? [], [clientsData]);
+
+  const { data: workflowsData } = useFetch<WorkflowResponse[]>(() => workflowService.getAllWorkflows(), [], {
+    onError: (error) => console.error('Error fetching workflows:', error),
+  });
+  const workflows = useMemo<WorkflowResponse[]>(() => workflowsData ?? [], [workflowsData]);
 
   const { data: templateFieldsData } = useFetch<JobTemplateFieldResponse[]>(
     () => jobTemplateService.getTemplateFields(selectedTemplateId!),
@@ -46,12 +75,17 @@ export const JobsList: React.FC = () => {
   );
   const templateFields = useMemo(() => templateFieldsData ?? [], [templateFieldsData]);
 
-  const { data: rawJobs, loading, refetch: fetchJobs } = useFetch<JobResponse[]>(
-    () => showArchived
-      ? jobService.getArchivedJobs()
-      : selectedTemplateId
-      ? jobService.getJobsByTemplate(selectedTemplateId)
-      : jobService.getAllJobs(),
+  const {
+    data: rawJobs,
+    loading,
+    refetch: fetchJobs,
+  } = useFetch<JobResponse[]>(
+    () =>
+      showArchived
+        ? jobService.getArchivedJobs()
+        : selectedTemplateId
+          ? jobService.getJobsByTemplate(selectedTemplateId)
+          : jobService.getAllJobs(),
     [selectedTemplateId, showArchived],
     {
       skip: loadingTemplates,
@@ -72,22 +106,28 @@ export const JobsList: React.FC = () => {
         });
       }
 
-      const assetNames = job.assetIds && job.assetIds.length > 0
-        ? job.assetIds
-            .map(assetId => assets.find(a => a.id === assetId)?.name)
-            .filter(Boolean)
-            .join(', ')
-        : undefined;
+      const assetNames =
+        job.assetIds && job.assetIds.length > 0
+          ? job.assetIds
+              .map((assetId) => assets.find((a) => a.id === assetId)?.name)
+              .filter(Boolean)
+              .join(', ')
+          : undefined;
+
+      const templateName = job.templateName || templates.find((t) => t.id === job.templateId)?.name || '-';
+      const customerName = job.customerName || customers.find((c) => c.id === job.customerId)?.name || '-';
+      const clientName = job.clientName || clients.find((c) => c.id === job.clientId)?.name || '-';
+      const workflowName = job.workflowName || workflows.find((w) => w.id === job.workflowId)?.name || '-';
 
       return {
         id: job.id || 0,
         jobRef: job.jobRef,
         templateId: job.templateId,
-        templateName: job.templateName || '-',
+        templateName,
         customerId: job.customerId,
-        customerName: job.customerName || '-',
-        workflowName: job.workflowName || '-',
-        clientName: job.clientName || '-',
+        customerName,
+        workflowName,
+        clientName,
         jobValue: job.estimateTotalNet?.toString() || '-',
         postCode: job.address?.postalCode || '-',
         status: job.status || '-',
@@ -97,7 +137,7 @@ export const JobsList: React.FC = () => {
         assetNames,
       };
     });
-  }, [rawJobs, assets]);
+  }, [rawJobs, assets, templates, customers, clients, workflows]);
 
   // Show "No Templates Available" modal once on load if no templates exist
   useEffect(() => {
@@ -124,7 +164,14 @@ export const JobsList: React.FC = () => {
         ),
       });
     }
-  }, [loadingTemplates, templates.length, hasShownNoTemplateModal, setGlobalModalOuterProps, resetGlobalModalOuterProps, navigate]);
+  }, [
+    loadingTemplates,
+    templates.length,
+    hasShownNoTemplateModal,
+    setGlobalModalOuterProps,
+    resetGlobalModalOuterProps,
+    navigate,
+  ]);
 
   const handleAddJob = () => {
     if (templates.length === 0) {
@@ -166,10 +213,7 @@ export const JobsList: React.FC = () => {
     });
   };
 
-  const handleRowClick = useCallback(
-    (job: JobTableRow) => navigate(`/company/jobs/${job.id}/details`),
-    [navigate]
-  );
+  const handleRowClick = useCallback((job: JobTableRow) => navigate(`/company/jobs/${job.id}/details`), [navigate]);
 
   const handleEditJob = useCallback(
     (job: JobTableRow) => {
@@ -324,8 +368,8 @@ export const JobsList: React.FC = () => {
           showArchived
             ? 'No archived jobs found.'
             : selectedTemplateId
-            ? 'No jobs found for this template. Add your first job to get started.'
-            : 'No jobs found. Add your first job to get started.'
+              ? 'No jobs found for this template. Add your first job to get started.'
+              : 'No jobs found. Add your first job to get started.'
         }
         rowsPerPage={100}
         showPagination={true}
