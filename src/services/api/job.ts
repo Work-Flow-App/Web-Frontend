@@ -15,17 +15,20 @@ function getJobApi(): JobsApi {
 }
 
 export const jobService = {
-  async getAllJobs() {
-    const response = await getJobApi().jobGetAll({ page: 0, size: 1000, sort: ['createdAt,desc'] });
-    return { ...response, data: response.data?.content ?? [] };
+  async getAllJobs(): Promise<{ data: JobResponse[] }> {
+    const res = await getJobApi().jobGetAll({ page: 0, size: 1000, sort: ['createdAt,desc'] });
+    // Generated type says PagedModelJobResponse but the API returns Array<JobResponse> at runtime
+    return { ...res, data: res.data as unknown as JobResponse[] };
   },
 
-  async getArchivedJobs() {
-    return await getJobApi().jobGetArchived();
+  async getArchivedJobs(): Promise<{ data: JobResponse[] }> {
+    const res = await getJobApi().jobGetArchived();
+    return { ...res, data: res.data as JobResponse[] };
   },
 
-  async getJobsByTemplate(templateId: number) {
-    return await getJobApi().jobGetJobsByTemplate(templateId);
+  async getJobsByTemplate(templateId: number): Promise<{ data: JobResponse[] }> {
+    const res = await getJobApi().jobGetJobsByTemplate(templateId);
+    return { ...res, data: res.data as JobResponse[] };
   },
 
   async getJobById(id: number) {
