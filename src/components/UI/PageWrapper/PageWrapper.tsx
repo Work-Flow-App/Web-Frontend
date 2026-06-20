@@ -6,8 +6,6 @@ import type { PageWrapperProps } from './PageWrapper.types';
 import * as S from './PageWrapper.styles';
 import FilterIcon from './Icons/FilterIcon.tsx';
 
-
-
 const PageWrapperContent = memo(
   ({
     title,
@@ -27,70 +25,68 @@ const PageWrapperContent = memo(
     headerExtra,
     maxWidth,
   }: PageWrapperProps) => {
-    const handleDropdownChange = useCallback((value: string | number | null) => {
-      if (value !== null) {
-        onDropdownChange?.(value);
-      }
-    }, [onDropdownChange]);
+    const handleDropdownChange = useCallback(
+      (value: string | number | null) => {
+        if (value !== null) {
+          onDropdownChange?.(value);
+        }
+      },
+      [onDropdownChange]
+    );
 
     return (
       <S.PageContainer maxWidth={maxWidth}>
-          <S.PageHeader>
-            <S.HeaderContent>
-              <S.HeaderLeft>
-                <S.Title>{title}</S.Title>
-                {description && <S.Description>{description}</S.Description>}
-              </S.HeaderLeft>
+        <S.PageHeader>
+          <S.HeaderContent>
+            <S.HeaderLeft>
+              <S.Title>{title}</S.Title>
+              {description && <S.Description>{description}</S.Description>}
+            </S.HeaderLeft>
 
-              <S.HeaderRight>
-                {actions.map((action) => (
-                  <Button
-                    key={action.label}
-                    onClick={action.onClick}
-                    variant={action.variant || 'contained'}
-                    color={action.color || 'primary'}
-                    disabled={action.disabled}
-                    startIcon={action.icon}
-                  >
-                    {action.label}
-                  </Button>
-                ))}
+            <S.HeaderRight>
+              {actions.map((action) => (
+                <Button
+                  key={action.label}
+                  onClick={action.onClick}
+                  variant={action.variant || 'contained'}
+                  color={action.color || 'primary'}
+                  disabled={action.disabled}
+                  startIcon={action.icon}
+                  size="small"
+                >
+                  {action.label}
+                </Button>
+              ))}
 
-                {headerExtra}
+              {headerExtra}
 
-                {dropdownOptions && dropdownOptions.length > 0 && (
-                  <S.DropdownWrapper>
-                    <StandaloneDropdown
-                      name="pageDropdown"
-                      placeHolder={dropdownPlaceholder}
-                      preFetchedOptions={dropdownOptions}
-                      defaultValue={dropdownValue || ''}
-                      onChange={handleDropdownChange}
-                      hideErrorMessage
-                      size="medium"
-                    />
-                  </S.DropdownWrapper>
-                )}
-
-                {showSearch && (
-                  <Search
-                    placeholder={searchPlaceholder}
-                    onChange={onSearchChange}
-                    onSearch={onSearch}
+              {dropdownOptions && dropdownOptions.length > 0 && (
+                <S.DropdownWrapper>
+                  <StandaloneDropdown
+                    name="pageDropdown"
+                    placeHolder={dropdownPlaceholder}
+                    preFetchedOptions={dropdownOptions}
+                    defaultValue={dropdownValue || ''}
+                    onChange={handleDropdownChange}
+                    hideErrorMessage
+                    size="medium"
                   />
-                )}
+                </S.DropdownWrapper>
+              )}
 
-                {showFilter && onFilterClick && (
-                  <S.FilterButton onClick={onFilterClick}>
-                    <FilterIcon />
-                  </S.FilterButton>
-                )}
-              </S.HeaderRight>
-            </S.HeaderContent>
-          </S.PageHeader>
+              {showSearch && <Search placeholder={searchPlaceholder} onChange={onSearchChange} onSearch={onSearch} />}
 
-          <S.PageContent>{children}</S.PageContent>
-        </S.PageContainer>
+              {showFilter && onFilterClick && (
+                <S.FilterButton onClick={onFilterClick}>
+                  <FilterIcon />
+                </S.FilterButton>
+              )}
+            </S.HeaderRight>
+          </S.HeaderContent>
+        </S.PageHeader>
+
+        <S.PageContent>{children}</S.PageContent>
+      </S.PageContainer>
     );
   }
 );
