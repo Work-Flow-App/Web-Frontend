@@ -36,7 +36,7 @@ export type { JobTemplateResponse, JobTemplateCreateRequest, JobTemplateFieldRes
 export { JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../workflow-api';
 
 export { jobService } from './job';
-export type { JobResponse, JobCreateRequest, JobUpdateRequest } from './job';
+export type { JobResponse, JobCreateRequest, JobUpdateRequest, JobFilters } from './job';
 
 export { assetService } from './asset';
 export type {

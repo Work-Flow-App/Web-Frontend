@@ -7,15 +7,13 @@ const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | '
   switch (normalizedStatus) {
     case 'COMPLETED':
       return 'success';
-    case 'STARTED':
-    case 'ONGOING':
+    case 'IN_PROGRESS':
       return 'primary';
     case 'PENDING':
-    case 'INITIATED':
       return 'warning';
-    case 'SKIPPED':
+    case 'CANCELLED':
       return 'error';
-    case 'NOT_STARTED':
+    case 'NEW':
     default:
       return 'default';
   }

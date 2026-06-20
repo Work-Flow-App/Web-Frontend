@@ -1,8 +1,15 @@
 import { memo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Input } from '../Forms/Input';
-import type { SearchProps } from './Search.types';
+import type { SearchProps, SearchSize } from './Search.types';
 import * as S from './Search.styles';
+import { rem } from '../Typography/utility';
+
+const INPUT_HEIGHTS: Record<SearchSize, string> = {
+  small: rem(36),
+  medium: rem(44),
+  large: rem(48),
+};
 
 const SearchIconSvg = ({ isFocused }: { isFocused: boolean }) => (
   <S.SearchIcon
@@ -30,6 +37,7 @@ export const Search = memo(
     onChange,
     onSearch,
     disabled = false,
+    size = 'medium',
     width,
     className,
     styles,
@@ -62,9 +70,17 @@ export const Search = memo(
       setIsFocused(false);
     };
 
+    const inputStyles = {
+      ...styles,
+      input: {
+        height: INPUT_HEIGHTS[size],
+        ...styles?.input,
+      },
+    };
+
     return (
       <FormProvider {...methods}>
-        <S.SearchContainer width={width} className={className}>
+        <S.SearchContainer width={width} $size={size} className={className}>
           <Input
             name="search"
             placeholder={placeholder}
@@ -76,7 +92,7 @@ export const Search = memo(
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            styles={styles}
+            styles={inputStyles}
           />
         </S.SearchContainer>
       </FormProvider>
