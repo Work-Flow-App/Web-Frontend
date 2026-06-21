@@ -35,6 +35,11 @@ export interface WizardData {
   fieldValues?: { [key: string]: string | number | boolean };
   address?: {
     fullAddress: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
     latitude?: number;
     longitude?: number;
   };
@@ -89,6 +94,11 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
                 ]
                   .filter(Boolean)
                   .join(', '),
+                street: job.address.street,
+                city: job.address.city,
+                state: job.address.state,
+                postalCode: job.address.postalCode,
+                country: job.address.country,
                 latitude: job.address.latitude,
                 longitude: job.address.longitude,
               }

@@ -212,6 +212,11 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         address: selectedLocation
           ? {
               fullAddress: selectedLocation.address,
+              street: selectedLocation.address,
+              city: selectedLocation.city,
+              state: selectedLocation.state,
+              postalCode: selectedLocation.postalCode,
+              country: selectedLocation.country,
               latitude: selectedLocation.location.lat,
               longitude: selectedLocation.location.lng,
             }
