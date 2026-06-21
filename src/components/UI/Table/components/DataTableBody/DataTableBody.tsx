@@ -126,12 +126,6 @@ const DataTableBody: React.FC<IDataTableBody> = ({
 
   return (
     <>
-      {loading && (
-        <LoadingOverlay>
-          <Loader size={40} centered={false} />
-        </LoadingOverlay>
-      )}
-
       {paginatedRows.map((row) => (
         <StyledTableRow
           key={row.id}

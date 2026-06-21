@@ -2,7 +2,9 @@ import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { StatusChip } from './JobsList.styles';
 
-const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+const getStatusColor = (
+  status: string
+): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
   const normalizedStatus = status?.toUpperCase() || '';
   switch (normalizedStatus) {
     case 'COMPLETED':
@@ -45,7 +47,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
   const baseColumns: ITableColumn<JobTableRow>[] = [
     {
       id: 'workflowName',
-      label: 'Workflow',
+      label: 'Workfloow',
       accessor: 'workflowName',
       sortable: true,
       width: 'auto',
@@ -91,13 +93,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       width: 'auto',
       render: (row) => {
         const statusText = row.status || 'UNKNOWN';
-        return (
-          <StatusChip
-            label={statusText.replace(/_/g, ' ')}
-            color={getStatusColor(statusText)}
-            size="small"
-          />
-        );
+        return <StatusChip label={statusText.replace(/_/g, ' ')} color={getStatusColor(statusText)} size="small" />;
       },
     },
   ];

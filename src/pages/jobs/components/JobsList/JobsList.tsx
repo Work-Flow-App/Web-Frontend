@@ -30,7 +30,13 @@ import { AddJobWizard } from '../AddJobWizard';
 import { useFetch } from '../../../../hooks';
 import { JobFilterPanel } from './JobFilterPanel';
 import { FilterChip, ClearAllChip } from './JobsList.styles';
-import { HeaderControls, FilterButtonWrapper, FilterCountBadge, FilterTuneIcon, ChipsRow } from './JobFilterPanel.styles';
+import {
+  HeaderControls,
+  FilterButtonWrapper,
+  FilterCountBadge,
+  FilterTuneIcon,
+  ChipsRow,
+} from './JobFilterPanel.styles';
 import { IconButton } from '../../../../components/UI/Button';
 import { Badge } from '../../../../components/UI/Badge';
 import { JOB_STATUS_OPTIONS } from '../../../../enums';
@@ -477,7 +483,9 @@ export const JobsList: React.FC = () => {
             </IconButton>
             {hasActiveFilters && (
               <FilterCountBadge>
-                <Badge variant="primary" size="small">{activeBadgeCount}</Badge>
+                <Badge variant="primary" size="small">
+                  {activeBadgeCount}
+                </Badge>
               </FilterCountBadge>
             )}
           </FilterButtonWrapper>
