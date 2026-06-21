@@ -35,6 +35,10 @@ export interface PlaceDetails {
   name?: string;
   location: Location;
   placeId?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
   workerData?: WorkerMarkerData;
   jobLocationData?: JobLocationMarkerData;
   /** True when Google couldn't geocode the address — user should click map to set pin */

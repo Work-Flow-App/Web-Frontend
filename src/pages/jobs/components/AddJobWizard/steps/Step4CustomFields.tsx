@@ -194,6 +194,17 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
             if (wizardData.customerId) updatePayload.customerId = wizardData.customerId;
             if (wizardData.clientId) updatePayload.clientId = wizardData.clientId;
             if (wizardData.assetIds?.length) updatePayload.assetIds = wizardData.assetIds;
+            if (wizardData.address) {
+              updatePayload.address = {
+                ...(wizardData.address.street && { street: wizardData.address.street }),
+                ...(wizardData.address.city && { city: wizardData.address.city }),
+                ...(wizardData.address.state && { state: wizardData.address.state }),
+                ...(wizardData.address.postalCode && { postalCode: wizardData.address.postalCode }),
+                ...(wizardData.address.country && { country: wizardData.address.country }),
+                ...(wizardData.address.latitude != null && { latitude: wizardData.address.latitude }),
+                ...(wizardData.address.longitude != null && { longitude: wizardData.address.longitude }),
+              };
+            }
 
             await jobService.updateJob(jobId, updatePayload);
             showSuccess('Job updated successfully');
@@ -248,9 +259,13 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
           }
           if (wizardData.address) {
             createPayload.address = {
-              street: wizardData.address.fullAddress,
-              latitude: wizardData.address.latitude,
-              longitude: wizardData.address.longitude,
+              ...(wizardData.address.street && { street: wizardData.address.street }),
+              ...(wizardData.address.city && { city: wizardData.address.city }),
+              ...(wizardData.address.state && { state: wizardData.address.state }),
+              ...(wizardData.address.postalCode && { postalCode: wizardData.address.postalCode }),
+              ...(wizardData.address.country && { country: wizardData.address.country }),
+              ...(wizardData.address.latitude != null && { latitude: wizardData.address.latitude }),
+              ...(wizardData.address.longitude != null && { longitude: wizardData.address.longitude }),
             };
           }
 

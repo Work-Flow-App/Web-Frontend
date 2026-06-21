@@ -15,6 +15,7 @@ import {
   MIN_SEARCH_LENGTH,
   PLACE_DETAIL_FIELDS,
   getNoOptionsText,
+  extractAddressComponents,
 } from './PlacesAutocompleteConst';
 
 const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
@@ -146,6 +147,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
         { placeId: option.value, fields: [...PLACE_DETAIL_FIELDS] },
         (place, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+            const components = extractAddressComponents(place.address_components);
             onPlaceSelect({
               name: place.name ?? '',
               address: place.formatted_address ?? '',
@@ -154,6 +156,7 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
                 lng: place.geometry.location.lng(),
               },
               placeId: place.place_id,
+              ...components,
             });
           }
         }

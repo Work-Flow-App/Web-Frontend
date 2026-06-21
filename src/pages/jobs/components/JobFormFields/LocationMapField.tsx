@@ -1,18 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useJsApiLoader } from '@react-google-maps/api';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../config/googleMaps';
+import { MapWrapper } from './LocationMapField.styles';
 
-/**
- * LocationMapField
- * Plugs into react-hook-form via useFormContext.
- * - Edit mode: reads addressStreet, geocodes it, shows an existing pin.
- * - Create / edit: user can search and select a new location via the map.
- * - On selection, writes the formatted address back to addressStreet.
- */
 const LocationMapField: React.FC = () => {
   const { setValue, watch } = useFormContext();
   const addressStreet = watch('addressStreet') as string;
@@ -27,10 +21,8 @@ const LocationMapField: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
-  // Guard only the geocoding API call — not the coordinates restore path
   const geocodedRef = useRef(false);
 
-  // Restore pin when coordinates are available (runs whenever lat/lng/address change)
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -42,7 +34,6 @@ const LocationMapField: React.FC = () => {
       return;
     }
 
-    // Fall back to geocoding only when no coordinates exist yet
     if (!addressStreet || geocodedRef.current) return;
     geocodedRef.current = true;
 
@@ -64,10 +55,10 @@ const LocationMapField: React.FC = () => {
 
   const handleLocationSelect = (place: PlaceDetails) => {
     setValue('addressStreet', place.address, { shouldDirty: true });
-    setValue('addressCity', '');
-    setValue('addressState', '');
-    setValue('addressPostalCode', '');
-    setValue('addressCountry', '');
+    setValue('addressCity', place.city ?? '', { shouldDirty: true });
+    setValue('addressState', place.state ?? '', { shouldDirty: true });
+    setValue('addressPostalCode', place.postalCode ?? '', { shouldDirty: true });
+    setValue('addressCountry', place.country ?? '', { shouldDirty: true });
 
     if (place.isManualAddressOnly) {
       setSelectedLocation(null);
@@ -92,7 +83,7 @@ const LocationMapField: React.FC = () => {
   }
 
   return (
-    <Box sx={{ height: 300, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+    <MapWrapper>
       <GoogleMap
         center={mapCenter}
         zoom={mapZoom}
@@ -103,7 +94,7 @@ const LocationMapField: React.FC = () => {
         searchInitialValue={addressStreet || undefined}
         height="300px"
       />
-    </Box>
+    </MapWrapper>
   );
 };
 

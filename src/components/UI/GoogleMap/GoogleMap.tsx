@@ -47,6 +47,7 @@ import {
   getMarkerIcon,
   getGeolocationErrorMessage,
 } from './GoogleMapConst';
+import { extractAddressComponents } from './PlacesAutocompleteConst';
 import { Typography } from '@mui/material';
 
 const GoogleMap: React.FC<GoogleMapProps> = ({
@@ -192,7 +193,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location }, (results, status) => {
         if (status === 'OK' && results?.[0]) {
-          onLocationSelect?.({ address: results[0].formatted_address, location, placeId: results[0].place_id });
+          const components = extractAddressComponents(results[0].address_components);
+          onLocationSelect?.({
+            address: results[0].formatted_address,
+            location,
+            placeId: results[0].place_id,
+            ...components,
+          });
         } else {
           onLocationSelect?.({ address: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`, location });
         }
