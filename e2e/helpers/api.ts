@@ -41,3 +41,24 @@ export async function apiGet(
 
   return { status: res.status, body };
 }
+
+export async function apiFetch(
+  path: string,
+  method: string,
+  token: string,
+  body?: unknown,
+): Promise<{ status: number; body: unknown }> {
+  const hasBody = method !== 'GET' && method !== 'DELETE';
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: hasBody ? JSON.stringify(body ?? {}) : undefined,
+  });
+
+  const contentType = res.headers.get('content-type') ?? '';
+  const responseBody = contentType.includes('application/json') ? await res.json() : await res.text();
+  return { status: res.status, body: responseBody };
+}

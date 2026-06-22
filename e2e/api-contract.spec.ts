@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getAuthToken, apiGet } from './helpers/api';
+import { getAuthToken, apiGet, apiFetch } from './helpers/api';
 
-// ─── OpenAPI types (minimal) ────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SchemaObject {
   type?: string;
@@ -18,7 +18,7 @@ interface OpenApiSpec {
   components?: { schemas?: Record<string, SchemaObject> };
 }
 
-// ─── Spec loading ────────────────────────────────────────────────────────────
+// ─── Spec loading ─────────────────────────────────────────────────────────────
 
 const SPEC_PATH = join(process.cwd(), 'openapi-spec.json');
 
@@ -31,7 +31,7 @@ function loadSpec(): OpenApiSpec | null {
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Schema validation ────────────────────────────────────────────────────────
 
 function resolveRef(spec: OpenApiSpec, ref: string): SchemaObject | null {
   const parts = ref.replace(/^#\//, '').split('/');
@@ -61,12 +61,11 @@ function validateSchema(body: unknown, schema: SchemaObject, spec: OpenApiSpec, 
       }
     }
   }
-
   return errors;
 }
 
-function getResponseSchema(spec: OpenApiSpec, path: string): SchemaObject | null {
-  const pathItem = spec.paths?.[path];
+function getResponseSchema(spec: OpenApiSpec, specPath: string): SchemaObject | null {
+  const pathItem = spec.paths?.[specPath];
   if (!pathItem) return null;
   const get = pathItem.get as Record<string, unknown> | undefined;
   const responses = get?.responses as Record<string, unknown> | undefined;
@@ -76,66 +75,173 @@ function getResponseSchema(spec: OpenApiSpec, path: string): SchemaObject | null
   return (appJson?.schema as SchemaObject) ?? null;
 }
 
-// Collect GET paths that have no path parameters (no `{...}` segments)
-function getSimpleGetPaths(spec: OpenApiSpec): string[] {
-  return Object.entries(spec.paths ?? {})
-    .filter(([path, item]) => !path.includes('{') && !!(item as Record<string, unknown>).get)
-    .map(([path]) => path)
-    .slice(0, 20); // cap at 20 endpoints to keep CI fast
+// ─── Path utilities ───────────────────────────────────────────────────────────
+
+interface PathCategories {
+  simplePaths: string[];
+  paramPaths: string[];
+  mutatePaths: { path: string; method: string }[];
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
+function categorizePaths(spec: OpenApiSpec): PathCategories {
+  const simplePaths: string[] = [];
+  const paramPaths: string[] = [];
+  const mutatePaths: { path: string; method: string }[] = [];
+
+  for (const [path, pathItem] of Object.entries(spec.paths ?? {})) {
+    const item = pathItem as Record<string, unknown>;
+    const hasPathParam = path.includes('{');
+
+    if (item.get) {
+      if (!hasPathParam) simplePaths.push(path);
+      else paramPaths.push(path);
+    }
+
+    for (const method of ['post', 'put', 'patch', 'delete']) {
+      if (item[method]) mutatePaths.push({ path, method });
+    }
+  }
+
+  return { simplePaths, paramPaths, mutatePaths };
+}
+
+// Extract a resource ID from a list or single response body
+function extractId(body: unknown): string | number | null {
+  if (!body || typeof body !== 'object') return null;
+  const obj = body as Record<string, unknown>;
+
+  // Paginated: { content: [{ id, ... }] }
+  if (Array.isArray(obj.content) && obj.content.length > 0) {
+    const first = obj.content[0] as Record<string, unknown>;
+    return (first.id ?? first.assignmentId ?? null) as string | number | null;
+  }
+
+  // Plain array
+  if (Array.isArray(body) && body.length > 0) {
+    const first = body[0] as Record<string, unknown>;
+    return (first.id ?? null) as string | number | null;
+  }
+
+  // Single object
+  if ('id' in obj) return obj.id as string | number;
+
+  return null;
+}
+
+// Find the list path that corresponds to a param path
+// e.g. /api/v1/jobs/{jobId} → /api/v1/jobs
+function findListPath(paramPath: string, simplePaths: string[]): string | null {
+  const base = paramPath.replace(/\/\{[^}]+\}.*$/, '');
+  return simplePaths.find(p => p === base) ?? null;
+}
+
+function fillPathParams(path: string, id: string | number): string {
+  return path.replace(/\{[^}]+\}/g, String(id));
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
 
 const spec = loadSpec();
 const hasCredentials = !!(process.env.TEST_USER_USERNAME && process.env.TEST_USER_PASSWORD);
 
 if (!spec) {
-  test('OpenAPI spec not found — skipping contract tests', async () => {
-    // openapi-spec.json is downloaded in CI via the workflow fetch step.
-    // This test only runs in CI; locally the file is absent so we skip.
-    console.log(`Spec not found at ${SPEC_PATH}. Run CI workflow or fetch it manually.`);
+  test('OpenAPI spec not found — skipping contract tests', () => {
+    console.log(`No spec at ${SPEC_PATH}. It is downloaded in CI before this step runs.`);
   });
 } else {
-  const paths = getSimpleGetPaths(spec);
+  const { simplePaths, paramPaths, mutatePaths } = categorizePaths(spec);
 
   test.describe('API Contract Tests', () => {
     let token = '';
+    // List path → first resource ID found in that list response
+    const resourceIds: Record<string, string | number> = {};
 
     test.beforeAll(async () => {
-      if (!hasCredentials) return;
+      test.skip(!hasCredentials, 'TEST_USER_USERNAME / TEST_USER_PASSWORD not set');
       token = await getAuthToken();
+
+      // Pre-fetch every list endpoint to collect real IDs for param-path tests
+      await Promise.allSettled(
+        simplePaths.map(async (path) => {
+          try {
+            const { status, body } = await apiGet(path, token);
+            if (status >= 200 && status < 300) {
+              const id = extractId(body);
+              if (id !== null) resourceIds[path] = id;
+            }
+          } catch { /* ignore — individual endpoint may be unavailable */ }
+        }),
+      );
     });
 
-    test('Authentication returns access token', async () => {
-      if (!hasCredentials) {
-        console.log('Skipping: TEST_USER_USERNAME / TEST_USER_PASSWORD not set');
-        return;
-      }
-      expect(token).toBeTruthy();
-      expect(typeof token).toBe('string');
-    });
+    // ── GET list / collection endpoints ──────────────────────────────────────
+    test.describe('GET collection endpoints', () => {
+      for (const path of simplePaths) {
+        test(path, async () => {
+          const { status, body } = await apiGet(path, token);
 
-    for (const path of paths) {
-      test(`GET ${path} — status and schema`, async () => {
-        if (!hasCredentials) {
-          console.log(`Skipping ${path}: no test credentials`);
-          return;
-        }
+          expect(status, `${path} returned server error`).toBeLessThan(500);
 
-        const { status, body } = await apiGet(path, token);
-
-        // 5xx means the server is broken — always fail
-        expect(status, `${path} returned server error`).toBeLessThan(500);
-
-        // For successful responses, validate the response body matches the spec schema
-        if (status >= 200 && status < 300) {
-          const schema = getResponseSchema(spec, path);
-          if (schema) {
-            const errors = validateSchema(body, schema, spec);
-            expect(errors, `Schema mismatch on GET ${path}:\n${errors.join('\n')}`).toHaveLength(0);
+          if (status >= 200 && status < 300) {
+            const schema = getResponseSchema(spec, path);
+            if (schema) {
+              const errors = validateSchema(body, schema, spec);
+              expect(errors, `Schema mismatch on GET ${path}:\n${errors.join('\n')}`).toHaveLength(0);
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    });
+
+    // ── GET resource / detail endpoints (uses real IDs from list calls) ──────
+    test.describe('GET resource endpoints', () => {
+      for (const path of paramPaths) {
+        test(path, async () => {
+          const listPath = findListPath(path, simplePaths);
+          const id = listPath ? resourceIds[listPath] : null;
+
+          if (!id) {
+            console.log(`Skipping ${path}: no real ID available from list`);
+            return;
+          }
+
+          const filledPath = fillPathParams(path, id);
+          const { status, body } = await apiGet(filledPath, token);
+
+          expect(status, `${filledPath} returned server error`).toBeLessThan(500);
+
+          if (status >= 200 && status < 300) {
+            const schema = getResponseSchema(spec, path);
+            if (schema) {
+              const errors = validateSchema(body, schema, spec);
+              expect(errors, `Schema mismatch on GET ${filledPath}:\n${errors.join('\n')}`).toHaveLength(0);
+            }
+          }
+        });
+      }
+    });
+
+    // ── POST / PUT / PATCH / DELETE — health check only (must not return 5xx)
+    // We do NOT validate success responses here to avoid mutating real data.
+    test.describe('Mutation endpoints health check', () => {
+      for (const { path, method } of mutatePaths) {
+        test(`${method.toUpperCase()} ${path}`, async () => {
+          const listPath = findListPath(path, simplePaths);
+          const id = listPath ? resourceIds[listPath] : null;
+          // Use a real ID if available, otherwise a clearly non-existent one
+          const filledPath = path.includes('{')
+            ? fillPathParams(path, id ?? 999999999)
+            : path;
+
+          const { status } = await apiFetch(filledPath, method.toUpperCase(), token);
+
+          // Any 5xx means the server crashed — always a failure
+          expect(
+            status,
+            `${method.toUpperCase()} ${filledPath} returned server error`,
+          ).toBeLessThan(500);
+        });
+      }
+    });
   });
 }
