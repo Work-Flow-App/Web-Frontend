@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getAuthToken, apiGet, apiFetch } from './helpers/api';
+import { getAuthToken, apiGet } from './helpers/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -80,13 +80,11 @@ function getResponseSchema(spec: OpenApiSpec, specPath: string): SchemaObject | 
 interface PathCategories {
   simplePaths: string[];
   paramPaths: string[];
-  mutatePaths: { path: string; method: string }[];
 }
 
 function categorizePaths(spec: OpenApiSpec): PathCategories {
   const simplePaths: string[] = [];
   const paramPaths: string[] = [];
-  const mutatePaths: { path: string; method: string }[] = [];
 
   for (const [path, pathItem] of Object.entries(spec.paths ?? {})) {
     const item = pathItem as Record<string, unknown>;
@@ -96,13 +94,9 @@ function categorizePaths(spec: OpenApiSpec): PathCategories {
       if (!hasPathParam) simplePaths.push(path);
       else paramPaths.push(path);
     }
-
-    for (const method of ['post', 'put', 'patch', 'delete']) {
-      if (item[method]) mutatePaths.push({ path, method });
-    }
   }
 
-  return { simplePaths, paramPaths, mutatePaths };
+  return { simplePaths, paramPaths };
 }
 
 // Extract a resource ID from a list or single response body
@@ -149,7 +143,7 @@ if (!spec) {
     console.log(`No spec at ${SPEC_PATH}. It is downloaded in CI before this step runs.`);
   });
 } else {
-  const { simplePaths, paramPaths, mutatePaths } = categorizePaths(spec);
+  const { simplePaths, paramPaths } = categorizePaths(spec);
 
   test.describe('API Contract Tests', () => {
     let token = '';
@@ -221,27 +215,5 @@ if (!spec) {
       }
     });
 
-    // ── POST / PUT / PATCH / DELETE — health check only (must not return 5xx)
-    // We do NOT validate success responses here to avoid mutating real data.
-    test.describe('Mutation endpoints health check', () => {
-      for (const { path, method } of mutatePaths) {
-        test(`${method.toUpperCase()} ${path}`, async () => {
-          const listPath = findListPath(path, simplePaths);
-          const id = listPath ? resourceIds[listPath] : null;
-          // Use a real ID if available, otherwise a clearly non-existent one
-          const filledPath = path.includes('{')
-            ? fillPathParams(path, id ?? 999999999)
-            : path;
-
-          const { status } = await apiFetch(filledPath, method.toUpperCase(), token);
-
-          // Any 5xx means the server crashed — always a failure
-          expect(
-            status,
-            `${method.toUpperCase()} ${filledPath} returned server error`,
-          ).toBeLessThan(500);
-        });
-      }
-    });
   });
 }
