@@ -43,6 +43,38 @@ jobs:
           VITE_PADDLE_TOKEN: ${{ secrets.PROD_VITE_PADDLE_TOKEN }}
           VITE_PADDLE_ENV: ${{ secrets.PROD_VITE_PADDLE_ENV }}
 
+      # ── Integration tests (BLOCKING) ──────────────────────────────────────
+      # Tests run against the currently live prod environment before we
+      # overwrite it. A failure here STOPS the deployment.
+
+      - name: Fetch OpenAPI spec from prod API
+        run: |
+          curl -sSf "${{ secrets.PROD_VITE_API_BASE_URL }}/api-docs" \
+            --retry 3 --retry-delay 5 \
+            -o openapi-spec.json
+          echo "Fetched $(node -e "const s=require('fs').readFileSync('openapi-spec.json','utf8');const j=JSON.parse(s);console.log(Object.keys(j.paths||{}).length)") paths from prod API spec"
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run integration tests (prod — deployment blocked on failure)
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: 'https://app.workfloow.app'
+          API_BASE_URL: ${{ secrets.PROD_VITE_API_BASE_URL }}
+          TEST_USER_USERNAME: ${{ secrets.PROD_TEST_USERNAME }}
+          TEST_USER_PASSWORD: ${{ secrets.PROD_TEST_PASSWORD }}
+          CI: 'true'
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-prod
+          path: playwright-report/
+          retention-days: 14
+      # ─────────────────────────────────────────────────────────────────────
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
