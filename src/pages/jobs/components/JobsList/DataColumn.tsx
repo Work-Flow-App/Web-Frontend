@@ -46,8 +46,28 @@ export interface JobTableRow {
 export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = []): ITableColumn<JobTableRow>[] => {
   const baseColumns: ITableColumn<JobTableRow>[] = [
     {
+      id: 'createdAt',
+      label: 'Created At',
+      accessor: 'createdAt',
+      sortable: true,
+      width: 'auto',
+      render: (row) => {
+        if (!row.createdAt) return '-';
+        try {
+          // Format the date to a readable DD/MM/YYYY string
+          return new Date(row.createdAt).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          });
+        } catch {
+          return row.createdAt;
+        }
+      },
+    },
+    {
       id: 'workflowName',
-      label: 'Workflow',
+      label: 'Workfloow',
       accessor: 'workflowName',
       sortable: true,
       width: 'auto',
