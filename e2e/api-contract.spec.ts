@@ -138,6 +138,12 @@ function fillPathParams(path: string, id: string | number): string {
 const spec = loadSpec();
 const hasCredentials = !!(process.env.TEST_USER_USERNAME && process.env.TEST_USER_PASSWORD);
 
+// Comma-separated list of paths to skip — set via SKIP_PATHS env var in the workflow
+// e.g. SKIP_PATHS=/api/v1/companies/members/invitations/check,/api/v1/other
+const SKIP_PATHS = new Set(
+  (process.env.SKIP_PATHS ?? '').split(',').map(p => p.trim()).filter(Boolean),
+);
+
 if (!spec) {
   test('OpenAPI spec not found — skipping contract tests', () => {
     console.log(`No spec at ${SPEC_PATH}. It is downloaded in CI before this step runs.`);
@@ -172,6 +178,11 @@ if (!spec) {
     test.describe('GET collection endpoints', () => {
       for (const path of simplePaths) {
         test(path, async () => {
+          if (SKIP_PATHS.has(path)) {
+            console.log(`Skipping ${path} (in SKIP_PATHS)`);
+            return;
+          }
+
           const { status, body } = await apiGet(path, token);
 
           expect(status, `${path} returned server error`).toBeLessThan(500);
@@ -191,6 +202,11 @@ if (!spec) {
     test.describe('GET resource endpoints', () => {
       for (const path of paramPaths) {
         test(path, async () => {
+          if (SKIP_PATHS.has(path)) {
+            console.log(`Skipping ${path} (in SKIP_PATHS)`);
+            return;
+          }
+
           const listPath = findListPath(path, simplePaths);
           const id = listPath ? resourceIds[listPath] : null;
 

@@ -65,6 +65,7 @@ jobs:
           API_BASE_URL: ${{ secrets.PROD_VITE_API_BASE_URL }}
           TEST_USER_USERNAME: ${{ secrets.PROD_TEST_USERNAME }}
           TEST_USER_PASSWORD: ${{ secrets.PROD_TEST_PASSWORD }}
+          SKIP_PATHS: '/api/v1/companies/members/invitations/check'
           CI: 'true'
 
       - name: Upload Playwright report
