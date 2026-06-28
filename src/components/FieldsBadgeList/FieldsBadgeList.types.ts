@@ -6,4 +6,5 @@ export interface Field {
 export interface FieldsBadgeListProps {
   fields: Field[];
   emptyText?: string;
+  maxVisible?: number;
 }
