@@ -1,5 +1,5 @@
 import { styled, Box, Typography, Paper, Chip } from '@mui/material';
-import { rem, Bold } from '../../../../components/UI/Typography/utility';
+import { rem, Bold } from '../../../../components/Typography/utility';
 
 export const ContentSection = styled(Box)(({ theme }) => ({
   display: 'flex',

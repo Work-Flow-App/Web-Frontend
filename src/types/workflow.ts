@@ -68,7 +68,10 @@ export const WorkflowStepStatus = {
   PENDING: 'PENDING',
   ONGOING: 'ONGOING',
   STARTED: 'STARTED',
+  ACTIVE: 'ACTIVE',
+  IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',
+  CANNOT_COMPLETE: 'CANNOT_COMPLETE',
   SKIPPED: 'SKIPPED',
 } as const;
 
@@ -78,17 +81,20 @@ export const WorkflowStepStatus = {
  */
 export const WORKFLOW_STATUS_DISPLAY = {
   // To Do states (not yet started)
-  NOT_STARTED: { label: 'To Do', color: 'default' as const, order: 1 },
-  INITIATED: { label: 'Ready', color: 'default' as const, order: 2 },
-  PENDING: { label: 'Pending', color: 'warning' as const, order: 3 },
+  NOT_STARTED:     { label: 'Not Started',     color: 'default' as const, order: 1 },
+  INITIATED:       { label: 'Ready',           color: 'default' as const, order: 2 },
+  PENDING:         { label: 'Pending',         color: 'warning' as const, order: 3 },
 
   // In Progress states (actively working)
-  STARTED: { label: 'In Progress', color: 'info' as const, order: 4 },
-  ONGOING: { label: 'In Progress', color: 'info' as const, order: 5 },
+  STARTED:         { label: 'In Progress',     color: 'info' as const,    order: 4 },
+  ONGOING:         { label: 'Ongoing',         color: 'info' as const,    order: 5 },
+  ACTIVE:          { label: 'Active',          color: 'info' as const,    order: 6 },
+  IN_PROGRESS:     { label: 'In Progress',     color: 'info' as const,    order: 7 },
 
   // Done states (finished)
-  COMPLETED: { label: 'Done', color: 'success' as const, order: 6 },
-  SKIPPED: { label: 'Skipped', color: 'error' as const, order: 7 },
+  COMPLETED:       { label: 'Completed',       color: 'success' as const, order: 8 },
+  SKIPPED:         { label: 'Skipped',         color: 'error' as const,   order: 9 },
+  CANNOT_COMPLETE: { label: 'Cannot Complete', color: 'error' as const,   order: 10 },
 };
 
 /**

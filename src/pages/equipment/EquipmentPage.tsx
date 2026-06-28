@@ -1,7 +1,7 @@
 import React from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
-import { rem } from '../../components/UI/Typography/utility';
+import { rem } from '../../components/Typography/utility';
 import comingSoonImage from '../../assets/logo/coming_soon.png';
 
 const PageContainer = styled(Box)(({ theme }) => ({

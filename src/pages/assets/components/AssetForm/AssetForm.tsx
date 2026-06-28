@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AssetFormSchema, type AssetFormData } from '../../schema/AssetFormSchema';
-import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
+import { SetupFormWrapper } from '../../../../components/SetupFormWrapper';
 import { AssetFormFields } from '../AssetFormFields';
-import { Loader } from '../../../../components/UI';
+import { Loader } from '../../../../components';
 import { assetService, type AssetCreateRequest, type AssetUpdateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 
 export interface AssetFormProps {
   isModal?: boolean;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
-import Table from '../../../../components/UI/Table/Table';
+import Table from '../../../../components/Table/Table';
 import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';

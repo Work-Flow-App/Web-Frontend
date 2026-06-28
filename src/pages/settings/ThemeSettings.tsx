@@ -19,7 +19,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useThemeContext } from '../../contexts/ThemeContext';
 import { THEME_PRESETS } from '../../theme/presets';
-import { Input } from '../../components/UI/Forms/Input';
+import { Input } from '../../components/Forms/Input';
 
 /* ─── Styled ─────────────────────────────────────────────────── */
 

@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Box, Avatar, Typography } from '@mui/material';
-import { rem } from '../components/UI/Typography/utility';
+import { rem } from '../components/Typography/utility';
 
 /**
  * Main page wrapper with sidebar and right section

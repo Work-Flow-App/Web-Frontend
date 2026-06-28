@@ -8,8 +8,8 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { InputAdornment } from '@mui/material';
 import { StepFormSchema } from '../../schema/StepFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input, TextArea, Checkbox } from '../../../../components/UI/Forms';
-import { FormField } from '../../../../components/UI/FormComponents';
+import { Input, TextArea, Checkbox } from '../../../../components/Forms';
+import { FormField } from '../../../../components/FormComponents';
 import * as S from './StepForm.styles';
 
 export const StepFormFields: React.FC = () => {

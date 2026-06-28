@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Stack } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { Button } from '../../../../components/UI';
+import { Button } from '../../../../components';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/GlobalModal';
 import { assetService } from '../../../../services/api';
 import type { AssetAssignmentResponse } from '../../../../services/api';
-import { Loader } from '../../../../components/UI';
+import { Loader } from '../../../../components';
 import { AssignAssetModal } from '../AssignAssetModal';
 import * as S from './JobAssetsSection.styles';
 

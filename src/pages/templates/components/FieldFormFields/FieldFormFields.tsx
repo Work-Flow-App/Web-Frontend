@@ -4,10 +4,10 @@ import { Box, Typography } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { FieldFormSchema } from '../../schema/FieldFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input } from '../../../../components/UI/Forms/Input';
-import { Checkbox } from '../../../../components/UI/Forms/Checkbox';
-import { FormField } from '../../../../components/UI/FormComponents';
-import { FieldType, FIELD_TYPE_OPTIONS } from '../../../../enums';
+import { Input } from '../../../../components/Forms/Input';
+import { Checkbox } from '../../../../components/Forms/Checkbox';
+import { FormField } from '../../../../components/FormComponents';
+import { FieldType, FIELD_TYPE_OPTIONS } from '../../../../types';
 
 export const FieldFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(FieldFormSchema);

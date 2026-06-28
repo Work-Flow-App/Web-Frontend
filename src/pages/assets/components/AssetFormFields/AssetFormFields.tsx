@@ -1,9 +1,9 @@
 import React from 'react';
 import { AssetFormSchema } from '../../schema/AssetFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input } from '../../../../components/UI/Forms/Input';
-import { TextArea } from '../../../../components/UI/Forms/TextArea';
-import { FormRow, FormField } from '../../../../components/UI/FormComponents';
+import { Input } from '../../../../components/Forms/Input';
+import { TextArea } from '../../../../components/Forms/TextArea';
+import { FormRow, FormField } from '../../../../components/FormComponents';
 
 export interface AssetFormFieldsProps {
   isEditMode?: boolean;

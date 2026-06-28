@@ -1,6 +1,6 @@
 import { Box, Chip, Typography, styled } from '@mui/material';
 import { Inventory2Outlined } from '@mui/icons-material';
-import { rem } from '../../../../components/UI/Typography/utility';
+import { rem } from '../../../../components/Typography/utility';
 
 export const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PageWrapper } from '../../components/UI/PageWrapper';
+import { PageWrapper } from '../../components/PageWrapper';
 import { TemplateFields } from './components/TemplateFields/TemplateFields';
 import type { TemplateFieldsRef } from './components/TemplateFields/TemplateFields';
 import { jobTemplateService } from '../../services/api';
-import { Loader } from '../../components/UI';
+import { Loader } from '../../components';
 
 export const TemplateFieldsPage: React.FC = () => {
   const { templateId } = useParams<{ templateId: string }>();

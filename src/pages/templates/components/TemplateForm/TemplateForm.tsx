@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { TemplateFormSchema, type TemplateFormData } from '../../schema/TemplateFormSchema';
-import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
+import { SetupFormWrapper } from '../../../../components/SetupFormWrapper';
 import { TemplateFormFields } from '../TemplateFormFields/TemplateFormFields';
-import { Loader } from '../../../../components/UI';
+import { Loader } from '../../../../components';
 import { jobTemplateService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 
 export interface TemplateFormProps {
   isModal?: boolean;

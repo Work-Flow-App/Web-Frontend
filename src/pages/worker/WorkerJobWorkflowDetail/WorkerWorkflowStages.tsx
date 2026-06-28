@@ -4,7 +4,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../components/UI/Button';
+import { Button } from '../../../components/Button';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { JobWorkflowResponse, JobWorkflowStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';

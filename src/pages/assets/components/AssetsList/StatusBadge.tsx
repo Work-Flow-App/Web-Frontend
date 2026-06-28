@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge } from '../../../../components/UI/Badge';
-import type { BadgeVariant } from '../../../../components/UI/Badge/Badge.types';
+import { Badge } from '../../../../components/Badge';
+import type { BadgeVariant } from '../../../../components/Badge/Badge.types';
 import type { AssetTableRow } from './DataColumn';
 
 interface StatusBadgeProps {

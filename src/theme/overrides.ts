@@ -1,5 +1,5 @@
 import type { Theme } from '@mui/material/styles';
-import { rem, em } from '../components/UI/Typography/utility';
+import { rem, em } from '../components/Typography/utility';
 import { floowColors } from './colors';
 
 // Scrollbar colors per mode

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Typography } from '@mui/material';
-import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
+import { StandaloneDropdown } from '../../../../../components/Forms/Dropdown';
 import type { CompanyRole } from '../../../../../services/api/companyMember';
 import { MemberInviteRequestCompanyRoleEnum } from '../../../../../../workflow-api';
-import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal';
+import { useGlobalModalInnerContext } from '../../../../../components/GlobalModal';
 import { FormContainer } from './ChangeMemberRoleForm.styles';
 
 interface ChangeMemberRoleFormProps {

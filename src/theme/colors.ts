@@ -287,6 +287,21 @@ export const floowColors = {
     thumb: '#A1A1A1',
     track: '#F5F5F5',
   },
+
+  // Activity Log Event Colors
+  activity: {
+    stepCreated:       '#10B981',
+    statusChanged:     '#8B5CF6',
+    workerAssigned:    '#3B82F6',
+    workerUnassigned:  '#F59E0B',
+    stepUpdated:       '#06B6D4',
+    attachmentAdded:   '#EC4899',
+    removed:           '#EF4444',
+    comment:           '#6366F1',
+    visitLogged:       '#0891B2',
+    visitDeleted:      '#DC2626',
+    visitUpdated:      '#D97706',
+  },
 } as const;
 
 export type FloowColors = typeof floowColors;

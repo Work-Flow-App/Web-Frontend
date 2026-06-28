@@ -3,13 +3,13 @@ import { Box, Typography } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 import { assetService, workerService } from '../../../../services/api';
 import type { AssetResponse, WorkerResponse } from '../../../../services/api';
-import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
-import { TextArea } from '../../../../components/UI/Forms/TextArea';
-import { FormField } from '../../../../components/UI/FormComponents';
-import { Loader } from '../../../../components/UI';
+import { Dropdown } from '../../../../components/Forms/Dropdown';
+import { TextArea } from '../../../../components/Forms/TextArea';
+import { FormField } from '../../../../components/FormComponents';
+import { Loader } from '../../../../components';
 
 export interface AssignAssetModalProps {
   jobId: number;

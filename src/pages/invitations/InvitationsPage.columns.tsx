@@ -1,6 +1,6 @@
 import { Box, Tooltip } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import type { ITableColumn } from '../../components/UI/Table/ITable';
+import type { ITableColumn } from '../../components/Table/ITable';
 import { StatusBadge, InvitationLinkText, CopyButton } from './InvitationsPage.styles';
 import type { Theme } from '@mui/material/styles';
 

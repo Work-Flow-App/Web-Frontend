@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useGlobalModalOuterContext } from '../UI/GlobalModal/context';
-import { ModalSizes } from '../UI/GlobalModal/enums';
+import { useGlobalModalOuterContext } from '../GlobalModal/context';
+import { ModalSizes } from '../GlobalModal/enums';
 import { ConfigurationScreen } from './ConfigurationScreen';
 
 const STORAGE_KEY = 'app_environment_config';

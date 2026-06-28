@@ -1,4 +1,4 @@
-import { rem } from '../components/UI/Typography/utility';
+import { rem } from '../components/Typography/utility';
 
 // Typography system - Manrope from Figma
 // Based on design system with sizes from XS to 9XL

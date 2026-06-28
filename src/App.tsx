@@ -36,15 +36,14 @@ import { SubscribePage, SubscriptionSuccessPage, SubscriptionCancelPage } from '
 import { NotFound } from './pages/NotFound'
 import { Layout } from './layouts/Layout'
 import { AppConfiguration } from './components/AppConfiguration'
-import { GlobalModalOuterContextProvider, GlobalModal } from './components/UI/GlobalModal'
+import { GlobalModalOuterContextProvider, GlobalModal } from './components/GlobalModal'
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
-import { GlobalSnackbarProvider } from './contexts/SnackbarContext'
+import { GlobalSnackbarProvider } from './contexts'
 import { AuthProvider } from './contexts/AuthContext'
 import { SubscriptionProvider } from './contexts/SubscriptionContext'
 import { CompanyRoleProvider } from './contexts/CompanyRoleContext'
 import { CurrencyProvider } from './contexts/CurrencyContext'
 import env from './config/env'
-import './App.css'
 
 function App() {
   useEffect(() => {

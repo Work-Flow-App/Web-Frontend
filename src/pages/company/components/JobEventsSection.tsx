@@ -10,9 +10,9 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 // import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useNavigate } from 'react-router-dom';
 //import { useCurrency } from '../../../contexts/CurrencyContext';
-import { Button } from '../../../components/UI/Button';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
-import { AddJobWizard } from '../../jobs/components/AddJobWizard';
+import { Button } from '../../../components/Button';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/GlobalModal';
+import { AddJobWizard } from '../../jobs/wizard/AddJobWizard';
 import {
   jobService,
   jobWorkflowService,

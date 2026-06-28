@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
-import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import Table from '../../../../components/UI/Table/Table';
-import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { PageWrapper } from '../../../../components/PageWrapper';
+import Table from '../../../../components/Table/Table';
+import type { ITableAction } from '../../../../components/Table/ITable';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/GlobalModal';
 import { CreateLineItemModal } from '../CreateLineItemModal';
 import { lineItemService } from '../../../../services/api';
 import type { LineItemResponse } from '../../../../services/api';

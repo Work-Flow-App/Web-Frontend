@@ -1,5 +1,5 @@
 import { Box, styled } from '@mui/material';
-import { rem } from '../../../../components/UI/Typography/utility';
+import { rem } from '../../../../components/Typography/utility';
 
 export const UsernameRow = styled(Box)(({ theme }) => ({
   fontSize: rem(14),

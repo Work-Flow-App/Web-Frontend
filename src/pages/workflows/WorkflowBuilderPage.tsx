@@ -27,13 +27,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { PageWrapper } from '../../components/UI/PageWrapper';
+import { PageWrapper } from '../../components/PageWrapper';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../hooks';
 import { workflowService } from '../../services/api';
 import type { WorkflowStepResponse, WorkflowBulkUpdateRequest } from '../../services/api';
-import { Loader } from '../../components/UI';
-import { useGlobalModalOuterContext, ModalSizes } from '../../components/UI/GlobalModal';
+import { Loader } from '../../components';
+import { useGlobalModalOuterContext, ModalSizes } from '../../components/GlobalModal';
 import { StepForm, type StepFormStep } from './components/StepForm';
 import * as S from './WorkflowBuilderPage.styles';
 

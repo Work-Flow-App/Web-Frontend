@@ -21,8 +21,8 @@ import { StepCommentCreateRequestTypeEnum } from '../../../../workflow-api';
 import type { StepTimelineItemResponse } from '../../../services/api';
 import { workerJobWorkflowService, WorkerJobWorkflowUploadAttachmentTypeEnum } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { Loader } from '../../../components/UI/Loader/Loader';
-import { Button } from '../../../components/UI/Button';
+import { Loader } from '../../../components/Loader/Loader';
+import { Button } from '../../../components/Button';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepDiscussionProps {

@@ -1,5 +1,5 @@
 import { styled, Box, Paper } from '@mui/material';
-import { rem } from '../../components/UI/Typography/utility';
+import { rem } from '../../components/Typography/utility';
 
 export const SectionWrapper = styled(Paper)(({ theme }) => ({
   display: 'flex',

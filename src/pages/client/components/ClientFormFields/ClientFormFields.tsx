@@ -1,8 +1,8 @@
 import React from 'react';
 import { ClientFormSchema } from '../../schema/ClientFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input } from '../../../../components/UI/Forms/Input';
-import { FormRow, FormField } from '../../../../components/UI/FormComponents';
+import { Input } from '../../../../components/Forms/Input';
+import { FormRow, FormField } from '../../../../components/FormComponents';
 
 export const ClientFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(ClientFormSchema);

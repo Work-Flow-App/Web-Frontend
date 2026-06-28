@@ -8,7 +8,7 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from 'react-router-dom';
 import type { JobResponse, CustomerResponse } from '../../../services/api';
-import { rem } from '../../../components/UI/Typography/utility';
+import { rem } from '../../../components/Typography/utility';
 import { floowColors } from '../../../theme/colors';
 import type { StepEventGroup } from './JobEventsSection';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/UI/Button';
+import { Button } from '../../components/Button';
 import { authService } from '../../services/api/auth';
 import { getRoleFromToken } from '../../utils/jwt';
 import notFoundImage from '../../assets/logo/404.png';

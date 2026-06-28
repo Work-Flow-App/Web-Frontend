@@ -4,9 +4,9 @@ import { workerJobWorkflowService } from '../../../services/api';
 import type { StepCommentResponse } from '../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { Loader } from '../../../components/UI/Loader/Loader';
-import { TextArea } from '../../../components/UI/Forms/TextArea';
-import { rem } from '../../../components/UI/Typography/utility';
+import { Loader } from '../../../components/Loader/Loader';
+import { TextArea } from '../../../components/Forms/TextArea';
+import { rem } from '../../../components/Typography/utility';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepCommentsProps {

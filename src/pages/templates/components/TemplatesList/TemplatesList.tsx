@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import Table from '../../../../components/UI/Table/Table';
-import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { PageWrapper } from '../../../../components/PageWrapper';
+import Table from '../../../../components/Table/Table';
+import type { ITableAction } from '../../../../components/Table/ITable';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/GlobalModal';
 import { jobTemplateService, jobService } from '../../../../services/api';
 import type { JobTemplateResponse, JobResponse, JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateTemplateColumns, type TemplateTableRow } from './DataColumn';
 import { TemplateForm } from '../TemplateForm/TemplateForm';
-import { TollTip } from '../../../../components/UI/TollTip/TollTip';
+import { InfoTooltip } from '../../../../components/InfoTooltip';
 import { TOOLTIP_MESSAGES } from './ToolTipConst';
 import { TitleContainer } from './TemplatesList.styles';
 
@@ -278,7 +278,7 @@ export const TemplatesList: React.FC = () => {
       title={
         <TitleContainer>
           Job Templates
-          <TollTip message={TOOLTIP_MESSAGES.JOB_TEMPLATES} />
+          <InfoTooltip message={TOOLTIP_MESSAGES.JOB_TEMPLATES} />
         </TitleContainer>
       }
       description="Create and manage job templates with custom fields."

@@ -1,5 +1,5 @@
-import type { ITableColumn } from '../../../../components/UI/Table/ITable';
-import { MemberInfo, MemberName, MemberEmail } from '../../../../components/UI/Table/Table.styles';
+import type { ITableColumn } from '../../../../components/Table/ITable';
+import { MemberInfo, MemberName, MemberEmail } from '../../../../components/Table/Table.styles';
 
 export interface ClientTableRow {
   id: number;

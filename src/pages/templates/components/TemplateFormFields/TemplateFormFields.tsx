@@ -1,8 +1,8 @@
 import React from 'react';
 import { TemplateFormSchema } from '../../schema/TemplateFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input, TextArea, Checkbox } from '../../../../components/UI/Forms';
-import { FormField } from '../../../../components/UI/FormComponents';
+import { Input, TextArea, Checkbox } from '../../../../components/Forms';
+import { FormField } from '../../../../components/FormComponents';
 
 export const TemplateFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(TemplateFormSchema);

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { FloowLogo } from '../../../components/UI/FloowLogo';
-import { Button } from '../../../components/UI/Button';
-import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
+import { FloowLogo } from '../../../components/FloowLogo';
+import { Button } from '../../../components/Button';
+import { AuthRightSection } from '../components/AuthRightSection';
 import { authService } from '../../../services/api';
 import { getRoleFromToken } from '../../../utils/jwt';
 import { extractErrorMessage } from '../../../utils/errorHandler';

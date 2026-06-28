@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { PageWrapper } from '../../components/UI/PageWrapper';
-import Table from '../../components/UI/Table/Table';
+import { PageWrapper } from '../../components/PageWrapper';
+import Table from '../../components/Table/Table';
 import { workerService, type WorkerInvitationStatus } from '../../services/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';

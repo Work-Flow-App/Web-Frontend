@@ -7,10 +7,10 @@ import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import type { StepVisitLogResponse } from '../../../services/api';
 import { workerJobWorkflowService } from '../../../services/api';
-import { useGlobalModalOuterContext, ModalSizes } from '../../../components/UI/GlobalModal';
+import { useGlobalModalOuterContext, ModalSizes } from '../../../components/GlobalModal';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { Loader } from '../../../components/UI/Loader/Loader';
-import { Button } from '../../../components/UI/Button';
+import { Loader } from '../../../components/Loader/Loader';
+import { Button } from '../../../components/Button';
 import { AddWorkLogModal } from './AddWorkLogModal';
 import * as M from '../styles/WorkerMobile.styles';
 

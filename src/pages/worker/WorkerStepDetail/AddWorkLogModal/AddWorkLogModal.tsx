@@ -6,10 +6,10 @@ import type { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
-import { FormField } from '../../../../components/UI/FormComponents';
-import { Input } from '../../../../components/UI/Forms/Input';
-import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
+import { FormField } from '../../../../components/FormComponents';
+import { Input } from '../../../../components/Forms/Input';
+import { TextArea } from '../../../../components/Forms/TextArea';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { workerJobWorkflowService } from '../../../../services/api';
 

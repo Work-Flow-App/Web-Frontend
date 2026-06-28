@@ -1,6 +1,6 @@
 import { styled } from '@mui/material/styles';
 import { Box, Typography } from '@mui/material';
-import { rem } from '../../../components/UI/Typography/utility';
+import { rem } from '../../../components/Typography/utility';
 import { floowColors } from '../../../theme/colors';
 
 export const ForgotPasswordContainer = styled(Box)({

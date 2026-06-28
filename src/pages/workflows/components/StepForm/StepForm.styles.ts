@@ -1,6 +1,6 @@
 import { Box, Divider, Typography, styled } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { rem, Bold } from '../../../../components/UI/Typography/utility';
+import { rem, Bold } from '../../../../components/Typography/utility';
 
 export const SectionDivider = styled(Divider)(({ theme }) => ({
   margin: theme.spacing(1.5, 0),

@@ -1,5 +1,5 @@
 import { Box, Typography, styled } from '@mui/material';
-import { rem } from '../../components/UI/Typography/utility';
+import { rem } from '../../components/Typography/utility';
 
 export const PageContainer = styled(Box)(({ theme }) => ({
   display: 'flex',

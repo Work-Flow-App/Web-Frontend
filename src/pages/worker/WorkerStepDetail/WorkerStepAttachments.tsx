@@ -9,8 +9,8 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { StepAttachmentResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
-import { Loader } from '../../../components/UI/Loader/Loader';
-import { IconButton } from '../../../components/UI/Button/IconButton';
+import { Loader } from '../../../components/Loader/Loader';
+import { IconButton } from '../../../components/Button/IconButton';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepAttachmentsProps {

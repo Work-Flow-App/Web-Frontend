@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import Table from '../../../../components/UI/Table/Table';
-import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { PageWrapper } from '../../../../components/PageWrapper';
+import Table from '../../../../components/Table/Table';
+import type { ITableAction } from '../../../../components/Table/ITable';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/GlobalModal';
 import { workflowService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { workflowColumns } from './DataColumn';
 import type { WorkflowTableRow } from '../../../../types/workflow';
 import { WorkflowForm } from '../WorkflowForm/WorkflowForm';
-import { TollTip } from '../../../../components/UI/TollTip/TollTip';
+import { InfoTooltip } from '../../../../components/InfoTooltip';
 import { TOOLTIP_MESSAGES } from './ToolTipConst';
 import { TitleContainer } from './WorkflowsList.styles';
 
@@ -220,7 +220,7 @@ export const WorkflowsList: React.FC = () => {
       title={
         <TitleContainer>
           Workfloow Templates
-          <TollTip message={TOOLTIP_MESSAGES.WORKFLOW_TEMPLATES} />
+          <InfoTooltip message={TOOLTIP_MESSAGES.WORKFLOW_TEMPLATES} />
         </TitleContainer>
       }
       description="Create and manage reusable workfloow templates for your jobs."

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FieldFormSchema, type FieldFormData } from '../../schema/FieldFormSchema';
-import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
+import { SetupFormWrapper } from '../../../../components/SetupFormWrapper';
 import { FieldFormFields } from '../FieldFormFields/FieldFormFields';
-import { Loader } from '../../../../components/UI';
+import { Loader } from '../../../../components';
 import { jobTemplateService, JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 
 export interface FieldFormProps {
   isModal?: boolean;

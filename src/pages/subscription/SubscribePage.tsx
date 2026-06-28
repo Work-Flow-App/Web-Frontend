@@ -3,7 +3,7 @@ import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@paddle/paddle-js';
-import { PricingCard } from '../../components/UI/PricingCard';
+import { PricingCard } from '../../components/PricingCard';
 import { subscriptionService } from '../../services/api/subscription';
 import { companyService } from '../../services/api/company';
 import { getAffiliateTid } from '../../utils/tracking';

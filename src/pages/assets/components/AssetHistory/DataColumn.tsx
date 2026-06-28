@@ -1,4 +1,4 @@
-import type { ITableColumn } from '../../../../components/UI/Table/ITable';
+import type { ITableColumn } from '../../../../components/Table/ITable';
 
 export interface AssetHistoryRow {
   id: number;

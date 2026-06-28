@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Input } from '../../../../../components/UI/Forms/Input';
-import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
+import { Input } from '../../../../../components/Forms/Input';
+import { StandaloneDropdown } from '../../../../../components/Forms/Dropdown';
 import { companyMemberService } from '../../../../../services/api/companyMember';
 import type { CompanyRole } from '../../../../../services/api/companyMember';
 import { MemberInviteRequestCompanyRoleEnum } from '../../../../../../workflow-api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
-import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal';
+import { useGlobalModalInnerContext } from '../../../../../components/GlobalModal';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
 import { useSchema } from '../../../../../utils/validation';
 import { InviteMemberFormSchema } from './InviteMemberFormSchema';

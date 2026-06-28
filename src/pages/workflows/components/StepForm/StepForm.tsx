@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { StepFormSchema, type StepFormData } from '../../schema/StepFormSchema';
-import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
+import { SetupFormWrapper } from '../../../../components/SetupFormWrapper';
 import { StepFormFields } from './StepFormFields';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;

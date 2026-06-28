@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { CustomerFormSchema, type CustomerFormData } from '../../schema/CustomerFormSchema';
-import { SetupFormWrapper } from '../../../../components/UI/SetupFormWrapper';
+import { SetupFormWrapper } from '../../../../components/SetupFormWrapper';
 import { CustomerFormFields } from '../CustomerFormFields';
-import { Loader } from '../../../../components/UI';
+import { Loader } from '../../../../components';
 import { customerService, type CustomerCreateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal/context';
 
 export interface SetupFormProps {
   isModal?: boolean;

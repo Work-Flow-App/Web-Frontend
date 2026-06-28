@@ -1,7 +1,7 @@
-import type { ITableColumn } from '../../../components/UI/Table/ITable';
+import type { ITableColumn } from '../../../components/Table/ITable';
 import { StatusBadge } from './TeamPage.styles';
 import type { Theme } from '@mui/material/styles';
-import { MemberInfo, MemberName, MemberEmail } from '../../../components/UI/Table/Table.styles';
+import { MemberInfo, MemberName, MemberEmail } from '../../../components/Table/Table.styles';
 
 export interface MemberTableRow {
   id: number;

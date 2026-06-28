@@ -1,9 +1,9 @@
 import React from 'react';
 import { WorkerFormSchema } from '../../schema/WorkerFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input } from '../../../../components/UI/Forms/Input';
-import { PasswordInput } from '../../../../components/UI/Forms/PasswordInput';
-import { FormRow, FormField } from '../../../../components/UI/FormComponents';
+import { Input } from '../../../../components/Forms/Input';
+import { PasswordInput } from '../../../../components/Forms/PasswordInput';
+import { FormRow, FormField } from '../../../../components/FormComponents';
 
 interface WorkerFormFieldsProps {
   showCredentials?: boolean;

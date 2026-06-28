@@ -1,8 +1,8 @@
 import { styled, Box, IconButton, Menu, MenuItem } from '@mui/material';
-import { rem, Bold } from '../../components/UI/Typography/utility';
+import { rem, Bold } from '../../components/Typography/utility';
 import { floowColors } from '../../theme/colors';
 
-export { STEP_COLORS } from '../../enums';
+export { STEP_COLORS } from '../../types';
 
 // ─── Main card ────────────────────────────────────────────────────────────────
 

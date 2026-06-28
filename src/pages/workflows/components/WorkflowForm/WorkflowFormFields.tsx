@@ -1,8 +1,8 @@
 import React from 'react';
 import { WorkflowFormSchema } from '../../schema/WorkflowFormSchema';
 import { useSchema } from '../../../../utils/validation';
-import { Input, TextArea } from '../../../../components/UI/Forms';
-import { FormField } from '../../../../components/UI/FormComponents';
+import { Input, TextArea } from '../../../../components/Forms';
+import { FormField } from '../../../../components/FormComponents';
 
 export const WorkflowFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(WorkflowFormSchema);

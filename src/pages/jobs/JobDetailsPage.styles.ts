@@ -1,5 +1,5 @@
 import { Box, Typography, Chip, MenuItem, ToggleButtonGroup, ToggleButton, styled } from '@mui/material';
-import { rem, Bold } from '../../components/UI/Typography/utility';
+import { rem, Bold } from '../../components/Typography/utility';
 import { floowColors } from '../../theme/colors';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({

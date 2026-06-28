@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useGlobalModalInnerContext } from '../UI/GlobalModal/context';
+import { useGlobalModalInnerContext } from '../GlobalModal/context';
 import type { EnvironmentConfig } from './AppConfiguration';
 import * as S from './ConfigurationModal.styles';
 

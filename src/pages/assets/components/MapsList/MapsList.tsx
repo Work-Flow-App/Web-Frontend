@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
-import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
-import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
+import { PageWrapper } from '../../../../components/PageWrapper';
+import GoogleMap from '../../../../components/GoogleMap/GoogleMap';
+import type { PlaceDetails } from '../../../../components/GoogleMap';
 import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
 import { jobService } from '../../../../services/api/job';
 import { workerService } from '../../../../services/api/worker';

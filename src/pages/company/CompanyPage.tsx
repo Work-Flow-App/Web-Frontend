@@ -14,8 +14,7 @@ import { dashboardService } from '../../services/api';
 import type { FinancialSummaryResponse } from '../../services/api';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
-// Tooltip Imports
-import { TollTip } from '../../components/UI/TollTip/TollTip';
+import { InfoTooltip } from '../../components/InfoTooltip';
 import { TOOLTIP_MESSAGES } from './const/ToolTipConst';
 
 // Cleaned up component using pure styled-components
@@ -25,7 +24,7 @@ const SummaryBox: React.FC<{ label: string; tooltip?: string; value?: number; co
       <SummaryLabelText variant="caption">
         {label}
       </SummaryLabelText>
-      {tooltip && <TollTip message={tooltip} />}
+      {tooltip && <InfoTooltip message={tooltip} />}
     </SummaryHeader>
     <SummaryValueText variant="h5" stylecolor={color}>
       {fmt(value)}

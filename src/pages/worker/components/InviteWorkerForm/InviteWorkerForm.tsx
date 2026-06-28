@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Input } from '../../../../components/UI/Forms/Input';
+import { Input } from '../../../../components/Forms/Input';
 import { workerService } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal';
+import { useGlobalModalInnerContext } from '../../../../components/GlobalModal';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { FormContainer, FormWrapper } from './InviteWorkerForm.styles';
 

@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 import type { ThemeOptions } from '@mui/material/styles';
-import { rem } from '../components/UI/Typography/utility';
+import { rem } from '../components/Typography/utility';
 import overrides from './overrides';
 import transitions from './transitions';
 import typography from './typography';

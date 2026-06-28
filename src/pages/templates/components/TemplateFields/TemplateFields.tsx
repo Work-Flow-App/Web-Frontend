@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import Table from '../../../../components/UI/Table/Table';
-import type { ITableAction } from '../../../../components/UI/Table/ITable';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import Table from '../../../../components/Table/Table';
+import type { ITableAction } from '../../../../components/Table/ITable';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/GlobalModal';
 import { jobTemplateService } from '../../../../services/api';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';

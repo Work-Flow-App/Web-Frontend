@@ -1,8 +1,8 @@
-import type { ITableColumn } from '../../../../components/UI/Table/ITable';
+import type { ITableColumn } from '../../../../components/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
-import { FieldsBadgeList } from '../../../../components/UI/FieldsBadgeList';
-import { FieldsContainer } from '../../../../components/UI/FieldsBadgeList/FieldsBadgeList.styles';
-import { Badge } from '../../../../components/UI/Badge';
+import { FieldsBadgeList } from '../../../../components/FieldsBadgeList';
+import { FieldsContainer } from '../../../../components/FieldsBadgeList/FieldsBadgeList.styles';
+import { Badge } from '../../../../components/Badge';
 
 export interface TemplateTableRow {
   id: number;

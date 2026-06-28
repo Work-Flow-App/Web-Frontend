@@ -10,7 +10,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import NearMeOutlinedIcon from '@mui/icons-material/NearMeOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import { Button } from '../../../components/UI/Button';
+import { Button } from '../../../components/Button';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { JobWorkflowStepResponse, WorkerAssignedStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';
