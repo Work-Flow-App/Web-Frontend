@@ -48,14 +48,40 @@ const SUBSCRIBE_STATUSES = [
 ];
 
 export const BillingSettings: React.FC = () => {
-  const { status, refresh } = useSubscription();
+  const { status, isLoading, refresh } = useSubscription();
   const { showSuccess, showError } = useSnackbar();
   const navigate = useNavigate();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
 
-  if (!status) return null;
+  if (isLoading) {
+    return (
+      <S.SectionWrapper elevation={0}>
+        <CircularProgress size={24} />
+      </S.SectionWrapper>
+    );
+  }
+
+  if (!status) {
+    return (
+      <S.SectionWrapper elevation={0}>
+        <S.SectionHeader>
+          <Typography variant="h6" fontWeight={600}>
+            Billing & Subscription
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            You don't have an active subscription yet.
+          </Typography>
+        </S.SectionHeader>
+        <S.ActionsRow>
+          <Button variant="contained" onClick={() => navigate('/subscribe')}>
+            Subscribe Now
+          </Button>
+        </S.ActionsRow>
+      </S.SectionWrapper>
+    );
+  }
 
   const currentStatus = status.status as SubscriptionStatusResponseStatusEnum | undefined;
   const statusConfig = currentStatus ? STATUS_CONFIG[currentStatus] : undefined;
