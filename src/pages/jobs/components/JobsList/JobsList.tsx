@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box } from '@mui/material';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
-import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
+import { Search } from '../../../../components/UI/Search';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
@@ -16,33 +15,54 @@ import {
 } from '../../../../services/api';
 import type {
   JobResponse,
-  JobTemplateResponse,
   JobTemplateFieldResponse,
   AssetResponse,
   PagedModelAssetResponse,
   CustomerResponse,
   ClientResponse,
   WorkflowResponse,
+  JobFilters,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { AddJobWizard } from '../AddJobWizard';
 import { useFetch } from '../../../../hooks';
+import { JobFilterPanel } from './JobFilterPanel';
+import { FilterChip, ClearAllChip } from './JobsList.styles';
+import {
+  HeaderControls,
+  FilterButtonWrapper,
+  FilterCountBadge,
+  FilterTuneIcon,
+  ChipsRow,
+} from './JobFilterPanel.styles';
+import { IconButton } from '../../../../components/UI/Button';
+import { Badge } from '../../../../components/UI/Badge';
+import { JOB_STATUS_OPTIONS } from '../../../../enums';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchKey, setSearchKey] = useState(0);
+  const [filters, setFilters] = useState<JobFilters>({});
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
+
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
-  const { data: templatesData, loading: loadingTemplates } = useFetch<JobTemplateResponse[]>(
-    () => jobTemplateService.getAllTemplates(),
-    [],
-    { onError: () => showError('Failed to load templates') }
-  );
+  // Debounce search input → searchQuery (triggers API refetch)
+  useEffect(() => {
+    const t = setTimeout(() => setSearchQuery(searchInput), 400);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const { data: templatesData, loading: loadingTemplates } = useFetch(() => jobTemplateService.getAllTemplates(), [], {
+    onError: () => showError('Failed to load templates'),
+  });
   const templates = useMemo(() => templatesData ?? [], [templatesData]);
 
   const { data: assetsPage } = useFetch<PagedModelAssetResponse>(() => assetService.getAllAssets(0, 1000), [], {
@@ -65,28 +85,35 @@ export const JobsList: React.FC = () => {
   });
   const workflows = useMemo<WorkflowResponse[]>(() => workflowsData ?? [], [workflowsData]);
 
+  // Resolve template ID from active template name filter (drives dynamic columns)
+  const filteredTemplateId = useMemo(
+    () => (filters.templateName ? (templates.find((t) => t.name === filters.templateName)?.id ?? null) : null),
+    [filters.templateName, templates]
+  );
+
   const { data: templateFieldsData } = useFetch<JobTemplateFieldResponse[]>(
-    () => jobTemplateService.getTemplateFields(selectedTemplateId!),
-    [selectedTemplateId],
+    () => jobTemplateService.getTemplateFields(filteredTemplateId!),
+    [filteredTemplateId],
     {
-      skip: !selectedTemplateId,
+      skip: !filteredTemplateId,
       onError: (error) => showError(extractErrorMessage(error, 'Failed to load template fields')),
     }
   );
   const templateFields = useMemo(() => templateFieldsData ?? [], [templateFieldsData]);
+
+  // Stable filter object passed to getAllJobs — only changes when filters or searchQuery change
+  const apiFilters = useMemo<JobFilters>(
+    () => ({ ...filters, search: searchQuery || undefined }),
+    [filters, searchQuery]
+  );
 
   const {
     data: rawJobs,
     loading,
     refetch: fetchJobs,
   } = useFetch<JobResponse[]>(
-    () =>
-      showArchived
-        ? jobService.getArchivedJobs()
-        : selectedTemplateId
-          ? jobService.getJobsByTemplate(selectedTemplateId)
-          : jobService.getAllJobs(),
-    [selectedTemplateId, showArchived],
+    () => (showArchived ? jobService.getArchivedJobs() : jobService.getAllJobs(apiFilters)),
+    [showArchived, apiFilters],
     {
       skip: loadingTemplates,
       onError: (error) => showError(extractErrorMessage(error, 'Failed to load jobs')),
@@ -139,7 +166,7 @@ export const JobsList: React.FC = () => {
     });
   }, [rawJobs, assets, templates, customers, clients, workflows]);
 
-  // Show "No Templates Available" modal once on load if no templates exist
+  // No-template modal on first load
   useEffect(() => {
     if (!loadingTemplates && templates.length === 0 && !hasShownNoTemplateModal) {
       setHasShownNoTemplateModal(true);
@@ -197,7 +224,6 @@ export const JobsList: React.FC = () => {
       });
       return;
     }
-
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.LARGE,
@@ -256,7 +282,6 @@ export const JobsList: React.FC = () => {
                 resetGlobalModalOuterProps();
                 fetchJobs();
               } catch (error) {
-                console.error('Error deleting job:', error);
                 showError(extractErrorMessage(error, 'Failed to delete job'));
                 resetGlobalModalOuterProps();
               }
@@ -279,7 +304,7 @@ export const JobsList: React.FC = () => {
           <ConfirmationModal
             title="Archive Job"
             message={`Are you sure you want to archive Job #${job.id}?`}
-            description="Archived jobs are removed from the active list. This action can be reviewed by your administrator."
+            description="Archived jobs are removed from the active list."
             variant="default"
             confirmButtonText="Archive"
             cancelButtonText="Cancel"
@@ -290,7 +315,6 @@ export const JobsList: React.FC = () => {
                 resetGlobalModalOuterProps();
                 fetchJobs();
               } catch (error) {
-                console.error('Error archiving job:', error);
                 showError(extractErrorMessage(error, 'Failed to archive job'));
                 resetGlobalModalOuterProps();
               }
@@ -315,46 +339,168 @@ export const JobsList: React.FC = () => {
 
   const columns = useMemo(() => generateJobColumns(templateFields), [templateFields]);
 
+  // Dropdown options for the filter panel (value = name, since API takes name strings)
   const templateOptions = useMemo(
-    () => templates.map((t) => ({ label: t.name || '', value: t.id?.toString() || '' })),
+    () => templates.map((t) => ({ label: t.name || '', value: t.name || '' })),
     [templates]
   );
+  const customerOptions = useMemo(
+    () => customers.map((c) => ({ label: c.name || '', value: c.name || '' })),
+    [customers]
+  );
+  const clientOptions = useMemo(() => clients.map((c) => ({ label: c.name || '', value: c.name || '' })), [clients]);
+  const workflowOptions = useMemo(
+    () => workflows.map((w) => ({ label: w.name || '', value: w.name || '' })),
+    [workflows]
+  );
 
-  const archivedFilterOptions = [
-    { label: 'Active Jobs', value: 'active' },
-    { label: 'Archived Jobs', value: 'archived' },
-  ];
+  // Active filter chips — archived chip shown instead of filter chips when in archived mode
+  const activeChips = useMemo(() => {
+    const chips: { key: string; label: string; onDelete: () => void }[] = [];
+
+    if (searchQuery) {
+      chips.push({
+        key: 'search',
+        label: `"${searchQuery}"`,
+        onDelete: () => {
+          setSearchInput('');
+          setSearchQuery('');
+          setSearchKey((k) => k + 1);
+        },
+      });
+    }
+
+    if (showArchived) {
+      chips.push({
+        key: 'archived',
+        label: 'Archived jobs',
+        onDelete: () => setShowArchived(false),
+      });
+      return chips;
+    }
+
+    if (filters.status) {
+      chips.push({
+        key: 'status',
+        label: `Status: ${JOB_STATUS_OPTIONS.find((o) => o.value === filters.status)?.label ?? filters.status}`,
+        onDelete: () =>
+          setFilters((prev) => {
+            const next = { ...prev };
+            delete next.status;
+            return next;
+          }),
+      });
+    }
+    if (filters.templateName) {
+      chips.push({
+        key: 'templateName',
+        label: `Template: ${filters.templateName}`,
+        onDelete: () =>
+          setFilters((prev) => {
+            const next = { ...prev };
+            delete next.templateName;
+            return next;
+          }),
+      });
+    }
+    if (filters.customerName) {
+      chips.push({
+        key: 'customerName',
+        label: `Customer: ${filters.customerName}`,
+        onDelete: () =>
+          setFilters((prev) => {
+            const next = { ...prev };
+            delete next.customerName;
+            return next;
+          }),
+      });
+    }
+    if (filters.clientName) {
+      chips.push({
+        key: 'clientName',
+        label: `Client: ${filters.clientName}`,
+        onDelete: () =>
+          setFilters((prev) => {
+            const next = { ...prev };
+            delete next.clientName;
+            return next;
+          }),
+      });
+    }
+    if (filters.workflowName) {
+      chips.push({
+        key: 'workflowName',
+        label: `Workflow: ${filters.workflowName}`,
+        onDelete: () =>
+          setFilters((prev) => {
+            const next = { ...prev };
+            delete next.workflowName;
+            return next;
+          }),
+      });
+    }
+    return chips;
+  }, [filters, searchQuery, showArchived]);
+
+  const clearAllFilters = useCallback(() => {
+    setFilters({});
+    setShowArchived(false);
+    setSearchInput('');
+    setSearchQuery('');
+    setSearchKey((k) => k + 1);
+  }, []);
+
+  // Badge count: one per active filter dimension + 1 if archived
+  const activeBadgeCount = Object.keys(filters).length + (showArchived ? 1 : 0);
+  const hasActiveFilters = activeBadgeCount > 0;
 
   return (
     <PageWrapper
       title="All Jobs"
       description="Manage jobs, assign workers, and track progress."
-      actions={[
-        {
-          label: 'Create Job',
-          onClick: handleAddJob,
-          variant: 'contained',
-          color: 'primary',
-        },
-      ]}
+      actions={[{ label: 'Create Job', onClick: handleAddJob, variant: 'contained', color: 'primary' }]}
       headerExtra={
-        <Box sx={{ minWidth: 160, display: 'flex', alignItems: 'center' }}>
-          <StandaloneDropdown
-            name="archivedFilter"
-            placeHolder="Active Jobs"
-            preFetchedOptions={archivedFilterOptions}
-            defaultValue={showArchived ? 'archived' : 'active'}
-            onChange={(value) => setShowArchived(value === 'archived')}
-            hideErrorMessage
-            size="medium"
+        <HeaderControls>
+          <Search
+            key={searchKey}
+            placeholder="Search jobs..."
+            onChange={setSearchInput}
+            onSearch={(v) => {
+              setSearchInput(v);
+              setSearchQuery(v);
+            }}
+            size="small"
           />
-        </Box>
+          <FilterButtonWrapper>
+            <IconButton
+              variant="outlined"
+              color={hasActiveFilters ? 'primary' : 'secondary'}
+              size="small"
+              onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+              aria-label="Open filters"
+            >
+              <FilterTuneIcon />
+            </IconButton>
+            {hasActiveFilters && (
+              <FilterCountBadge>
+                <Badge variant="primary" size="small">
+                  {activeBadgeCount}
+                </Badge>
+              </FilterCountBadge>
+            )}
+          </FilterButtonWrapper>
+        </HeaderControls>
       }
-      dropdownOptions={!showArchived ? templateOptions : []}
-      dropdownValue={selectedTemplateId?.toString()}
-      dropdownPlaceholder="All Jobs (No Template Filter)"
-      onDropdownChange={(value) => setSelectedTemplateId(value ? Number(value) : null)}
     >
+      {activeChips.length > 0 && (
+        <ChipsRow>
+          {activeChips.map((chip) => (
+            <FilterChip key={chip.key} label={chip.label} onDelete={chip.onDelete} size="small" variant="outlined" />
+          ))}
+          {activeChips.length > 1 && <ClearAllChip label="Clear all" size="small" onClick={clearAllFilters} />}
+        </ChipsRow>
+      )}
+
       <Table<JobTableRow>
         columns={columns}
         data={jobs}
@@ -367,13 +513,26 @@ export const JobsList: React.FC = () => {
         emptyMessage={
           showArchived
             ? 'No archived jobs found.'
-            : selectedTemplateId
-              ? 'No jobs found for this template. Add your first job to get started.'
+            : activeChips.length > 0
+              ? 'No jobs match the current filters.'
               : 'No jobs found. Add your first job to get started.'
         }
         rowsPerPage={100}
         showPagination={true}
         enableStickyLeft={true}
+      />
+
+      <JobFilterPanel
+        anchorEl={filterAnchorEl}
+        onClose={() => setFilterAnchorEl(null)}
+        showArchived={showArchived}
+        onToggleArchived={setShowArchived}
+        currentFilters={filters}
+        onApply={setFilters}
+        templateOptions={templateOptions}
+        customerOptions={customerOptions}
+        clientOptions={clientOptions}
+        workflowOptions={workflowOptions}
       />
     </PageWrapper>
   );

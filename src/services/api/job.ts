@@ -3,11 +3,22 @@ import type {
   JobResponse,
   JobCreateRequest,
   JobUpdateRequest,
+  PagedModelJobResponse,
+  JobGetAllStatusEnum,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
 export type { JobResponse, JobCreateRequest, JobUpdateRequest };
+
+export interface JobFilters {
+  search?: string;
+  templateName?: string;
+  customerName?: string;
+  clientName?: string;
+  workflowName?: string;
+  status?: string;
+}
 
 function getJobApi(): JobsApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
@@ -15,9 +26,18 @@ function getJobApi(): JobsApi {
 }
 
 export const jobService = {
-  async getAllJobs(): Promise<{ data: any[] }> {
-    const res = await getJobApi().jobGetAll({ page: 0, size: 1000, sort: ['createdAt,desc'] });
-    return { ...res, data: (res.data as any).content || res.data };
+  async getAllJobs(filters?: JobFilters): Promise<{ data: JobResponse[] }> {
+    const res = await getJobApi().jobGetAll(
+      { page: 0, size: 1000, sort: ['createdAt,desc'] },
+      filters?.search || undefined,
+      filters?.customerName || undefined,
+      filters?.clientName || undefined,
+      filters?.workflowName || undefined,
+      filters?.templateName || undefined,
+      filters?.status as JobGetAllStatusEnum | undefined
+    );
+    const paged = res.data as unknown as PagedModelJobResponse;
+    return { ...res, data: paged.content ?? [] };
   },
   async getArchivedJobs(): Promise<{ data: any[] }> {
     const res = await getJobApi().jobGetArchived();

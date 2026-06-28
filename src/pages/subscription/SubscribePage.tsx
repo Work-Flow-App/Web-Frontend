@@ -29,12 +29,10 @@ export const SubscribePage: React.FC = () => {
   const handleSubscribe = async () => {
     setLoading(true);
     try {
-      const [{ data }, profileRes] = await Promise.all([
-        subscriptionService.createCheckout(),
-        companyService.getProfile(),
-      ]);
+      const { data } = await subscriptionService.createCheckout();
       const { transactionId } = data as Record<string, string>;
-      const profile = profileRes.data;
+
+      const profile = await companyService.getProfile().then((r) => r.data).catch(() => null);
 
       const paddle = getPaddleInstance();
       if (!paddle) {
@@ -45,8 +43,8 @@ export const SubscribePage: React.FC = () => {
       paddle.Checkout.open({
         transactionId,
         customData: {
-          companyId: profile.id ?? null,
-          email: profile.email ?? null,
+          companyId: profile?.id ?? null,
+          email: profile?.email ?? null,
           fp_tid: getAffiliateTid(),
         },
         settings: {
