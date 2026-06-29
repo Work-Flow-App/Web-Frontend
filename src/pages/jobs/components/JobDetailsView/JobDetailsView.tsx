@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import IconButton from '@mui/material/IconButton';
 // import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -97,9 +97,9 @@ export const JobDetailsView: React.FC = () => {
   if (loading) {
     return (
       <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <S.JobDetailsViewCenter>
           <CircularProgress />
-        </Box>
+        </S.JobDetailsViewCenter>
       </PageWrapper>
     );
   }
@@ -107,9 +107,9 @@ export const JobDetailsView: React.FC = () => {
   if (!job) {
     return (
       <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <S.JobDetailsViewCenter>
           <S.InfoValue>Job not found</S.InfoValue>
-        </Box>
+        </S.JobDetailsViewCenter>
       </PageWrapper>
     );
   }

@@ -1,6 +1,12 @@
 import { Box, Typography, Chip, MenuItem, ToggleButtonGroup, ToggleButton, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 import { floowColors } from '../../theme/colors';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -1261,7 +1267,7 @@ export const DocumentsGrid = styled(Box)(({ theme }) => ({
 export const DocumentCard = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
@@ -1279,15 +1285,20 @@ export const DocumentCardHeader = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1.5),
 }));
 
-export const DocumentIcon = styled(Box)(({ theme }) => ({
+export const DocumentIcon = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isInvoice',
+})<{ isInvoice?: boolean }>(({ theme, isInvoice }) => ({
   width: rem(40),
   height: rem(40),
   borderRadius: theme.spacing(1),
-  backgroundColor: theme.palette.colors.grey_100,
+  backgroundColor: isInvoice ? '#E8F5E9' : '#FEF3ED',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
+  '& svg': {
+    color: isInvoice ? '#2E7D32' : 'inherit',
+  },
 }));
 
 export const DocumentInfo = styled(Box)(() => ({
@@ -1324,9 +1335,9 @@ export const DocumentStepBadge = styled(Box)(({ theme }) => ({
 
 export const DocumentCardActions = styled(Box)(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'flex-end',
+  justifyContent: 'flex-start',
   gap: theme.spacing(1),
-  marginTop: theme.spacing(1.5),
+  marginTop: 'auto',
   paddingTop: theme.spacing(1.5),
   borderTop: `1px solid ${theme.palette.colors.grey_100}`,
 }));
@@ -1338,6 +1349,7 @@ export const DocumentsEmptyState = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   padding: theme.spacing(6),
   textAlign: 'center',
+  gridColumn: '1 / -1',
 }));
 
 export const DocumentsEmptyIcon = styled(Box)(({ theme }) => ({
@@ -1350,6 +1362,9 @@ export const DocumentsEmptyIcon = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   marginBottom: theme.spacing(2),
   color: theme.palette.text.secondary,
+  '& svg': {
+    fontSize: `${rem(32)} !important`,
+  },
 }));
 
 export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
@@ -1361,6 +1376,118 @@ export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
 export const DocumentsEmptySubtext = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
   color: theme.palette.text.secondary,
+}));
+
+export const DocumentsTabContainer = styled(Box)(() => ({}));
+export const AttachmentsSection = styled(Box)(() => ({}));
+
+// ── Documents Tab: New Design Components ──
+
+export const DocPageTitle = styled('h2')(({ theme }) => ({
+  fontSize: rem(22),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+  margin: 0,
+  marginBottom: theme.spacing(0.5),
+}));
+
+export const DocPageSubtitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  color: theme.palette.text.secondary,
+  margin: 0,
+  marginBottom: theme.spacing(2.5),
+}));
+
+export const DocTabsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(3),
+  flexWrap: 'wrap',
+}));
+
+interface DocTabButtonProps {
+  active?: boolean;
+}
+
+export const DocTabButton = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<DocTabButtonProps>(({ theme, active }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(6),
+  padding: `${rem(7)} ${rem(14)}`,
+  border: `1px solid ${active ? floowColors.dark.primary : theme.palette.colors.grey_300}`,
+  borderRadius: rem(8),
+  backgroundColor: active ? floowColors.dark.primary : theme.palette.colors.white,
+  color: active ? floowColors.white : theme.palette.text.primary,
+  fontSize: rem(14),
+  fontWeight: active ? Bold._600 : Bold._500,
+  cursor: 'pointer',
+  transition: 'all 0.15s ease',
+  '&:hover': {
+    borderColor: active ? floowColors.dark.primary : theme.palette.colors.grey_400,
+    backgroundColor: active ? floowColors.dark.secondary : theme.palette.colors.grey_50,
+  },
+}));
+
+export const DocTabCount = styled('span', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<DocTabButtonProps>(({ active }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._500,
+  color: active ? 'rgba(255,255,255,0.7)' : floowColors.grey[500],
+}));
+
+export const DocSectionLabel = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  marginBottom: theme.spacing(2),
+}));
+
+export const DocInvoiceAmount = styled(Typography)(({ theme }) => ({
+  fontSize: rem(22),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+  margin: `${theme.spacing(1.5)} 0 ${theme.spacing(1)} 0`,
+  lineHeight: 1.2,
+}));
+
+interface DocCardActionButtonProps {
+  danger?: boolean;
+}
+
+export const DocCardActionButton = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'danger',
+})<DocCardActionButtonProps>(({ theme, danger }) => ({
+  flex: 1,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: rem(6),
+  padding: `${rem(7)} ${rem(10)}`,
+  border: `1px solid ${danger ? theme.palette.error.light : theme.palette.colors.grey_300}`,
+  borderRadius: rem(8),
+  backgroundColor: theme.palette.colors.white,
+  color: danger ? theme.palette.error.main : theme.palette.text.primary,
+  fontSize: rem(13),
+  fontWeight: Bold._500,
+  cursor: 'pointer',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  '&:hover': {
+    borderColor: danger ? theme.palette.error.main : theme.palette.colors.grey_400,
+    backgroundColor: danger ? '#fff5f5' : theme.palette.colors.grey_50,
+  },
+  '&:disabled': {
+    opacity: 0.45,
+    cursor: 'not-allowed',
+  },
+  '& svg': {
+    fontSize: `${rem(14)} !important`,
+  },
 }));
 
 // ============================================
@@ -3240,3 +3367,39 @@ export const ActivityPopoverItemMeta = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.disabled,
   marginTop: rem(3),
 }));
+
+export const JobDetailsViewCenter = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '400px',
+}));
+
+// Invoices Section container that handles margin bottom dynamically
+export const InvoicesSection = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'allTab',
+})<{ allTab?: boolean }>(({ theme, allTab }) => ({
+  marginBottom: allTab ? theme.spacing(4) : 0,
+}));
+
+// Styled Document Icons with specific branding colors
+export const DocFileIcon = styled(InsertDriveFileIcon)(() => ({
+  color: '#C1652A',
+}));
+
+export const DocImageIcon = styled(ImageIcon)(({ theme }) => ({
+  color: theme.palette.success.main,
+}));
+
+export const DocPdfIcon = styled(PictureAsPdfIcon)(({ theme }) => ({
+  color: theme.palette.error.main,
+}));
+
+export const DocDescIcon = styled(DescriptionIcon)(({ theme }) => ({
+  color: theme.palette.info.main,
+}));
+
+export const InvoiceReceiptIcon = styled(ReceiptIcon)(() => ({
+  color: '#2E7D32',
+}));
+
