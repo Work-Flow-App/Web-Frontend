@@ -161,158 +161,139 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
 
   return (
     <WS.WorkLogsLayout>
-      {/* ── Left: Steps sidebar ──────────────────────────────────────── */}
-      <WS.StepsSidebar>
-        <WS.StepsSidebarHeader>
-          <WS.StepsSidebarTitle>Steps</WS.StepsSidebarTitle>
-          <WS.StepsCountBadge>{steps.length}</WS.StepsCountBadge>
-        </WS.StepsSidebarHeader>
-
-        <WS.StepsScrollArea>
-          {steps.map((step, idx) => {
-            const isActive = selectedStepId === step.id;
-            return (
-              <WS.StepRowItem
-                key={step.id}
-                isActive={isActive}
-                onClick={() => step.id && setSelectedStepId(step.id)}
-              >
-                <WS.StepCircleIcon circleColor={getStepColor(idx)}>
-                  {idx + 1}
-                </WS.StepCircleIcon>
-                <WS.StepTextGroup>
-                  <WS.StepNameText isActive={isActive}>
-                    {step.name || `Step ${idx + 1}`}
-                  </WS.StepNameText>
-                  <WS.StepStatusText>
-                    {(step as Record<string, unknown>).status as string || ''}
-                  </WS.StepStatusText>
-                </WS.StepTextGroup>
-              </WS.StepRowItem>
-            );
-          })}
-        </WS.StepsScrollArea>
-      </WS.StepsSidebar>
-
-      {/* ── Right: Work logs panel ────────────────────────────────────── */}
-      <WS.WorkLogsPanel>
-        {/* Header */}
-        <WS.WorkLogsPanelHeader>
-          <WS.WorkLogsPanelHeaderLeft>
-            <WS.WorkLogsHeaderCircle
-              circleColor={selectedStepIdx >= 0 ? getStepColor(selectedStepIdx) : undefined}
+      {/* ── Top: Horizontal Steps Navigation ─────────────────────────────── */}
+      <WS.StepsNavContainer>
+        {steps.map((step, idx) => {
+          const isActive = selectedStepId === step.id;
+          return (
+            <WS.StepBadge
+              key={step.id}
+              isActive={isActive}
+              onClick={() => step.id && setSelectedStepId(step.id)}
             >
-              {selectedStepIdx >= 0 ? selectedStepIdx + 1 : <AccessTimeIcon sx={{ fontSize: rem(16) }} />}
-            </WS.WorkLogsHeaderCircle>
-            <div>
-              <WS.WorkLogsPanelTitle>
-                {selectedStep?.name ?? 'Step'} · work logs
-              </WS.WorkLogsPanelTitle>
-              {visitLogs.length > 0 && (
-                <WS.WorkLogsPanelMeta>
-                  {visitLogs.length} {visitLogs.length === 1 ? 'entry' : 'entries'}
-                  {totalMinutes > 0 && ` · ${formatMinutes(totalMinutes)} total`}
-                </WS.WorkLogsPanelMeta>
-              )}
-            </div>
-          </WS.WorkLogsPanelHeaderLeft>
+              <WS.StepDot dotColor={getStepColor(idx)} />
+              {idx + 1}. {step.name || `Step ${idx + 1}`}
+            </WS.StepBadge>
+          );
+        })}
+      </WS.StepsNavContainer>
 
-          <Button
-            size="medium"
-            startIcon={<AddIcon />}
-            onClick={() => openModal()}
-            disabled={!selectedStepId}
-            sx={{ flexShrink: 0 }}
-          >
-            Add Work Log
-          </Button>
-        </WS.WorkLogsPanelHeader>
+      {/* ── Summary Section ────────────────────────────────────────────────── */}
+      <WS.SummarySection>
+        <WS.TrackingBox>
+          <WS.TimerIconBox>
+            <AccessTimeIcon sx={{ fontSize: rem(32), color: 'white' }} />
+          </WS.TimerIconBox>
+          <WS.TrackingInfo>
+            <WS.TrackingLabel>
+              CURRENTLY TRACKING - {selectedStep?.name || 'STEP'}
+            </WS.TrackingLabel>
+            <WS.TrackingTime>{formatMinutes(totalMinutes)}</WS.TrackingTime>
+          </WS.TrackingInfo>
+        </WS.TrackingBox>
 
-        {/* Stats row */}
-        {visitLogs.length > 0 && (
-          <WS.WorkLogsStatsRow>
-            <WS.WorkLogStatCard>
-              <WS.WorkLogStatLabel>Total Time</WS.WorkLogStatLabel>
-              <WS.WorkLogStatValue>{formatMinutes(totalMinutes)}</WS.WorkLogStatValue>
-            </WS.WorkLogStatCard>
-            <WS.WorkLogStatCard>
-              <WS.WorkLogStatLabel>Total Hours</WS.WorkLogStatLabel>
-              <WS.WorkLogStatValue>{summary.totalHours.toFixed(1)}</WS.WorkLogStatValue>
-            </WS.WorkLogStatCard>
-            <WS.WorkLogStatCard>
-              <WS.WorkLogStatLabel>Entries</WS.WorkLogStatLabel>
-              <WS.WorkLogStatValue>{summary.totalEntries}</WS.WorkLogStatValue>
-            </WS.WorkLogStatCard>
-            <WS.WorkLogStatCard>
-              <WS.WorkLogStatLabel>Avg per Entry</WS.WorkLogStatLabel>
-              <WS.WorkLogStatValue>{formatMinutes(summary.avgMinutes)}</WS.WorkLogStatValue>
-            </WS.WorkLogStatCard>
-          </WS.WorkLogsStatsRow>
-        )}
+        <WS.StatsGrid>
+          <WS.StatBox>
+            <WS.StatLabel>Total Hours</WS.StatLabel>
+            <WS.StatValue>{summary.totalHours.toFixed(1)}h</WS.StatValue>
+          </WS.StatBox>
+          <WS.AddLogBox>
+            <Button
+              size="medium"
+              startIcon={<AddIcon />}
+              onClick={() => openModal()}
+              disabled={!selectedStepId}
+              fullWidth
+            >
+              Add Work Log
+            </Button>
+          </WS.AddLogBox>
+          <WS.StatBox>
+            <WS.StatLabel>Entries</WS.StatLabel>
+            <WS.StatValue>{summary.totalEntries}</WS.StatValue>
+          </WS.StatBox>
+          <WS.StatBox>
+            <WS.StatLabel>Avg Per Entry</WS.StatLabel>
+            <WS.StatValue>{formatMinutes(summary.avgMinutes)}</WS.StatValue>
+          </WS.StatBox>
+        </WS.StatsGrid>
+      </WS.SummarySection>
 
-        {/* Log entries */}
-        <WS.WorkLogsScrollArea>
-          {loadingLogs ? (
-            <WS.EmptyFeedBox>
-              <CircularProgress size={32} />
-            </WS.EmptyFeedBox>
-          ) : visitLogs.length === 0 ? (
-            <WS.EmptyFeedBox>
-              <AccessTimeIcon sx={{ fontSize: rem(48), color: 'grey.200' }} />
-              <span style={{ fontSize: rem(14), color: 'inherit' }}>
-                No work logs recorded yet. Add the first entry!
-              </span>
-            </WS.EmptyFeedBox>
-          ) : (
-            visitLogs.map((log) => (
-              <WS.WorkLogCard key={log.id}>
-                <WS.WorkLogCardTopRow>
-                  <WS.WorkLogDateBadge>
-                    <AccessTimeIcon sx={{ fontSize: rem(13) }} />
-                    {formatDate(log.visitDate)}
-                  </WS.WorkLogDateBadge>
+      {/* ── Table Section ──────────────────────────────────────────────────── */}
+      <WS.TableSectionTitle>Recent Entries</WS.TableSectionTitle>
+      <WS.TableContainer>
+        <WS.Table>
+          <thead>
+            <WS.Tr>
+              <WS.Th>Date</WS.Th>
+              <WS.Th>Who</WS.Th>
+              <WS.Th>Start &rarr; End</WS.Th>
+              <WS.Th>Duration</WS.Th>
+              <WS.Th>Notes</WS.Th>
+              <WS.Th>Action</WS.Th>
+            </WS.Tr>
+          </thead>
+          <tbody>
+            {loadingLogs ? (
+              <WS.Tr>
+                <WS.EmptyStateRow colSpan={6}>
+                  <CircularProgress size={24} />
+                </WS.EmptyStateRow>
+              </WS.Tr>
+            ) : visitLogs.length === 0 ? (
+              <WS.Tr>
+                <WS.EmptyStateRow colSpan={6}>
+                  No WorkLog Available
+                </WS.EmptyStateRow>
+              </WS.Tr>
+            ) : (
+              visitLogs.map((log) => {
+                const username = (log as Record<string, any>).loggedByUsername || '-';
+                const initials = username !== '-' ? username.substring(0, 2).toUpperCase() : '?';
 
-                  <WS.WorkLogTimeRange>
-                    {formatTime(log.timeIn)}
-                    <WS.WorkLogTimeSeparator>→</WS.WorkLogTimeSeparator>
-                    {formatTime(log.timeOut)}
-                  </WS.WorkLogTimeRange>
-
-                  <WS.WorkLogDurationBadge>
-                    {formatMinutes(log.workedMinutes)}
-                  </WS.WorkLogDurationBadge>
-                </WS.WorkLogCardTopRow>
-
-                {log.description && (
-                  <WS.WorkLogDescription>{log.description}</WS.WorkLogDescription>
-                )}
-
-                <WS.WorkLogCardFooter>
-                  <WS.WorkLogCreatedText>
-                    Added {formatDate(log.createdAt)}
-                  </WS.WorkLogCreatedText>
-                  <WS.WorkLogCardActions>
-                    <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => openModal(log)}>
-                        <EditIcon sx={{ fontSize: rem(16) }} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => log.id && handleDelete(log.id)}
-                      >
-                        <DeleteIcon sx={{ fontSize: rem(16) }} />
-                      </IconButton>
-                    </Tooltip>
-                  </WS.WorkLogCardActions>
-                </WS.WorkLogCardFooter>
-              </WS.WorkLogCard>
-            ))
-          )}
-        </WS.WorkLogsScrollArea>
-      </WS.WorkLogsPanel>
+                return (
+                  <WS.Tr key={log.id}>
+                    <WS.Td>{formatDate(log.visitDate)}</WS.Td>
+                    <WS.Td>
+                      <WS.UserBadge>
+                        <WS.UserAvatar>{initials}</WS.UserAvatar>
+                        {username}
+                      </WS.UserBadge>
+                    </WS.Td>
+                    <WS.Td>
+                      {formatTime(log.timeIn)} &rarr; {formatTime(log.timeOut)}
+                    </WS.Td>
+                    <WS.Td>
+                      <WS.DurationText>{formatMinutes(log.workedMinutes)}</WS.DurationText>
+                    </WS.Td>
+                    <WS.Td>
+                      <WS.NotesText>{log.description || '-'}</WS.NotesText>
+                    </WS.Td>
+                    <WS.Td>
+                      <WS.ActionCell>
+                        <Tooltip title="Edit">
+                          <IconButton size="small" onClick={() => openModal(log)}>
+                            <EditIcon sx={{ fontSize: rem(18) }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => log.id && handleDelete(log.id)}
+                          >
+                            <DeleteIcon sx={{ fontSize: rem(18) }} />
+                          </IconButton>
+                        </Tooltip>
+                      </WS.ActionCell>
+                    </WS.Td>
+                  </WS.Tr>
+                );
+              })
+            )}
+          </tbody>
+        </WS.Table>
+      </WS.TableContainer>
     </WS.WorkLogsLayout>
   );
 };

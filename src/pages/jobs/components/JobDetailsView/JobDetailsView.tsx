@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import IconButton from '@mui/material/IconButton';
 // import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -18,7 +18,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
-import { AdditionalInformationSection } from '../AdditionalInformationSection';
+import { QuickActions } from '../QuickActions';
 import { ComplaintsSection } from '../ComplaintsSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
 import { JobActivityLogTab } from '../JobDetailsTabs/tabs/JobActivityLogTab';
@@ -26,6 +26,7 @@ import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
 import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
 import { JobEstimateTab } from '../JobDetailsTabs/tabs/JobEstimateTab';
 import { JobWorkLogsTab } from '../JobDetailsTabs/tabs/JobWorkLogsTab';
+import { CustomerName, JobValue, Status, Progress, Created, OverviewContainer } from '../OverviewField';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -96,9 +97,9 @@ export const JobDetailsView: React.FC = () => {
   if (loading) {
     return (
       <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <S.JobDetailsViewCenter>
           <CircularProgress />
-        </Box>
+        </S.JobDetailsViewCenter>
       </PageWrapper>
     );
   }
@@ -106,9 +107,9 @@ export const JobDetailsView: React.FC = () => {
   if (!job) {
     return (
       <PageWrapper title="" description="">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <S.JobDetailsViewCenter>
           <S.InfoValue>Job not found</S.InfoValue>
-        </Box>
+        </S.JobDetailsViewCenter>
       </PageWrapper>
     );
   }
@@ -178,6 +179,17 @@ export const JobDetailsView: React.FC = () => {
           </S.TabButton> */}
         </S.TabsContainer>
 
+        {/* Overview Fields */}
+        {activeTab === 'overview' && (
+          <OverviewContainer>
+            <CustomerName name={(job as any).customerName || customer?.name} />
+            <JobValue jobId={job.id!} workflowUpdateTrigger={workflowUpdateTrigger} />
+            <Status status={job.status} />
+            <Progress jobId={job.id!} workflowUpdateTrigger={workflowUpdateTrigger} />
+            <Created createdAt={job.createdAt} />
+          </OverviewContainer>
+        )}
+
         {/* Main Content Layout */}
         <S.JobDetailsLayout fullWidth={activeTab !== 'overview'}>
           {/* Left Sidebar - Workflow (overview only) */}
@@ -226,8 +238,8 @@ export const JobDetailsView: React.FC = () => {
                   onCustomerUpdate={(updatedCustomer) => setCustomer(updatedCustomer)}
                 />
 
-                {/* Additional Information Section - Description and Attachments */}
-                <AdditionalInformationSection job={job} defaultExpanded={false} />
+                {/* Quick Actions */}
+                <QuickActions jobId={job.id!} />
               </>
             )}
           </S.MainContentPanel>

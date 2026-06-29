@@ -138,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <SidebarMobileBrand>
               <FloowLogo iconOnly />
               <SidebarBrandTextStack>
-                <SidebarBrandName>Workfloww</SidebarBrandName>
+                <SidebarBrandName>Workfloow</SidebarBrandName>
                 {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
               </SidebarBrandTextStack>
             </SidebarMobileBrand>
