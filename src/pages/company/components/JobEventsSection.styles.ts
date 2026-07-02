@@ -1,4 +1,5 @@
-import { Box, Typography, Button, styled } from '@mui/material';
+import { Box, Typography, Button, FormControl, Select, MenuItem as MuiMenuItem, styled } from '@mui/material';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
 
@@ -336,3 +337,137 @@ export const EmptyState = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   gap: rem(8),
 }));
+
+// ─── Primary Workflow Dropdown Extras ─────────────────────────────────────────
+
+export const HeaderRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(12),
+}));
+
+export const WorkflowFormControl = styled(FormControl)(() => ({
+  minWidth: 180,
+}));
+
+export const WorkflowSelect = styled(Select)(() => ({
+  fontSize: rem(13),
+  fontWeight: 500,
+  color: floowColors.text.primary,
+  backgroundColor: floowColors.white,
+  borderRadius: rem(8),
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: floowColors.border.medium,
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: floowColors.blue.main,
+  },
+}));
+
+export const WorkflowAdornment = styled(AccountTreeOutlinedIcon)(() => ({
+  fontSize: 16,
+  marginRight: rem(4),
+  color: floowColors.text.muted,
+}));
+
+export const WorkflowMenuItemContent = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: rem(2),
+  width: '100%',
+}));
+
+export const WorkflowName = styled('span')(() => ({
+  fontSize: rem(13),
+  fontWeight: 'inherit',
+  color: 'inherit',
+}));
+
+export const WorkflowMenuItem = styled(MuiMenuItem, {
+  shouldForwardProp: (prop) => prop !== 'isHighlighted' && prop !== 'isPrimary' && prop !== 'isPrimaryMode',
+})<{ isHighlighted?: boolean; isPrimary?: boolean; isPrimaryMode?: boolean }>(
+  ({ isHighlighted, isPrimary, isPrimaryMode }) => ({
+    fontSize: rem(13),
+    fontWeight: (isHighlighted || isPrimary) ? 700 : 400,
+    backgroundColor: isHighlighted 
+      ? `${floowColors.indigo.main}0a` 
+      : isPrimary 
+        ? `${floowColors.indigo.main}05`
+        : 'transparent',
+    color: (isHighlighted || isPrimary) 
+      ? floowColors.indigo.main 
+      : 'inherit',
+    borderRadius: rem(6),
+    marginLeft: rem(4),
+    marginRight: rem(4),
+    transition: 'all 0.15s ease-in-out',
+    display: 'flex',
+    alignItems: 'center',
+    '&.Mui-selected': {
+      backgroundColor: isHighlighted 
+        ? `${floowColors.indigo.main}0f` 
+        : isPrimary 
+          ? `${floowColors.indigo.main}0a`
+          : undefined,
+      color: (isHighlighted || isPrimary) ? floowColors.indigo.main : undefined,
+    },
+    '&.Mui-selected:hover': {
+      backgroundColor: isPrimaryMode
+        ? (isHighlighted ? `${floowColors.indigo.main}0f` : 'transparent')
+        : (isPrimary ? `${floowColors.indigo.main}0f` : undefined),
+    },
+    '&:hover': {
+      backgroundColor: isPrimaryMode
+        ? (isHighlighted ? `${floowColors.indigo.main}0f` : 'transparent')
+        : isPrimary 
+          ? `${floowColors.indigo.main}0a`
+          : `${floowColors.grey[100]}80`,
+      color: (isHighlighted || isPrimary) ? floowColors.indigo.main : undefined,
+    },
+  })
+);
+
+export const PrimaryTag = styled('span')(() => ({
+  fontSize: rem(7.5),
+  fontWeight: 800,
+  textTransform: 'uppercase',
+  color: floowColors.indigo.main,
+  letterSpacing: rem(0.4),
+  marginTop: rem(1),
+  lineHeight: 1.1,
+  flexShrink: 0,
+}));
+
+export const PrimaryMenuDivider = styled(Box)(({ theme }) => ({
+  height: '1px',
+  backgroundColor: theme.palette.colors?.grey_100 || '#f3f4f6',
+  margin: `${rem(4)} 0`,
+}));
+
+export const PrimaryMenuAction = styled(MuiMenuItem, {
+  shouldForwardProp: (prop) => prop !== 'isSaveMode',
+})<{ isSaveMode?: boolean }>(({ isSaveMode }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: rem(8),
+  fontSize: rem(13),
+  fontWeight: 700,
+  color: floowColors.indigo.main,
+  background: 'transparent',
+  borderRadius: rem(6),
+  margin: `${rem(6)} ${rem(8)}`,
+  padding: `${rem(8)} ${rem(12)}`,
+  border: `1px solid ${floowColors.indigo.main}`,
+  transition: 'all 0.15s ease-in-out',
+  cursor: 'pointer',
+  '&:hover': {
+    background: `${floowColors.indigo.main}0d`,
+    color: floowColors.indigo.main,
+  },
+  '&:active': {
+    background: `${floowColors.indigo.main}1a`,
+  },
+}));
+
