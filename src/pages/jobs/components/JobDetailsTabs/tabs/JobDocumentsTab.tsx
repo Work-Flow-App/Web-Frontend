@@ -1,21 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Divider, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import DescriptionIcon from '@mui/icons-material/Description';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { JobResponse, StepAttachmentResponse, JobWorkflowStepResponse, InvoiceResponse } from '../../../../../services/api';
 import { jobWorkflowService, stepActivityService, estimateService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
-import { useCurrency } from '../../../../../contexts/CurrencyContext';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
-import { IconButton } from '../../../../../components/UI/Button/IconButton';
 import * as S from '../../../JobDetailsPage.styles';
+
+type ActiveTab = 'all' | 'invoices' | 'attachments';
 
 interface JobDocumentsTabProps {
   job: JobResponse;
@@ -27,30 +22,37 @@ interface DocumentWithStep extends StepAttachmentResponse {
 }
 
 const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <InsertDriveFileIcon />;
-  if (fileType.startsWith('image/')) return <ImageIcon sx={{ color: 'success.main' }} />;
-  if (fileType === 'application/pdf') return <PictureAsPdfIcon sx={{ color: 'error.main' }} />;
-  if (fileType.includes('word') || fileType.includes('document')) return <DescriptionIcon sx={{ color: 'info.main' }} />;
-  return <InsertDriveFileIcon sx={{ color: 'text.secondary' }} />;
+  if (!fileType) return <S.DocFileIcon />;
+  if (fileType.startsWith('image/')) return <S.DocImageIcon />;
+  if (fileType === 'application/pdf') return <S.DocPdfIcon />;
+  if (fileType.includes('word') || fileType.includes('document')) return <S.DocDescIcon />;
+  return <S.DocFileIcon />;
+};
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 };
 
 export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
   const { showSuccess, showError } = useSnackbar();
-  const { formatCurrency: fmt } = useCurrency();
   const [documents, setDocuments] = useState<DocumentWithStep[]>([]);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('all');
 
   const fetchAllDocuments = useCallback(async () => {
     if (!job.id) {
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
 
-      // Fetch workflow attachments and invoices in parallel
       const [workflowResponse, estimateResponse] = await Promise.allSettled([
         jobWorkflowService.getJobWorkflowByJobId(job.id),
         estimateService.getByJobId(job.id),
@@ -111,7 +113,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
     fetchAllDocuments();
   }, [fetchAllDocuments]);
 
-  const handleDownload = (document: DocumentWithStep) => {
+  const handleDownloadAttachment = (document: DocumentWithStep) => {
     if (document.fileUrl) window.open(document.fileUrl, '_blank');
   };
 
@@ -128,98 +130,104 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
 
   if (loading) return <Loader size={40} centered minHeight="200px" />;
 
-  const hasDocuments = documents.length > 0;
-  const hasInvoices = invoices.length > 0;
-
-  if (!hasDocuments && !hasInvoices) {
-    return (
-      <S.DocumentsEmptyState>
-        <S.DocumentsEmptyIcon>
-          <FolderOpenIcon sx={{ fontSize: 32 }} />
-        </S.DocumentsEmptyIcon>
-        <S.DocumentsEmptyText>No documents yet</S.DocumentsEmptyText>
-        <S.DocumentsEmptySubtext>
-          Documents uploaded in workfloow steps and generated invoices will appear here
-        </S.DocumentsEmptySubtext>
-      </S.DocumentsEmptyState>
-    );
-  }
+  const totalCount = invoices.length + documents.length;
+  const showInvoices = activeTab === 'all' || activeTab === 'invoices';
+  const showAttachments = activeTab === 'all' || activeTab === 'attachments';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ── Invoices ── */}
-      {hasInvoices && (
-        <Box>
-          <S.DetailsSectionTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ReceiptIcon sx={{ fontSize: '1rem' }} />
-            Invoices ({invoices.length})
-          </S.DetailsSectionTitle>
+    <S.DocumentsTabContainer>
+      {/* ── Header ── */}
+      <S.DocPageTitle>Documents</S.DocPageTitle>
+      <S.DocPageSubtitle>All invoices and attachments for this job</S.DocPageSubtitle>
+
+      {/* ── Tabs ── */}
+      <S.DocTabsRow>
+        <S.DocTabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')}>
+          All <S.DocTabCount active={activeTab === 'all'}>{totalCount}</S.DocTabCount>
+        </S.DocTabButton>
+        <S.DocTabButton active={activeTab === 'invoices'} onClick={() => setActiveTab('invoices')}>
+          Invoices <S.DocTabCount active={activeTab === 'invoices'}>{invoices.length}</S.DocTabCount>
+        </S.DocTabButton>
+        <S.DocTabButton active={activeTab === 'attachments'} onClick={() => setActiveTab('attachments')}>
+          Attachments <S.DocTabCount active={activeTab === 'attachments'}>{documents.length}</S.DocTabCount>
+        </S.DocTabButton>
+      </S.DocTabsRow>
+
+      {/* ── Invoices Section ── */}
+      {showInvoices && (
+        <S.InvoicesSection allTab={activeTab === 'all'}>
+          <S.DocSectionLabel>INVOICES · {invoices.length}</S.DocSectionLabel>
+
           <S.DocumentsGrid>
+            {invoices.length === 0 && (
+              <S.DocumentsEmptyState>
+                <S.DocumentsEmptyIcon>
+                  <ReceiptIcon />
+                </S.DocumentsEmptyIcon>
+                <S.DocumentsEmptyText>No Invoice available</S.DocumentsEmptyText>
+              </S.DocumentsEmptyState>
+            )}
+
             {invoices.map((inv) => (
               <S.DocumentCard key={inv.id}>
                 <S.DocumentCardHeader>
-                  <S.DocumentIcon>
-                    <ReceiptIcon sx={{ color: 'primary.main' }} />
+                  <S.DocumentIcon isInvoice>
+                    <ReceiptIcon />
                   </S.DocumentIcon>
                   <S.DocumentInfo>
                     <S.DocumentName>{inv.invoiceNumber || `Invoice #${inv.id}`}</S.DocumentName>
-                    <S.DocumentMeta>
-                      {inv.createdAt && new Date(inv.createdAt).toLocaleDateString()}
-                    </S.DocumentMeta>
+                    <S.DocumentMeta>{formatDate(inv.createdAt)}</S.DocumentMeta>
                   </S.DocumentInfo>
                 </S.DocumentCardHeader>
 
-                <Box sx={{ px: 0.5, pb: 0.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                  {inv.reference && (
-                    <S.DocumentMeta>Ref: {inv.reference}</S.DocumentMeta>
-                  )}
-                  {inv.dueDate && (
-                    <S.DocumentMeta>Due: {new Date(inv.dueDate).toLocaleDateString()}</S.DocumentMeta>
-                  )}
-                  <S.DocumentMeta sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    Total: {fmt(inv.grandTotal)}
-                  </S.DocumentMeta>
-                </Box>
+                <S.DocInvoiceAmount>
+                  £{inv.grandTotal != null ? Number(inv.grandTotal).toFixed(2) : '0.00'}
+                </S.DocInvoiceAmount>
 
                 <S.DocumentCardActions>
-                  <Tooltip title="View PDF">
-                    <span>
-                      <IconButton
-                        size="small"
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => inv.presignedUrl && window.open(inv.presignedUrl, '_blank', 'noopener,noreferrer')}
-                        aria-label="View invoice PDF"
-                        disabled={!inv.presignedUrl}
-                      >
-                        <OpenInNewIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  <S.DocCardActionButton
+                    onClick={() => inv.presignedUrl && window.open(inv.presignedUrl, '_blank', 'noopener,noreferrer')}
+                    disabled={!inv.presignedUrl}
+                  >
+                    <OpenInNewIcon />
+                    Open
+                  </S.DocCardActionButton>
+                  <S.DocCardActionButton
+                    onClick={() => inv.presignedUrl && window.open(inv.presignedUrl, '_blank')}
+                    disabled={!inv.presignedUrl}
+                  >
+                    <DownloadIcon />
+                    Download
+                  </S.DocCardActionButton>
                 </S.DocumentCardActions>
               </S.DocumentCard>
             ))}
           </S.DocumentsGrid>
-        </Box>
+        </S.InvoicesSection>
       )}
 
-      {/* ── Divider between sections ── */}
-      {hasInvoices && hasDocuments && <Divider />}
+      {/* ── Attachments Section ── */}
+      {showAttachments && (
+        <S.AttachmentsSection>
+          <S.DocSectionLabel>ATTACHMENTS · {documents.length}</S.DocSectionLabel>
 
-      {/* ── Workflow attachments ── */}
-      {hasDocuments && (
-        <Box>
-          <S.DetailsSectionTitle>Documents ({documents.length})</S.DetailsSectionTitle>
           <S.DocumentsGrid>
+            {documents.length === 0 && (
+              <S.DocumentsEmptyState>
+                <S.DocumentsEmptyIcon>
+                  <FolderOpenIcon />
+                </S.DocumentsEmptyIcon>
+                <S.DocumentsEmptyText>No Attachments available</S.DocumentsEmptyText>
+              </S.DocumentsEmptyState>
+            )}
+
             {documents.map((document) => (
               <S.DocumentCard key={document.id}>
                 <S.DocumentCardHeader>
                   <S.DocumentIcon>{getFileIcon(document.fileType)}</S.DocumentIcon>
                   <S.DocumentInfo>
                     <S.DocumentName>{document.fileName || 'Unnamed file'}</S.DocumentName>
-                    <S.DocumentMeta>
-                      {document.createdAt && new Date(document.createdAt).toLocaleDateString()}
-                    </S.DocumentMeta>
+                    <S.DocumentMeta>{formatDate(document.createdAt)}</S.DocumentMeta>
                   </S.DocumentInfo>
                 </S.DocumentCardHeader>
 
@@ -228,34 +236,23 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
                 )}
 
                 <S.DocumentCardActions>
-                  <Tooltip title="Download">
-                    <IconButton
-                      size="small"
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => handleDownload(document)}
-                      aria-label="Download document"
-                    >
-                      <DownloadIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(document)}
-                      aria-label="Delete document"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <S.DocCardActionButton onClick={() => handleDownloadAttachment(document)}>
+                    <DownloadIcon />
+                    Download
+                  </S.DocCardActionButton>
+                  <S.DocCardActionButton
+                    danger
+                    onClick={() => handleDelete(document)}
+                  >
+                    <DeleteIcon />
+                    Delete
+                  </S.DocCardActionButton>
                 </S.DocumentCardActions>
               </S.DocumentCard>
             ))}
           </S.DocumentsGrid>
-        </Box>
+        </S.AttachmentsSection>
       )}
-    </Box>
+    </S.DocumentsTabContainer>
   );
 };
