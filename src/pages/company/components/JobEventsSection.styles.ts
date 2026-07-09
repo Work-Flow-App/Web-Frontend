@@ -1,4 +1,4 @@
-import { Box, Typography, Button, FormControl, Select, MenuItem as MuiMenuItem, styled } from '@mui/material';
+import { Box, Typography, Button, FormControl, Select, MenuItem as MuiMenuItem, Menu as MuiMenu, styled } from '@mui/material';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
@@ -102,6 +102,52 @@ export const PipelineMore = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
   fontWeight: 700,
   letterSpacing: '2px',
+}));
+
+export const DropdownMenu = styled(MuiMenu)(() => ({
+  pointerEvents: 'none',
+  '& .MuiPaper-root': {
+    pointerEvents: 'auto',
+    maxHeight: 300,
+    width: '240px',
+    borderRadius: rem(12),
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    marginTop: rem(8),
+  },
+}));
+
+export const DropdownMenuItem = styled(MuiMenuItem)(() => ({
+  padding: `${rem(4)} ${rem(12)}`,
+  backgroundColor: 'transparent !important',
+  '&:hover': {
+    backgroundColor: 'transparent !important',
+  },
+  '&.Mui-selected': {
+    backgroundColor: 'transparent !important',
+  },
+}));
+
+export const DropdownPipelineChip = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'chipColor' && prop !== 'isActive',
+})<{ chipColor: string; isActive?: boolean }>(({ chipColor, isActive }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(6),
+  padding: `${rem(6)} ${rem(14)}`,
+  backgroundColor: isActive ? chipColor : `${chipColor}20`,
+  color: isActive ? '#fff' : chipColor,
+  borderRadius: rem(20),
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'all 0.18s ease',
+  fontWeight: 600,
+  fontSize: rem(13),
+  width: '100%',
+  boxSizing: 'border-box',
+  '&:hover': {
+    backgroundColor: chipColor,
+    color: '#fff',
+  },
 }));
 
 // ─── Two-column content layout ────────────────────────────────────────────────

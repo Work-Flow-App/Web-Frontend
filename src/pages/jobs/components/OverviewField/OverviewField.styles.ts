@@ -14,7 +14,8 @@ export const OverviewCard = styled(Box)(({ theme }) => ({
   backgroundColor: '#FFFFFF',
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: '0.75rem',
-  padding: theme.spacing(1.5, 2),
+  padding: theme.spacing(1, 2),
+  height: '5rem',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
@@ -36,7 +37,7 @@ export const CardValueContainer = styled(Box)(() => ({
 }));
 
 export const CardValueMain = styled(Typography)(({ theme }) => ({
-  fontSize: '1.5rem',
+  fontSize: '1.12rem',
   fontWeight: 700,
   color: theme.palette.text.primary,
   lineHeight: 1.2,
