@@ -56,6 +56,33 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
     });
   };
 
+  const handleEditAssignment = useCallback(
+    (assignment: AssetAssignmentResponse) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'editAssignment',
+        children: (
+          <AssignAssetModal
+            jobId={jobId}
+            editAssignment={{
+              assignmentId: assignment.assignmentId!,
+              assetId: assignment.assetId!,
+              assetName: assignment.assetName || `Asset #${assignment.assetId}`,
+              assignedWorkerId: assignment.assignedWorkerId,
+              notes: assignment.notes,
+            }}
+            onSuccess={() => {
+              resetGlobalModalOuterProps();
+              fetchAssignments();
+            }}
+          />
+        ),
+      });
+    },
+    [jobId, fetchAssignments, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
   const handleReturnAsset = useCallback(
     (assignment: AssetAssignmentResponse) => {
       setGlobalModalOuterProps({
@@ -123,7 +150,6 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
           startIcon={<AddIcon />}
           onClick={handleAssignAsset}
           size="small"
-          disabled={assignments.length > 0}
         >
           Assign Asset
         </Button>
@@ -151,9 +177,14 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
 
               <S.CardRight>
                 <S.StatusChip label={assignment.status || 'Active'} size="small" color="success" />
-                <Button variant="outlined" color="secondary" size="small" onClick={() => handleReturnAsset(assignment)}>
-                  Return
-                </Button>
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" color="primary" size="small" onClick={() => handleEditAssignment(assignment)}>
+                    Edit
+                  </Button>
+                  <Button variant="outlined" color="secondary" size="small" onClick={() => handleReturnAsset(assignment)}>
+                    Return
+                  </Button>
+                </Stack>
               </S.CardRight>
             </S.AssetCard>
           ))}

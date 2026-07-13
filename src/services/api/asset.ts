@@ -77,6 +77,29 @@ export const assetService = {
   async getJobAssignments(jobId: number, onlyActive = false) {
     return await getAssetAssignmentApi().assetAssignmentJobAssignments(jobId, onlyActive);
   },
+
+  async updateAssignment(assignmentId: number, data: { assignedWorkerId?: number; notes?: string }) {
+    return await axiosInstance.put(`/api/v1/asset-assignments/assign/${assignmentId}`, data);
+  },
+
+  async uploadAttachments(id: number, files: File[]) {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+    return await axiosInstance.post(`/api/v1/assets/${id}/attachments`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  async removeAttachment(id: number, fileUrl: string) {
+    return await axiosInstance.delete(`/api/v1/assets/${id}/attachments`, {
+      params: { fileUrl },
+    });
+  },
 };
 
 export default assetService;
+

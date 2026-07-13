@@ -14,19 +14,28 @@ import { Loader } from '../../../../components/UI';
 export interface AssignAssetModalProps {
   jobId: number;
   onSuccess?: () => void;
+  editAssignment?: {
+    assignmentId: number;
+    assetId: number;
+    assetName: string;
+    assignedWorkerId?: number;
+    notes?: string;
+  };
 }
 
-export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuccess }) => {
+export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuccess, editAssignment }) => {
   const methods = useForm();
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } = useGlobalModalInnerContext();
   const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
-  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
-  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(null);
-  const [notes, setNotes] = useState('');
+  const [selectedAssetId, setSelectedAssetId] = useState<number | null>(editAssignment?.assetId || null);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<number | null>(editAssignment?.assignedWorkerId || null);
+  const [notes, setNotes] = useState(editAssignment?.notes || '');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  const isEditMode = !!editAssignment;
 
   // Use refs so the registered onConfirm callback always sees latest values
   const stateRef = useRef({ selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess });
@@ -36,54 +45,64 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
 
   // Set modal title, button text, and skip auto-close so we control closing after async success
   useEffect(() => {
-    updateModalTitle('Assign Asset to Job');
-    updateGlobalModalInnerConfig({ confirmModalButtonText: 'Assign Asset' });
+    updateModalTitle(isEditMode ? 'Edit Assignment' : 'Assign Asset to Job');
+    updateGlobalModalInnerConfig({ confirmModalButtonText: isEditMode ? 'Save Changes' : 'Assign Asset' });
     setSkipResetModal?.(true);
-  }, [updateModalTitle, updateGlobalModalInnerConfig, setSkipResetModal]);
+  }, [updateModalTitle, updateGlobalModalInnerConfig, setSkipResetModal, isEditMode]);
 
   // Register the confirm handler once; it reads latest values via ref
   useEffect(() => {
     updateOnConfirm(async () => {
       const { selectedAssetId, selectedWorkerId, notes, assets, jobId, onSuccess } = stateRef.current;
 
-      if (!selectedAssetId) {
+      if (!selectedAssetId && !isEditMode) {
         showError('Please select an asset');
         return;
       }
 
       try {
         setSubmitting(true);
-        await assetService.assignAsset({
-          assetId: selectedAssetId,
-          jobId,
-          assignedWorkerId: selectedWorkerId || undefined,
-          notes: notes || undefined,
-        });
+        if (isEditMode && editAssignment) {
+          await assetService.updateAssignment(editAssignment.assignmentId, {
+            assignedWorkerId: selectedWorkerId || undefined,
+            notes: notes || undefined,
+          });
+          showSuccess('Assignment updated successfully');
+        } else {
+          await assetService.assignAsset({
+            assetId: selectedAssetId!,
+            jobId,
+            assignedWorkerId: selectedWorkerId || undefined,
+            notes: notes || undefined,
+          });
 
-        const selectedAsset = assets.find((a) => a.id === selectedAssetId);
-        showSuccess(`${selectedAsset?.name || 'Asset'} assigned successfully`);
+          const selectedAsset = assets.find((a) => a.id === selectedAssetId);
+          showSuccess(`${selectedAsset?.name || 'Asset'} assigned successfully`);
+        }
         onSuccess?.();
       } catch (error) {
-        console.error('Error assigning asset:', error);
-        showError(extractErrorMessage(error, 'Failed to assign asset'));
+        console.error('Error assigning/updating asset:', error);
+        showError(extractErrorMessage(error, `Failed to ${isEditMode ? 'update' : 'assign'} asset`));
       } finally {
         setSubmitting(false);
       }
     });
-  }, [updateOnConfirm, showSuccess, showError]);
+  }, [updateOnConfirm, showSuccess, showError, isEditMode, editAssignment]);
 
   // Fetch available assets and workers
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const assetsResponse = await assetService.getAllAssets(0, 100, false, true);
-        const assetsData = assetsResponse.data.content
-          ? Array.isArray(assetsResponse.data.content)
-            ? assetsResponse.data.content
-            : []
-          : [];
-        setAssets(assetsData);
+        if (!isEditMode) {
+          const assetsResponse = await assetService.getAllAssets(0, 100, false, true);
+          const assetsData = assetsResponse.data.content
+            ? Array.isArray(assetsResponse.data.content)
+              ? assetsResponse.data.content
+              : []
+            : [];
+          setAssets(assetsData);
+        }
 
         const workersResponse = await workerService.getAllWorkers();
         const workersData = Array.isArray(workersResponse.data) ? workersResponse.data : [];
@@ -97,16 +116,17 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
     };
 
     fetchData();
-  }, [showError]);
+  }, [showError, isEditMode]);
 
-  const assetOptions = useMemo(
-    () =>
-      assets.map((asset) => ({
-        label: `${asset.name}${asset.assetTag ? ` (${asset.assetTag})` : ''}`,
-        value: asset.id?.toString() || '',
-      })),
-    [assets]
-  );
+  const assetOptions = useMemo(() => {
+    if (isEditMode && editAssignment) {
+      return [{ label: editAssignment.assetName, value: editAssignment.assetId.toString() }];
+    }
+    return assets.map((asset) => ({
+      label: `${asset.name}${asset.assetTag ? ` (${asset.assetTag})` : ''}`,
+      value: asset.id?.toString() || '',
+    }));
+  }, [assets, isEditMode, editAssignment]);
 
   const workerOptions = useMemo(
     () =>
@@ -121,7 +141,7 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
     return <Loader />;
   }
 
-  if (assets.length === 0) {
+  if (!isEditMode && assets.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="body1" color="text.secondary">
@@ -134,7 +154,7 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
   return (
     <FormProvider {...methods}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <FormField label="Select Asset" required>
+        <FormField label="Asset" required>
           <Dropdown
             name="assetId"
             preFetchedOptions={assetOptions}
@@ -145,7 +165,7 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
             }}
             disablePortal={true}
             fullWidth={true}
-            disabled={submitting}
+            disabled={submitting || isEditMode}
           />
         </FormField>
 
