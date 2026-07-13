@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Typography, Chip, alpha } from '@mui/material';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
-import { workerService, workflowService, assetService } from '../../../../../services/api';
-import type { WorkerResponse, WorkflowResponse, AssetResponse } from '../../../../../services/api';
+import { workerService, workflowService } from '../../../../../services/api';
+import type { WorkerResponse, WorkflowResponse } from '../../../../../services/api';
 import type { WizardData } from '../AddJobWizard';
 import GoogleMap from '../../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../../components/UI/GoogleMap';
@@ -109,14 +109,12 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
 
   const [workers, setWorkers] = useState<WorkerResponse[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
-  const [assets, setAssets] = useState<AssetResponse[]>([]);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
   const [loadingWorkflows, setLoadingWorkflows] = useState(true);
-  const [loadingAssets, setLoadingAssets] = useState(true);
 
   const [selectedWorkerIds, setSelectedWorkerIds] = useState<number[]>(initialData.assignedWorkerIds ?? []);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | undefined>(initialData.workflowId);
-  const [selectedAssetIds, setSelectedAssetIds] = useState<number[]>(initialData.assetIds ?? []);
+
 
   // Selected location from the map search
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(
@@ -163,39 +161,18 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       }
     };
 
-    const fetchAssets = async () => {
-      try {
-        setLoadingAssets(true);
-        // Fetch all non-archived assets so currently assigned ones show in edit mode
-        const resp = await assetService.getAllAssets(0, 200, false);
-        const assetsData = resp.data.content || [];
-        const currentAssetIds = initialData.assetIds ?? [];
-        setAssets(
-          assetsData.filter(
-            (a: AssetResponse) => a.archived !== true && (a.available === true || currentAssetIds.includes(a.id!))
-          )
-        );
-      } catch (error) {
-        console.error('Error fetching assets:', error);
-      } finally {
-        setLoadingAssets(false);
-      }
-    };
-
     fetchWorkers();
     fetchWorkflows();
-    fetchAssets();
   }, []);
 
   const workerOptions = useMemo(() => workers.map((w) => ({ label: w.name || '', id: w.id! })), [workers]);
   const workflowOptions = useMemo(() => workflows.map((w) => ({ label: w.name || '', id: w.id! })), [workflows]);
-  const assetOptions = useMemo(() => assets.map((a) => ({ label: a.name || '', id: a.id! })), [assets]);
+
 
   const handleWorkerClick = (id: number) =>
     setSelectedWorkerIds((prev) => (prev.includes(id) ? prev.filter((w) => w !== id) : [...prev, id]));
   const handleWorkflowClick = (id: number) => setSelectedWorkflowId((prev) => (prev === id ? undefined : id));
-  const handleAssetClick = (id: number) =>
-    setSelectedAssetIds((prev) => (prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]));
+
 
   const onConfirmRef = useRef<() => void>(() => {});
 
@@ -208,7 +185,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
       onStepComplete({
         assignedWorkerIds: selectedWorkerIds,
         workflowId: selectedWorkflowId,
-        assetIds: selectedAssetIds.length > 0 ? selectedAssetIds : undefined,
+
         address: selectedLocation
           ? {
               fullAddress: selectedLocation.address,
@@ -227,7 +204,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   }, [
     selectedWorkerIds,
     selectedWorkflowId,
-    selectedAssetIds,
+
     selectedLocation,
     onStepComplete,
     updateActiveScreen,
@@ -283,21 +260,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
         </SelectableSection>
       </Box>
 
-      <SelectableSection
-        label="Assets"
-        loading={loadingAssets}
-        isEmpty={!loadingAssets && assetOptions.length === 0}
-        emptyMessage="All assets are currently assigned to other jobs, or none have been created yet."
-      >
-        {assetOptions.map((a) => (
-          <SelectableItem
-            key={a.id}
-            label={a.label}
-            selected={selectedAssetIds.includes(a.id)}
-            onClick={() => handleAssetClick(a.id)}
-          />
-        ))}
-      </SelectableSection>
+
 
       {/* Location — search address and pin it on the map */}
       <Box>
