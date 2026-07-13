@@ -400,8 +400,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
 
         <S.FieldRow>
           <S.FieldIconContainer><CategoryIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Job ref</S.FieldLabel>
-          <S.FieldValue>#{(job as any).jobRef || job.id}</S.FieldValue>
+          <S.FieldLabel>Job ID</S.FieldLabel>
+          <S.FieldValue>#{job.id}</S.FieldValue>
         </S.FieldRow>
 
         <S.FieldRow>
