@@ -1,25 +1,42 @@
-import { AssetsApi, AssetAssignmentsApi, Configuration } from '../../../workflow-api';
+import {
+  AssetsApi,
+  AssetAssignmentsApi,
+  Configuration,
+  AssetResponseLocationTypeEnum,
+  AssetAssignmentCreateRequestExplicitLocationTypeEnum,
+} from '../../../workflow-api';
 import type {
   AssetResponse,
   AssetCreateRequest,
   AssetUpdateRequest,
   AssetValueResponse,
   AssetAssignmentResponse,
+  AssetAssignmentResponseLocationTypeEnum,
   AssetAssignmentCreateRequest,
+  AssetAssignmentUpdateRequest,
   AssetAssignmentReturnRequest,
+  AssetAttachmentDto,
+  AddressRequest,
+  AddressResponse,
   PagedModelAssetResponse,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
+export { AssetResponseLocationTypeEnum, AssetAssignmentCreateRequestExplicitLocationTypeEnum };
 export type {
   AssetResponse,
   AssetCreateRequest,
   AssetUpdateRequest,
   AssetValueResponse,
   AssetAssignmentResponse,
+  AssetAssignmentResponseLocationTypeEnum,
   AssetAssignmentCreateRequest,
+  AssetAssignmentUpdateRequest,
   AssetAssignmentReturnRequest,
+  AssetAttachmentDto,
+  AddressRequest,
+  AddressResponse,
   PagedModelAssetResponse,
 };
 
@@ -77,6 +94,19 @@ export const assetService = {
   async getJobAssignments(jobId: number, onlyActive = false) {
     return await getAssetAssignmentApi().assetAssignmentJobAssignments(jobId, onlyActive);
   },
+
+  async updateAssignment(assignmentId: number, data: AssetAssignmentUpdateRequest) {
+    return await getAssetAssignmentApi().assetAssignmentUpdateAssignment(assignmentId, data);
+  },
+
+  async uploadAttachments(id: number, files: File[]) {
+    return await getAssetApi().assetAddAttachments(id, files);
+  },
+
+  async removeAttachment(id: number, fileUrl: string) {
+    return await getAssetApi().assetRemoveAttachment(id, fileUrl);
+  },
 };
 
 export default assetService;
+

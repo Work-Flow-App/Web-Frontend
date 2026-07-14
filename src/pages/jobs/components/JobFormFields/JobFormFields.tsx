@@ -380,7 +380,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
         </FormField>
       </FormRow>
 
-      <LocationMapField />
+      <LocationMapField namePrefix="address" />
 
       {/* Dynamic fields based on template */}
       {templateFields.length > 0 && (

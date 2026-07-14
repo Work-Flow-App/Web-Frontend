@@ -65,6 +65,53 @@ export const AssetFormSchema: IFields = {
     label: 'Salvage Value',
     isRequired: false,
   },
+  warehouseAddressStreet: {
+    title: 'warehouseAddressStreet',
+    defaultValue: '',
+    placeHolder: 'Enter street',
+    label: 'Street',
+    isRequired: false,
+  },
+  warehouseAddressCity: {
+    title: 'warehouseAddressCity',
+    defaultValue: '',
+    placeHolder: 'Enter city',
+    label: 'City',
+    isRequired: false,
+  },
+  warehouseAddressState: {
+    title: 'warehouseAddressState',
+    defaultValue: '',
+    placeHolder: 'Enter state',
+    label: 'State',
+    isRequired: false,
+  },
+  warehouseAddressPostalCode: {
+    title: 'warehouseAddressPostalCode',
+    defaultValue: '',
+    placeHolder: 'Enter postal code',
+    label: 'Postal Code',
+    isRequired: false,
+  },
+  warehouseAddressCountry: {
+    title: 'warehouseAddressCountry',
+    defaultValue: '',
+    placeHolder: 'Enter country',
+    label: 'Country',
+    isRequired: false,
+  },
+  warehouseAddressLatitude: {
+    title: 'warehouseAddressLatitude',
+    defaultValue: null,
+    label: 'Latitude',
+    isRequired: false,
+  },
+  warehouseAddressLongitude: {
+    title: 'warehouseAddressLongitude',
+    defaultValue: null,
+    label: 'Longitude',
+    isRequired: false,
+  },
 };
 
 export interface AssetFormData {
@@ -76,4 +123,11 @@ export interface AssetFormData {
   purchaseDate: string;
   depreciationRate?: number;
   salvageValue?: number;
+  warehouseAddressStreet?: string | null;
+  warehouseAddressCity?: string | null;
+  warehouseAddressState?: string | null;
+  warehouseAddressPostalCode?: string | null;
+  warehouseAddressCountry?: string | null;
+  warehouseAddressLatitude?: number | null;
+  warehouseAddressLongitude?: number | null;
 }

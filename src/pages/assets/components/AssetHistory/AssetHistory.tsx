@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import { Button } from '../../../../components/UI/Button';
 import { assetService } from '../../../../services/api';
-import type { AssetResponse, AssetAssignmentResponse, AssetValueResponse } from '../../../../services/api';
+import type { AssetResponse, AssetAssignmentResponse, AssetValueResponse, AssetAttachmentDto } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Loader } from '../../../../components/UI';
@@ -17,13 +17,17 @@ import * as S from './AssetHistory.styles';
 export const AssetHistory: React.FC = () => {
   const { assetId } = useParams<{ assetId: string }>();
   const navigate = useNavigate();
-  const { showError } = useSnackbar();
+  const { showError, showSuccess } = useSnackbar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [asset, setAsset] = useState<AssetResponse | null>(null);
   const [assetValue, setAssetValue] = useState<AssetValueResponse | null>(null);
   const [history, setHistory] = useState<AssetHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
+
+  const [simDate, setSimDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [simValue, setSimValue] = useState<number | undefined>(undefined);
 
   // Fetch asset data
   const fetchAssetData = useCallback(async () => {
@@ -40,6 +44,7 @@ export const AssetHistory: React.FC = () => {
       try {
         const valueResponse = await assetService.getAssetValue(Number(assetId));
         setAssetValue(valueResponse.data);
+        setSimValue(valueResponse.data?.currentValue);
       } catch {
         // Value endpoint might not be available for all assets
         setAssetValue(null);
@@ -58,6 +63,8 @@ export const AssetHistory: React.FC = () => {
         assignedAt: assignment.assignedAt || '',
         returnedAt: assignment.returnedAt,
         durationDays: assignment.durationDays,
+        expectedDurationDays: assignment.expectedDurationDays,
+        slaBreached: assignment.slaBreached,
         status: assignment.status,
         notes: assignment.notes,
       }));
@@ -70,6 +77,61 @@ export const AssetHistory: React.FC = () => {
       setLoading(false);
     }
   }, [assetId, showError]);
+
+  const handleSimulateValue = async (dateStr: string) => {
+    setSimDate(dateStr);
+    if (!assetId || !dateStr) return;
+    try {
+      const res = await assetService.getAssetValue(Number(assetId), dateStr);
+      setSimValue(res.data.currentValue);
+    } catch (err) {
+      console.error('Error simulating value:', err);
+    }
+  };
+
+  const handleUploadFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !assetId) return;
+    try {
+      setLoading(true);
+      await assetService.uploadAttachments(Number(assetId), Array.from(files));
+      showSuccess('Files uploaded successfully');
+      fetchAssetData();
+    } catch (err) {
+      console.error('Error uploading files:', err);
+      showError(extractErrorMessage(err, 'Failed to upload files'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveFile = async (fileUrl: string) => {
+    if (!assetId) return;
+    try {
+      setLoading(true);
+      let rawKey = fileUrl;
+      try {
+        const url = new URL(fileUrl);
+        const path = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+        const companyIndex = path.indexOf('companies/');
+        if (companyIndex !== -1) {
+          rawKey = path.substring(companyIndex);
+        } else {
+          rawKey = path;
+        }
+      } catch (e) {
+        console.warn('Could not parse fileUrl as URL, passing original:', e);
+      }
+      await assetService.removeAttachment(Number(assetId), rawKey);
+      showSuccess('Attachment removed successfully');
+      fetchAssetData();
+    } catch (err) {
+      console.error('Error removing file:', err);
+      showError(extractErrorMessage(err, 'Failed to remove file'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchAssetData();
@@ -241,6 +303,24 @@ export const AssetHistory: React.FC = () => {
                         <S.DetailLabel>Current Value</S.DetailLabel>
                         <S.DetailValue>{formatCurrency(assetValue.currentValue)}</S.DetailValue>
                       </S.DetailRow>
+                      
+                      {/* Interactive depreciation simulator */}
+                      <S.ForecastCard>
+                        <S.ForecastTitle variant="subtitle2">
+                          📅 Depreciation Value Forecast
+                        </S.ForecastTitle>
+                        <S.ForecastContent>
+                          <S.ForecastInput 
+                            type="date" 
+                            value={simDate}
+                            onChange={(e) => handleSimulateValue(e.target.value)}
+                          />
+                          <S.ForecastValueText variant="body2">
+                            Value as of date: <S.ForecastValueStrong>{formatCurrency(simValue)}</S.ForecastValueStrong>
+                          </S.ForecastValueText>
+                        </S.ForecastContent>
+                      </S.ForecastCard>
+
                       <S.DetailRow>
                         <S.DetailLabel>Total Depreciation</S.DetailLabel>
                         <S.DetailValue>{formatCurrency(assetValue.totalDepreciation)}</S.DetailValue>
@@ -271,6 +351,65 @@ export const AssetHistory: React.FC = () => {
                     <S.DetailLabel>Updated At</S.DetailLabel>
                     <S.DetailValue>{formatDate(asset.updatedAt)}</S.DetailValue>
                   </S.DetailRow>
+
+                  {/* Attachments Section */}
+                  <S.AttachmentsSection>
+                    <S.AttachmentsTitle variant="h6">
+                      📎 Attachments & Documents
+                    </S.AttachmentsTitle>
+                    
+                    <S.UploadWrapper>
+                      <Button 
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Upload Documents
+                      </Button>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        multiple 
+                        onChange={handleUploadFiles} 
+                      />
+                    </S.UploadWrapper>
+
+                    {(!asset.attachments || asset.attachments.length === 0) ? (
+                      <Typography variant="body2" color="text.secondary">
+                        No files or manuals attached to this asset yet.
+                      </Typography>
+                    ) : (
+                      <S.AttachmentsGrid>
+                        {asset.attachments.map((att: AssetAttachmentDto, idx: number) => (
+                          <S.AttachmentCard key={idx}>
+                            <S.AttachmentName 
+                              variant="body2" 
+                              noWrap 
+                              onClick={() => window.open(att.fileUrl, '_blank')}
+                              title={att.fileName}
+                            >
+                              {att.fileName}
+                            </S.AttachmentName>
+                            <S.AttachmentFooter>
+                              <S.AttachmentType variant="caption">
+                                {att.fileType ? att.fileType.split('/')[1] || att.fileType : 'FILE'}
+                              </S.AttachmentType>
+                              <Button 
+                                size="small" 
+                                color="error" 
+                                variant="text"
+                                onClick={() => att.fileUrl && handleRemoveFile(att.fileUrl)}
+                                sx={{ minWidth: 'auto', p: 0.5, fontSize: '0.75rem' }}
+                              >
+                                Delete
+                              </Button>
+                            </S.AttachmentFooter>
+                          </S.AttachmentCard>
+                        ))}
+                      </S.AttachmentsGrid>
+                    )}
+                  </S.AttachmentsSection>
                 </Box>
               )}
 

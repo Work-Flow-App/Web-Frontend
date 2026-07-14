@@ -25,6 +25,9 @@ import type {
 } from '../../../../services/api';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { AssignAssetModal } from '../../../assets/components';
+import type { PlaceDetails } from '../../../../components/UI/GoogleMap/GoogleMap.types';
+import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
+import { geocodeAddress } from '../../../../utils/mapDataHelpers';
 import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
@@ -50,12 +53,12 @@ const formatDate = (dateString?: string) => {
 
 export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   job,
-  client,
+  client: _client,
   customer,
   template,
-  templateFields,
-  title,
-  defaultExpanded,
+  templateFields: _templateFields,
+  title: _title,
+  defaultExpanded: _defaultExpanded,
   onJobUpdate,
   onCustomerUpdate,
 }) => {
@@ -69,6 +72,74 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [savingField, setSavingField] = useState<string | null>(null);
+
+  // Map editing state
+  const [selectedMapAddress, setSelectedMapAddress] = useState<PlaceDetails | null>(null);
+  const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
+  const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
+
+  const handleAddressEditClick = async () => {
+    setEditingField('address');
+    const street = customer?.address?.street || '';
+    setEditValue(street);
+    
+    if (street) {
+      const loc = await geocodeAddress(street);
+      if (loc) {
+        setSelectedMapAddress({
+          address: street,
+          location: loc,
+          city: customer?.address?.city,
+          state: customer?.address?.county,
+          postalCode: customer?.address?.postalCode,
+          country: customer?.address?.country,
+        });
+        setMapCenter(loc);
+        setMapZoom(15);
+        return;
+      }
+    }
+    
+    setSelectedMapAddress(null);
+    setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
+    setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
+  };
+
+  const handleLocationSelect = (place: PlaceDetails) => {
+    setSelectedMapAddress(place);
+    setEditValue(place.address);
+    setMapCenter(place.location);
+    setMapZoom(15);
+  };
+
+  const handleSaveAddress = async () => {
+    setSavingField('address');
+    try {
+      if (customer?.id) {
+        const updateReq: CustomerUpdateRequest = {
+          name: customer.name,
+          email: customer.email,
+          telephone: customer.telephone,
+          mobile: customer.mobile,
+          address: {
+            street: selectedMapAddress?.address || editValue || '',
+            city: selectedMapAddress?.city || customer.address?.city || '',
+            county: selectedMapAddress?.state || customer.address?.county || '',
+            postalCode: selectedMapAddress?.postalCode || customer.address?.postalCode || '',
+            country: selectedMapAddress?.country || customer.address?.country || '',
+          },
+        };
+        const res = await customerService.updateCustomer(customer.id, updateReq);
+        onCustomerUpdate?.(res.data);
+      }
+      showSuccess('Updated address successfully');
+      setEditingField(null);
+    } catch (err) {
+      showError('Failed to update address');
+    } finally {
+      setSavingField(null);
+    }
+  };
 
   useEffect(() => {
     assetService.getAllAssets(0, 200, false, true)
@@ -201,6 +272,26 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const displayValue = value || '';
     const notSet = !value;
 
+    if (fieldKey === 'address') {
+      return (
+        <S.FieldRow>
+          <S.FieldIconContainer>{icon}</S.FieldIconContainer>
+          <S.FieldLabel>{label}</S.FieldLabel>
+          <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+          {allowEdit && !isEditing && (
+            <S.FieldAction>
+              <S.ActionButton 
+                variant="text" 
+                onClick={handleAddressEditClick}
+              >
+                {notSet ? 'Add' : 'Edit'}
+              </S.ActionButton>
+            </S.FieldAction>
+          )}
+        </S.FieldRow>
+      );
+    }
+
     return (
       <S.FieldRow>
         <S.FieldIconContainer>{icon}</S.FieldIconContainer>
@@ -266,6 +357,39 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', customer?.mobile)}
         {renderEditableRow(<LocationOnIcon />, 'Address', 'address', customer?.address?.street)}
 
+        {editingField === 'address' && (
+          <S.MapEditWrapper>
+            <S.StyledGoogleMap
+              height="15rem"
+              center={mapCenter}
+              zoom={mapZoom}
+              markers={selectedMapAddress ? [selectedMapAddress] : []}
+              selectedLocation={selectedMapAddress}
+              onLocationSelect={handleLocationSelect}
+              showSearchBox={true}
+              searchInitialValue={customer?.address?.street || undefined}
+            />
+            <S.MapActionButtons>
+              <S.MapCancelButton 
+                variant="outlined" 
+                size="small" 
+                onClick={handleCancelEdit}
+                disabled={savingField === 'address'}
+              >
+                Cancel
+              </S.MapCancelButton>
+              <S.MapSaveButton 
+                variant="contained" 
+                size="small" 
+                onClick={handleSaveAddress}
+                disabled={savingField === 'address'}
+              >
+                {savingField === 'address' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
+              </S.MapSaveButton>
+            </S.MapActionButtons>
+          </S.MapEditWrapper>
+        )}
+
         <S.DividerLine />
 
         <S.FieldRow>
@@ -276,8 +400,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
 
         <S.FieldRow>
           <S.FieldIconContainer><CategoryIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Job ref</S.FieldLabel>
-          <S.FieldValue>#{(job as any).jobRef || job.id}</S.FieldValue>
+          <S.FieldLabel>Job ID</S.FieldLabel>
+          <S.FieldValue>#{job.id}</S.FieldValue>
         </S.FieldRow>
 
         <S.FieldRow>

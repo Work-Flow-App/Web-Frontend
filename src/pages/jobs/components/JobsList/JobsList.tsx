@@ -15,6 +15,7 @@ import {
 } from '../../../../services/api';
 import type {
   JobResponse,
+  JobCreateRequest,
   JobTemplateFieldResponse,
   AssetResponse,
   PagedModelAssetResponse,
@@ -326,15 +327,83 @@ export const JobsList: React.FC = () => {
     },
     [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
+  const handleDuplicateJob = useCallback(
+    (job: JobTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'duplicateJob',
+        children: (
+          <ConfirmationModal
+            title="Duplicate Job"
+            message={`Are you sure you want to duplicate Job #${job.jobRef ?? job.id}?`}
+            description="This will create a new job with the same template, client, customer, workflow, address, custom field values, assets, and assigned workers, but set to the initial status 'NEW'."
+            variant="default"
+            confirmButtonText="Duplicate"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                const res = await jobService.getJobById(job.id);
+                const jobDetails = res.data;
+
+                const mappedFieldValues: { [key: string]: any } = {};
+                if (jobDetails.fieldValues) {
+                  Object.entries(jobDetails.fieldValues).forEach(([key, fieldValueResponse]) => {
+                    if (fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse) {
+                      mappedFieldValues[key] = fieldValueResponse.value;
+                    } else {
+                      mappedFieldValues[key] = fieldValueResponse;
+                    }
+                  });
+                }
+
+                const duplicateRequest: JobCreateRequest = {
+                  templateId: jobDetails.templateId!,
+                  clientId: jobDetails.clientId,
+                  customerId: jobDetails.customerId,
+                  workflowId: jobDetails.workflowId,
+                  assignedWorkerIds: jobDetails.assignedWorkerIds,
+                  status: 'NEW',
+                  fieldValues: mappedFieldValues,
+                  assetIds: jobDetails.assetIds,
+                  address: jobDetails.address ? {
+                    street: jobDetails.address.street,
+                    city: jobDetails.address.city,
+                    state: jobDetails.address.state,
+                    postalCode: jobDetails.address.postalCode,
+                    country: jobDetails.address.country,
+                    additionalInfo: jobDetails.address.additionalInfo,
+                    latitude: jobDetails.address.latitude,
+                    longitude: jobDetails.address.longitude,
+                  } : undefined,
+                };
+
+                await jobService.createJob(duplicateRequest);
+                showSuccess(`Job #${job.jobRef ?? job.id} duplicated successfully`);
+                resetGlobalModalOuterProps();
+                fetchJobs();
+              } catch (error) {
+                showError(extractErrorMessage(error, 'Failed to duplicate job'));
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => resetGlobalModalOuterProps()}
+          />
+        ),
+      });
+    },
+    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
 
   const tableActions: ITableAction<JobTableRow>[] = useMemo(
     () => [
       { id: 'edit', label: 'Edit', onClick: handleEditJob },
+      { id: 'duplicate', label: 'Duplicate', onClick: handleDuplicateJob },
       ...(!showArchived
         ? [{ id: 'archive', label: 'Archive', onClick: handleArchiveJob, color: 'error' as const }]
         : [{ id: 'delete', label: 'Delete', onClick: handleDeleteJob, color: 'error' as const }]),
     ],
-    [handleEditJob, handleArchiveJob, handleDeleteJob, showArchived]
+    [handleEditJob, handleDuplicateJob, handleArchiveJob, handleDeleteJob, showArchived]
   );
 
   const columns = useMemo(() => generateJobColumns(templateFields), [templateFields]);

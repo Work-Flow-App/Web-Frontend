@@ -66,6 +66,14 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       },
     },
     {
+      id: 'id',
+      label: 'Job ID',
+      accessor: 'id',
+      sortable: true,
+      width: 'auto',
+      render: (row) => row.id || '-',
+    },
+    {
       id: 'workflowName',
       label: 'Workfloow',
       accessor: 'workflowName',

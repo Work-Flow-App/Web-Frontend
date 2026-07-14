@@ -1,10 +1,11 @@
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Button } from '@mui/material';
+import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
 
 export const SectionContainer = styled(Box)(({ theme }) => ({
   backgroundColor: '#FFFFFF',
   borderRadius: '0.75rem',
-  border: `1px solid ${theme.palette.divider}`,
+  border: `0.0625rem solid ${theme.palette.divider}`,
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
@@ -12,7 +13,7 @@ export const SectionContainer = styled(Box)(({ theme }) => ({
 
 export const SectionHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  borderBottom: `0.0625rem solid ${theme.palette.divider}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -80,7 +81,7 @@ export const ActionButton = styled(Button)(({ theme }) => ({
 }));
 
 export const DividerLine = styled(Box)(({ theme }) => ({
-  height: '1px',
+  height: '0.0625rem',
   backgroundColor: theme.palette.divider,
   margin: theme.spacing(1, 2.5),
 }));
@@ -91,3 +92,89 @@ export const InlineEditContainer = styled(Box)(() => ({
   alignItems: 'center',
   gap: '0.5rem',
 }));
+
+export const MapEditWrapper = styled(Box)(({ theme }) => ({
+  padding: '0.5rem 1.25rem 0.5rem 1.25rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5rem',
+  borderBottom: `0.0625rem solid ${theme.palette.divider}`,
+  backgroundColor: '#FFFFFF',
+  // Target the autocomplete search input inside GoogleMap
+  '& .MuiAutocomplete-root .MuiOutlinedInput-root': {
+    height: '2.25rem',
+    fontSize: '0.875rem',
+    borderRadius: '0.375rem',
+    backgroundColor: '#fff',
+    padding: '0.125rem 0.5625rem',
+    '& input': {
+      padding: '0 !important',
+    }
+  },
+}));
+
+export const MapActionButtons = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: theme.spacing(1),
+}));
+
+export const StyledGoogleMap = styled(GoogleMap)(() => ({
+  height: '100% !important',
+  // Scale Map/Satellite toggle container (top-left)
+  '& .gm-style-mtc': {
+    transform: 'scale(0.65) !important',
+    transformOrigin: 'top left !important',
+  },
+  // Scale top-right control container (Fullscreen) slightly smaller
+  '& .gm-style > div > .gmnoprint:has(.gm-svpc), & .gm-style > div > .gmnoprint:has(.gm-fullscreen-control)': {
+    transform: 'scale(0.65) !important',
+    transformOrigin: 'top right !important',
+  },
+  // Hide Street View Pegman completely
+  '& .gm-svpc': {
+    display: 'none !important',
+  },
+  // Scale bottom-right control container (Zoom controls) slightly smaller
+  '& .gm-style > div > .gmnoprint:has(.gm-bundled-control), & .gm-bundled-control': {
+    transform: 'scale(0.65) !important',
+    transformOrigin: 'bottom right !important',
+  },
+}));
+
+export const MapCancelButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  fontSize: '0.625rem',
+  fontWeight: 600,
+  borderRadius: '50rem',
+  backgroundColor: '#ffffff',
+  color: theme.palette.error.main,
+  border: `0.0625rem solid ${theme.palette.error.light}`,
+  padding: '0 0.5rem',
+  height: '1.375rem',
+  minWidth: 'auto',
+  lineHeight: 1,
+  '&:hover': {
+    backgroundColor: '#fff5f5',
+    borderColor: theme.palette.error.main,
+  },
+}));
+
+export const MapSaveButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  fontSize: '0.625rem',
+  fontWeight: 600,
+  borderRadius: '50rem',
+  backgroundColor: '#ffffff',
+  color: theme.palette.primary.main,
+  border: `0.0625rem solid ${theme.palette.primary.light}`,
+  padding: '0 0.5rem',
+  height: '1.375rem',
+  minWidth: 'auto',
+  lineHeight: 1,
+  '&:hover': {
+    backgroundColor: '#f5f8ff',
+    borderColor: theme.palette.primary.main,
+  },
+}));
+

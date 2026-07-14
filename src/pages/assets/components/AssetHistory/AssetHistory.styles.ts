@@ -246,3 +246,121 @@ export const EmptyStateSubtitle = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   marginTop: theme.spacing(1),
 }));
+
+export const ForecastCard = styled(Box)(({ theme }) => ({
+  marginTop: rem(20),
+  marginBottom: rem(20),
+  padding: rem(20),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: rem(6),
+  backgroundColor: '#f9fbfd',
+}));
+
+export const ForecastTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  fontWeight: theme.typography.fontWeightBold,
+  color: '#1976d2',
+  marginBottom: rem(12),
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+}));
+
+export const ForecastContent = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: rem(16),
+  [theme.breakpoints.up('sm')]: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+}));
+
+export const ForecastInput = styled('input')(({ theme }) => ({
+  padding: `${rem(8)} ${rem(12)}`,
+  border: `1px solid ${theme.palette.colors.grey_300}`,
+  borderRadius: rem(4),
+  outline: 'none',
+  fontSize: rem(14),
+  fontFamily: 'inherit',
+  '&:focus': {
+    borderColor: theme.palette.primary.main,
+  },
+}));
+
+export const ForecastValueText = styled(Typography)(() => ({
+  fontSize: rem(15),
+  color: floowColors.grey[700],
+}));
+
+export const ForecastValueStrong = styled('strong')(() => ({
+  color: '#2e7d32',
+  fontSize: rem(16),
+  marginLeft: rem(4),
+}));
+
+export const AttachmentsSection = styled(Box)(({ theme }) => ({
+  marginTop: rem(32),
+  paddingTop: rem(24),
+  borderTop: `1px solid ${theme.palette.colors.grey_200}`,
+}));
+
+export const AttachmentsTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(18),
+  fontWeight: theme.typography.fontWeightBold,
+  marginBottom: rem(16),
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+}));
+
+export const UploadWrapper = styled(Box)(() => ({
+  marginBottom: rem(24),
+}));
+
+export const AttachmentsGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+  gap: theme.spacing(2),
+}));
+
+export const AttachmentCard = styled(Box)(({ theme }) => ({
+  padding: rem(16),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: rem(6),
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  height: rem(110),
+  backgroundColor: '#fafafa',
+  transition: 'box-shadow 0.2s',
+  '&:hover': {
+    boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.05)`,
+  },
+}));
+
+export const AttachmentName = styled(Typography)(() => ({
+  fontSize: rem(14),
+  fontWeight: Bold._500,
+  cursor: 'pointer',
+  color: '#1976d2',
+  textDecoration: 'underline',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+}));
+
+export const AttachmentFooter = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: rem(8),
+}));
+
+export const AttachmentType = styled(Typography)(() => ({
+  fontSize: rem(11),
+  color: floowColors.grey[500],
+  textTransform: 'uppercase',
+  letterSpacing: rem(0.5),
+}));

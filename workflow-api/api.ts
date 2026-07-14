@@ -49,7 +49,20 @@ export interface AssetAssignmentCreateRequest {
     'jobId'?: number;
     'assignedWorkerId'?: number;
     'notes'?: string;
+    'explicitLocationType'?: AssetAssignmentCreateRequestExplicitLocationTypeEnum;
+    'customAddress'?: AddressRequest;
+    'expectedDurationDays'?: number;
 }
+
+export const AssetAssignmentCreateRequestExplicitLocationTypeEnum = {
+    Warehouse: 'WAREHOUSE',
+    JobSite: 'JOB_SITE',
+    WorkerLocation: 'WORKER_LOCATION',
+    Custom: 'CUSTOM'
+} as const;
+
+export type AssetAssignmentCreateRequestExplicitLocationTypeEnum = typeof AssetAssignmentCreateRequestExplicitLocationTypeEnum[keyof typeof AssetAssignmentCreateRequestExplicitLocationTypeEnum];
+
 export interface AssetAssignmentResponse {
     'assignmentId'?: number;
     'assetId'?: number;
@@ -64,10 +77,46 @@ export interface AssetAssignmentResponse {
     'returnedAt'?: string;
     'durationDays'?: number;
     'status'?: string;
+    'locationType'?: AssetAssignmentResponseLocationTypeEnum;
+    'address'?: AddressResponse;
+    'expectedDurationDays'?: number;
+    'slaBreached'?: boolean;
 }
+
+export const AssetAssignmentResponseLocationTypeEnum = {
+    Warehouse: 'WAREHOUSE',
+    JobSite: 'JOB_SITE',
+    WorkerLocation: 'WORKER_LOCATION',
+    Custom: 'CUSTOM'
+} as const;
+
+export type AssetAssignmentResponseLocationTypeEnum = typeof AssetAssignmentResponseLocationTypeEnum[keyof typeof AssetAssignmentResponseLocationTypeEnum];
+
 export interface AssetAssignmentReturnRequest {
     'assignmentId'?: number;
     'notes'?: string;
+}
+export interface AssetAssignmentUpdateRequest {
+    'assignedWorkerId'?: number;
+    'notes'?: string;
+    'explicitLocationType'?: AssetAssignmentUpdateRequestExplicitLocationTypeEnum;
+    'customAddress'?: AddressRequest;
+    'expectedDurationDays'?: number;
+}
+
+export const AssetAssignmentUpdateRequestExplicitLocationTypeEnum = {
+    Warehouse: 'WAREHOUSE',
+    JobSite: 'JOB_SITE',
+    WorkerLocation: 'WORKER_LOCATION',
+    Custom: 'CUSTOM'
+} as const;
+
+export type AssetAssignmentUpdateRequestExplicitLocationTypeEnum = typeof AssetAssignmentUpdateRequestExplicitLocationTypeEnum[keyof typeof AssetAssignmentUpdateRequestExplicitLocationTypeEnum];
+
+export interface AssetAttachmentDto {
+    'fileName'?: string;
+    'fileType'?: string;
+    'fileUrl'?: string;
 }
 export interface AssetCreateRequest {
     'name': string;
@@ -78,6 +127,7 @@ export interface AssetCreateRequest {
     'purchaseDate': string;
     'depreciationRate': number;
     'salvageValue'?: number;
+    'warehouseAddress'?: AddressRequest;
 }
 export interface AssetResponse {
     'id'?: number;
@@ -93,9 +143,23 @@ export interface AssetResponse {
     'salvageValue'?: number;
     'available'?: boolean;
     'archived'?: boolean;
+    'locationType'?: AssetResponseLocationTypeEnum;
+    'address'?: AddressResponse;
+    'warehouseAddress'?: AddressResponse;
+    'attachments'?: Array<AssetAttachmentDto>;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
+
+export const AssetResponseLocationTypeEnum = {
+    Warehouse: 'WAREHOUSE',
+    JobSite: 'JOB_SITE',
+    WorkerLocation: 'WORKER_LOCATION',
+    Custom: 'CUSTOM'
+} as const;
+
+export type AssetResponseLocationTypeEnum = typeof AssetResponseLocationTypeEnum[keyof typeof AssetResponseLocationTypeEnum];
+
 export interface AssetStatistics {
     'totalAssets'?: number;
     'availableAssets'?: number;
@@ -110,7 +174,11 @@ export interface AssetUpdateRequest {
     'description'?: string;
     'serialNumber'?: string;
     'assetTag'?: string;
+    'purchasePrice'?: number;
+    'purchaseDate'?: string;
+    'depreciationRate'?: number;
     'salvageValue'?: number;
+    'warehouseAddress'?: AddressRequest;
 }
 export interface AssetValueResponse {
     'assetId'?: number;
@@ -1054,6 +1122,7 @@ export interface StepVisitLogResponse {
     'workedMinutes'?: number;
     'description'?: string;
     'loggedById'?: number;
+    'loggedByUsername'?: string;
     'createdAt'?: string;
     'updatedAt'?: string;
 }
@@ -1395,6 +1464,49 @@ export const AssetAssignmentsApiAxiosParamCreator = function (configuration?: Co
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {number} assignmentId 
+         * @param {AssetAssignmentUpdateRequest} assetAssignmentUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetAssignmentUpdateAssignment: async (assignmentId: number, assetAssignmentUpdateRequest: AssetAssignmentUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assignmentId' is not null or undefined
+            assertParamExists('assetAssignmentUpdateAssignment', 'assignmentId', assignmentId)
+            // verify required parameter 'assetAssignmentUpdateRequest' is not null or undefined
+            assertParamExists('assetAssignmentUpdateAssignment', 'assetAssignmentUpdateRequest', assetAssignmentUpdateRequest)
+            const localVarPath = `/api/v1/asset-assignments/assign/{assignmentId}`
+                .replace(`{${"assignmentId"}}`, encodeURIComponent(String(assignmentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(assetAssignmentUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1453,6 +1565,19 @@ export const AssetAssignmentsApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentReturnAsset']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @param {number} assignmentId 
+         * @param {AssetAssignmentUpdateRequest} assetAssignmentUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async assetAssignmentUpdateAssignment(assignmentId: number, assetAssignmentUpdateRequest: AssetAssignmentUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAssignmentUpdateAssignment(assignmentId, assetAssignmentUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetAssignmentsApi.assetAssignmentUpdateAssignment']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -1498,6 +1623,16 @@ export const AssetAssignmentsApiFactory = function (configuration?: Configuratio
          */
         assetAssignmentReturnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
             return localVarFp.assetAssignmentReturnAsset(assetAssignmentReturnRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} assignmentId 
+         * @param {AssetAssignmentUpdateRequest} assetAssignmentUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetAssignmentUpdateAssignment(assignmentId: number, assetAssignmentUpdateRequest: AssetAssignmentUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.assetAssignmentUpdateAssignment(assignmentId, assetAssignmentUpdateRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1546,6 +1681,17 @@ export class AssetAssignmentsApi extends BaseAPI {
     public assetAssignmentReturnAsset(assetAssignmentReturnRequest: AssetAssignmentReturnRequest, options?: RawAxiosRequestConfig) {
         return AssetAssignmentsApiFp(this.configuration).assetAssignmentReturnAsset(assetAssignmentReturnRequest, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+     * 
+     * @param {number} assignmentId 
+     * @param {AssetAssignmentUpdateRequest} assetAssignmentUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public assetAssignmentUpdateAssignment(assignmentId: number, assetAssignmentUpdateRequest: AssetAssignmentUpdateRequest, options?: RawAxiosRequestConfig) {
+        return AssetAssignmentsApiFp(this.configuration).assetAssignmentUpdateAssignment(assignmentId, assetAssignmentUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
 }
 
 
@@ -1555,6 +1701,56 @@ export class AssetAssignmentsApi extends BaseAPI {
  */
 export const AssetsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<File>} files 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetAddAttachments: async (id: number, files: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('assetAddAttachments', 'id', id)
+            // verify required parameter 'files' is not null or undefined
+            assertParamExists('assetAddAttachments', 'files', files)
+            const localVarPath = `/api/v1/assets/{id}/attachments`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (files) {
+                files.forEach((element) => {
+                    localVarFormParams.append('files', element as any);
+                })
+            }
+
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * 
          * @param {number} id 
@@ -1733,6 +1929,50 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
         },
         /**
          * 
+         * @param {number} id 
+         * @param {string} fileUrl 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetRemoveAttachment: async (id: number, fileUrl: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('assetRemoveAttachment', 'id', id)
+            // verify required parameter 'fileUrl' is not null or undefined
+            assertParamExists('assetRemoveAttachment', 'fileUrl', fileUrl)
+            const localVarPath = `/api/v1/assets/{id}/attachments`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (fileUrl !== undefined) {
+                localVarQueryParameter['fileUrl'] = fileUrl;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1861,6 +2101,19 @@ export const AssetsApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {number} id 
+         * @param {Array<File>} files 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async assetAddAttachments(id: number, files: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetAddAttachments(id, files, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetAddAttachments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1913,6 +2166,19 @@ export const AssetsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} id 
+         * @param {string} fileUrl 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async assetRemoveAttachment(id: number, fileUrl: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetRemoveAttachment(id, fileUrl, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetRemoveAttachment']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1960,6 +2226,16 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
         /**
          * 
          * @param {number} id 
+         * @param {Array<File>} files 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetAddAttachments(id: number, files: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.assetAddAttachments(id, files, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2000,6 +2276,16 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
         },
         /**
          * 
+         * @param {number} id 
+         * @param {string} fileUrl 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        assetRemoveAttachment(id: number, fileUrl: string, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.assetRemoveAttachment(id, fileUrl, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -2033,6 +2319,17 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
  * AssetsApi - object-oriented interface
  */
 export class AssetsApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} id 
+     * @param {Array<File>} files 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public assetAddAttachments(id: number, files: Array<File>, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetAddAttachments(id, files, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {number} id 
@@ -2076,6 +2373,17 @@ export class AssetsApi extends BaseAPI {
      */
     public assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
         return AssetsApiFp(this.configuration).assetList(page, size, archived, available, sort, dir, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {string} fileUrl 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public assetRemoveAttachment(id: number, fileUrl: string, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetRemoveAttachment(id, fileUrl, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

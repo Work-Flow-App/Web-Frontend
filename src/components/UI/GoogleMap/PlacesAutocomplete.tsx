@@ -105,21 +105,50 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
     [fetchPredictions]
   );
 
+  // Places Details / forward geocoding often omit the postal_code component for
+  // POI results or lower-precision matches, even though city/country resolve fine.
+  // A reverse geocode by coordinates tends to return a more granular breakdown,
+  // so use it to backfill postalCode when the primary lookup came back empty.
+  const withPostalCodeFallback = useCallback(
+    (
+      location: { lat: number; lng: number },
+      components: ReturnType<typeof extractAddressComponents>,
+      callback: (finalComponents: ReturnType<typeof extractAddressComponents>) => void
+    ) => {
+      if (components.postalCode || !geocoderRef.current) {
+        callback(components);
+        return;
+      }
+      geocoderRef.current.geocode({ location }, (results, status) => {
+        const fallbackPostalCode =
+          status === 'OK' && results?.[0] ? extractAddressComponents(results[0].address_components).postalCode : '';
+        callback({ ...components, postalCode: fallbackPostalCode || components.postalCode });
+      });
+    },
+    []
+  );
+
   const handleChange = useCallback(
     (_: React.SyntheticEvent, option: LocationOption | null) => {
       setSelectedOption(option);
       if (!option) return;
 
+      lazyInit();
+
       if (option.isManual) {
-        lazyInit();
         const doGeocode = (geo: google.maps.Geocoder) => {
           geo.geocode({ address: option.label }, (results, status) => {
             if (status === 'OK' && results?.[0]?.geometry?.location) {
               const loc = results[0].geometry.location;
-              onPlaceSelect({
-                address: results[0].formatted_address || option.label,
-                location: { lat: loc.lat(), lng: loc.lng() },
-                placeId: results[0].place_id,
+              const location = { lat: loc.lat(), lng: loc.lng() };
+              const components = extractAddressComponents(results[0].address_components);
+              withPostalCodeFallback(location, components, (finalComponents) => {
+                onPlaceSelect({
+                  address: results[0].formatted_address || option.label,
+                  location,
+                  placeId: results[0].place_id,
+                  ...finalComponents,
+                });
               });
             } else {
               onPlaceSelect({
@@ -147,22 +176,25 @@ const PlacesAutocomplete: React.FC<PlacesAutocompleteProps> = ({
         { placeId: option.value, fields: [...PLACE_DETAIL_FIELDS] },
         (place, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+            const location = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            };
             const components = extractAddressComponents(place.address_components);
-            onPlaceSelect({
-              name: place.name ?? '',
-              address: place.formatted_address ?? '',
-              location: {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng(),
-              },
-              placeId: place.place_id,
-              ...components,
+            withPostalCodeFallback(location, components, (finalComponents) => {
+              onPlaceSelect({
+                name: place.name ?? '',
+                address: place.formatted_address ?? '',
+                location,
+                placeId: place.place_id,
+                ...finalComponents,
+              });
             });
           }
         }
       );
     },
-    [onPlaceSelect, lazyInit]
+    [onPlaceSelect, lazyInit, withPostalCodeFallback]
   );
 
   return (

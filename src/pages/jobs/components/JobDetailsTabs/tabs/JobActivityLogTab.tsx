@@ -388,11 +388,6 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
               <S.GanttViewToggleButton value="week" disableRipple>Week</S.GanttViewToggleButton>
               <S.GanttViewToggleButton value="month" disableRipple>Month</S.GanttViewToggleButton>
             </S.GanttViewToggleGroup>
-
-            <S.GanttFilterButton>
-              <TuneIcon sx={{ fontSize: 15 }} />
-              All steps
-            </S.GanttFilterButton>
           </S.ActivityTimelineControls>
         </S.ActivityTimelineTopBar>
 
