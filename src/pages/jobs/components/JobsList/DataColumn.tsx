@@ -58,7 +58,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
           return new Date(row.createdAt).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
           });
         } catch {
           return row.createdAt;
@@ -67,11 +67,11 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
     },
     {
       id: 'id',
-      label: 'Job ID',
-      accessor: 'id',
+      label: 'Job No',
+      accessor: 'jobRef',
       sortable: true,
       width: 'auto',
-      render: (row) => row.id || '-',
+      render: (row) => row.jobRef ?? row.id ?? '-',
     },
     {
       id: 'workflowName',

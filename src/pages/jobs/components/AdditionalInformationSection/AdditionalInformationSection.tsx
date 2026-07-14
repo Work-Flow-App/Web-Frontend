@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Box, IconButton as MuiIconButton, Collapse, Tooltip } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SaveIcon from '@mui/icons-material/Save';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -26,7 +25,6 @@ import * as S from '../../JobDetailsPage.styles';
 
 interface AdditionalInformationSectionProps {
   job: JobResponse;
-  defaultExpanded?: boolean;
 }
 
 interface PendingFile {
@@ -78,10 +76,8 @@ const formatFileSize = (bytes: number): string => {
 
 export const AdditionalInformationSection: React.FC<AdditionalInformationSectionProps> = ({
   job,
-  defaultExpanded = false,
 }) => {
   const { showSuccess, showError } = useSnackbar();
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [firstStepId, setFirstStepId] = useState<number | null>(null);
   const [existingItems, setExistingItems] = useState<StepTimelineItemResponse[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -119,8 +115,6 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
   useEffect(() => {
     fetchWorkflowAndItems();
   }, [fetchWorkflowAndItems]);
-
-  const toggleExpanded = () => setIsExpanded((prev) => !prev);
 
   const addFiles = (files: File[]) => {
     const newFiles: PendingFile[] = files.map((file) => ({
@@ -206,24 +200,11 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
 
   return (
     <S.CollapsibleSection>
-      <S.CollapsibleSectionHeader onClick={toggleExpanded}>
+      <S.CollapsibleSectionHeader sx={{ cursor: 'default' }}>
         <S.CollapsibleSectionTitle>Additional Information</S.CollapsibleSectionTitle>
-        <S.CollapsibleSectionActions>
-          <MuiIconButton
-            size="small"
-            aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
-            sx={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
-          >
-            <ExpandMoreIcon fontSize="small" />
-          </MuiIconButton>
-        </S.CollapsibleSectionActions>
       </S.CollapsibleSectionHeader>
 
-      <Collapse in={isExpanded}>
-        <S.CollapsibleSectionContent>
+      <S.CollapsibleSectionContent>
           {/* Existing saved ADDITIONAL items */}
           {loadingItems ? (
             <Loader size={20} centered minHeight="60px" />
@@ -359,8 +340,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
               </S.AdditionalInfoContainer>
             </form>
           </FormProvider>
-        </S.CollapsibleSectionContent>
-      </Collapse>
+      </S.CollapsibleSectionContent>
     </S.CollapsibleSection>
   );
 };
