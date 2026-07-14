@@ -10,12 +10,14 @@ import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PlaceIcon from '@mui/icons-material/Place';
 import DescriptionIcon from '@mui/icons-material/Description';
+import FlagIcon from '@mui/icons-material/Flag';
 import CategoryIcon from '@mui/icons-material/Category';
 import InventoryIcon from '@mui/icons-material/Inventory2';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SyncIcon from '@mui/icons-material/Sync';
 import LabelIcon from '@mui/icons-material/Label';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { JOB_STATUS_OPTIONS } from '../../../../enums';
 import { customerService, assetService, jobService, companyClientService } from '../../../../services/api';
 import type {
   JobResponse,
@@ -42,7 +44,6 @@ interface JobDetailsSectionProps {
   template: JobTemplateResponse | null;
   templateFields: JobTemplateFieldResponse[];
   title: string;
-  defaultExpanded?: boolean;
   onJobUpdate?: (updatedJob: JobResponse) => void;
   onCustomerUpdate?: (updatedCustomer: CustomerResponse) => void;
   onClientUpdate?: (updatedClient: ClientResponse) => void;
@@ -55,6 +56,14 @@ const formatDate = (dateString?: string) => {
   const month = date.toLocaleString('default', { month: 'short' });
   const year = date.getFullYear();
   return `${day} ${month} ${year}`;
+};
+
+const formatStatus = (status?: string) => {
+  if (!status) return '-';
+  return status
+    .split('_')
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 const formatJobAddress = (address?: JobResponse['address']) => {
@@ -74,8 +83,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   customer,
   template,
   templateFields,
-  title: _title,
-  defaultExpanded: _defaultExpanded,
+  title,
   onJobUpdate,
   onCustomerUpdate,
   onClientUpdate,
@@ -97,7 +105,6 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
 
   const hasCustomer = !!customer;
-  const contactName = customer?.name || client?.name;
   const contactEmail = customer?.email || client?.email;
   const contactTelephone = customer?.telephone || client?.telephone;
   const contactMobile = customer?.mobile || client?.mobile;
@@ -145,7 +152,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     try {
       if (target === 'address' && customer?.id) {
         const updateReq: CustomerUpdateRequest = {
-          name: customer.name,
+          name: customer.name || '',
           email: customer.email,
           telephone: customer.telephone,
           mobile: customer.mobile,
@@ -177,7 +184,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       }
       showSuccess('Updated address successfully');
       setEditingField(null);
-    } catch (err) {
+    } catch {
       showError('Failed to update address');
     } finally {
       setSavingField(null);
@@ -187,7 +194,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   useEffect(() => {
     assetService.getAllAssets(0, 200, false, true)
       .then((res) => {
-        const content = (res.data as any).content ?? res.data;
+        const content = res.data.content ?? (res.data as unknown as AssetResponse[]);
         setAllAssets(Array.isArray(content) ? content : []);
       })
       .catch(() => setAllAssets([]));
@@ -209,7 +216,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       if (['email', 'telephone', 'mobile', 'address'].includes(field)) {
         if (customer?.id) {
           const updateReq: CustomerUpdateRequest = {
-            name: customer.name,
+            name: customer.name || '',
             email: field === 'email' ? editValue : customer.email,
             telephone: field === 'telephone' ? editValue : customer.telephone,
             mobile: field === 'mobile' ? editValue : customer.mobile,
@@ -228,10 +235,14 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await companyClientService.updateClient(client.id, updateReq);
           onClientUpdate?.(res.data);
         }
+      } else if (field === 'status' && job.id) {
+        const updateReq: JobUpdateRequest = { status: editValue as JobUpdateRequest['status'] };
+        const res = await jobService.updateJob(job.id, updateReq);
+        onJobUpdate?.(res.data);
       }
       showSuccess('Updated successfully');
       setEditingField(null);
-    } catch (err) {
+    } catch {
       showError('Failed to update');
     } finally {
       setSavingField(null);
@@ -277,9 +288,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           children: (
             <ConfirmationModal
               title="Return Asset"
-              description="Are you sure you want to return the assigned asset(s)?"
-              confirmText="Return Asset"
-              cancelText="Cancel"
+              message="Are you sure you want to return the assigned asset(s)?"
+              confirmButtonText="Return Asset"
+              cancelButtonText="Cancel"
               onConfirm={async () => {
                 try {
                   for (const assignment of assignments) {
@@ -293,7 +304,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
                   showSuccess('Asset(s) returned successfully');
                   resetGlobalModalOuterProps();
                   jobService.getJobById(job.id!).then((res) => onJobUpdate?.(res.data));
-                } catch (err) {
+                } catch {
                   showError('Failed to return asset');
                   resetGlobalModalOuterProps();
                 }
@@ -305,7 +316,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       } else {
         showError('No active assignments found to return');
       }
-    } catch (err) {
+    } catch {
       showError('Failed to fetch assignments');
     }
   };
@@ -397,7 +408,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     if (!job.fieldValues) return '';
     const fieldValue = job.fieldValues[String(fieldId)];
     if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
-      return String((fieldValue as any).value ?? '');
+      return String(fieldValue.value ?? '');
     }
     return fieldValue ? String(fieldValue) : '';
   };
@@ -428,7 +439,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       setSavingField(fieldKey);
       try {
         if (job.id && field.id !== undefined) {
-          const updatedFieldValues: Record<string, any> = { ...(job.fieldValues || {}) };
+          const updatedFieldValues: Record<string, unknown> = { ...(job.fieldValues || {}) };
           if (editValue === '') {
             delete updatedFieldValues[String(field.id)];
           } else {
@@ -439,7 +450,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         }
         showSuccess('Updated successfully');
         setEditingField(null);
-      } catch (err) {
+      } catch {
         showError('Failed to update');
       } finally {
         setSavingField(null);
@@ -529,14 +540,20 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   return (
     <S.SectionContainer>
       <S.SectionHeader>
-        <S.SectionTitle>Job Details</S.SectionTitle>
+        <S.SectionTitle>{title}</S.SectionTitle>
       </S.SectionHeader>
 
       <S.FieldsList>
         <S.FieldRow>
-          <S.FieldIconContainer>{hasCustomer ? <PersonIcon /> : <BusinessIcon />}</S.FieldIconContainer>
-          <S.FieldLabel>{hasCustomer ? 'Customer Name' : 'Client Name'}</S.FieldLabel>
-          <S.FieldValue $notSet={!contactName}>{contactName || 'No customer assigned'}</S.FieldValue>
+          <S.FieldIconContainer><PersonIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Customer Name</S.FieldLabel>
+          <S.FieldValue $notSet={!customer?.name}>{customer?.name || 'No customer assigned'}</S.FieldValue>
+        </S.FieldRow>
+
+        <S.FieldRow>
+          <S.FieldIconContainer><BusinessIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Client Name</S.FieldLabel>
+          <S.FieldValue $notSet={!client?.name}>{client?.name || 'Not set'}</S.FieldValue>
         </S.FieldRow>
 
         {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', contactTelephone, canEditContact)}
@@ -580,15 +597,58 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         <S.DividerLine />
 
         <S.FieldRow>
+          <S.FieldIconContainer><FlagIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Job Status</S.FieldLabel>
+
+          {editingField === 'status' ? (
+            <S.InlineEditContainer>
+              <Select
+                size="small"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                disabled={savingField === 'status'}
+                autoFocus
+                sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}
+              >
+                {JOB_STATUS_OPTIONS.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                ))}
+              </Select>
+              {savingField === 'status' ? (
+                <CircularProgress size={16} sx={{ ml: 1 }} />
+              ) : (
+                <Box display="flex">
+                  <IconButton size="small" onClick={() => handleSaveField('status')} color="primary">
+                    <CheckIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" onClick={handleCancelEdit} color="error">
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
+            </S.InlineEditContainer>
+          ) : (
+            <>
+              <S.FieldValue>{formatStatus(job.status)}</S.FieldValue>
+              <S.FieldAction>
+                <S.ActionButton variant="text" onClick={() => handleEditClick('status', job.status || '')}>
+                  Edit
+                </S.ActionButton>
+              </S.FieldAction>
+            </>
+          )}
+        </S.FieldRow>
+
+        <S.FieldRow>
           <S.FieldIconContainer><DescriptionIcon /></S.FieldIconContainer>
           <S.FieldLabel>Template</S.FieldLabel>
-          <S.FieldValue>{template?.name || (job as any).templateName || '-'}</S.FieldValue>
+          <S.FieldValue>{template?.name || job.templateName || '-'}</S.FieldValue>
         </S.FieldRow>
 
         <S.FieldRow>
           <S.FieldIconContainer><CategoryIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Job ID</S.FieldLabel>
-          <S.FieldValue>#{job.id}</S.FieldValue>
+          <S.FieldLabel>Job No</S.FieldLabel>
+          <S.FieldValue>#{job.jobRef ?? job.id}</S.FieldValue>
         </S.FieldRow>
 
         {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatJobAddress(job.address))}

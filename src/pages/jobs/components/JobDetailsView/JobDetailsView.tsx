@@ -183,7 +183,7 @@ export const JobDetailsView: React.FC = () => {
         {/* Overview Fields */}
         {activeTab === 'overview' && (
           <OverviewContainer>
-            <CustomerName name={(job as any).customerName || customer?.name} />
+            <CustomerName name={job.customerName || customer?.name} />
             <JobValue jobId={job.id!} workflowUpdateTrigger={workflowUpdateTrigger} />
             <Status status={job.status} />
             <Progress jobId={job.id!} workflowUpdateTrigger={workflowUpdateTrigger} />
@@ -234,14 +234,13 @@ export const JobDetailsView: React.FC = () => {
                   template={template}
                   templateFields={templateFields}
                   title="Job Details"
-                  defaultExpanded={true}
                   onJobUpdate={(updatedJob) => setJob(updatedJob)}
                   onCustomerUpdate={(updatedCustomer) => setCustomer(updatedCustomer)}
                   onClientUpdate={(updatedClient) => setClient(updatedClient)}
                 />
 
                 {/* Additional Information Section - Description and Attachments */}
-                <AdditionalInformationSection job={job} defaultExpanded={false} />
+                <AdditionalInformationSection job={job} />
 
                 {/* Quick Actions */}
                 <QuickActions jobId={job.id!} />
