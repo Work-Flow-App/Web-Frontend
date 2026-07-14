@@ -18,6 +18,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import * as S from '../../JobDetailsPage.styles';
 import { JobWorkflowStages } from '../JobWorkflowStages/JobWorkflowStages';
 import { JobDetailsSection } from '../JobDetailsSection/JobDetailsSection';
+import { AdditionalInformationSection } from '../AdditionalInformationSection';
 import { QuickActions } from '../QuickActions';
 import { ComplaintsSection } from '../ComplaintsSection';
 import { JobDocumentsTab } from '../JobDetailsTabs/tabs/JobDocumentsTab';
@@ -236,7 +237,11 @@ export const JobDetailsView: React.FC = () => {
                   defaultExpanded={true}
                   onJobUpdate={(updatedJob) => setJob(updatedJob)}
                   onCustomerUpdate={(updatedCustomer) => setCustomer(updatedCustomer)}
+                  onClientUpdate={(updatedClient) => setClient(updatedClient)}
                 />
+
+                {/* Additional Information Section - Description and Attachments */}
+                <AdditionalInformationSection job={job} defaultExpanded={false} />
 
                 {/* Quick Actions */}
                 <QuickActions jobId={job.id!} />

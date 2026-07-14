@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Box, OutlinedInput, IconButton, CircularProgress } from '@mui/material';
+import { Box, OutlinedInput, IconButton, CircularProgress, Select, MenuItem } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
+import BusinessIcon from '@mui/icons-material/Business';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PlaceIcon from '@mui/icons-material/Place';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CategoryIcon from '@mui/icons-material/Category';
 import InventoryIcon from '@mui/icons-material/Inventory2';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SyncIcon from '@mui/icons-material/Sync';
+import LabelIcon from '@mui/icons-material/Label';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import { customerService, assetService, jobService } from '../../../../services/api';
-import type { 
-  JobResponse, 
-  ClientResponse, 
-  CustomerResponse, 
-  CustomerUpdateRequest, 
-  JobTemplateResponse, 
-  JobTemplateFieldResponse, 
-  AssetResponse 
+import { customerService, assetService, jobService, companyClientService } from '../../../../services/api';
+import type {
+  JobResponse,
+  JobUpdateRequest,
+  ClientResponse,
+  ClientUpdateRequest,
+  CustomerResponse,
+  CustomerUpdateRequest,
+  JobTemplateResponse,
+  JobTemplateFieldResponse,
+  AssetResponse
 } from '../../../../services/api';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { AssignAssetModal } from '../../../assets/components';
@@ -40,6 +45,7 @@ interface JobDetailsSectionProps {
   defaultExpanded?: boolean;
   onJobUpdate?: (updatedJob: JobResponse) => void;
   onCustomerUpdate?: (updatedCustomer: CustomerResponse) => void;
+  onClientUpdate?: (updatedClient: ClientResponse) => void;
 }
 
 const formatDate = (dateString?: string) => {
@@ -51,20 +57,32 @@ const formatDate = (dateString?: string) => {
   return `${day} ${month} ${year}`;
 };
 
+const formatJobAddress = (address?: JobResponse['address']) => {
+  if (!address) return '';
+  const parts = [address.street, address.city, address.state, address.postalCode, address.country].filter(Boolean);
+  return parts.join(', ');
+};
+
+const toDateInputValue = (value: string): string => {
+  if (!value) return '';
+  return value.split('T')[0];
+};
+
 export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   job,
-  client: _client,
+  client,
   customer,
   template,
-  templateFields: _templateFields,
+  templateFields,
   title: _title,
   defaultExpanded: _defaultExpanded,
   onJobUpdate,
   onCustomerUpdate,
+  onClientUpdate,
 }) => {
   const { showSuccess, showError } = useSnackbar();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
-  
+
   // Available assets for display mapping
   const [allAssets, setAllAssets] = useState<AssetResponse[]>([]);
 
@@ -73,33 +91,42 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const [editValue, setEditValue] = useState('');
   const [savingField, setSavingField] = useState<string | null>(null);
 
-  // Map editing state
+  // Map editing state (shared between customer address and job site address)
   const [selectedMapAddress, setSelectedMapAddress] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
 
-  const handleAddressEditClick = async () => {
-    setEditingField('address');
-    const street = customer?.address?.street || '';
+  const hasCustomer = !!customer;
+  const contactName = customer?.name || client?.name;
+  const contactEmail = customer?.email || client?.email;
+  const contactTelephone = customer?.telephone || client?.telephone;
+  const contactMobile = customer?.mobile || client?.mobile;
+  const contactAddress = hasCustomer ? customer?.address?.street : client?.address;
+  const canEditContact = !!(customer || client);
+
+  const handleAddressEditClick = async (target: 'address' | 'siteAddress') => {
+    setEditingField(target);
+    const source = target === 'address' ? customer?.address : job.address;
+    const street = source?.street || '';
     setEditValue(street);
-    
+
     if (street) {
       const loc = await geocodeAddress(street);
       if (loc) {
         setSelectedMapAddress({
           address: street,
           location: loc,
-          city: customer?.address?.city,
-          state: customer?.address?.county,
-          postalCode: customer?.address?.postalCode,
-          country: customer?.address?.country,
+          city: source?.city,
+          state: target === 'address' ? customer?.address?.county : job.address?.state,
+          postalCode: source?.postalCode,
+          country: source?.country,
         });
         setMapCenter(loc);
         setMapZoom(15);
         return;
       }
     }
-    
+
     setSelectedMapAddress(null);
     setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
     setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
@@ -113,9 +140,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   const handleSaveAddress = async () => {
-    setSavingField('address');
+    const target = editingField as 'address' | 'siteAddress';
+    setSavingField(target);
     try {
-      if (customer?.id) {
+      if (target === 'address' && customer?.id) {
         const updateReq: CustomerUpdateRequest = {
           name: customer.name,
           email: customer.email,
@@ -131,6 +159,21 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         };
         const res = await customerService.updateCustomer(customer.id, updateReq);
         onCustomerUpdate?.(res.data);
+      } else if (target === 'siteAddress' && job.id) {
+        const updateReq: JobUpdateRequest = {
+          address: {
+            street: selectedMapAddress?.address || editValue || '',
+            city: selectedMapAddress?.city || job.address?.city || '',
+            state: selectedMapAddress?.state || job.address?.state || '',
+            postalCode: selectedMapAddress?.postalCode || job.address?.postalCode || '',
+            country: selectedMapAddress?.country || job.address?.country || '',
+            additionalInfo: job.address?.additionalInfo,
+            latitude: selectedMapAddress?.location?.lat ?? job.address?.latitude,
+            longitude: selectedMapAddress?.location?.lng ?? job.address?.longitude,
+          },
+        };
+        const res = await jobService.updateJob(job.id, updateReq);
+        onJobUpdate?.(res.data);
       }
       showSuccess('Updated address successfully');
       setEditingField(null);
@@ -172,11 +215,18 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             mobile: field === 'mobile' ? editValue : customer.mobile,
             address: customer.address,
           };
-          if (field === 'address') {
-             updateReq.address = { ...customer.address, street: editValue };
-          }
           const res = await customerService.updateCustomer(customer.id, updateReq);
           onCustomerUpdate?.(res.data);
+        } else if (client?.id) {
+          const updateReq: ClientUpdateRequest = {
+            name: client.name || '',
+            email: field === 'email' ? editValue : client.email,
+            telephone: field === 'telephone' ? editValue : client.telephone,
+            mobile: field === 'mobile' ? editValue : client.mobile,
+            address: field === 'address' ? editValue : client.address,
+          };
+          const res = await companyClientService.updateClient(client.id, updateReq);
+          onClientUpdate?.(res.data);
         }
       }
       showSuccess('Updated successfully');
@@ -271,8 +321,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const isSaving = savingField === fieldKey;
     const displayValue = value || '';
     const notSet = !value;
+    const isMapAddressField = fieldKey === 'siteAddress' || (fieldKey === 'address' && hasCustomer);
 
-    if (fieldKey === 'address') {
+    if (isMapAddressField) {
       return (
         <S.FieldRow>
           <S.FieldIconContainer>{icon}</S.FieldIconContainer>
@@ -280,9 +331,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
           {allowEdit && !isEditing && (
             <S.FieldAction>
-              <S.ActionButton 
-                variant="text" 
-                onClick={handleAddressEditClick}
+              <S.ActionButton
+                variant="text"
+                onClick={() => handleAddressEditClick(fieldKey as 'address' | 'siteAddress')}
               >
                 {notSet ? 'Add' : 'Edit'}
               </S.ActionButton>
@@ -325,8 +376,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
             {allowEdit && (
               <S.FieldAction>
-                <S.ActionButton 
-                  variant="text" 
+                <S.ActionButton
+                  variant="text"
                   onClick={() => handleEditClick(fieldKey, displayValue)}
                 >
                   {notSet ? 'Add' : 'Edit'}
@@ -339,23 +390,159 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     );
   };
 
+  // ── Template custom fields ──
+  const sortedTemplateFields = [...templateFields].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+  const getRawFieldValue = (fieldId: number): string => {
+    if (!job.fieldValues) return '';
+    const fieldValue = job.fieldValues[String(fieldId)];
+    if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
+      return String((fieldValue as any).value ?? '');
+    }
+    return fieldValue ? String(fieldValue) : '';
+  };
+
+  const getDisplayFieldValue = (field: JobTemplateFieldResponse): string => {
+    const raw = getRawFieldValue(field.id!);
+    if (!raw) return '';
+    if (field.jobFieldType === 'DATE') return formatDate(raw);
+    if (field.jobFieldType === 'BOOLEAN') return raw === 'true' ? 'Yes' : 'No';
+    return raw;
+  };
+
+  const renderCustomFieldRow = (field: JobTemplateFieldResponse) => {
+    const fieldKey = `customField:${field.id}`;
+    const isEditing = editingField === fieldKey;
+    const isSaving = savingField === fieldKey;
+    const rawValue = getRawFieldValue(field.id!);
+    const displayValue = getDisplayFieldValue(field);
+    const notSet = !rawValue;
+    const label = `${field.required ? '* ' : ''}${field.label || field.name || ''}`;
+
+    const handleFieldEditClick = () => {
+      setEditingField(fieldKey);
+      setEditValue(field.jobFieldType === 'DATE' ? toDateInputValue(rawValue) : rawValue);
+    };
+
+    const handleFieldSave = async () => {
+      setSavingField(fieldKey);
+      try {
+        if (job.id && field.id !== undefined) {
+          const updatedFieldValues: Record<string, any> = { ...(job.fieldValues || {}) };
+          if (editValue === '') {
+            delete updatedFieldValues[String(field.id)];
+          } else {
+            updatedFieldValues[String(field.id)] = editValue;
+          }
+          const res = await jobService.updateJob(job.id, { fieldValues: updatedFieldValues });
+          onJobUpdate?.(res.data);
+        }
+        showSuccess('Updated successfully');
+        setEditingField(null);
+      } catch (err) {
+        showError('Failed to update');
+      } finally {
+        setSavingField(null);
+      }
+    };
+
+    const renderInput = () => {
+      if (field.jobFieldType === 'BOOLEAN') {
+        return (
+          <Select
+            size="small"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            disabled={isSaving}
+            autoFocus
+            sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}
+          >
+            <MenuItem value="true">Yes</MenuItem>
+            <MenuItem value="false">No</MenuItem>
+          </Select>
+        );
+      }
+      if (field.jobFieldType === 'DROPDOWN' && field.options) {
+        return (
+          <Select
+            size="small"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            disabled={isSaving}
+            autoFocus
+            sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}
+          >
+            {field.options.split(',').map((opt) => (
+              <MenuItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</MenuItem>
+            ))}
+          </Select>
+        );
+      }
+      return (
+        <OutlinedInput
+          size="small"
+          type={field.jobFieldType === 'NUMBER' ? 'number' : field.jobFieldType === 'DATE' ? 'date' : 'text'}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          disabled={isSaving}
+          autoFocus
+          sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}
+        />
+      );
+    };
+
+    return (
+      <S.FieldRow key={fieldKey}>
+        <S.FieldIconContainer><LabelIcon /></S.FieldIconContainer>
+        <S.FieldLabel>{label}</S.FieldLabel>
+
+        {isEditing ? (
+          <S.InlineEditContainer>
+            {renderInput()}
+            {isSaving ? (
+              <CircularProgress size={16} sx={{ ml: 1 }} />
+            ) : (
+              <Box display="flex">
+                <IconButton size="small" onClick={handleFieldSave} color="primary">
+                  <CheckIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={handleCancelEdit} color="error">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+          </S.InlineEditContainer>
+        ) : (
+          <>
+            <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+            <S.FieldAction>
+              <S.ActionButton variant="text" onClick={handleFieldEditClick}>
+                {notSet ? 'Add' : 'Edit'}
+              </S.ActionButton>
+            </S.FieldAction>
+          </>
+        )}
+      </S.FieldRow>
+    );
+  };
+
   return (
     <S.SectionContainer>
       <S.SectionHeader>
         <S.SectionTitle>Job Details</S.SectionTitle>
       </S.SectionHeader>
-      
+
       <S.FieldsList>
         <S.FieldRow>
-          <S.FieldIconContainer><PersonIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Customer Name</S.FieldLabel>
-          <S.FieldValue $notSet={!customer?.name}>{customer?.name || 'No customer assigned'}</S.FieldValue>
+          <S.FieldIconContainer>{hasCustomer ? <PersonIcon /> : <BusinessIcon />}</S.FieldIconContainer>
+          <S.FieldLabel>{hasCustomer ? 'Customer Name' : 'Client Name'}</S.FieldLabel>
+          <S.FieldValue $notSet={!contactName}>{contactName || 'No customer assigned'}</S.FieldValue>
         </S.FieldRow>
 
-        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', customer?.telephone)}
-        {renderEditableRow(<EmailIcon />, 'Email', 'email', customer?.email)}
-        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', customer?.mobile)}
-        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', customer?.address?.street)}
+        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', contactTelephone, canEditContact)}
+        {renderEditableRow(<EmailIcon />, 'Email', 'email', contactEmail, canEditContact)}
+        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, canEditContact)}
+        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, canEditContact)}
 
         {editingField === 'address' && (
           <S.MapEditWrapper>
@@ -370,17 +557,17 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               searchInitialValue={customer?.address?.street || undefined}
             />
             <S.MapActionButtons>
-              <S.MapCancelButton 
-                variant="outlined" 
-                size="small" 
+              <S.MapCancelButton
+                variant="outlined"
+                size="small"
                 onClick={handleCancelEdit}
                 disabled={savingField === 'address'}
               >
                 Cancel
               </S.MapCancelButton>
-              <S.MapSaveButton 
-                variant="contained" 
-                size="small" 
+              <S.MapSaveButton
+                variant="contained"
+                size="small"
                 onClick={handleSaveAddress}
                 disabled={savingField === 'address'}
               >
@@ -403,6 +590,41 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldLabel>Job ID</S.FieldLabel>
           <S.FieldValue>#{job.id}</S.FieldValue>
         </S.FieldRow>
+
+        {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatJobAddress(job.address))}
+
+        {editingField === 'siteAddress' && (
+          <S.MapEditWrapper>
+            <S.StyledGoogleMap
+              height="15rem"
+              center={mapCenter}
+              zoom={mapZoom}
+              markers={selectedMapAddress ? [selectedMapAddress] : []}
+              selectedLocation={selectedMapAddress}
+              onLocationSelect={handleLocationSelect}
+              showSearchBox={true}
+              searchInitialValue={job.address?.street || undefined}
+            />
+            <S.MapActionButtons>
+              <S.MapCancelButton
+                variant="outlined"
+                size="small"
+                onClick={handleCancelEdit}
+                disabled={savingField === 'siteAddress'}
+              >
+                Cancel
+              </S.MapCancelButton>
+              <S.MapSaveButton
+                variant="contained"
+                size="small"
+                onClick={handleSaveAddress}
+                disabled={savingField === 'siteAddress'}
+              >
+                {savingField === 'siteAddress' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
+              </S.MapSaveButton>
+            </S.MapActionButtons>
+          </S.MapEditWrapper>
+        )}
 
         <S.FieldRow>
           <S.FieldIconContainer><InventoryIcon /></S.FieldIconContainer>
@@ -434,6 +656,13 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldLabel>Updated</S.FieldLabel>
           <S.FieldValue>{formatDate(job.updatedAt)}</S.FieldValue>
         </S.FieldRow>
+
+        {sortedTemplateFields.length > 0 && (
+          <>
+            <S.DividerLine />
+            {sortedTemplateFields.map((field) => renderCustomFieldRow(field))}
+          </>
+        )}
 
       </S.FieldsList>
     </S.SectionContainer>
