@@ -15,7 +15,7 @@ export const OverviewCard = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: '0.75rem',
   padding: theme.spacing(1, 2),
-  height: '5rem',
+  minHeight: '5rem',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
