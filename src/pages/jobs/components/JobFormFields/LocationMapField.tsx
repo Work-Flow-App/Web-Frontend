@@ -7,11 +7,24 @@ import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../config/googleMaps';
 import { MapWrapper } from './LocationMapField.styles';
 
-const LocationMapField: React.FC = () => {
+export interface LocationMapFieldProps {
+  /** Prefix for the bound field names, e.g. 'address' -> addressStreet, addressCity, ... */
+  namePrefix?: string;
+}
+
+const LocationMapField: React.FC<LocationMapFieldProps> = ({ namePrefix = 'address' }) => {
+  const streetField = `${namePrefix}Street`;
+  const cityField = `${namePrefix}City`;
+  const stateField = `${namePrefix}State`;
+  const postalCodeField = `${namePrefix}PostalCode`;
+  const countryField = `${namePrefix}Country`;
+  const latitudeField = `${namePrefix}Latitude`;
+  const longitudeField = `${namePrefix}Longitude`;
+
   const { setValue, watch } = useFormContext();
-  const addressStreet = watch('addressStreet') as string;
-  const savedLat = watch('addressLatitude') as number | null | undefined;
-  const savedLng = watch('addressLongitude') as number | null | undefined;
+  const addressStreet = watch(streetField) as string;
+  const savedLat = watch(latitudeField) as number | null | undefined;
+  const savedLng = watch(longitudeField) as number | null | undefined;
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
@@ -47,31 +60,31 @@ const LocationMapField: React.FC = () => {
         setSelectedLocation({ address: addressStreet, location });
         setMapCenter(location);
         setMapZoom(15);
-        setValue('addressLatitude', location.lat, { shouldDirty: true });
-        setValue('addressLongitude', location.lng, { shouldDirty: true });
+        setValue(latitudeField, location.lat, { shouldDirty: true });
+        setValue(longitudeField, location.lng, { shouldDirty: true });
       }
     });
-  }, [isLoaded, addressStreet, savedLat, savedLng, setValue]);
+  }, [isLoaded, addressStreet, savedLat, savedLng, setValue, latitudeField, longitudeField]);
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setValue('addressStreet', place.address, { shouldDirty: true });
-    setValue('addressCity', place.city ?? '', { shouldDirty: true });
-    setValue('addressState', place.state ?? '', { shouldDirty: true });
-    setValue('addressPostalCode', place.postalCode ?? '', { shouldDirty: true });
-    setValue('addressCountry', place.country ?? '', { shouldDirty: true });
+    setValue(streetField, place.address, { shouldDirty: true });
+    setValue(cityField, place.city ?? '', { shouldDirty: true });
+    setValue(stateField, place.state ?? '', { shouldDirty: true });
+    setValue(postalCodeField, place.postalCode ?? '', { shouldDirty: true });
+    setValue(countryField, place.country ?? '', { shouldDirty: true });
 
     if (place.isManualAddressOnly) {
       setSelectedLocation(null);
-      setValue('addressLatitude', null, { shouldDirty: true });
-      setValue('addressLongitude', null, { shouldDirty: true });
+      setValue(latitudeField, null, { shouldDirty: true });
+      setValue(longitudeField, null, { shouldDirty: true });
       return;
     }
 
     setSelectedLocation(place);
     setMapCenter(place.location);
     setMapZoom(15);
-    setValue('addressLatitude', place.location.lat, { shouldDirty: true });
-    setValue('addressLongitude', place.location.lng, { shouldDirty: true });
+    setValue(latitudeField, place.location.lat, { shouldDirty: true });
+    setValue(longitudeField, place.location.lng, { shouldDirty: true });
   };
 
   if (!isGoogleMapsConfigured()) {

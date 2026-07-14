@@ -10,9 +10,9 @@ export function extractAddressComponents(components: google.maps.GeocoderAddress
   const get = (type: string) =>
     components?.find((c) => c.types.includes(type));
   return {
-    city: get('locality')?.long_name ?? get('sublocality_level_1')?.long_name ?? '',
+    city: get('locality')?.long_name ?? get('postal_town')?.long_name ?? get('sublocality_level_1')?.long_name ?? '',
     state: get('administrative_area_level_1')?.long_name ?? '',
-    postalCode: get('postal_code')?.long_name ?? '',
+    postalCode: get('postal_code')?.long_name ?? get('postal_code_prefix')?.long_name ?? '',
     country: get('country')?.long_name ?? '',
   };
 }

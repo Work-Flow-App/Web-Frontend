@@ -4,14 +4,33 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { assetService } from '../../../../services/api';
-import type { AssetResponse } from '../../../../services/api';
+import { assetService, AssetResponseLocationTypeEnum } from '../../../../services/api';
+import type { AssetResponse, AddressResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
-import * as S from './AssetsList.styles';
+
+const formatAddress = (addr?: AddressResponse): string => {
+  if (!addr) return '';
+  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
+};
+
+const formatAssetLocation = (asset: AssetResponse): string => {
+  switch (asset.locationType) {
+    case AssetResponseLocationTypeEnum.Warehouse:
+      return formatAddress(asset.warehouseAddress) || 'Warehouse';
+    case AssetResponseLocationTypeEnum.JobSite:
+      return formatAddress(asset.address) || 'On Job Site';
+    case AssetResponseLocationTypeEnum.WorkerLocation:
+      return 'With Worker';
+    case AssetResponseLocationTypeEnum.Custom:
+      return formatAddress(asset.address) || 'Custom Location';
+    default:
+      return formatAddress(asset.warehouseAddress);
+  }
+};
 
 export const AssetsList: React.FC = () => {
   const navigate = useNavigate();
@@ -21,12 +40,6 @@ export const AssetsList: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
   const { formatCurrency } = useCurrency();
-  const [stats, setStats] = useState({
-    totalAssets: 0,
-    availableAssets: 0,
-    assetsInUse: 0,
-    totalCost: 0,
-  });
 
   // Fetch assets
   const fetchAssets = useCallback(async () => {
@@ -70,28 +83,13 @@ export const AssetsList: React.FC = () => {
           purchaseDate: asset.purchaseDate,
           currentValue: undefined, // Will fetch separately if needed
           status,
-          currentLocation: asset.currentLocation,
+          currentLocation: formatAssetLocation(asset),
           available: asset.available || false,
           archived: asset.archived || false,
           createdAt: asset.createdAt,
         };
       });
       setAssets(transformedData);
-
-      // Fetch statistics
-      try {
-        const statsResponse = await assetService.getAssetStatistics();
-        const s = statsResponse.data;
-        const totalCost = assetsData.reduce((acc: number, asset: AssetResponse) => acc + (asset.purchasePrice || 0), 0);
-        setStats({
-          totalAssets: s.totalAssets || 0,
-          availableAssets: s.availableAssets || 0,
-          assetsInUse: s.assetsInUse || 0,
-          totalCost,
-        });
-      } catch (err) {
-        console.error('Failed to fetch asset statistics:', err);
-      }
     } catch (error) {
       console.error('Error fetching assets:', error);
       showError(extractErrorMessage(error, 'Failed to load assets'));
@@ -228,7 +226,7 @@ export const AssetsList: React.FC = () => {
         label: 'Archive',
         onClick: handleArchiveAsset,
         color: 'warning' as const,
-        hide: (row) => row.archived, // Hide for already archived assets
+        show: (row) => !row.archived,
       },
     ],
     [handleEditAsset, handleViewHistory, handleArchiveAsset]
@@ -260,48 +258,6 @@ export const AssetsList: React.FC = () => {
       showSearch
       searchPlaceholder="Search assets..."
     >
-      <S.StatsGrid>
-        <S.StatCard>
-          <S.StatHeader>
-            <S.StatLabel>Total Assets</S.StatLabel>
-            <S.StatIconContainer bgColor="rgba(33, 150, 243, 0.1)">
-              <S.TotalAssetsIcon />
-            </S.StatIconContainer>
-          </S.StatHeader>
-          <S.StatValue>{stats.totalAssets}</S.StatValue>
-        </S.StatCard>
-
-        <S.StatCard>
-          <S.StatHeader>
-            <S.StatLabel>Available</S.StatLabel>
-            <S.StatIconContainer bgColor="rgba(76, 175, 80, 0.1)">
-              <S.AvailableAssetsIcon />
-            </S.StatIconContainer>
-          </S.StatHeader>
-          <S.StatValue>{stats.availableAssets}</S.StatValue>
-        </S.StatCard>
-
-        <S.StatCard>
-          <S.StatHeader>
-            <S.StatLabel>In Use</S.StatLabel>
-            <S.StatIconContainer bgColor="rgba(255, 152, 0, 0.1)">
-              <S.InUseAssetsIcon />
-            </S.StatIconContainer>
-          </S.StatHeader>
-          <S.StatValue>{stats.assetsInUse}</S.StatValue>
-        </S.StatCard>
-
-        <S.StatCard>
-          <S.StatHeader>
-            <S.StatLabel>Total Value</S.StatLabel>
-            <S.StatIconContainer bgColor="rgba(156, 39, 176, 0.1)">
-              <S.CostAssetsIcon />
-            </S.StatIconContainer>
-          </S.StatHeader>
-          <S.StatValue>{formatCurrency(stats.totalCost)}</S.StatValue>
-        </S.StatCard>
-      </S.StatsGrid>
-
       <Table<AssetTableRow>
         columns={assetColumns}
         data={assets}

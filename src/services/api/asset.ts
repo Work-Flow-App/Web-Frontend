@@ -1,25 +1,42 @@
-import { AssetsApi, AssetAssignmentsApi, Configuration } from '../../../workflow-api';
+import {
+  AssetsApi,
+  AssetAssignmentsApi,
+  Configuration,
+  AssetResponseLocationTypeEnum,
+  AssetAssignmentCreateRequestExplicitLocationTypeEnum,
+} from '../../../workflow-api';
 import type {
   AssetResponse,
   AssetCreateRequest,
   AssetUpdateRequest,
   AssetValueResponse,
   AssetAssignmentResponse,
+  AssetAssignmentResponseLocationTypeEnum,
   AssetAssignmentCreateRequest,
+  AssetAssignmentUpdateRequest,
   AssetAssignmentReturnRequest,
+  AssetAttachmentDto,
+  AddressRequest,
+  AddressResponse,
   PagedModelAssetResponse,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
+export { AssetResponseLocationTypeEnum, AssetAssignmentCreateRequestExplicitLocationTypeEnum };
 export type {
   AssetResponse,
   AssetCreateRequest,
   AssetUpdateRequest,
   AssetValueResponse,
   AssetAssignmentResponse,
+  AssetAssignmentResponseLocationTypeEnum,
   AssetAssignmentCreateRequest,
+  AssetAssignmentUpdateRequest,
   AssetAssignmentReturnRequest,
+  AssetAttachmentDto,
+  AddressRequest,
+  AddressResponse,
   PagedModelAssetResponse,
 };
 
@@ -78,26 +95,16 @@ export const assetService = {
     return await getAssetAssignmentApi().assetAssignmentJobAssignments(jobId, onlyActive);
   },
 
-  async updateAssignment(assignmentId: number, data: { assignedWorkerId?: number; notes?: string }) {
-    return await axiosInstance.put(`/api/v1/asset-assignments/assign/${assignmentId}`, data);
+  async updateAssignment(assignmentId: number, data: AssetAssignmentUpdateRequest) {
+    return await getAssetAssignmentApi().assetAssignmentUpdateAssignment(assignmentId, data);
   },
 
   async uploadAttachments(id: number, files: File[]) {
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
-    return await axiosInstance.post(`/api/v1/assets/${id}/attachments`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    return await getAssetApi().assetAddAttachments(id, files);
   },
 
   async removeAttachment(id: number, fileUrl: string) {
-    return await axiosInstance.delete(`/api/v1/assets/${id}/attachments`, {
-      params: { fileUrl },
-    });
+    return await getAssetApi().assetRemoveAttachment(id, fileUrl);
   },
 };
 

@@ -6,7 +6,7 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import { Button } from '../../../../components/UI/Button';
 import { assetService } from '../../../../services/api';
-import type { AssetResponse, AssetAssignmentResponse, AssetValueResponse } from '../../../../services/api';
+import type { AssetResponse, AssetAssignmentResponse, AssetValueResponse, AssetAttachmentDto } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Loader } from '../../../../components/UI';
@@ -63,6 +63,8 @@ export const AssetHistory: React.FC = () => {
         assignedAt: assignment.assignedAt || '',
         returnedAt: assignment.returnedAt,
         durationDays: assignment.durationDays,
+        expectedDurationDays: assignment.expectedDurationDays,
+        slaBreached: assignment.slaBreached,
         status: assignment.status,
         notes: assignment.notes,
       }));
@@ -379,7 +381,7 @@ export const AssetHistory: React.FC = () => {
                       </Typography>
                     ) : (
                       <S.AttachmentsGrid>
-                        {asset.attachments.map((att: any, idx: number) => (
+                        {asset.attachments.map((att: AssetAttachmentDto, idx: number) => (
                           <S.AttachmentCard key={idx}>
                             <S.AttachmentName 
                               variant="body2" 
@@ -397,7 +399,7 @@ export const AssetHistory: React.FC = () => {
                                 size="small" 
                                 color="error" 
                                 variant="text"
-                                onClick={() => handleRemoveFile(att.fileUrl)}
+                                onClick={() => att.fileUrl && handleRemoveFile(att.fileUrl)}
                                 sx={{ minWidth: 'auto', p: 0.5, fontSize: '0.75rem' }}
                               >
                                 Delete

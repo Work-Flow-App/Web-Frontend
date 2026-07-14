@@ -1,4 +1,5 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
+import { Badge } from '../../../../components/UI/Badge';
 
 export interface AssetHistoryRow {
   id: number;
@@ -8,6 +9,8 @@ export interface AssetHistoryRow {
   assignedAt: string;
   returnedAt?: string;
   durationDays?: number;
+  expectedDurationDays?: number;
+  slaBreached?: boolean;
   status?: string;
   notes?: string;
 }
@@ -70,6 +73,26 @@ export const assetHistoryColumns: ITableColumn<AssetHistoryRow>[] = [
     sortable: true,
     width: 120,
     render: (row) => row.status || '-',
+  },
+  {
+    id: 'sla',
+    label: 'SLA',
+    accessor: 'slaBreached',
+    sortable: false,
+    width: 'auto',
+    render: (row) => {
+      if (!row.returnedAt && row.slaBreached) {
+        return (
+          <Badge variant="error" size="small">
+            Breached
+          </Badge>
+        );
+      }
+      if (row.expectedDurationDays !== undefined && row.expectedDurationDays !== null) {
+        return `Expected ${row.expectedDurationDays} ${row.expectedDurationDays === 1 ? 'day' : 'days'}`;
+      }
+      return '-';
+    },
   },
   {
     id: 'notes',

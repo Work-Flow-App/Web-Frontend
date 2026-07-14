@@ -4,12 +4,9 @@ import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
+import LocationMapField from '../../../jobs/components/JobFormFields/LocationMapField';
 
-export interface AssetFormFieldsProps {
-  isEditMode?: boolean;
-}
-
-export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) => {
+export const AssetFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(AssetFormSchema);
 
   return (
@@ -55,7 +52,6 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
             placeholder={placeHolders.purchasePrice}
             type="number"
             hideErrorMessage={false}
-            disabled={isEditMode}
           />
         </FormField>
         <FormField label={fieldLabels.purchaseDate} required={isRequireds.purchaseDate}>
@@ -64,7 +60,6 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
             placeholder={placeHolders.purchaseDate}
             type="date"
             hideErrorMessage={false}
-            disabled={isEditMode}
           />
         </FormField>
       </FormRow>
@@ -76,7 +71,6 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
             placeholder={placeHolders.depreciationRate}
             type="number"
             hideErrorMessage={false}
-            disabled={isEditMode}
           />
         </FormField>
         <FormField label={fieldLabels.salvageValue} required={isRequireds.salvageValue}>
@@ -88,6 +82,10 @@ export const AssetFormFields: React.FC<AssetFormFieldsProps> = ({ isEditMode }) 
           />
         </FormField>
       </FormRow>
+
+      <FormField label="Warehouse Address (optional)">
+        <LocationMapField namePrefix="warehouseAddress" />
+      </FormField>
     </>
   );
 };
