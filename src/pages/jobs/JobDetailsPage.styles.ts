@@ -1,6 +1,12 @@
-import { Box, Typography, Chip, MenuItem, styled } from '@mui/material';
+import { Box, Typography, Chip, MenuItem, ToggleButtonGroup, ToggleButton, styled } from '@mui/material';
 import { rem, Bold } from '../../components/UI/Typography/utility';
 import { floowColors } from '../../theme/colors';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -130,11 +136,11 @@ export const StatusBadge = styled(Box, {
       case 'NEW':
         return { backgroundColor: floowColors.statusBadge.active.bg, color: floowColors.statusBadge.active.text };
       case 'PENDING':
-        return { backgroundColor: '#FFE0B2', color: '#E65100' };
+        return { backgroundColor: floowColors.warning.light, color: floowColors.warning.dark };
       case 'IN_PROGRESS':
         return { backgroundColor: floowColors.statusBadge.pending.bg, color: floowColors.statusBadge.pending.text };
       case 'COMPLETED':
-        return { backgroundColor: '#E3F2FD', color: '#1565C0' };
+        return { backgroundColor: floowColors.blue[50], color: floowColors.blue.dark };
       case 'CANCELLED':
         return { backgroundColor: floowColors.statusBadge.inactive.bg, color: floowColors.statusBadge.inactive.text };
       default:
@@ -284,7 +290,7 @@ interface StageArrowProps {
 
 export const StageArrow = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'color' && prop !== 'textColor' && prop !== 'active',
-})<StageArrowProps>(({ color = '#E0E0E0', textColor = '#333', active = false }) => ({
+})<StageArrowProps>(({ color = floowColors.grey[200], textColor = floowColors.grey[700], active = false }) => ({
   position: 'relative',
   padding: `${rem(18)} ${rem(40)}`,
   backgroundColor: color,
@@ -516,7 +522,7 @@ export const BreadcrumbCurrent = styled('span')(({ theme}) => ({
 // New Job Details Layout Styles
 export const JobDetailsLayout = styled(Box)<{ fullWidth?: boolean }>(({ theme, fullWidth }) => ({
   display: 'grid',
-  gridTemplateColumns: fullWidth ? '1fr' : '320px 1fr',
+  gridTemplateColumns: fullWidth ? '1fr' : 'calc(60% - 12px) calc(40% - 12px)',
   gap: theme.spacing(3),
   '@media (max-width: 1024px)': {
     gridTemplateColumns: '1fr',
@@ -592,18 +598,18 @@ export const WorkflowStepItem = styled(Box, {
     justifyContent: 'center',
     marginRight: theme.spacing(1.5),
     backgroundColor: isCompleted
-      ? '#E8F5E9'
+      ? floowColors.green[50]
       : isDelayed
-        ? '#FFEBEE'
+        ? floowColors.statusBadge.inactive.bg
         : isActive
-          ? '#FFF8E1'
+          ? floowColors.warning.light
           : theme.palette.colors.grey_200,
     color: isCompleted
-      ? '#4CAF50'
+      ? theme.palette.success.main
       : isDelayed
-        ? '#F44336'
+        ? theme.palette.error.main
         : isActive
-          ? '#FFC107'
+          ? floowColors.warning.main
           : theme.palette.text.secondary,
     fontSize: rem(12),
     fontWeight: Bold._600,
@@ -877,7 +883,7 @@ export const CommentAuthorName = styled('span')(({ theme }) => ({
 export const CommentMention = styled('span')(({ theme }) => ({
   fontSize: rem(13),
   fontWeight: theme.typography.fontWeightSemiBold,
-  color: '#D4A017',
+  color: floowColors.warning.dark,
 }));
 
 export const CommentTime = styled('span')(({ theme }) => ({
@@ -1261,7 +1267,7 @@ export const DocumentsGrid = styled(Box)(({ theme }) => ({
 export const DocumentCard = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
@@ -1279,15 +1285,20 @@ export const DocumentCardHeader = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1.5),
 }));
 
-export const DocumentIcon = styled(Box)(({ theme }) => ({
+export const DocumentIcon = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isInvoice',
+})<{ isInvoice?: boolean }>(({ theme, isInvoice }) => ({
   width: rem(40),
   height: rem(40),
   borderRadius: theme.spacing(1),
-  backgroundColor: theme.palette.colors.grey_100,
+  backgroundColor: isInvoice ? '#E8F5E9' : '#FEF3ED',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
+  '& svg': {
+    color: isInvoice ? '#2E7D32' : 'inherit',
+  },
 }));
 
 export const DocumentInfo = styled(Box)(() => ({
@@ -1324,9 +1335,9 @@ export const DocumentStepBadge = styled(Box)(({ theme }) => ({
 
 export const DocumentCardActions = styled(Box)(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'flex-end',
+  justifyContent: 'flex-start',
   gap: theme.spacing(1),
-  marginTop: theme.spacing(1.5),
+  marginTop: 'auto',
   paddingTop: theme.spacing(1.5),
   borderTop: `1px solid ${theme.palette.colors.grey_100}`,
 }));
@@ -1338,6 +1349,7 @@ export const DocumentsEmptyState = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   padding: theme.spacing(6),
   textAlign: 'center',
+  gridColumn: '1 / -1',
 }));
 
 export const DocumentsEmptyIcon = styled(Box)(({ theme }) => ({
@@ -1350,6 +1362,9 @@ export const DocumentsEmptyIcon = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   marginBottom: theme.spacing(2),
   color: theme.palette.text.secondary,
+  '& svg': {
+    fontSize: `${rem(32)} !important`,
+  },
 }));
 
 export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
@@ -1361,6 +1376,118 @@ export const DocumentsEmptyText = styled(Typography)(({ theme }) => ({
 export const DocumentsEmptySubtext = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
   color: theme.palette.text.secondary,
+}));
+
+export const DocumentsTabContainer = styled(Box)(() => ({}));
+export const AttachmentsSection = styled(Box)(() => ({}));
+
+// ── Documents Tab: New Design Components ──
+
+export const DocPageTitle = styled('h2')(({ theme }) => ({
+  fontSize: rem(22),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+  margin: 0,
+  marginBottom: theme.spacing(0.5),
+}));
+
+export const DocPageSubtitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  color: theme.palette.text.secondary,
+  margin: 0,
+  marginBottom: theme.spacing(2.5),
+}));
+
+export const DocTabsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(3),
+  flexWrap: 'wrap',
+}));
+
+interface DocTabButtonProps {
+  active?: boolean;
+}
+
+export const DocTabButton = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<DocTabButtonProps>(({ theme, active }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(6),
+  padding: `${rem(7)} ${rem(14)}`,
+  border: `1px solid ${active ? floowColors.dark.primary : theme.palette.colors.grey_300}`,
+  borderRadius: rem(8),
+  backgroundColor: active ? floowColors.dark.primary : theme.palette.colors.white,
+  color: active ? floowColors.white : theme.palette.text.primary,
+  fontSize: rem(14),
+  fontWeight: active ? Bold._600 : Bold._500,
+  cursor: 'pointer',
+  transition: 'all 0.15s ease',
+  '&:hover': {
+    borderColor: active ? floowColors.dark.primary : theme.palette.colors.grey_400,
+    backgroundColor: active ? floowColors.dark.secondary : theme.palette.colors.grey_50,
+  },
+}));
+
+export const DocTabCount = styled('span', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<DocTabButtonProps>(({ active }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._500,
+  color: active ? 'rgba(255,255,255,0.7)' : floowColors.grey[500],
+}));
+
+export const DocSectionLabel = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: theme.typography.fontWeightSemiBold,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  marginBottom: theme.spacing(2),
+}));
+
+export const DocInvoiceAmount = styled(Typography)(({ theme }) => ({
+  fontSize: rem(22),
+  fontWeight: theme.typography.fontWeightBold,
+  color: theme.palette.text.primary,
+  margin: `${theme.spacing(1.5)} 0 ${theme.spacing(1)} 0`,
+  lineHeight: 1.2,
+}));
+
+interface DocCardActionButtonProps {
+  danger?: boolean;
+}
+
+export const DocCardActionButton = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'danger',
+})<DocCardActionButtonProps>(({ theme, danger }) => ({
+  flex: 1,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: rem(6),
+  padding: `${rem(7)} ${rem(10)}`,
+  border: `1px solid ${danger ? theme.palette.error.light : theme.palette.colors.grey_300}`,
+  borderRadius: rem(8),
+  backgroundColor: theme.palette.colors.white,
+  color: danger ? theme.palette.error.main : theme.palette.text.primary,
+  fontSize: rem(13),
+  fontWeight: Bold._500,
+  cursor: 'pointer',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
+  '&:hover': {
+    borderColor: danger ? theme.palette.error.main : theme.palette.colors.grey_400,
+    backgroundColor: danger ? '#fff5f5' : theme.palette.colors.grey_50,
+  },
+  '&:disabled': {
+    opacity: 0.45,
+    cursor: 'not-allowed',
+  },
+  '& svg': {
+    fontSize: `${rem(14)} !important`,
+  },
 }));
 
 // ============================================
@@ -1444,9 +1571,9 @@ export const EstimateBreakdownBadge = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'badgecolor',
 })<EstimateBreakdownBadgeProps>(({ badgecolor = 'available' }) => {
   const colors = {
-    invoiced: { bg: '#EDE9FE', text: '#5B21B6' },
-    estimate: { bg: '#FEF3C7', text: '#92400E' },
-    available: { bg: '#D1FAE5', text: '#065F46' },
+    invoiced: { bg: `${floowColors.indigo.main}22`, text: floowColors.indigo.main },
+    estimate: { bg: floowColors.warning.light,        text: floowColors.warning.dark  },
+    available: { bg: floowColors.green[50],            text: floowColors.green.main    },
   };
   const c = colors[badgecolor];
   return {
@@ -1527,10 +1654,10 @@ export const GanttStatItem = styled(Box)(({ theme }) => ({
     fontWeight: theme.typography.fontWeightBold,
     color: theme.palette.text.primary,
     '&.completed': {
-      color: '#10B981',
+      color: floowColors.success.main,
     },
     '&.in-progress': {
-      color: '#3B82F6',
+      color: floowColors.blue.light,
     },
   },
 }));
@@ -1793,16 +1920,6 @@ export const GanttLegendItems = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   gap: theme.spacing(2),
-}));
-
-export const GanttLegendItem = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.75),
-  fontSize: rem(11),
-  color: theme.palette.text.secondary,
-  fontWeight: theme.typography.fontWeightMedium,
-  textTransform: 'capitalize',
 }));
 
 export const GanttLegendColor = styled(Box)(() => ({
@@ -2079,7 +2196,7 @@ export const GanttChartTitle = styled(Box)(({ theme }) => ({
   '& span': {
     fontSize: rem(18),
     fontWeight: Bold._700,
-    color: '#1E3A5F',
+    color: theme.palette.primary.dark,
   },
 }));
 
@@ -2099,7 +2216,7 @@ export const GanttChartStatBox = styled(Box)(({ theme }) => ({
   '& .value': {
     fontSize: rem(16),
     fontWeight: Bold._700,
-    color: '#1E3A5F',
+    color: theme.palette.primary.dark,
   },
   '& .label': {
     fontSize: rem(10),
@@ -2149,12 +2266,12 @@ export const GanttChartDateCell = styled(Box, {
   padding: theme.spacing(0.5),
   textAlign: 'center',
   borderRight: `1px solid ${theme.palette.colors.grey_200}`,
-  backgroundColor: isToday ? '#EEF2FF' : isWeekend ? floowColors.grey[50] : 'transparent',
+  backgroundColor: isToday ? floowColors.blue[50] : isWeekend ? floowColors.grey[50] : 'transparent',
   '& .day': {
     display: 'block',
     fontSize: rem(14),
     fontWeight: isToday ? Bold._700 : Bold._500,
-    color: isToday ? '#4F46E5' : theme.palette.text.primary,
+    color: isToday ? floowColors.indigo.main : theme.palette.text.primary,
   },
   '& .month': {
     display: 'block',
@@ -2176,14 +2293,21 @@ interface GanttChartRowProps {
 
 export const GanttChartRow = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isMainTask' && prop !== 'isSubTask',
-})<GanttChartRowProps>(({ theme, isMainTask, isSubTask }) => ({
+})<GanttChartRowProps>(({ theme, isMainTask }) => ({
   display: 'grid',
   gridTemplateColumns: '250px 1fr',
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
   backgroundColor: isMainTask ? floowColors.white : floowColors.grey[50],
-  minHeight: isMainTask ? rem(44) : rem(36),
+  minHeight: isMainTask ? rem(52) : rem(36),
+  transition: 'background-color 0.15s ease',
   '&:hover': {
-    backgroundColor: isMainTask ? floowColors.blue[50] : '#F8FAFC',
+    backgroundColor: theme.palette.action.hover,
+  },
+  '&:hover .gantt-step-name': {
+    color: theme.palette.primary.main,
+  },
+  '&:hover .gantt-step-dot': {
+    transform: 'scale(1.35)',
   },
 }));
 
@@ -2278,23 +2402,25 @@ export const GanttChartGridColumns = styled(Box)(() => ({
 
 interface GanttChartGridColumnProps {
   isWeekend?: boolean;
+  isToday?: boolean;
 }
 
 export const GanttChartGridColumn = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isWeekend',
-})<GanttChartGridColumnProps>(({ theme, isWeekend }) => ({
+  shouldForwardProp: (prop) => prop !== 'isWeekend' && prop !== 'isToday',
+})<GanttChartGridColumnProps>(({ theme, isWeekend, isToday }) => ({
   flex: 1,
   borderRight: `1px solid ${theme.palette.colors.grey_100}`,
-  backgroundColor: isWeekend ? 'rgba(0,0,0,0.02)' : 'transparent',
+  backgroundColor: isToday ? floowColors.blue[50] : isWeekend ? floowColors.blackAlpha[2] : 'transparent',
 }));
 
-export const GanttChartTodayLine = styled(Box)(() => ({
+export const GanttChartTodayLine = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: 0,
   bottom: 0,
   width: rem(2),
-  backgroundColor: '#EF4444',
+  backgroundColor: theme.palette.error.main,
   zIndex: 5,
+  cursor: 'pointer',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -2305,7 +2431,7 @@ export const GanttChartTodayLine = styled(Box)(() => ({
     height: 0,
     borderLeft: '5px solid transparent',
     borderRight: '5px solid transparent',
-    borderTop: '6px solid #EF4444',
+    borderTop: `6px solid ${theme.palette.error.main}`,
   },
 }));
 
@@ -2331,8 +2457,8 @@ export const GanttChartBar = styled(Box, {
     backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.15) 4px, rgba(255,255,255,0.15) 8px)',
   }),
   '&:hover': {
-    transform: 'scaleY(1.1)',
-    boxShadow: '0 3px 8px rgba(0,0,0,0.2)',
+    transform: 'scaleY(1.15) translateY(-1px)',
+    boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
     zIndex: 10,
   },
 }));
@@ -2409,7 +2535,7 @@ export const GanttChartLegendDot = styled(Box)(() => ({
 export const GanttChartTodayIndicator = styled(Box)(() => ({
   width: rem(10),
   height: rem(10),
-  backgroundColor: '#EF4444',
+  backgroundColor: floowColors.red.main,
   borderRadius: rem(2),
 }));
 
@@ -2686,9 +2812,9 @@ export const ModalFormRow = styled(Box)(({ theme }) => ({
 type SlaVariant = 'on_track' | 'attention' | 'breached';
 
 const SLA_VARIANT_STYLES: Record<SlaVariant, { bg: string; color: string }> = {
-  on_track:  { bg: '#E8F5E9', color: '#2E7D32' },
-  attention: { bg: '#FFF3E0', color: '#E65100' },
-  breached:  { bg: '#FFEBEE', color: '#C62828' },
+  on_track:  { bg: floowColors.green[50],               color: floowColors.green.main              },
+  attention: { bg: floowColors.warning.light,            color: floowColors.warning.dark            },
+  breached:  { bg: floowColors.statusBadge.inactive.bg,  color: floowColors.red.dark               },
 };
 
 interface SlaTimerChipProps {
@@ -2713,3 +2839,567 @@ export const SlaTimerChip = styled(Chip, {
     },
   };
 });
+
+// ============================================
+// Activity Log Redesign Styled Components
+// ============================================
+
+export const ActivityLogStatsGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: theme.spacing(2),
+  '@media (max-width: 900px)': {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+  },
+  '@media (max-width: 600px)': {
+    gridTemplateColumns: '1fr',
+  },
+}));
+
+export const ActivityDarkCard = styled(Box)(({ theme }) => ({
+  backgroundColor: floowColors.dark.primary,
+  borderRadius: '0.75rem',
+  padding: theme.spacing(1.5, 2),
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+}));
+
+export const ActivityTimelineSection = styled(Box)(({ theme }) => ({
+  backgroundColor: floowColors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(1.5),
+  overflow: 'hidden',
+}));
+
+export const ActivityTimelineTopBar = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2, 2.5),
+  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: theme.spacing(2),
+  flexWrap: 'wrap',
+}));
+
+export const ActivityTimelineControls = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  flexShrink: 0,
+}));
+
+export const GanttFilterButton = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  padding: theme.spacing(0.625, 1.25),
+  border: `1px solid ${theme.palette.colors.grey_300}`,
+  borderRadius: theme.spacing(0.75),
+  cursor: 'pointer',
+  fontSize: rem(13),
+  fontWeight: Bold._500,
+  color: theme.palette.text.secondary,
+  backgroundColor: floowColors.white,
+  userSelect: 'none',
+  '&:hover': {
+    borderColor: theme.palette.colors.grey_400,
+    backgroundColor: floowColors.grey[50],
+  },
+}));
+
+interface GanttStepDotProps {
+  dotColor?: string;
+}
+
+export const GanttStepDot = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'dotColor',
+})<GanttStepDotProps>(({ dotColor }) => ({
+  width: rem(10),
+  height: rem(10),
+  borderRadius: '50%',
+  backgroundColor: dotColor || floowColors.tailwind.gray[500],
+  flexShrink: 0,
+}));
+
+export const GanttStepBadge = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: rem(20),
+  height: rem(20),
+  borderRadius: rem(10),
+  backgroundColor: floowColors.grey[200],
+  color: theme.palette.text.secondary,
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  padding: `0 ${rem(6)}`,
+  flexShrink: 0,
+}));
+
+interface GanttActivityChipProps {
+  chipColor?: string;
+}
+
+export const GanttActivityChip = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'chipColor',
+})<GanttActivityChipProps>(({ chipColor }) => ({
+  position: 'absolute',
+  transform: 'translateX(-50%)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(3),
+  padding: `${rem(3)} ${rem(8)}`,
+  borderRadius: rem(12),
+  border: `1.5px solid ${chipColor || floowColors.success.main}`,
+  backgroundColor: `${chipColor || floowColors.success.main}18`,
+  color: chipColor || floowColors.success.main,
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+  zIndex: 3,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: `${chipColor || floowColors.success.main}30`,
+    transform: 'translateX(-50%) translateY(-3px)',
+    boxShadow: `0 6px 16px ${chipColor || floowColors.success.main}35`,
+    zIndex: 10,
+  },
+}));
+
+export const RecentActivitySection = styled(Box)(({ theme }) => ({
+  backgroundColor: floowColors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(1.5),
+  overflow: 'hidden',
+}));
+
+export const RecentActivityLabel = styled(Typography)(({ theme }) => ({
+  display: 'block',
+  fontSize: rem(11),
+  fontWeight: Bold._700,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: rem(0.6),
+  padding: theme.spacing(1.5, 2.5),
+  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+}));
+
+export const RecentActivityBadge = styled(Box)(({ theme }) => ({
+  width: rem(32),
+  height: rem(32),
+  borderRadius: rem(6),
+  backgroundColor: theme.palette.action.selected,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: rem(9),
+  fontWeight: Bold._700,
+  color: theme.palette.text.secondary,
+  flexShrink: 0,
+  letterSpacing: rem(0.5),
+  transition: 'all 0.15s ease',
+}));
+
+export const RecentActivityItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(1.5, 2.5),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  transition: 'background-color 0.15s ease',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  [`&:hover ${RecentActivityBadge}`]: {
+    backgroundColor: floowColors.blue[100],
+    color: floowColors.blue.dark,
+  },
+}));
+
+// ============================================
+// Activity Log Redesign – v2 styled components
+// ============================================
+
+export const ActivityLogContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2.5),
+}));
+
+// Dark stat card typography (light-on-dark — intentional design)
+export const DarkCardLabel = styled(Typography)(() => ({
+  fontSize: rem(12),
+  fontWeight: Bold._600,
+  letterSpacing: rem(0.5),
+  color: 'rgba(255,255,255,0.55)',
+  textTransform: 'uppercase',
+  marginBottom: rem(8),
+}));
+
+export const DarkCardValue = styled(Typography)(() => ({
+  fontSize: rem(24),
+  fontWeight: Bold._700,
+  color: floowColors.white,
+  lineHeight: 1.2,
+}));
+
+export const DarkCardSubtext = styled(Typography)(() => ({
+  fontSize: rem(14),
+  color: 'rgba(255,255,255,0.4)',
+  marginTop: rem(8),
+}));
+
+// Timeline section header
+export const ActivitySectionTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(18),
+  fontWeight: Bold._700,
+  color: theme.palette.text.primary,
+  lineHeight: 1.3,
+}));
+
+export const ActivitySectionSubtitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  color: theme.palette.text.secondary,
+  marginTop: rem(2),
+}));
+
+// Day / Week / Month toggle
+export const GanttViewToggleGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  backgroundColor: theme.palette.action.hover,
+  borderRadius: theme.spacing(1),
+  padding: rem(2),
+  '& .MuiToggleButtonGroup-grouped': {
+    border: 'none !important',
+    borderRadius: `${theme.spacing(0.75)} !important`,
+    padding: theme.spacing(0.5, 1.5),
+    fontSize: rem(13),
+    fontWeight: Bold._500,
+    color: theme.palette.text.secondary,
+    textTransform: 'none',
+    minWidth: 0,
+    transition: 'all 0.15s ease',
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+      fontWeight: Bold._600,
+      boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+    },
+    '&:hover:not(.Mui-selected)': {
+      backgroundColor: theme.palette.action.selected,
+    },
+  },
+}));
+
+export const GanttViewToggleButton = styled(ToggleButton)(() => ({
+  textTransform: 'none',
+}));
+
+// Step row cell content
+export const GanttStepCellInner = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  width: '100%',
+}));
+
+export const GanttStepNameBox = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+}));
+
+export const GanttStepNameText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._600,
+  color: theme.palette.text.primary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  lineHeight: 1.3,
+  transition: 'color 0.15s ease',
+}));
+
+export const GanttStepStatusText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.disabled,
+  lineHeight: 1.3,
+}));
+
+// Legend bar
+export const GanttLegendRow = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.5, 2.5),
+  borderTop: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2.5),
+  flexWrap: 'wrap',
+}));
+
+export const GanttLegendTypeLabel = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  color: theme.palette.text.disabled,
+  textTransform: 'uppercase',
+  letterSpacing: rem(0.5),
+}));
+
+export const GanttLegendItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.75),
+}));
+
+interface GanttLegendDotProps {
+  dotColor?: string;
+}
+
+export const GanttLegendDot = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'dotColor',
+})<GanttLegendDotProps>(({ dotColor }) => ({
+  width: rem(8),
+  height: rem(8),
+  borderRadius: '50%',
+  backgroundColor: dotColor || floowColors.tailwind.gray[400],
+  flexShrink: 0,
+}));
+
+export const GanttLegendText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+}));
+
+export const GanttLegendTodayMarker = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.75),
+  marginLeft: 'auto',
+}));
+
+export const GanttLegendTodayBar = styled(Box)(({ theme }) => ({
+  width: rem(12),
+  height: rem(2),
+  backgroundColor: theme.palette.error.main,
+  borderRadius: rem(2),
+}));
+
+// Tooltip content helpers
+export const GanttTooltipBox = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(0.5),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  maxWidth: rem(260),
+}));
+
+export const GanttTooltipHeader = styled(Box)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: Bold._600,
+  opacity: 0.9,
+  paddingBottom: theme.spacing(0.75),
+  borderBottom: '1px solid rgba(255,255,255,0.2)',
+  marginBottom: theme.spacing(0.25),
+  letterSpacing: rem(0.2),
+}));
+
+export const GanttTooltipTitle = styled(Box)(() => ({
+  fontWeight: Bold._600,
+  fontSize: rem(11),
+}));
+
+export const GanttTooltipDetail = styled(Box)(() => ({
+  fontSize: rem(11),
+  opacity: 0.85,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}));
+
+export const GanttTooltipMeta = styled(Box)(() => ({
+  fontSize: rem(10),
+  opacity: 0.55,
+}));
+
+export const GanttTooltipDivider = styled(Box)(({ theme }) => ({
+  height: rem(1),
+  backgroundColor: 'rgba(255,255,255,0.12)',
+  margin: theme.spacing(0.5, 0),
+}));
+
+export const GanttTooltipMore = styled(Box)(({ theme }) => ({
+  fontSize: rem(11),
+  opacity: 0.6,
+  fontStyle: 'italic',
+  paddingTop: theme.spacing(0.5),
+  borderTop: '1px solid rgba(255,255,255,0.12)',
+  marginTop: theme.spacing(0.25),
+}));
+
+// Recent activity text elements
+export const RecentActivityContent = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+}));
+
+export const RecentActivityText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(14),
+  color: theme.palette.text.secondary,
+  lineHeight: 1.4,
+}));
+
+export const RecentActorName = styled('span')(({ theme }) => ({
+  fontWeight: Bold._600,
+  color: theme.palette.text.primary,
+}));
+
+export const RecentStepBullet = styled('span')(({ theme }) => ({
+  fontWeight: Bold._600,
+  color: theme.palette.text.primary,
+}));
+
+export const RecentTimeText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.disabled,
+  flexShrink: 0,
+  marginLeft: theme.spacing(2),
+  whiteSpace: 'nowrap',
+}));
+
+// ── Activity chip → Popover (click to see all activities for a date)
+
+export const ActivityPopoverPaper = styled(Box)(({ theme }) => ({
+  width: rem(320),
+  display: 'flex',
+  flexDirection: 'column',
+  borderRadius: theme.spacing(1.5),
+  overflow: 'hidden',
+}));
+
+export const ActivityPopoverHeader = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1.25, 2),
+  backgroundColor: theme.palette.background.default,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(1),
+}));
+
+export const ActivityPopoverTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._700,
+  color: theme.palette.text.primary,
+}));
+
+export const ActivityPopoverBadge = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  fontWeight: Bold._600,
+  color: theme.palette.text.secondary,
+  backgroundColor: theme.palette.action.hover,
+  borderRadius: rem(10),
+  padding: `${rem(2)} ${rem(8)}`,
+  flexShrink: 0,
+}));
+
+export const ActivityPopoverList = styled(Box)(() => ({
+  overflowY: 'auto',
+  maxHeight: rem(360),
+}));
+
+export const ActivityPopoverItem = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(1.25, 2),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  transition: 'background-color 0.12s ease',
+  '&:last-child': { borderBottom: 'none' },
+  '&:hover': { backgroundColor: theme.palette.action.hover },
+}));
+
+interface ActivityPopoverIconBoxProps {
+  iconColor?: string;
+}
+
+export const ActivityPopoverIconBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'iconColor',
+})<ActivityPopoverIconBoxProps>(({ iconColor }) => ({
+  width: rem(30),
+  height: rem(30),
+  borderRadius: rem(7),
+  backgroundColor: `${iconColor || floowColors.tailwind.gray[400]}18`,
+  border: `1.5px solid ${iconColor || floowColors.tailwind.gray[400]}40`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: iconColor || floowColors.tailwind.gray[400],
+  flexShrink: 0,
+  marginTop: rem(1),
+  '& .MuiSvgIcon-root': {
+    fontSize: rem(14),
+  },
+}));
+
+export const ActivityPopoverContent = styled(Box)(() => ({
+  flex: 1,
+  minWidth: 0,
+}));
+
+export const ActivityPopoverItemType = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: Bold._700,
+  color: theme.palette.text.primary,
+  lineHeight: 1.3,
+}));
+
+export const ActivityPopoverItemMessage = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  lineHeight: 1.4,
+  marginTop: rem(2),
+}));
+
+export const ActivityPopoverItemMeta = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.disabled,
+  marginTop: rem(3),
+}));
+
+export const JobDetailsViewCenter = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '400px',
+}));
+
+// Invoices Section container that handles margin bottom dynamically
+export const InvoicesSection = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'allTab',
+})<{ allTab?: boolean }>(({ theme, allTab }) => ({
+  marginBottom: allTab ? theme.spacing(4) : 0,
+}));
+
+// Styled Document Icons with specific branding colors
+export const DocFileIcon = styled(InsertDriveFileIcon)(() => ({
+  color: '#C1652A',
+}));
+
+export const DocImageIcon = styled(ImageIcon)(({ theme }) => ({
+  color: theme.palette.success.main,
+}));
+
+export const DocPdfIcon = styled(PictureAsPdfIcon)(({ theme }) => ({
+  color: theme.palette.error.main,
+}));
+
+export const DocDescIcon = styled(DescriptionIcon)(({ theme }) => ({
+  color: theme.palette.info.main,
+}));
+
+export const InvoiceReceiptIcon = styled(ReceiptIcon)(() => ({
+  color: '#2E7D32',
+}));
+

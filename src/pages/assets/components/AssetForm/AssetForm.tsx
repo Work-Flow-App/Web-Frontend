@@ -53,6 +53,21 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
             purchaseDate: asset.purchaseDate || '',
             depreciationRate: asset.depreciationRate || 0,
             salvageValue: asset.salvageValue || 0,
+            warehouseAddressStreet: [
+              asset.warehouseAddress?.street,
+              asset.warehouseAddress?.city,
+              asset.warehouseAddress?.state,
+              asset.warehouseAddress?.postalCode,
+              asset.warehouseAddress?.country,
+            ]
+              .filter(Boolean)
+              .join(', '),
+            warehouseAddressCity: '',
+            warehouseAddressState: '',
+            warehouseAddressPostalCode: '',
+            warehouseAddressCountry: '',
+            warehouseAddressLatitude: asset.warehouseAddress?.latitude ?? null,
+            warehouseAddressLongitude: asset.warehouseAddress?.longitude ?? null,
           });
         } catch (error) {
           console.error('Error fetching asset:', error);
@@ -69,6 +84,17 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
   const handleSubmit = useCallback(
     async (data: AssetFormData) => {
       try {
+        const warehouseAddress = {
+          ...(data.warehouseAddressStreet && { street: data.warehouseAddressStreet }),
+          ...(data.warehouseAddressCity && { city: data.warehouseAddressCity }),
+          ...(data.warehouseAddressState && { state: data.warehouseAddressState }),
+          ...(data.warehouseAddressPostalCode && { postalCode: data.warehouseAddressPostalCode }),
+          ...(data.warehouseAddressCountry && { country: data.warehouseAddressCountry }),
+          ...(data.warehouseAddressLatitude != null && { latitude: data.warehouseAddressLatitude }),
+          ...(data.warehouseAddressLongitude != null && { longitude: data.warehouseAddressLongitude }),
+        };
+        const hasWarehouseAddress = Object.keys(warehouseAddress).length > 0;
+
         if (isEditMode) {
           // Update existing asset - only updatable fields
           const updatePayload: AssetUpdateRequest = {
@@ -77,7 +103,11 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           if (data.description) updatePayload.description = data.description;
           if (data.serialNumber) updatePayload.serialNumber = data.serialNumber;
           if (data.assetTag) updatePayload.assetTag = data.assetTag;
+          if (data.purchasePrice !== undefined) updatePayload.purchasePrice = data.purchasePrice;
+          if (data.purchaseDate) updatePayload.purchaseDate = data.purchaseDate;
+          if (data.depreciationRate !== undefined) updatePayload.depreciationRate = data.depreciationRate;
           if (data.salvageValue !== undefined) updatePayload.salvageValue = data.salvageValue;
+          if (hasWarehouseAddress) updatePayload.warehouseAddress = warehouseAddress;
 
           const response = await assetService.updateAsset(assetId!, updatePayload);
           showSuccess(response.data.name ? `${response.data.name} updated successfully` : 'Asset updated successfully');
@@ -87,12 +117,13 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
             name: data.name,
             purchasePrice: data.purchasePrice,
             purchaseDate: data.purchaseDate,
+            depreciationRate: data.depreciationRate ?? 0,
           };
           if (data.description) createPayload.description = data.description;
           if (data.serialNumber) createPayload.serialNumber = data.serialNumber;
           if (data.assetTag) createPayload.assetTag = data.assetTag;
-          if (data.depreciationRate !== undefined) createPayload.depreciationRate = data.depreciationRate;
           if (data.salvageValue !== undefined) createPayload.salvageValue = data.salvageValue;
+          if (hasWarehouseAddress) createPayload.warehouseAddress = warehouseAddress;
 
           const response = await assetService.createAsset(createPayload);
           showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Asset added successfully');
@@ -127,7 +158,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
       onSubmit={handleSubmit}
       isModal={isModal}
     >
-      <AssetFormFields isEditMode={isEditMode} />
+      <AssetFormFields />
     </SetupFormWrapper>
   );
 };

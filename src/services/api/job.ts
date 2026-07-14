@@ -34,20 +34,18 @@ export const jobService = {
       filters?.clientName || undefined,
       filters?.workflowName || undefined,
       filters?.templateName || undefined,
-      filters?.status as JobGetAllStatusEnum | undefined,
+      filters?.status as JobGetAllStatusEnum | undefined
     );
     const paged = res.data as unknown as PagedModelJobResponse;
     return { ...res, data: paged.content ?? [] };
   },
-
-  async getArchivedJobs(): Promise<{ data: JobResponse[] }> {
+  async getArchivedJobs(): Promise<{ data: any[] }> {
     const res = await getJobApi().jobGetArchived();
-    return { ...res, data: res.data as JobResponse[] };
+    return { ...res, data: (res.data as any).content || res.data };
   },
-
-  async getJobsByTemplate(templateId: number): Promise<{ data: JobResponse[] }> {
+  async getJobsByTemplate(templateId: number): Promise<{ data: any[] }> {
     const res = await getJobApi().jobGetJobsByTemplate(templateId);
-    return { ...res, data: res.data as JobResponse[] };
+    return { ...res, data: (res.data as any).content || res.data };
   },
 
   async getJobById(id: number) {

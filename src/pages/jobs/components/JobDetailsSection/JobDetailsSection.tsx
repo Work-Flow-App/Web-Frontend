@@ -1,39 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import {
-  IconButton, Collapse, Box, TextField, MenuItem, Select,
-  FormControl, Button, CircularProgress, Chip, OutlinedInput,
-} from '@mui/material';
-import { useJsApiLoader } from '@react-google-maps/api';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
+import { Box, OutlinedInput, IconButton, CircularProgress } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import BusinessIcon from '@mui/icons-material/Business';
+import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import DescriptionIcon from '@mui/icons-material/Description';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CategoryIcon from '@mui/icons-material/Category';
-import PersonIcon from '@mui/icons-material/Person';
 import InventoryIcon from '@mui/icons-material/Inventory2';
-import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import SyncIcon from '@mui/icons-material/Sync';
+import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { customerService, assetService, jobService } from '../../../../services/api';
+import type { 
+  JobResponse, 
+  ClientResponse, 
+  CustomerResponse, 
+  CustomerUpdateRequest, 
+  JobTemplateResponse, 
+  JobTemplateFieldResponse, 
+  AssetResponse 
+} from '../../../../services/api';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { AssignAssetModal } from '../../../assets/components';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap/GoogleMap.types';
 import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
-import type {
-  JobResponse,
-  JobUpdateRequest,
-  ClientResponse,
-  CustomerResponse,
-  CustomerUpdateRequest,
-  JobTemplateResponse,
-  JobTemplateFieldResponse,
-  AssetResponse,
-} from '../../../../services/api';
-import { jobService, customerService, assetService } from '../../../../services/api';
-import { useSnackbar } from '../../../../contexts/SnackbarContext';
-import * as S from '../../JobDetailsPage.styles';
+import { geocodeAddress } from '../../../../utils/mapDataHelpers';
+import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
   job: JobResponse;
@@ -49,71 +44,103 @@ interface JobDetailsSectionProps {
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-';
-  return new Date(dateString).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = date.toLocaleString('default', { month: 'short' });
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
 };
-
-const formatJobAddress = (address?: JobResponse['address']) => {
-  if (!address) return '-';
-  const parts = [address.street, address.city, address.state, address.postalCode, address.country].filter(Boolean);
-  return parts.length > 0 ? parts.join(', ') : '-';
-};
-
-const toDateInputValue = (value: string): string => {
-  if (!value) return '';
-  return value.split('T')[0];
-};
-
-const JOB_STATUSES = ['NEW', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
 
 export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   job,
-  client,
+  client: _client,
   customer,
   template,
-  templateFields,
-  title,
-  defaultExpanded = true,
+  templateFields: _templateFields,
+  title: _title,
+  defaultExpanded: _defaultExpanded,
   onJobUpdate,
   onCustomerUpdate,
 }) => {
   const { showSuccess, showError } = useSnackbar();
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  // All available assets (for the multi-select dropdown)
+  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
+  
+  // Available assets for display mapping
   const [allAssets, setAllAssets] = useState<AssetResponse[]>([]);
 
-  // Contact edit state
-  const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editTelephone, setEditTelephone] = useState('');
-  const [editMobile, setEditMobile] = useState('');
+  // Editing state for specific fields
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [savingField, setSavingField] = useState<string | null>(null);
 
-  // Job address edit state
-  const [editJobAddress, setEditJobAddress] = useState('');
-  const [editJobLat, setEditJobLat] = useState<number | undefined>(undefined);
-  const [editJobLng, setEditJobLng] = useState<number | undefined>(undefined);
+  // Map editing state
+  const [selectedMapAddress, setSelectedMapAddress] = useState<PlaceDetails | null>(null);
   const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
-  const [selectedMapLocation, setSelectedMapLocation] = useState<PlaceDetails | null>(null);
 
-  // Job meta edit state
-  const [editStatus, setEditStatus] = useState('');
-  const [editAssetIds, setEditAssetIds] = useState<number[]>([]);
-  const [editFieldValues, setEditFieldValues] = useState<Record<string, string>>({});
+  const handleAddressEditClick = async () => {
+    setEditingField('address');
+    const street = customer?.address?.street || '';
+    setEditValue(street);
+    
+    if (street) {
+      const loc = await geocodeAddress(street);
+      if (loc) {
+        setSelectedMapAddress({
+          address: street,
+          location: loc,
+          city: customer?.address?.city,
+          state: customer?.address?.county,
+          postalCode: customer?.address?.postalCode,
+          country: customer?.address?.country,
+        });
+        setMapCenter(loc);
+        setMapZoom(15);
+        return;
+      }
+    }
+    
+    setSelectedMapAddress(null);
+    setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
+    setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
+  };
 
-  // Load Google Maps once for the whole component
-  const { isLoaded: mapsLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
-    libraries: GOOGLE_MAPS_CONFIG.libraries,
-  });
+  const handleLocationSelect = (place: PlaceDetails) => {
+    setSelectedMapAddress(place);
+    setEditValue(place.address);
+    setMapCenter(place.location);
+    setMapZoom(15);
+  };
 
-  // Fetch all available assets on mount
+  const handleSaveAddress = async () => {
+    setSavingField('address');
+    try {
+      if (customer?.id) {
+        const updateReq: CustomerUpdateRequest = {
+          name: customer.name,
+          email: customer.email,
+          telephone: customer.telephone,
+          mobile: customer.mobile,
+          address: {
+            street: selectedMapAddress?.address || editValue || '',
+            city: selectedMapAddress?.city || customer.address?.city || '',
+            county: selectedMapAddress?.state || customer.address?.county || '',
+            postalCode: selectedMapAddress?.postalCode || customer.address?.postalCode || '',
+            country: selectedMapAddress?.country || customer.address?.country || '',
+          },
+        };
+        const res = await customerService.updateCustomer(customer.id, updateReq);
+        onCustomerUpdate?.(res.data);
+      }
+      showSuccess('Updated address successfully');
+      setEditingField(null);
+    } catch (err) {
+      showError('Failed to update address');
+    } finally {
+      setSavingField(null);
+    }
+  };
+
   useEffect(() => {
     assetService.getAllAssets(0, 200, false, true)
       .then((res) => {
@@ -123,24 +150,42 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       .catch(() => setAllAssets([]));
   }, []);
 
-  const toggleExpanded = () => setIsExpanded((prev) => !prev);
-  const sortedFields = [...templateFields].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-
-  const getRawFieldValue = (fieldId: number): string => {
-    if (!job.fieldValues) return '';
-    const fieldValue = job.fieldValues[String(fieldId)];
-    if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
-      return String(fieldValue.value ?? '');
-    }
-    return fieldValue ? String(fieldValue) : '';
+  const handleEditClick = (field: string, currentValue: string) => {
+    setEditingField(field);
+    setEditValue(currentValue);
   };
 
-  const getDisplayFieldValue = (field: JobTemplateFieldResponse): string => {
-    const raw = getRawFieldValue(field.id!);
-    if (!raw) return '-';
-    if (field.jobFieldType === 'DATE') return formatDate(raw);
-    if (field.jobFieldType === 'BOOLEAN') return raw === 'true' ? 'Yes' : 'No';
-    return raw;
+  const handleCancelEdit = () => {
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const handleSaveField = async (field: string) => {
+    setSavingField(field);
+    try {
+      if (['email', 'telephone', 'mobile', 'address'].includes(field)) {
+        if (customer?.id) {
+          const updateReq: CustomerUpdateRequest = {
+            name: customer.name,
+            email: field === 'email' ? editValue : customer.email,
+            telephone: field === 'telephone' ? editValue : customer.telephone,
+            mobile: field === 'mobile' ? editValue : customer.mobile,
+            address: customer.address,
+          };
+          if (field === 'address') {
+             updateReq.address = { ...customer.address, street: editValue };
+          }
+          const res = await customerService.updateCustomer(customer.id, updateReq);
+          onCustomerUpdate?.(res.data);
+        }
+      }
+      showSuccess('Updated successfully');
+      setEditingField(null);
+    } catch (err) {
+      showError('Failed to update');
+    } finally {
+      setSavingField(null);
+    }
   };
 
   const getAssetName = (id: number): string => {
@@ -148,451 +193,249 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     return asset?.name || `Asset #${id}`;
   };
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const assetNames = job.assetIds?.map(getAssetName).join(', ');
 
-    if (customer) {
-      setEditName(customer.name || '');
-      setEditEmail(customer.email || '');
-      setEditTelephone(customer.telephone || '');
-      setEditMobile(customer.mobile || '');
-    } else if (client) {
-      setEditName(client.name || '');
-      setEditEmail(client.email || '');
-      setEditTelephone(client.telephone || '');
-      setEditMobile(client.mobile || '');
-    }
-
-    const lat = job.address?.latitude ?? undefined;
-    const lng = job.address?.longitude ?? undefined;
-    const street = job.address?.street || '';
-    setEditJobAddress(street);
-    setEditJobLat(lat);
-    setEditJobLng(lng);
-
-    if (lat && lng) {
-      const loc = { lat, lng };
-      setMapCenter(loc);
-      setMapZoom(15);
-      setSelectedMapLocation({ address: street, location: loc });
-    } else {
-      setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
-      setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
-      setSelectedMapLocation(null);
-    }
-
-    setEditStatus(job.status || 'NEW');
-    setEditAssetIds(job.assetIds ? [...job.assetIds] : []);
-
-    const initial: Record<string, string> = {};
-    sortedFields.forEach((f) => {
-      const raw = getRawFieldValue(f.id!);
-      initial[String(f.id)] = f.jobFieldType === 'DATE' ? toDateInputValue(raw) : raw;
-    });
-    setEditFieldValues(initial);
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => setIsEditing(false);
-
-  const handleAddressSelect = (place: PlaceDetails) => {
-    setEditJobAddress(place.address);
-    setEditJobLat(place.location.lat);
-    setEditJobLng(place.location.lng);
-    setMapCenter(place.location);
-    setMapZoom(15);
-    setSelectedMapLocation(place);
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      if (customer?.id) {
-        const customerUpdate: CustomerUpdateRequest = {
-          name: editName,
-          email: editEmail || undefined,
-          telephone: editTelephone || undefined,
-          mobile: editMobile || undefined,
-          address: customer.address,
-        };
-        const res = await customerService.updateCustomer(customer.id, customerUpdate);
-        onCustomerUpdate?.(res.data);
-      }
-
-      const updatedFieldValues: Record<string, any> = { ...(job.fieldValues || {}) };
-      sortedFields.forEach((f) => {
-        if (f.id === undefined) return;
-        const key = String(f.id);
-        const value = editFieldValues[key];
-        if (value === undefined || value === '') {
-          delete updatedFieldValues[key];
-        } else {
-          updatedFieldValues[key] = value;
-        }
-      });
-
-      const jobUpdate: JobUpdateRequest = {
-        status: editStatus as JobUpdateRequest['status'],
-        fieldValues: updatedFieldValues,
-        assetIds: editAssetIds,
-        address: {
-          street: editJobAddress || undefined,
-          city: job.address?.city || undefined,
-          state: job.address?.state || undefined,
-          postalCode: job.address?.postalCode || undefined,
-          country: job.address?.country || undefined,
-          additionalInfo: job.address?.additionalInfo || undefined,
-          latitude: editJobLat,
-          longitude: editJobLng,
-        },
-      };
-      const jobRes = await jobService.updateJob(job.id!, jobUpdate);
-      onJobUpdate?.(jobRes.data);
-
-      showSuccess('Job details saved successfully');
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Failed to save:', err);
-      showError('Failed to save job details');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const hasCustomer = !!customer;
-  const contactLabel = hasCustomer ? 'Customer Name' : 'Client Name';
-  const contactName = hasCustomer ? customer?.name : client?.name;
-  const contactEmail = hasCustomer ? customer?.email : client?.email;
-  const contactTelephone = hasCustomer ? customer?.telephone : client?.telephone;
-  const contactMobile = hasCustomer ? customer?.mobile : client?.mobile;
-
-  const renderTemplateField = (field: JobTemplateFieldResponse) => {
-    const fieldKey = String(field.id);
-    if (isEditing) {
-      if (field.jobFieldType === 'BOOLEAN') {
-        return (
-          <FormControl size="small" fullWidth sx={{ mt: 0.5 }}>
-            <Select
-              value={editFieldValues[fieldKey] || ''}
-              onChange={(e) => setEditFieldValues((prev) => ({ ...prev, [fieldKey]: e.target.value }))}
-            >
-              <MenuItem value="true">Yes</MenuItem>
-              <MenuItem value="false">No</MenuItem>
-            </Select>
-          </FormControl>
-        );
-      }
-      if (field.jobFieldType === 'DROPDOWN' && field.options) {
-        return (
-          <FormControl size="small" fullWidth sx={{ mt: 0.5 }}>
-            <Select
-              value={editFieldValues[fieldKey] || ''}
-              onChange={(e) => setEditFieldValues((prev) => ({ ...prev, [fieldKey]: e.target.value }))}
-            >
-              {field.options.split(',').map((opt) => (
-                <MenuItem key={opt.trim()} value={opt.trim()}>{opt.trim()}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        );
-      }
-      return (
-        <TextField
-          size="small"
-          fullWidth
-          variant="outlined"
-          sx={{ mt: 0.5 }}
-          type={field.jobFieldType === 'NUMBER' ? 'number' : field.jobFieldType === 'DATE' ? 'date' : 'text'}
-          value={editFieldValues[fieldKey] || ''}
-          onChange={(e) => setEditFieldValues((prev) => ({ ...prev, [fieldKey]: e.target.value }))}
-          slotProps={field.jobFieldType === 'DATE' ? { inputLabel: { shrink: true } } : undefined}
+  const handleAssignAsset = () => {
+    if (!job.id) return;
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.MEDIUM,
+      fieldName: 'assignAsset',
+      children: (
+        <AssignAssetModal
+          jobId={job.id}
+          onSuccess={() => {
+            resetGlobalModalOuterProps();
+            // Trigger a refresh of the job details to show the new asset
+            jobService.getJobById(job.id!).then((res) => onJobUpdate?.(res.data));
+          }}
         />
+      ),
+    });
+  };
+
+  const handleReturnAsset = async () => {
+    if (!job.id) return;
+    try {
+      const res = await assetService.getJobAssignments(job.id, true);
+      const assignments = Array.isArray(res.data) ? res.data : [];
+      if (assignments.length > 0) {
+        setGlobalModalOuterProps({
+          isOpen: true,
+          size: ModalSizes.SMALL,
+          fieldName: 'returnAsset',
+          children: (
+            <ConfirmationModal
+              title="Return Asset"
+              description="Are you sure you want to return the assigned asset(s)?"
+              confirmText="Return Asset"
+              cancelText="Cancel"
+              onConfirm={async () => {
+                try {
+                  for (const assignment of assignments) {
+                    if (assignment.assignmentId) {
+                      await assetService.returnAsset({
+                        assignmentId: assignment.assignmentId,
+                        notes: 'Returned from job details',
+                      });
+                    }
+                  }
+                  showSuccess('Asset(s) returned successfully');
+                  resetGlobalModalOuterProps();
+                  jobService.getJobById(job.id!).then((res) => onJobUpdate?.(res.data));
+                } catch (err) {
+                  showError('Failed to return asset');
+                  resetGlobalModalOuterProps();
+                }
+              }}
+              onCancel={resetGlobalModalOuterProps}
+            />
+          ),
+        });
+      } else {
+        showError('No active assignments found to return');
+      }
+    } catch (err) {
+      showError('Failed to fetch assignments');
+    }
+  };
+
+  const renderEditableRow = (
+    icon: React.ReactNode,
+    label: string,
+    fieldKey: string,
+    value?: string | null,
+    allowEdit: boolean = true
+  ) => {
+    const isEditing = editingField === fieldKey;
+    const isSaving = savingField === fieldKey;
+    const displayValue = value || '';
+    const notSet = !value;
+
+    if (fieldKey === 'address') {
+      return (
+        <S.FieldRow>
+          <S.FieldIconContainer>{icon}</S.FieldIconContainer>
+          <S.FieldLabel>{label}</S.FieldLabel>
+          <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+          {allowEdit && !isEditing && (
+            <S.FieldAction>
+              <S.ActionButton 
+                variant="text" 
+                onClick={handleAddressEditClick}
+              >
+                {notSet ? 'Add' : 'Edit'}
+              </S.ActionButton>
+            </S.FieldAction>
+          )}
+        </S.FieldRow>
       );
     }
-    return <div className="field-value">{getDisplayFieldValue(field)}</div>;
+
+    return (
+      <S.FieldRow>
+        <S.FieldIconContainer>{icon}</S.FieldIconContainer>
+        <S.FieldLabel>{label}</S.FieldLabel>
+
+        {isEditing ? (
+          <S.InlineEditContainer>
+            <OutlinedInput
+              size="small"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              disabled={isSaving}
+              autoFocus
+              sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}
+            />
+            {isSaving ? (
+              <CircularProgress size={16} sx={{ ml: 1 }} />
+            ) : (
+              <Box display="flex">
+                <IconButton size="small" onClick={() => handleSaveField(fieldKey)} color="primary">
+                  <CheckIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" onClick={handleCancelEdit} color="error">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+          </S.InlineEditContainer>
+        ) : (
+          <>
+            <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+            {allowEdit && (
+              <S.FieldAction>
+                <S.ActionButton 
+                  variant="text" 
+                  onClick={() => handleEditClick(fieldKey, displayValue)}
+                >
+                  {notSet ? 'Add' : 'Edit'}
+                </S.ActionButton>
+              </S.FieldAction>
+            )}
+          </>
+        )}
+      </S.FieldRow>
+    );
   };
 
   return (
-    <S.CollapsibleSection>
-      <S.CollapsibleSectionHeader onClick={toggleExpanded}>
-        <S.CollapsibleSectionTitle>{title}</S.CollapsibleSectionTitle>
-        <S.CollapsibleSectionActions>
-          {isEditing ? (
-            <>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={saving ? <CircularProgress size={12} color="inherit" /> : <SaveIcon fontSize="small" />}
-                onClick={(e) => { e.stopPropagation(); handleSave(); }}
-                disabled={saving}
-                sx={{ fontSize: 12, py: 0.5, px: 1.5 }}
-              >
-                Save
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<CloseIcon fontSize="small" />}
-                onClick={(e) => { e.stopPropagation(); handleCancel(); }}
-                disabled={saving}
-                sx={{ fontSize: 12, py: 0.5, px: 1.5 }}
+    <S.SectionContainer>
+      <S.SectionHeader>
+        <S.SectionTitle>Job Details</S.SectionTitle>
+      </S.SectionHeader>
+      
+      <S.FieldsList>
+        <S.FieldRow>
+          <S.FieldIconContainer><PersonIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Customer Name</S.FieldLabel>
+          <S.FieldValue $notSet={!customer?.name}>{customer?.name || 'No customer assigned'}</S.FieldValue>
+        </S.FieldRow>
+
+        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', customer?.telephone)}
+        {renderEditableRow(<EmailIcon />, 'Email', 'email', customer?.email)}
+        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', customer?.mobile)}
+        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', customer?.address?.street)}
+
+        {editingField === 'address' && (
+          <S.MapEditWrapper>
+            <S.StyledGoogleMap
+              height="15rem"
+              center={mapCenter}
+              zoom={mapZoom}
+              markers={selectedMapAddress ? [selectedMapAddress] : []}
+              selectedLocation={selectedMapAddress}
+              onLocationSelect={handleLocationSelect}
+              showSearchBox={true}
+              searchInitialValue={customer?.address?.street || undefined}
+            />
+            <S.MapActionButtons>
+              <S.MapCancelButton 
+                variant="outlined" 
+                size="small" 
+                onClick={handleCancelEdit}
+                disabled={savingField === 'address'}
               >
                 Cancel
-              </Button>
-            </>
+              </S.MapCancelButton>
+              <S.MapSaveButton 
+                variant="contained" 
+                size="small" 
+                onClick={handleSaveAddress}
+                disabled={savingField === 'address'}
+              >
+                {savingField === 'address' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
+              </S.MapSaveButton>
+            </S.MapActionButtons>
+          </S.MapEditWrapper>
+        )}
+
+        <S.DividerLine />
+
+        <S.FieldRow>
+          <S.FieldIconContainer><DescriptionIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Template</S.FieldLabel>
+          <S.FieldValue>{template?.name || (job as any).templateName || '-'}</S.FieldValue>
+        </S.FieldRow>
+
+        <S.FieldRow>
+          <S.FieldIconContainer><CategoryIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Job ID</S.FieldLabel>
+          <S.FieldValue>#{job.id}</S.FieldValue>
+        </S.FieldRow>
+
+        <S.FieldRow>
+          <S.FieldIconContainer><InventoryIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Assets</S.FieldLabel>
+          <S.FieldValue $notSet={!assetNames}>{assetNames || 'Not set'}</S.FieldValue>
+          {!assetNames ? (
+            <S.FieldAction>
+              <S.ActionButton variant="text" onClick={handleAssignAsset}>
+                Assign
+              </S.ActionButton>
+            </S.FieldAction>
           ) : (
-            <IconButton size="small" onClick={handleEditClick} aria-label="Edit job details">
-              <EditIcon fontSize="small" />
-            </IconButton>
+            <S.FieldAction>
+              <S.ActionButton variant="text" color="error" onClick={handleReturnAsset}>
+                Return
+              </S.ActionButton>
+            </S.FieldAction>
           )}
-          <IconButton
-            size="small"
-            aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
-            sx={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
-          >
-            <ExpandMoreIcon fontSize="small" />
-          </IconButton>
-        </S.CollapsibleSectionActions>
-      </S.CollapsibleSectionHeader>
+        </S.FieldRow>
 
-      <Collapse in={isExpanded}>
-        <S.CollapsibleSectionContent>
-          <S.FieldGrid>
-            {/* ── Left column: Contact info + Address ── */}
-            <S.FieldColumn>
-              {/* Name */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    {hasCustomer ? <PersonIcon fontSize="small" sx={{ opacity: 0.6 }} /> : <BusinessIcon fontSize="small" sx={{ opacity: 0.6 }} />}
-                    {contactLabel}
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <TextField size="small" value={editName} onChange={(e) => setEditName(e.target.value)} fullWidth variant="outlined" sx={{ mt: 0.5 }} />
-                ) : (
-                  <div className="field-value">{contactName || '-'}</div>
-                )}
-              </S.FieldItem>
+        <S.FieldRow>
+          <S.FieldIconContainer><CalendarTodayIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Created</S.FieldLabel>
+          <S.FieldValue>{formatDate(job.createdAt)}</S.FieldValue>
+        </S.FieldRow>
 
-              {/* Email */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <EmailIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Email
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <TextField size="small" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} fullWidth variant="outlined" sx={{ mt: 0.5 }} />
-                ) : (
-                  <div className="field-value">{contactEmail || '-'}</div>
-                )}
-              </S.FieldItem>
+        <S.FieldRow>
+          <S.FieldIconContainer><SyncIcon /></S.FieldIconContainer>
+          <S.FieldLabel>Updated</S.FieldLabel>
+          <S.FieldValue>{formatDate(job.updatedAt)}</S.FieldValue>
+        </S.FieldRow>
 
-              {/* Telephone */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <PhoneIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Telephone
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <TextField size="small" value={editTelephone} onChange={(e) => setEditTelephone(e.target.value)} fullWidth variant="outlined" sx={{ mt: 0.5 }} />
-                ) : (
-                  <div className="field-value">{contactTelephone || '-'}</div>
-                )}
-              </S.FieldItem>
-
-              {/* Mobile */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <PhoneAndroidIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Mobile
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <TextField size="small" value={editMobile} onChange={(e) => setEditMobile(e.target.value)} fullWidth variant="outlined" sx={{ mt: 0.5 }} />
-                ) : (
-                  <div className="field-value">{contactMobile || '-'}</div>
-                )}
-              </S.FieldItem>
-
-              {/* Address */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <LocationOnIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Address
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <Box sx={{ mt: 0.5, height: 280, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                    {mapsLoaded ? (
-                      <GoogleMap
-                        center={mapCenter}
-                        zoom={mapZoom}
-                        onLocationSelect={handleAddressSelect}
-                        selectedLocation={selectedMapLocation}
-                        markers={selectedMapLocation ? [selectedMapLocation] : []}
-                        showSearchBox={true}
-                        searchInitialValue={editJobAddress || undefined}
-                        height="280px"
-                      />
-                    ) : (
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        <CircularProgress size={24} />
-                      </Box>
-                    )}
-                  </Box>
-                ) : (
-                  <div className="field-value">{formatJobAddress(job.address)}</div>
-                )}
-              </S.FieldItem>
-            </S.FieldColumn>
-
-            {/* ── Right column: Job meta ── */}
-            <S.FieldColumn>
-              {/* Status */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <CategoryIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Job Status
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <FormControl size="small" fullWidth sx={{ mt: 0.5 }}>
-                    <Select value={editStatus} onChange={(e) => setEditStatus(e.target.value)}>
-                      {JOB_STATUSES.map((s) => (
-                        <MenuItem key={s} value={s}>{s.replace('_', ' ')}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <div className="field-value">
-                    <S.StatusBadge statusType={job.status} style={{ fontSize: 12, padding: '4px 10px' }}>
-                      <S.StatusIcon />
-                      {job.status || 'N/A'}
-                    </S.StatusBadge>
-                  </div>
-                )}
-              </S.FieldItem>
-
-              {/* Template (read-only) */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <DescriptionIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Template
-                  </Box>
-                </div>
-                <div className="field-value">{template?.name || '-'}</div>
-              </S.FieldItem>
-
-              {/* Assets */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <InventoryIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Assets
-                  </Box>
-                </div>
-                {isEditing ? (
-                  <FormControl size="small" fullWidth sx={{ mt: 0.5 }}>
-                    <Select
-                      multiple
-                      value={editAssetIds}
-                      onChange={(e) => setEditAssetIds(e.target.value as number[])}
-                      input={<OutlinedInput />}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {(selected as number[]).map((id) => (
-                            <Chip key={id} label={getAssetName(id)} size="small" />
-                          ))}
-                        </Box>
-                      )}
-                    >
-                      {allAssets.map((asset) => (
-                        <MenuItem key={asset.id} value={asset.id}>
-                          {asset.name || `Asset #${asset.id}`}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                ) : (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                    {job.assetIds && job.assetIds.length > 0
-                      ? job.assetIds.map((id) => (
-                          <Chip key={id} label={getAssetName(id)} size="small" variant="outlined" />
-                        ))
-                      : <div className="field-value">-</div>
-                    }
-                  </Box>
-                )}
-              </S.FieldItem>
-
-              {/* Created (read-only) */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <CalendarTodayIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Created
-                  </Box>
-                </div>
-                <div className="field-value">{formatDate(job.createdAt)}</div>
-              </S.FieldItem>
-
-              {/* Updated (read-only) */}
-              <S.FieldItem>
-                <div className="field-label">
-                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                    <CalendarTodayIcon fontSize="small" sx={{ opacity: 0.6 }} />
-                    Updated
-                  </Box>
-                </div>
-                <div className="field-value">{formatDate(job.updatedAt)}</div>
-              </S.FieldItem>
-
-              {template?.description && (
-                <S.FieldItem>
-                  <div className="field-label">Description</div>
-                  <div className="field-value" style={{ whiteSpace: 'pre-wrap' }}>{template.description}</div>
-                </S.FieldItem>
-              )}
-            </S.FieldColumn>
-          </S.FieldGrid>
-
-          {/* ── Template custom fields ── */}
-          {sortedFields.length > 0 && (
-            <Box sx={{ mt: 2, borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
-              <S.FieldGrid>
-                <S.FieldColumn>
-                  {sortedFields.filter((_, i) => i % 2 === 0).map((field) => (
-                    <S.FieldItem key={field.id}>
-                      <div className="field-label">{field.label || field.name}</div>
-                      {renderTemplateField(field)}
-                    </S.FieldItem>
-                  ))}
-                </S.FieldColumn>
-                <S.FieldColumn>
-                  {sortedFields.filter((_, i) => i % 2 === 1).map((field) => (
-                    <S.FieldItem key={field.id}>
-                      <div className="field-label">{field.label || field.name}</div>
-                      {renderTemplateField(field)}
-                    </S.FieldItem>
-                  ))}
-                </S.FieldColumn>
-              </S.FieldGrid>
-            </Box>
-          )}
-        </S.CollapsibleSectionContent>
-      </Collapse>
-    </S.CollapsibleSection>
+      </S.FieldsList>
+    </S.SectionContainer>
   );
 };

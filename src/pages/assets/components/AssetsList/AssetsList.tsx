@@ -4,13 +4,33 @@ import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { assetService } from '../../../../services/api';
-import type { AssetResponse } from '../../../../services/api';
+import { assetService, AssetResponseLocationTypeEnum } from '../../../../services/api';
+import type { AssetResponse, AddressResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
+
+const formatAddress = (addr?: AddressResponse): string => {
+  if (!addr) return '';
+  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
+};
+
+const formatAssetLocation = (asset: AssetResponse): string => {
+  switch (asset.locationType) {
+    case AssetResponseLocationTypeEnum.Warehouse:
+      return formatAddress(asset.warehouseAddress) || 'Warehouse';
+    case AssetResponseLocationTypeEnum.JobSite:
+      return formatAddress(asset.address) || 'On Job Site';
+    case AssetResponseLocationTypeEnum.WorkerLocation:
+      return 'With Worker';
+    case AssetResponseLocationTypeEnum.Custom:
+      return formatAddress(asset.address) || 'Custom Location';
+    default:
+      return formatAddress(asset.warehouseAddress);
+  }
+};
 
 export const AssetsList: React.FC = () => {
   const navigate = useNavigate();
@@ -63,13 +83,12 @@ export const AssetsList: React.FC = () => {
           purchaseDate: asset.purchaseDate,
           currentValue: undefined, // Will fetch separately if needed
           status,
-          currentLocation: asset.currentLocation,
+          currentLocation: formatAssetLocation(asset),
           available: asset.available || false,
           archived: asset.archived || false,
           createdAt: asset.createdAt,
         };
       });
-
       setAssets(transformedData);
     } catch (error) {
       console.error('Error fetching assets:', error);
@@ -207,7 +226,7 @@ export const AssetsList: React.FC = () => {
         label: 'Archive',
         onClick: handleArchiveAsset,
         color: 'warning' as const,
-        hide: (row) => row.archived, // Hide for already archived assets
+        show: (row) => !row.archived,
       },
     ],
     [handleEditAsset, handleViewHistory, handleArchiveAsset]

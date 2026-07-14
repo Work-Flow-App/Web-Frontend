@@ -38,15 +38,20 @@ export { JobTemplateFieldCreateRequestJobFieldTypeEnum } from '../../../workflow
 export { jobService } from './job';
 export type { JobResponse, JobCreateRequest, JobUpdateRequest, JobFilters } from './job';
 
-export { assetService } from './asset';
+export { assetService, AssetResponseLocationTypeEnum, AssetAssignmentCreateRequestExplicitLocationTypeEnum } from './asset';
 export type {
   AssetResponse,
   AssetCreateRequest,
   AssetUpdateRequest,
   AssetValueResponse,
   AssetAssignmentResponse,
+  AssetAssignmentResponseLocationTypeEnum,
   AssetAssignmentCreateRequest,
+  AssetAssignmentUpdateRequest,
   AssetAssignmentReturnRequest,
+  AssetAttachmentDto,
+  AddressRequest,
+  AddressResponse,
   PagedModelAssetResponse,
 } from './asset';
 

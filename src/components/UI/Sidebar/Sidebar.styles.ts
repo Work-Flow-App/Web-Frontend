@@ -86,7 +86,7 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
     height: 0,
     width: rem(3),
     borderRadius: rem(3),
-    background: '#6366F1',
+    background: '#77E20D',
     transform: 'translateY(-50%)',
     transition: 'height 0.25s ease',
   },
@@ -98,8 +98,8 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
   },
 
   '&.active': {
-    backgroundColor: 'rgba(99, 102, 241, 0.10)',
-    color: '#4338CA',
+    backgroundColor: 'rgba(119, 226, 13, 0.10)',
+    color: '#4D9409',
     fontWeight: 700,
 
     '&::before': {
@@ -107,7 +107,7 @@ export const SidebarItemButton = styled(Box)(({ theme }) => ({
     },
 
     '& svg': {
-      color: '#6366F1',
+      color: '#77E20D',
     },
   },
 

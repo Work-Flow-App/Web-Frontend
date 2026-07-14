@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { CircularProgress, Select, MenuItem, FormControl, Box, LinearProgress, Typography } from '@mui/material';
+import { CircularProgress, Box, LinearProgress, Typography, Menu, MenuItem } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 //import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
 // import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -32,6 +31,10 @@ import type {
 import { floowColors } from '../../../theme/colors';
 import { JobStepDetailDrawer } from './JobStepDetailDrawer';
 import * as S from './JobEventsSection.styles';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const PRIMARY_WORKFLOW_KEY = 'workfloow_primary_workflow_id';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -240,6 +243,40 @@ function PipelineBar({
   activeStep: string | null;
   onSelectStep: (name: string) => void;
 }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isOpen = Boolean(anchorEl);
+
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScroll = () => {
+      handleClose();
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
+      if (paper && !paper.contains(target) && anchorEl && !anchorEl.contains(target)) {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('click', handleClickOutside, true);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [isOpen, anchorEl]);
+
   const visible = groups.slice(0, PIPELINE_MAX_VISIBLE);
   const hidden = groups.length - PIPELINE_MAX_VISIBLE;
 
@@ -261,7 +298,32 @@ function PipelineBar({
       {hidden > 0 && (
         <>
           <S.PipelineArrow>›</S.PipelineArrow>
-          <S.PipelineMore>···</S.PipelineMore>
+          <S.PipelineMore onClick={handleOpen}>···</S.PipelineMore>
+          <S.DropdownMenu
+            anchorEl={anchorEl}
+            open={isOpen}
+            onClose={handleClose}
+            disableScrollLock
+          >
+            {groups.slice(PIPELINE_MAX_VISIBLE).map((group) => (
+              <S.DropdownMenuItem
+                key={group.stepName}
+                onClick={() => {
+                  onSelectStep(group.stepName);
+                  handleClose();
+                }}
+                selected={activeStep === group.stepName}
+              >
+                <S.DropdownPipelineChip
+                  chipColor={group.color}
+                  isActive={activeStep === group.stepName}
+                >
+                  <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
+                  <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
+                </S.DropdownPipelineChip>
+              </S.DropdownMenuItem>
+            ))}
+          </S.DropdownMenu>
         </>
       )}
     </S.PipelineBar>
@@ -396,6 +458,13 @@ export const JobEventsSection: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [estimateSentTotal, setEstimateSentTotal] = useState(0);
   const [awaitingInvoiceTotal, setAwaitingInvoiceTotal] = useState(0);
+  const [isPrimaryMode, setIsPrimaryMode] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [pendingPrimaryId, setPendingPrimaryId] = useState<number | null>(null);
+  const [primaryWorkflowId, setPrimaryWorkflowId] = useState<number | null>(() => {
+    const saved = localStorage.getItem(PRIMARY_WORKFLOW_KEY);
+    return saved ? Number(saved) : null;
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -427,8 +496,18 @@ export const JobEventsSection: React.FC = () => {
         setAllJobs(jobs);
         setWorkflows(wfs);
 
-        const defaultId = wfs[0]?.id ?? null;
-        setSelectedWorkflowId(defaultId);
+        // Use saved primary workflow as default, fallback to first workflow
+        const savedPrimary = localStorage.getItem(PRIMARY_WORKFLOW_KEY);
+        const savedId = savedPrimary ? Number(savedPrimary) : null;
+        const validId = savedId && wfs.some((w) => w.id === savedId) ? savedId : (wfs[0]?.id ?? null);
+
+        // If no primary saved yet, auto-save first workflow as primary
+        if (!savedPrimary && wfs[0]?.id != null) {
+          localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(wfs[0].id));
+          setPrimaryWorkflowId(wfs[0].id);
+        }
+
+        setSelectedWorkflowId(validId);
 
         // Fetch estimates for all jobs in parallel
         const estimateResults = await Promise.allSettled(
@@ -567,44 +646,131 @@ export const JobEventsSection: React.FC = () => {
     setActiveStep(null);
   };
 
+  const handleSetPrimary = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (isPrimaryMode) {
+      // Save mode — persist pending selection as primary
+      if (pendingPrimaryId != null) {
+        localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(pendingPrimaryId));
+        setPrimaryWorkflowId(pendingPrimaryId);
+      }
+      setIsPrimaryMode(false);
+      setPendingPrimaryId(null);
+      // Keep open after save
+    } else {
+      // Enter primary-selection mode — highlight the current primary
+      setPendingPrimaryId(primaryWorkflowId ?? selectedWorkflowId);
+      setIsPrimaryMode(true);
+    }
+  };
+
   const selectedGroup = groups.find((g) => g.stepName === activeStep) ?? null;
 
   return (
     <S.SectionWrapper>
       {/* Header */}
       <S.SectionHeader>
-        {/* Left: title + workflow dropdown side by side */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <S.HeaderRow>
           <S.SectionTitle>Workfloow Event</S.SectionTitle>
 
           {workflows.length > 0 && (
-            <FormControl size="small" sx={{ minWidth: 180 }}>
-              <Select
+            <S.WorkflowFormControl size="small">
+              <S.WorkflowSelect
                 value={selectedWorkflowId ?? ''}
-                onChange={(e) => setSelectedWorkflowId(Number(e.target.value))}
-                displayEmpty
-                startAdornment={
-                  <AccountTreeOutlinedIcon sx={{ fontSize: 16, mr: 0.5, color: floowColors.text.muted }} />
-                }
-                sx={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: floowColors.text.primary,
-                  bgcolor: floowColors.white,
-                  borderRadius: '8px',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: floowColors.border.medium },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: floowColors.blue.main },
+                open={dropdownOpen}
+                onOpen={() => setDropdownOpen(true)}
+                onClose={(e) => {
+                  const target = e?.target as HTMLElement | undefined;
+                  const clickedAction = target && (
+                    target.closest('[class*="PrimaryMenuAction"]') || 
+                    target.closest('[class*="PrimaryMenuDivider"]') ||
+                    target.textContent === 'Set a Workfloow as primary' ||
+                    target.textContent === 'Save'
+                  );
+                  if (clickedAction) {
+                    return;
+                  }
+
+                  if (isPrimaryMode) {
+                    const clickedInsideMenu = target && (
+                      target.closest('.MuiMenu-paper') || 
+                      target.closest('.MuiMenu-list') ||
+                      target.closest('li') ||
+                      target.closest('ul')
+                    );
+                    if (clickedInsideMenu) {
+                      return;
+                    }
+                  }
+                  setDropdownOpen(false);
+                  setIsPrimaryMode(false);
+                  setPendingPrimaryId(null);
                 }}
+                onChange={(e) => {
+                  if (isPrimaryMode) return;
+                  const newId = Number(e.target.value);
+                  if (isNaN(newId) || newId === 0) return;
+                  setSelectedWorkflowId(newId);
+                  setDropdownOpen(false);
+                }}
+                displayEmpty
+                startAdornment={<S.WorkflowAdornment />}
               >
-                {workflows.map((wf) => (
-                  <MenuItem key={wf.id} value={wf.id} sx={{ fontSize: 13 }}>
-                    {wf.name ?? `Workflow #${wf.id}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                {workflows.map((wf) => {
+                  const isPrimary = wf.id === primaryWorkflowId;
+                  const isHighlighted = isPrimaryMode && wf.id === pendingPrimaryId;
+                  return (
+                    <S.WorkflowMenuItem
+                      key={wf.id}
+                      value={wf.id}
+                      isHighlighted={isHighlighted}
+                      isPrimary={!isPrimaryMode && isPrimary}
+                      isPrimaryMode={isPrimaryMode}
+                      onMouseDown={(e) => {
+                        if (isPrimaryMode) {
+                          e.stopPropagation();
+                          e.preventDefault();
+                        }
+                      }}
+                      onClick={(e) => {
+                        if (isPrimaryMode) {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (wf.id != null) {
+                            setPendingPrimaryId(wf.id);
+                          }
+                        }
+                      }}
+                    >
+                      <S.WorkflowMenuItemContent>
+                        <S.WorkflowName>{wf.name ?? `Workflow #${wf.id}`}</S.WorkflowName>
+                        {!isPrimaryMode && isPrimary && (
+                          <S.PrimaryTag>primary</S.PrimaryTag>
+                        )}
+                      </S.WorkflowMenuItemContent>
+                    </S.WorkflowMenuItem>
+                  );
+                })}
+
+                {/* Divider + Primary action */}
+                <S.PrimaryMenuDivider />
+                <S.PrimaryMenuAction
+                  isSaveMode={isPrimaryMode}
+                  value=""
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  onClick={handleSetPrimary}
+                >
+                  {isPrimaryMode ? 'Save' : 'Set a Workfloow as primary'}
+                </S.PrimaryMenuAction>
+              </S.WorkflowSelect>
+            </S.WorkflowFormControl>
           )}
-        </Box>
+        </S.HeaderRow>
+
 
         {/* Right: New Job button */}
         <Button startIcon={<AddIcon />} endIcon={<KeyboardArrowDownIcon />} onClick={handleAddJob}>
