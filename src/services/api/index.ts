@@ -126,3 +126,21 @@ export type {
 
 export { UserRole } from '../../types/auth';
 export type { User, AuthTokens } from '../../types/auth';
+
+export { certificateService, CertificateType, CERTIFICATE_TYPE_OPTIONS } from './certificate';
+export type {
+  CertificateResponse,
+  CertificateUpdateRequest,
+  CertificateUploadPayload,
+  PagedCertificates,
+  ExpiringCertificatesGroup,
+} from './certificate';
+
+export { leaveService, LeaveType, LEAVE_TYPE_OPTIONS, LeaveStatus, LEAVE_STATUS_OPTIONS } from './leave';
+export type {
+  LeaveRequestResponse,
+  LeaveRequestCreatePayload,
+  LeaveCalendarEntry,
+  CompanyLeaveRequestFilters,
+  PagedLeaveRequests,
+} from './leave';

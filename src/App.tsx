@@ -11,6 +11,9 @@ import { VerifyEmail } from './pages/auth/VerifyEmail'
 import { ResendVerification } from './pages/auth/ResendVerification'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { CompanyProfile } from './pages/company/CompanyProfile'
+import { WorkerDetail } from './pages/company/WorkerDetail'
+import { Compliance } from './pages/company/Compliance'
+import { LeaveRequests } from './pages/company/LeaveRequests'
 import {
   WorkerPage,
   WorkerDashboard,
@@ -18,6 +21,7 @@ import {
   WorkerJobWorkflowDetail,
   WorkerStepsList,
   WorkerStepDetail,
+  WorkerProfile,
 } from './pages/worker'
 import { InvitationsPage } from './pages/invitations'
 import { ClientPage } from './pages/client/ClientPage'
@@ -82,6 +86,9 @@ function App() {
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/company/profile" element={<CompanyProfile />} />
               <Route path="/company/workers" element={<WorkerPage />} />
+              <Route path="/company/workers/:workerId" element={<WorkerDetail />} />
+              <Route path="/company/compliance" element={<Compliance />} />
+              <Route path="/company/leave-requests" element={<LeaveRequests />} />
               <Route path="/company/invitations" element={<InvitationsPage />} />
               <Route path="/company/clients" element={<ClientPage />} />
               <Route path="/company/equipments" element={<EquipmentPage />} />
@@ -103,6 +110,7 @@ function App() {
 
               {/* Worker routes */}
               <Route path="/worker" element={<WorkerDashboard />} />
+              <Route path="/worker/profile" element={<WorkerProfile />} />
               <Route path="/worker/job-workflows" element={<WorkerJobWorkflowsList />} />
               <Route path="/worker/job-workflows/:jobWorkflowId" element={<WorkerJobWorkflowDetail />} />
               <Route path="/worker/steps" element={<WorkerStepsList />} />

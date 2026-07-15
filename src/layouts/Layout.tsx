@@ -19,6 +19,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
@@ -210,7 +212,7 @@ export const Layout: React.FC = () => {
   // Navigate to profile (company has a profile page; worker goes to dashboard)
   const handleViewProfile = () => {
     if (isWorker) {
-      navigate('/worker');
+      navigate('/worker/profile');
     } else {
       navigate('/company/profile');
     }
@@ -248,6 +250,8 @@ export const Layout: React.FC = () => {
       children: [
         { id: 'workers-list', label: 'All Workers', icon: <PeopleIcon />, href: '/company/workers' },
         { id: 'invitations', label: 'Invitations', icon: <MailOutlineIcon />, href: '/company/invitations' },
+        { id: 'compliance', label: 'Compliance', icon: <VerifiedUserOutlinedIcon />, href: '/company/compliance' },
+        { id: 'leave-requests', label: 'Leave Requests', icon: <EventAvailableOutlinedIcon />, href: '/company/leave-requests' },
       ],
     },
     {
@@ -271,6 +275,7 @@ export const Layout: React.FC = () => {
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
+    { id: 'worker-profile', label: 'My Profile', icon: <PersonIcon />, href: '/worker/profile' },
   ];
 
   const sidebarItems: SidebarItem[] = isWorker ? workerSidebarItems : companySidebarItems;

@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -14,6 +15,7 @@ import { useFetch } from '../../../../hooks';
 import { columns, type WorkerTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
+  const navigate = useNavigate();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -153,9 +155,21 @@ export const PageList: React.FC = () => {
     [setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
+  const handleViewProfile = useCallback(
+    (worker: WorkerTableRow) => {
+      navigate(`/company/workers/${worker.id}`);
+    },
+    [navigate]
+  );
+
   // Define table actions
   const tableActions: ITableAction<WorkerTableRow>[] = useMemo(
     () => [
+      {
+        id: 'view',
+        label: 'View Profile',
+        onClick: handleViewProfile,
+      },
       {
         id: 'edit',
         label: 'Edit',
@@ -173,7 +187,7 @@ export const PageList: React.FC = () => {
         color: 'error' as const,
       },
     ],
-    [handleEditWorker, handleResetPassword, handleDeleteWorker]
+    [handleViewProfile, handleEditWorker, handleResetPassword, handleDeleteWorker]
   );
 
   return (
