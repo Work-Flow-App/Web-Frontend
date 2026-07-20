@@ -5,3 +5,4 @@ export { ValidationRules } from './validationRules';
 export * from './validationRules';
 export { useSchema } from './useSchema';
 export type { ISchema } from './useSchema';
+export { buildDynamicDefaultValues } from './buildDynamicDefaultValues';
