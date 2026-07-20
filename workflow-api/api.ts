@@ -262,9 +262,58 @@ export interface CompanyDashboardResponse {
     'activeWorkers'?: number;
     'archivedWorkers'?: number;
 }
+export interface CompanyDocumentResponse {
+    'id'?: number;
+    'title'?: string;
+    'description'?: string;
+    'type'?: CompanyDocumentResponseTypeEnum;
+    'fileUrl'?: string;
+    'fileName'?: string;
+    'validityStartDate'?: string;
+    'validityEndDate'?: string;
+    'isPublic'?: boolean;
+    'createdAt'?: string;
+}
+
+export const CompanyDocumentResponseTypeEnum = {
+    Certificate: 'CERTIFICATE',
+    License: 'LICENSE',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+
+export type CompanyDocumentResponseTypeEnum = typeof CompanyDocumentResponseTypeEnum[keyof typeof CompanyDocumentResponseTypeEnum];
+
+export interface CompanyPostAttachmentResponse {
+    'id'?: number;
+    'fileUrl'?: string;
+    'fileName'?: string;
+    'fileType'?: string;
+}
+export interface CompanyPostCreateRequest {
+    'content': string;
+    'isPublic': boolean;
+}
+export interface CompanyPostResponse {
+    'id'?: number;
+    'content'?: string;
+    'isPublic'?: boolean;
+    'authorName'?: string;
+    'attachments'?: Array<CompanyPostAttachmentResponse>;
+    'createdAt'?: string;
+}
+export interface CompanyPostUpdateRequest {
+    'content'?: string;
+    'isPublic'?: boolean;
+    'attachmentIdsToDelete'?: Array<number>;
+}
 export interface CompanyProfileResponse {
     'id'?: number;
     'name'?: string;
+    'logoUrl'?: string;
+    'description'?: string;
+    'website'?: string;
+    'tagline'?: string;
     'address'?: CompanyAddressResponse;
     'telephone'?: string;
     'mobile'?: string;
@@ -303,6 +352,9 @@ export type CompanyProfileResponseCurrencyEnum = typeof CompanyProfileResponseCu
 
 export interface CompanyProfileUpdateRequest {
     'name': string;
+    'description'?: string;
+    'website'?: string;
+    'tagline'?: string;
     'address'?: CompanyAddressRequest;
     'telephone'?: string;
     'mobile'?: string;
@@ -968,6 +1020,15 @@ export interface PagedModelJobResponse {
 }
 export interface PasswordResetResponse {
     'message'?: string;
+}
+export interface PublicCompanyProfileResponse {
+    'id'?: number;
+    'name'?: string;
+    'logoUrl'?: string;
+    'description'?: string;
+    'website'?: string;
+    'tagline'?: string;
+    'address'?: CompanyAddressResponse;
 }
 export interface RefreshTokenRequest {
     'refreshToken': string;
@@ -3668,6 +3729,230 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
     return {
         /**
          * 
+         * @param {CompanyPostCreateRequest} data 
+         * @param {Array<File>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyCreatePost: async (data: CompanyPostCreateRequest, files?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'data' is not null or undefined
+            assertParamExists('companyCreatePost', 'data', data)
+            const localVarPath = `/api/v1/companies/posts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (data !== undefined) { 
+                localVarFormParams.append('data', new Blob([JSON.stringify(data)], { type: "application/json", }));
+            }
+                if (files) {
+                files.forEach((element) => {
+                    localVarFormParams.append('files', element as any);
+                })
+            }
+
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeleteDocument: async (documentId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'documentId' is not null or undefined
+            assertParamExists('companyDeleteDocument', 'documentId', documentId)
+            const localVarPath = `/api/v1/companies/documents/{documentId}`
+                .replace(`{${"documentId"}}`, encodeURIComponent(String(documentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeleteLogo: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/logo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeletePost: async (postId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('companyDeletePost', 'postId', postId)
+            const localVarPath = `/api/v1/companies/posts/{postId}`
+                .replace(`{${"postId"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetCompanyDocuments: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/documents`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetCompanyPosts: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/posts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -3734,6 +4019,139 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {number} documentId 
+         * @param {string} [title] 
+         * @param {string} [description] 
+         * @param {CompanyUpdateDocumentTypeEnum} [type] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {boolean} [isPublic] 
+         * @param {File} [file] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUpdateDocument: async (documentId: number, title?: string, description?: string, type?: CompanyUpdateDocumentTypeEnum, startDate?: string, endDate?: string, isPublic?: boolean, file?: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'documentId' is not null or undefined
+            assertParamExists('companyUpdateDocument', 'documentId', documentId)
+            const localVarPath = `/api/v1/companies/documents/{documentId}`
+                .replace(`{${"documentId"}}`, encodeURIComponent(String(documentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (title !== undefined) {
+                localVarQueryParameter['title'] = title;
+            }
+
+            if (description !== undefined) {
+                localVarQueryParameter['description'] = description;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString().substring(0,10) :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString().substring(0,10) :
+                    endDate;
+            }
+
+            if (isPublic !== undefined) {
+                localVarQueryParameter['isPublic'] = isPublic;
+            }
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {CompanyPostUpdateRequest} [data] 
+         * @param {Array<File>} [newFiles] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUpdatePost: async (postId: number, data?: CompanyPostUpdateRequest, newFiles?: Array<File>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'postId' is not null or undefined
+            assertParamExists('companyUpdatePost', 'postId', postId)
+            const localVarPath = `/api/v1/companies/posts/{postId}`
+                .replace(`{${"postId"}}`, encodeURIComponent(String(postId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (data !== undefined) { 
+                localVarFormParams.append('data', new Blob([JSON.stringify(data)], { type: "application/json", }));
+            }
+                if (newFiles) {
+                newFiles.forEach((element) => {
+                    localVarFormParams.append('newFiles', element as any);
+                })
+            }
+
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {CompanyProfileUpdateRequest} companyProfileUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3771,6 +4189,134 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} title 
+         * @param {CompanyUploadDocumentTypeEnum} type 
+         * @param {boolean} isPublic 
+         * @param {File} file 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUploadDocument: async (title: string, type: CompanyUploadDocumentTypeEnum, isPublic: boolean, file: File, description?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'title' is not null or undefined
+            assertParamExists('companyUploadDocument', 'title', title)
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('companyUploadDocument', 'type', type)
+            // verify required parameter 'isPublic' is not null or undefined
+            assertParamExists('companyUploadDocument', 'isPublic', isPublic)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('companyUploadDocument', 'file', file)
+            const localVarPath = `/api/v1/companies/documents`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (title !== undefined) {
+                localVarQueryParameter['title'] = title;
+            }
+
+            if (description !== undefined) {
+                localVarQueryParameter['description'] = description;
+            }
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString().substring(0,10) :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString().substring(0,10) :
+                    endDate;
+            }
+
+            if (isPublic !== undefined) {
+                localVarQueryParameter['isPublic'] = isPublic;
+            }
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUploadLogo: async (file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('companyUploadLogo', 'file', file)
+            const localVarPath = `/api/v1/companies/logo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -3780,6 +4326,76 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
 export const CompanyApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = CompanyApiAxiosParamCreator(configuration)
     return {
+        /**
+         * 
+         * @param {CompanyPostCreateRequest} data 
+         * @param {Array<File>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyCreatePost(data: CompanyPostCreateRequest, files?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyCreatePost(data, files, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyCreatePost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyDeleteDocument(documentId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyDeleteDocument(documentId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyDeleteDocument']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyDeleteLogo(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyDeleteLogo(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyDeleteLogo']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyDeletePost(postId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyDeletePost(postId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyDeletePost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyGetCompanyDocuments(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyDocumentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyGetCompanyDocuments(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyGetCompanyDocuments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyGetCompanyPosts(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyPostResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyGetCompanyPosts(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyGetCompanyPosts']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -3804,6 +4420,39 @@ export const CompanyApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} documentId 
+         * @param {string} [title] 
+         * @param {string} [description] 
+         * @param {CompanyUpdateDocumentTypeEnum} [type] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {boolean} [isPublic] 
+         * @param {File} [file] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyUpdateDocument(documentId: number, title?: string, description?: string, type?: CompanyUpdateDocumentTypeEnum, startDate?: string, endDate?: string, isPublic?: boolean, file?: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyDocumentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyUpdateDocument(documentId, title, description, type, startDate, endDate, isPublic, file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUpdateDocument']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {CompanyPostUpdateRequest} [data] 
+         * @param {Array<File>} [newFiles] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyUpdatePost(postId: number, data?: CompanyPostUpdateRequest, newFiles?: Array<File>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyUpdatePost(postId, data, newFiles, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUpdatePost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {CompanyProfileUpdateRequest} companyProfileUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -3812,6 +4461,36 @@ export const CompanyApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.companyUpdateProfile(companyProfileUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUpdateProfile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} title 
+         * @param {CompanyUploadDocumentTypeEnum} type 
+         * @param {boolean} isPublic 
+         * @param {File} file 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyUploadDocument(title: string, type: CompanyUploadDocumentTypeEnum, isPublic: boolean, file: File, description?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyDocumentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyUploadDocument(title, type, isPublic, file, description, startDate, endDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUploadDocument']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyUploadLogo(file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyUploadLogo(file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyUploadLogo']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -3823,6 +4502,58 @@ export const CompanyApiFp = function(configuration?: Configuration) {
 export const CompanyApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = CompanyApiFp(configuration)
     return {
+        /**
+         * 
+         * @param {CompanyPostCreateRequest} data 
+         * @param {Array<File>} [files] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyCreatePost(data: CompanyPostCreateRequest, files?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostResponse> {
+            return localVarFp.companyCreatePost(data, files, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} documentId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeleteDocument(documentId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyDeleteDocument(documentId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeleteLogo(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyDeleteLogo(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyDeletePost(postId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyDeletePost(postId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetCompanyDocuments(options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyDocumentResponse>> {
+            return localVarFp.companyGetCompanyDocuments(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetCompanyPosts(options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyPostResponse>> {
+            return localVarFp.companyGetCompanyPosts(options).then((request) => request(axios, basePath));
+        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -3841,12 +4572,63 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {number} documentId 
+         * @param {string} [title] 
+         * @param {string} [description] 
+         * @param {CompanyUpdateDocumentTypeEnum} [type] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {boolean} [isPublic] 
+         * @param {File} [file] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUpdateDocument(documentId: number, title?: string, description?: string, type?: CompanyUpdateDocumentTypeEnum, startDate?: string, endDate?: string, isPublic?: boolean, file?: File, options?: RawAxiosRequestConfig): AxiosPromise<CompanyDocumentResponse> {
+            return localVarFp.companyUpdateDocument(documentId, title, description, type, startDate, endDate, isPublic, file, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} postId 
+         * @param {CompanyPostUpdateRequest} [data] 
+         * @param {Array<File>} [newFiles] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUpdatePost(postId: number, data?: CompanyPostUpdateRequest, newFiles?: Array<File>, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostResponse> {
+            return localVarFp.companyUpdatePost(postId, data, newFiles, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {CompanyProfileUpdateRequest} companyProfileUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyProfileResponse> {
             return localVarFp.companyUpdateProfile(companyProfileUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} title 
+         * @param {CompanyUploadDocumentTypeEnum} type 
+         * @param {boolean} isPublic 
+         * @param {File} file 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUploadDocument(title: string, type: CompanyUploadDocumentTypeEnum, isPublic: boolean, file: File, description?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<CompanyDocumentResponse> {
+            return localVarFp.companyUploadDocument(title, type, isPublic, file, description, startDate, endDate, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyUploadLogo(file: File, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.companyUploadLogo(file, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3855,6 +4637,64 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
  * CompanyApi - object-oriented interface
  */
 export class CompanyApi extends BaseAPI {
+    /**
+     * 
+     * @param {CompanyPostCreateRequest} data 
+     * @param {Array<File>} [files] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyCreatePost(data: CompanyPostCreateRequest, files?: Array<File>, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyCreatePost(data, files, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} documentId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyDeleteDocument(documentId: number, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyDeleteDocument(documentId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyDeleteLogo(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyDeleteLogo(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} postId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyDeletePost(postId: number, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyDeletePost(postId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyGetCompanyDocuments(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyGetCompanyDocuments(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyGetCompanyPosts(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyGetCompanyPosts(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -3875,6 +4715,35 @@ export class CompanyApi extends BaseAPI {
 
     /**
      * 
+     * @param {number} documentId 
+     * @param {string} [title] 
+     * @param {string} [description] 
+     * @param {CompanyUpdateDocumentTypeEnum} [type] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
+     * @param {boolean} [isPublic] 
+     * @param {File} [file] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyUpdateDocument(documentId: number, title?: string, description?: string, type?: CompanyUpdateDocumentTypeEnum, startDate?: string, endDate?: string, isPublic?: boolean, file?: File, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyUpdateDocument(documentId, title, description, type, startDate, endDate, isPublic, file, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} postId 
+     * @param {CompanyPostUpdateRequest} [data] 
+     * @param {Array<File>} [newFiles] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyUpdatePost(postId: number, data?: CompanyPostUpdateRequest, newFiles?: Array<File>, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyUpdatePost(postId, data, newFiles, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
      * @param {CompanyProfileUpdateRequest} companyProfileUpdateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -3882,8 +4751,48 @@ export class CompanyApi extends BaseAPI {
     public companyUpdateProfile(companyProfileUpdateRequest: CompanyProfileUpdateRequest, options?: RawAxiosRequestConfig) {
         return CompanyApiFp(this.configuration).companyUpdateProfile(companyProfileUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+     * 
+     * @param {string} title 
+     * @param {CompanyUploadDocumentTypeEnum} type 
+     * @param {boolean} isPublic 
+     * @param {File} file 
+     * @param {string} [description] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyUploadDocument(title: string, type: CompanyUploadDocumentTypeEnum, isPublic: boolean, file: File, description?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyUploadDocument(title, type, isPublic, file, description, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {File} file 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyUploadLogo(file: File, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyUploadLogo(file, options).then((request) => request(this.axios, this.basePath));
+    }
 }
 
+export const CompanyUpdateDocumentTypeEnum = {
+    Certificate: 'CERTIFICATE',
+    License: 'LICENSE',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+export type CompanyUpdateDocumentTypeEnum = typeof CompanyUpdateDocumentTypeEnum[keyof typeof CompanyUpdateDocumentTypeEnum];
+export const CompanyUploadDocumentTypeEnum = {
+    Certificate: 'CERTIFICATE',
+    License: 'LICENSE',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+export type CompanyUploadDocumentTypeEnum = typeof CompanyUploadDocumentTypeEnum[keyof typeof CompanyUploadDocumentTypeEnum];
 
 
 /**
@@ -8850,6 +9759,243 @@ export class PaddleWebhookControllerApi extends BaseAPI {
      */
     public paddleWebhookReceivePaddleWebhook(paddleSignature: string, body: string, options?: RawAxiosRequestConfig) {
         return PaddleWebhookControllerApiFp(this.configuration).paddleWebhookReceivePaddleWebhook(paddleSignature, body, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * PublicCompanyViewsApi - axios parameter creator
+ */
+export const PublicCompanyViewsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicDocuments: async (companyId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'companyId' is not null or undefined
+            assertParamExists('publicCompanyGetPublicDocuments', 'companyId', companyId)
+            const localVarPath = `/api/v1/public/companies/{companyId}/documents`
+                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicPosts: async (companyId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'companyId' is not null or undefined
+            assertParamExists('publicCompanyGetPublicPosts', 'companyId', companyId)
+            const localVarPath = `/api/v1/public/companies/{companyId}/posts`
+                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicProfile: async (companyId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'companyId' is not null or undefined
+            assertParamExists('publicCompanyGetPublicProfile', 'companyId', companyId)
+            const localVarPath = `/api/v1/public/companies/{companyId}/profile`
+                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * PublicCompanyViewsApi - functional programming interface
+ */
+export const PublicCompanyViewsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = PublicCompanyViewsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async publicCompanyGetPublicDocuments(companyId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyDocumentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.publicCompanyGetPublicDocuments(companyId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PublicCompanyViewsApi.publicCompanyGetPublicDocuments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async publicCompanyGetPublicPosts(companyId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyPostResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.publicCompanyGetPublicPosts(companyId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PublicCompanyViewsApi.publicCompanyGetPublicPosts']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async publicCompanyGetPublicProfile(companyId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PublicCompanyProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.publicCompanyGetPublicProfile(companyId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PublicCompanyViewsApi.publicCompanyGetPublicProfile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * PublicCompanyViewsApi - factory interface
+ */
+export const PublicCompanyViewsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = PublicCompanyViewsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicDocuments(companyId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyDocumentResponse>> {
+            return localVarFp.publicCompanyGetPublicDocuments(companyId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicPosts(companyId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyPostResponse>> {
+            return localVarFp.publicCompanyGetPublicPosts(companyId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} companyId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        publicCompanyGetPublicProfile(companyId: number, options?: RawAxiosRequestConfig): AxiosPromise<PublicCompanyProfileResponse> {
+            return localVarFp.publicCompanyGetPublicProfile(companyId, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * PublicCompanyViewsApi - object-oriented interface
+ */
+export class PublicCompanyViewsApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} companyId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public publicCompanyGetPublicDocuments(companyId: number, options?: RawAxiosRequestConfig) {
+        return PublicCompanyViewsApiFp(this.configuration).publicCompanyGetPublicDocuments(companyId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} companyId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public publicCompanyGetPublicPosts(companyId: number, options?: RawAxiosRequestConfig) {
+        return PublicCompanyViewsApiFp(this.configuration).publicCompanyGetPublicPosts(companyId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} companyId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public publicCompanyGetPublicProfile(companyId: number, options?: RawAxiosRequestConfig) {
+        return PublicCompanyViewsApiFp(this.configuration).publicCompanyGetPublicProfile(companyId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

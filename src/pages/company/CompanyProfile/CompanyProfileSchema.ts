@@ -1,7 +1,19 @@
 import { InputValidationRules } from '../../../utils/validation';
-import type { IFields } from '../../../utils/validation';
+import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
+import type { SchemaFieldDefinition } from './components/SchemaField';
 
-export const CompanyProfileFormSchema: IFields = {
+export type ProfileSection = 'company' | 'address' | 'bank';
+
+export interface CompanyProfileField extends SchemaFieldDefinition {
+  section: ProfileSection;
+}
+
+const CURRENCY_OPTIONS = Object.values(CompanyProfileResponseCurrencyEnum).map((c) => ({
+  value: c,
+  label: c,
+}));
+
+export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
   name: {
     title: 'name',
     rule: InputValidationRules.StringRequired,
@@ -9,6 +21,35 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter company name',
     label: 'Company Name',
     isRequired: true,
+    section: 'company',
+  },
+  description: {
+    title: 'description',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Briefly describe your company',
+    label: 'Description',
+    isRequired: false,
+    section: 'company',
+    control: 'textarea',
+  },
+  website: {
+    title: 'website',
+    rule: InputValidationRules.Website,
+    defaultValue: '',
+    placeHolder: 'https://example.com',
+    label: 'Website',
+    isRequired: false,
+    section: 'company',
+  },
+  tagline: {
+    title: 'tagline',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Enter a short tagline',
+    label: 'Tagline',
+    isRequired: false,
+    section: 'company',
   },
   email: {
     title: 'email',
@@ -17,6 +58,8 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter email address',
     label: 'Email',
     isRequired: false,
+    section: 'company',
+    control: 'email',
   },
   contactEmail: {
     title: 'contactEmail',
@@ -25,6 +68,8 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter contact email',
     label: 'Contact Email',
     isRequired: false,
+    section: 'company',
+    control: 'email',
   },
   contactNumber: {
     title: 'contactNumber',
@@ -33,6 +78,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter contact number',
     label: 'Contact Number',
     isRequired: false,
+    section: 'company',
   },
   telephone: {
     title: 'telephone',
@@ -41,6 +87,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter telephone number',
     label: 'Telephone',
     isRequired: false,
+    section: 'company',
   },
   mobile: {
     title: 'mobile',
@@ -49,54 +96,16 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter mobile number',
     label: 'Mobile',
     isRequired: false,
+    section: 'company',
   },
-  addressLine1: {
-    title: 'addressLine1',
+  fax: {
+    title: 'fax',
     rule: InputValidationRules.String,
     defaultValue: '',
-    placeHolder: 'Address line 1',
-    label: 'Address Line 1',
+    placeHolder: 'Enter fax number',
+    label: 'Fax',
     isRequired: false,
-  },
-  addressLine2: {
-    title: 'addressLine2',
-    rule: InputValidationRules.String,
-    defaultValue: '',
-    placeHolder: 'Address line 2',
-    label: 'Address Line 2',
-    isRequired: false,
-  },
-  addressLine3: {
-    title: 'addressLine3',
-    rule: InputValidationRules.String,
-    defaultValue: '',
-    placeHolder: 'Address line 3',
-    label: 'Address Line 3',
-    isRequired: false,
-  },
-  town: {
-    title: 'town',
-    rule: InputValidationRules.String,
-    defaultValue: '',
-    placeHolder: 'Enter town / city',
-    label: 'Town / City',
-    isRequired: false,
-  },
-  country: {
-    title: 'country',
-    rule: InputValidationRules.String,
-    defaultValue: '',
-    placeHolder: 'Enter country',
-    label: 'Country',
-    isRequired: false,
-  },
-  postcode: {
-    title: 'postcode',
-    rule: InputValidationRules.String,
-    defaultValue: '',
-    placeHolder: 'Enter postcode',
-    label: 'Postcode',
-    isRequired: false,
+    section: 'company',
   },
   vatNumber: {
     title: 'vatNumber',
@@ -105,6 +114,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter VAT number',
     label: 'VAT Number',
     isRequired: false,
+    section: 'company',
   },
   currency: {
     title: 'currency',
@@ -113,6 +123,64 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Select currency',
     label: 'Currency',
     isRequired: false,
+    section: 'company',
+    control: 'dropdown',
+    dropdownOptions: CURRENCY_OPTIONS,
+    dropdownClearable: true,
+  },
+  addressLine1: {
+    title: 'addressLine1',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Address line 1',
+    label: 'Address Line 1',
+    isRequired: false,
+    section: 'address',
+  },
+  addressLine2: {
+    title: 'addressLine2',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Address line 2',
+    label: 'Address Line 2',
+    isRequired: false,
+    section: 'address',
+  },
+  addressLine3: {
+    title: 'addressLine3',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Address line 3',
+    label: 'Address Line 3',
+    isRequired: false,
+    section: 'address',
+  },
+  town: {
+    title: 'town',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Enter town / city',
+    label: 'Town / City',
+    isRequired: false,
+    section: 'address',
+  },
+  country: {
+    title: 'country',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Enter country',
+    label: 'Country',
+    isRequired: false,
+    section: 'address',
+  },
+  postcode: {
+    title: 'postcode',
+    rule: InputValidationRules.String,
+    defaultValue: '',
+    placeHolder: 'Enter postcode',
+    label: 'Postcode',
+    isRequired: false,
+    section: 'address',
   },
   bankName: {
     title: 'bankName',
@@ -121,6 +189,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter bank name',
     label: 'Bank Name',
     isRequired: false,
+    section: 'bank',
   },
   accountName: {
     title: 'accountName',
@@ -129,6 +198,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter account name',
     label: 'Account Name',
     isRequired: false,
+    section: 'bank',
   },
   accountNo: {
     title: 'accountNo',
@@ -137,6 +207,7 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter account number',
     label: 'Account Number',
     isRequired: false,
+    section: 'bank',
   },
   sortCode: {
     title: 'sortCode',
@@ -145,5 +216,6 @@ export const CompanyProfileFormSchema: IFields = {
     placeHolder: 'Enter sort code',
     label: 'Sort Code',
     isRequired: false,
+    section: 'bank',
   },
 };

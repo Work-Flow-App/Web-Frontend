@@ -1,53 +1,10 @@
 import { Box, Typography, Tabs, Tab, styled } from '@mui/material';
 import { rem } from '../../../components/UI/Typography/utility';
 
-export const PageContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '100%',
-  width: '100%',
-  backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
-  padding: rem(40),
-  '@media (max-width: 1536px)': {
-    padding: rem(32),
-  },
-  '@media (max-width: 1366px)': {
-    padding: rem(24),
-  },
-}));
-
-export const PageHeader = styled(Box)(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: rem(32),
-  '@media (max-width: 1366px)': {
-    marginBottom: rem(24),
-  },
-}));
-
-export const Title = styled(Typography)(({ theme }) => ({
-  fontSize: rem(32),
-  fontWeight: theme.typography.fontWeightBold || 700,
-  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
-  lineHeight: 1.2,
-  '@media (max-width: 1536px)': {
-    fontSize: rem(28),
-  },
-  '@media (max-width: 1366px)': {
-    fontSize: rem(26),
-  },
-}));
-
-export const HeaderActions = styled(Box)(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: rem(12),
-}));
-
 export const SectionsGrid = styled(Box)(() => ({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+  alignItems: 'start',
   gap: rem(24),
   width: '100%',
   '@media (max-width: 1366px)': {
@@ -97,13 +54,35 @@ export const FieldLabel = styled(Typography)(({ theme }) => ({
   letterSpacing: '0.5px',
 }));
 
-export const FieldValue = styled(Typography)(({ theme }) => ({
+interface FieldValueProps {
+  $empty?: boolean;
+}
+
+export const FieldValue = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== '$empty',
+})<FieldValueProps>(({ theme, $empty }) => ({
   fontSize: rem(15),
   fontWeight: 400,
-  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
+  fontStyle: $empty ? 'italic' : 'normal',
+  color: $empty
+    ? theme.palette.colors?.grey_400 || theme.palette.text.disabled
+    : theme.palette.colors?.grey_900 || theme.palette.text.primary,
   '@media (max-width: 1366px)': {
     fontSize: rem(14),
   },
+}));
+
+export const EmptySectionState = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: rem(8),
+  padding: `${rem(12)} 0 ${rem(4)}`,
+}));
+
+export const EmptySectionText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.colors?.grey_400 || theme.palette.text.disabled,
 }));
 
 export const FieldsGrid = styled(Box)(() => ({
