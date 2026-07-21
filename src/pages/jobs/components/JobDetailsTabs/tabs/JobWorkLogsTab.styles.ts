@@ -493,3 +493,22 @@ export const NotePopupNoteText = styled(Typography)(({ theme }) => ({
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
 }));
+
+export const AllStepCircle = styled(StepCircle)(() => ({
+  fontSize: rem(12),
+}));
+
+export const StepNameText = styled(DurationText)(() => ({
+  fontWeight: 500,
+}));
+
+export const StepSelectDropdown = styled('select')(({ theme }) => ({
+  width: '100%',
+  height: '40px',
+  borderRadius: '8px',
+  borderColor: theme.palette.colors.grey_200,
+  padding: '0 12px',
+  outline: 'none',
+  fontSize: '14px',
+  backgroundColor: theme.palette.colors.white,
+}));

@@ -64,7 +64,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   // ── Data state ──────────────────────────────────────────────────────────────
   const [loadingWorkflow, setLoadingWorkflow] = useState(true);
   const [steps, setSteps] = useState<JobWorkflowStepResponse[]>([]);
-  const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
+  const [selectedStepId, setSelectedStepId] = useState<number | 'all' | null>('all');
   const [visitLogs, setVisitLogs] = useState<StepVisitLogResponse[]>([]);
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -89,7 +89,6 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
       );
       setSteps(sorted);
-      if (sorted.length > 0 && sorted[0].id) setSelectedStepId(sorted[0].id);
     } catch {
       setSteps([]);
     } finally {
@@ -101,16 +100,73 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
     if (!selectedStepId) return;
     try {
       setLoadingLogs(true);
-      const response = await visitLogService.getVisitLogs(selectedStepId);
-      setVisitLogs(response.data.visitLogs || []);
-      setTotalMinutes(response.data.totalWorkedMinutes || 0);
+      if (selectedStepId === 'all') {
+        const promises = steps.map((step) => {
+          if (!step.id) return Promise.resolve({ data: { visitLogs: [], totalWorkedMinutes: 0 } });
+          return visitLogService.getVisitLogs(step.id);
+        });
+        const results = await Promise.all(promises);
+
+        let allLogs: (StepVisitLogResponse & { stepName?: string; stepId?: number })[] = [];
+        let combinedMinutes = 0;
+
+        results.forEach((res, index) => {
+          const stepLogs = res.data.visitLogs || [];
+          const stepName = steps[index].name || `Step ${index + 1}`;
+          const stepId = steps[index].id;
+
+          allLogs = allLogs.concat(
+            stepLogs.map((log) => ({
+              ...log,
+              stepName,
+              stepId,
+            }))
+          );
+          combinedMinutes += res.data.totalWorkedMinutes || 0;
+        });
+
+        // Sort by date/time: newest first.
+        allLogs.sort((a, b) => {
+          const dateA = a.visitDate ? new Date(a.visitDate).getTime() : 0;
+          const dateB = b.visitDate ? new Date(b.visitDate).getTime() : 0;
+          if (dateB !== dateA) return dateB - dateA;
+
+          const timeA = a.timeIn || '';
+          const timeB = b.timeIn || '';
+          if (timeB !== timeA) return timeB.localeCompare(timeA);
+
+          return (b.id || 0) - (a.id || 0);
+        });
+
+        setVisitLogs(allLogs);
+        setTotalMinutes(combinedMinutes);
+      } else {
+        const response = await visitLogService.getVisitLogs(selectedStepId);
+        const stepLogs = response.data.visitLogs || [];
+
+        // Sort by date/time: newest first.
+        const sortedLogs = [...stepLogs].sort((a, b) => {
+          const dateA = a.visitDate ? new Date(a.visitDate).getTime() : 0;
+          const dateB = b.visitDate ? new Date(b.visitDate).getTime() : 0;
+          if (dateB !== dateA) return dateB - dateA;
+
+          const timeA = a.timeIn || '';
+          const timeB = b.timeIn || '';
+          if (timeB !== timeA) return timeB.localeCompare(timeA);
+
+          return (b.id || 0) - (a.id || 0);
+        });
+
+        setVisitLogs(sortedLogs);
+        setTotalMinutes(response.data.totalWorkedMinutes || 0);
+      }
     } catch {
       setVisitLogs([]);
       setTotalMinutes(0);
     } finally {
       setLoadingLogs(false);
     }
-  }, [selectedStepId]);
+  }, [selectedStepId, steps]);
 
   useEffect(() => { fetchWorkflow(); }, [fetchWorkflow]);
   useEffect(() => { fetchVisitLogs(); }, [fetchVisitLogs]);
@@ -176,13 +232,16 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   );
   const openModal = useCallback((editLog?: StepVisitLogResponse) => {
     if (!selectedStepId) return;
+    const logStepId = editLog ? (editLog as any).stepId : null;
+    const resolvedStepId = selectedStepId === 'all' ? logStepId : selectedStepId;
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
       fieldName: 'addWorkLog',
       children: (
         <AddWorkLogModal
-          stepId={selectedStepId}
+          stepId={resolvedStepId}
+          steps={steps}
           editLog={editLog || null}
           onSuccess={() => {
             resetGlobalModalOuterProps();
@@ -192,7 +251,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         />
       ),
     });
-  }, [selectedStepId, setGlobalModalOuterProps, resetGlobalModalOuterProps, showSuccess, fetchVisitLogs]);
+  }, [selectedStepId, steps, setGlobalModalOuterProps, resetGlobalModalOuterProps, showSuccess, fetchVisitLogs]);
 
   const handleDelete = useCallback(async (visitLogId: number) => {
     try {
@@ -263,11 +322,25 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
 
         {/* Step circles with connectors */}
         <WS.StepsBubbleList>
+          {/* ALL Bubble */}
+          <WS.StepBubbleItem>
+            <Tooltip title="All Work Logs" placement="right" arrow>
+              <WS.AllStepCircle
+                isActive={selectedStepId === 'all'}
+                stepColor="#101a32"
+                onClick={() => setSelectedStepId('all')}
+              >
+                ALL
+              </WS.AllStepCircle>
+            </Tooltip>
+            {steps.length > 0 && <WS.StepConnector />}
+          </WS.StepBubbleItem>
+
+          {/* Individual steps */}
           {steps.map((step, idx) => {
             const isActive = selectedStepId === step.id;
             return (
               <WS.StepBubbleItem key={step.id}>
-                {idx > 0 && <WS.StepConnector />}
                 <Tooltip
                   title={`${idx + 1}. ${step.name || `Step ${idx + 1}`}`}
                   placement="right"
@@ -281,6 +354,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                     {idx + 1}
                   </WS.StepCircle>
                 </Tooltip>
+                {idx < steps.length - 1 && <WS.StepConnector />}
               </WS.StepBubbleItem>
             );
           })}
@@ -298,7 +372,9 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
             </WS.TimerIconBox>
             <WS.TrackingInfo>
               <WS.TrackingLabel>
-                CURRENTLY TRACKING — {selectedStep?.name?.toUpperCase() || 'STEP'}
+                {selectedStepId === 'all'
+                  ? 'CURRENTLY TRACKING — ALL STEPS'
+                  : `CURRENTLY TRACKING — ${selectedStep?.name?.toUpperCase() || 'STEP'}`}
               </WS.TrackingLabel>
               <WS.TrackingTime>{formatMinutes(totalMinutes)}</WS.TrackingTime>
             </WS.TrackingInfo>
@@ -342,6 +418,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                 <WS.Th>Who</WS.Th>
                 <WS.Th>Start → End</WS.Th>
                 <WS.Th>Duration</WS.Th>
+                {selectedStepId === 'all' && <WS.Th>Step</WS.Th>}
                 <WS.Th>Notes</WS.Th>
                 <WS.Th>Action</WS.Th>
               </WS.Tr>
@@ -349,13 +426,13 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
             <tbody>
               {loadingLogs ? (
                 <tr>
-                  <WS.EmptyStateRow colSpan={6}>
+                  <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
                     <CircularProgress size={20} />
                   </WS.EmptyStateRow>
                 </tr>
               ) : visitLogs.length === 0 ? (
                 <tr>
-                  <WS.EmptyStateRow colSpan={6}>
+                  <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
                     No WorkLog Available
                   </WS.EmptyStateRow>
                 </tr>
@@ -388,6 +465,14 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                       <WS.Td>
                         <WS.DurationText>{formatMinutes(log.workedMinutes)}</WS.DurationText>
                       </WS.Td>
+
+                      {selectedStepId === 'all' && (
+                        <WS.Td>
+                          <WS.StepNameText>
+                            {(log as any).stepName || '-'}
+                          </WS.StepNameText>
+                        </WS.Td>
+                      )}
 
                       {/* Notes — truncated, full text in title attr for native tooltip */}
                       <WS.NotesTd title={log.description || undefined}>
