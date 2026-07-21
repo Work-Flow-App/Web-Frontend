@@ -35,6 +35,7 @@ import { AssignAssetModal } from '../../../assets/components';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap/GoogleMap.types';
 import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
 import { geocodeAddress } from '../../../../utils/mapDataHelpers';
+import { extractFieldValue } from '../../../../utils/fieldValueHelper';
 import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
@@ -150,22 +151,38 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const target = editingField as 'address' | 'siteAddress';
     setSavingField(target);
     try {
-      if (target === 'address' && customer?.id) {
-        const updateReq: CustomerUpdateRequest = {
-          name: customer.name || '',
-          email: customer.email,
-          telephone: customer.telephone,
-          mobile: customer.mobile,
-          address: {
-            street: selectedMapAddress?.address || editValue || '',
-            city: selectedMapAddress?.city || customer.address?.city || '',
-            county: selectedMapAddress?.state || customer.address?.county || '',
-            postalCode: selectedMapAddress?.postalCode || customer.address?.postalCode || '',
-            country: selectedMapAddress?.country || customer.address?.country || '',
-          },
+      if (target === 'address') {
+        const addressObj = {
+          street: selectedMapAddress?.address || editValue || '',
+          city: selectedMapAddress?.city || customer?.address?.city || '',
+          county: selectedMapAddress?.state || customer?.address?.county || '',
+          postalCode: selectedMapAddress?.postalCode || customer?.address?.postalCode || '',
+          country: selectedMapAddress?.country || customer?.address?.country || '',
         };
-        const res = await customerService.updateCustomer(customer.id, updateReq);
-        onCustomerUpdate?.(res.data);
+        if (customer?.id) {
+          const updateReq: CustomerUpdateRequest = {
+            name: customer.name || '',
+            email: customer.email,
+            telephone: customer.telephone,
+            mobile: customer.mobile,
+            address: addressObj,
+          };
+          const res = await customerService.updateCustomer(customer.id, updateReq);
+          onCustomerUpdate?.(res.data);
+        } else {
+          const defaultName = `Customer for Job #${job.id || ''}`;
+          const createReq = {
+            name: defaultName,
+            address: addressObj,
+          };
+          const res = await customerService.createCustomer(createReq);
+          const newCust = res.data;
+          if (job.id && newCust.id) {
+            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            onJobUpdate?.(jobRes.data);
+          }
+          onCustomerUpdate?.(newCust);
+        }
       } else if (target === 'siteAddress' && job.id) {
         const updateReq: JobUpdateRequest = {
           address: {
@@ -184,8 +201,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       }
       showSuccess('Updated address successfully');
       setEditingField(null);
-    } catch {
-      showError('Failed to update address');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update address';
+      console.error('[handleSaveAddress] Failed:', err);
+      showError(msg);
     } finally {
       setSavingField(null);
     }
@@ -213,7 +232,47 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const handleSaveField = async (field: string) => {
     setSavingField(field);
     try {
-      if (['email', 'telephone', 'mobile', 'address'].includes(field)) {
+      if (field === 'customerName') {
+        if (customer?.id) {
+          const updateReq: CustomerUpdateRequest = {
+            name: editValue,
+            email: customer.email,
+            telephone: customer.telephone,
+            mobile: customer.mobile,
+            address: customer.address,
+          };
+          const res = await customerService.updateCustomer(customer.id, updateReq);
+          onCustomerUpdate?.(res.data);
+        } else {
+          const res = await customerService.createCustomer({ name: editValue });
+          const newCust = res.data;
+          if (job.id && newCust.id) {
+            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            onJobUpdate?.(jobRes.data);
+          }
+          onCustomerUpdate?.(newCust);
+        }
+      } else if (field === 'clientName') {
+        if (client?.id) {
+          const updateReq: ClientUpdateRequest = {
+            name: editValue,
+            email: client.email,
+            telephone: client.telephone,
+            mobile: client.mobile,
+            address: client.address,
+          };
+          const res = await companyClientService.updateClient(client.id, updateReq);
+          onClientUpdate?.(res.data);
+        } else {
+          const res = await companyClientService.createClient({ name: editValue });
+          const newClient = res.data;
+          if (job.id && newClient.id) {
+            const jobRes = await jobService.updateJob(job.id, { clientId: newClient.id });
+            onJobUpdate?.(jobRes.data);
+          }
+          onClientUpdate?.(newClient);
+        }
+      } else if (['email', 'telephone', 'mobile', 'address'].includes(field)) {
         if (customer?.id) {
           const updateReq: CustomerUpdateRequest = {
             name: customer.name || '',
@@ -234,6 +293,22 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           };
           const res = await companyClientService.updateClient(client.id, updateReq);
           onClientUpdate?.(res.data);
+        } else {
+          const defaultName = `Customer for Job #${job.id || ''}`;
+          const createReq = {
+            name: defaultName,
+            email: field === 'email' ? editValue : undefined,
+            telephone: field === 'telephone' ? editValue : undefined,
+            mobile: field === 'mobile' ? editValue : undefined,
+            address: field === 'address' ? { street: editValue } : undefined,
+          };
+          const res = await customerService.createCustomer(createReq);
+          const newCust = res.data;
+          if (job.id && newCust.id) {
+            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            onJobUpdate?.(jobRes.data);
+          }
+          onCustomerUpdate?.(newCust);
         }
       } else if (field === 'status' && job.id) {
         const updateReq: JobUpdateRequest = { status: editValue as JobUpdateRequest['status'] };
@@ -242,8 +317,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       }
       showSuccess('Updated successfully');
       setEditingField(null);
-    } catch {
-      showError('Failed to update');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+      console.error('[handleSaveField] Failed:', err);
+      showError(msg);
     } finally {
       setSavingField(null);
     }
@@ -406,11 +483,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
 
   const getRawFieldValue = (fieldId: number): string => {
     if (!job.fieldValues) return '';
+    // Look up by numeric id string first, then fallback to other keys
     const fieldValue = job.fieldValues[String(fieldId)];
-    if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
-      return String(fieldValue.value ?? '');
-    }
-    return fieldValue ? String(fieldValue) : '';
+    if (fieldValue === undefined || fieldValue === null) return '';
+    return extractFieldValue(fieldValue);
   };
 
   const getDisplayFieldValue = (field: JobTemplateFieldResponse): string => {
@@ -439,7 +515,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       setSavingField(fieldKey);
       try {
         if (job.id && field.id !== undefined) {
-          const updatedFieldValues: Record<string, unknown> = { ...(job.fieldValues || {}) };
+          // Clean ALL existing field values before re-sending (backend may reject nested objects)
+          const updatedFieldValues: Record<string, unknown> = {};
+          Object.entries(job.fieldValues || {}).forEach(([k, v]) => {
+            updatedFieldValues[k] = extractFieldValue(v);
+          });
           if (editValue === '') {
             delete updatedFieldValues[String(field.id)];
           } else {
@@ -450,8 +530,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         }
         showSuccess('Updated successfully');
         setEditingField(null);
-      } catch {
-        showError('Failed to update');
+      } catch (err: any) {
+        const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+        console.error('[handleFieldSave] Failed:', err);
+        showError(msg);
       } finally {
         setSavingField(null);
       }
@@ -544,22 +626,12 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       </S.SectionHeader>
 
       <S.FieldsList>
-        <S.FieldRow>
-          <S.FieldIconContainer><PersonIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Customer Name</S.FieldLabel>
-          <S.FieldValue $notSet={!customer?.name}>{customer?.name || 'No customer assigned'}</S.FieldValue>
-        </S.FieldRow>
-
-        <S.FieldRow>
-          <S.FieldIconContainer><BusinessIcon /></S.FieldIconContainer>
-          <S.FieldLabel>Client Name</S.FieldLabel>
-          <S.FieldValue $notSet={!client?.name}>{client?.name || 'Not set'}</S.FieldValue>
-        </S.FieldRow>
-
-        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', contactTelephone, canEditContact)}
-        {renderEditableRow(<EmailIcon />, 'Email', 'email', contactEmail, canEditContact)}
-        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, canEditContact)}
-        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, canEditContact)}
+        {renderEditableRow(<PersonIcon />, 'Customer Name', 'customerName', customer?.name, true)}
+        {renderEditableRow(<BusinessIcon />, 'Client Name', 'clientName', client?.name, true)}
+        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', contactTelephone, true)}
+        {renderEditableRow(<EmailIcon />, 'Email', 'email', contactEmail, true)}
+        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, true)}
+        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, true)}
 
         {editingField === 'address' && (
           <S.MapEditWrapper>

@@ -12,10 +12,13 @@ import { TextArea } from '../../../../../components/UI/Forms/TextArea';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { visitLogService } from '../../../../../services/api';
 import type { StepVisitLogResponse } from '../../../../../services/api';
+import type { JobWorkflowStepResponse } from '../../../../../services/api';
+import { StepSelectDropdown } from './JobWorkLogsTab.styles';
 import * as S from '../../../JobDetailsPage.styles';
 
 export interface AddWorkLogModalProps {
-  stepId: number;
+  stepId?: number | null;
+  steps?: JobWorkflowStepResponse[];
   editLog?: StepVisitLogResponse | null;
   onSuccess: () => void;
 }
@@ -25,6 +28,7 @@ type FormValues = {
   timeIn: string;
   timeOut: string;
   description: string;
+  stepId?: string;
 };
 
 const parseTime = (value?: string): Dayjs | null => {
@@ -193,7 +197,7 @@ const TimeField: React.FC<TimeFieldProps> = ({ name, label }) => {
   );
 };
 
-export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLog, onSuccess }) => {
+export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps, editLog, onSuccess }) => {
   const isEdit = !!editLog;
   const now = dayjs();
   const methods = useForm<FormValues>({
@@ -202,6 +206,7 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLo
       timeIn: editLog?.timeIn || now.format('HH:mm'),
       timeOut: editLog?.timeOut || now.format('HH:mm'),
       description: editLog?.description || '',
+      stepId: '',
     },
   });
   const { showError } = useSnackbar();
@@ -226,6 +231,12 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLo
         return;
       }
 
+      const targetStepId = stepId || (values.stepId ? Number(values.stepId) : null);
+      if (!isEdit && !targetStepId) {
+        showError('Step selection is required');
+        return;
+      }
+
       const payload = {
         visitDate: values.visitDate,
         timeIn: values.timeIn || undefined,
@@ -235,7 +246,7 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLo
 
       const request = isEdit
         ? visitLogService.updateVisitLog(editLog!.id!, payload)
-        : visitLogService.addVisitLog(stepId, payload);
+        : visitLogService.addVisitLog(targetStepId!, payload);
 
       request
         .then(() => onSuccess())
@@ -247,6 +258,21 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLo
     <FormProvider {...methods}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <S.ModalFormContainer>
+          {!stepId && !isEdit && steps && steps.length > 0 && (
+            <FormField label="Select Step" required>
+              <StepSelectDropdown
+                {...methods.register('stepId', { required: 'Step is required' })}
+              >
+                <option value="">Select Step</option>
+                {steps.map((s, idx) => (
+                  <option key={s.id} value={s.id}>
+                    {idx + 1}. {s.name || `Step ${idx + 1}`}
+                  </option>
+                ))}
+              </StepSelectDropdown>
+            </FormField>
+          )}
+
           <FormField label="Visit Date" required>
             <Input name="visitDate" type="date" placeHolder="Select date" fullWidth />
           </FormField>
@@ -261,6 +287,7 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, editLo
           </FormField>
         </S.ModalFormContainer>
       </LocalizationProvider>
+
     </FormProvider>
   );
 };
