@@ -81,7 +81,16 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   const [viewFilter, setViewFilter] = useState<'all' | number>('all');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  const [postToStepId, setPostToStepId] = useState<number | null>(null);
+  const [selectedPostToStepId, setSelectedPostToStepId] = useState<number | null>(null);
+
+  // When viewFilter changes: if a specific step is selected, lock target step to viewFilter.
+  // When 'all' is selected, use selectedPostToStepId (or default to first step).
+  const postToStepId = useMemo(() => {
+    if (viewFilter !== 'all') return viewFilter;
+    if (selectedPostToStepId !== null) return selectedPostToStepId;
+    return steps.length > 0 && steps[0].id ? steps[0].id : null;
+  }, [viewFilter, selectedPostToStepId, steps]);
+
   const [message, setMessage] = useState('');
   const [postType, setPostType] = useState<string>(StepCommentCreateRequestTypeEnum.General);
   const [sending, setSending] = useState(false);
@@ -135,7 +144,9 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
       );
       setSteps(sorted);
-      if (sorted.length && sorted[0].id) setPostToStepId(sorted[0].id);
+      if (sorted.length && sorted[0].id) {
+        setSelectedPostToStepId(sorted[0].id);
+      }
       fetchAllTimelines(sorted);
     } catch {
       setSteps([]);
@@ -474,15 +485,21 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               </SS.ToolbarActionButton>
 
               <SS.ToolbarSelectGroup>
-                <StandaloneDropdown
-                  name="postToStep"
-                  label="Post to Step"
-                  preFetchedOptions={stepOptions}
-                  defaultValue={stepOptions[0] as unknown as string}
-                  onChange={v => setPostToStepId(v as number)}
-                  disableClearable
-                  size="medium"
-                />
+                {viewFilter === 'all' && (
+                  <StandaloneDropdown
+                    name="postToStep"
+                    label="Post to Step"
+                    preFetchedOptions={stepOptions}
+                    defaultValue={
+                      postToStepId
+                        ? (stepOptions.find(o => o.value === postToStepId) as unknown as string)
+                        : (stepOptions[0] as unknown as string)
+                    }
+                    onChange={v => setSelectedPostToStepId(v as number)}
+                    disableClearable
+                    size="medium"
+                  />
+                )}
                 <StandaloneDropdown
                   name="postType"
                   label="Type"
