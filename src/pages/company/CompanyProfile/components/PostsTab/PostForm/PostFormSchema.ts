@@ -17,9 +17,9 @@ export const PostFormSchema: Record<string, SchemaFieldDefinition> = {
     rule: InputValidationRules.BooleanNotRequired,
     defaultValue: false,
     placeHolder: '',
-    label: 'Visible to workers',
+    label: 'Make this post public',
     isRequired: false,
     control: 'checkbox',
-    helperText: 'Workers can view this post',
+    helperText: 'Anyone with the link can view this post without logging in, even outside your company',
   },
 };

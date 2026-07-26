@@ -39,6 +39,7 @@ export type {
   CompanyPostAttachmentResponse,
   CompanyDocumentUploadPayload,
   CompanyDocumentUpdatePayload,
+  PublicCompanyProfileResponse,
 } from './company';
 
 export { companyClientService } from './companyClient';

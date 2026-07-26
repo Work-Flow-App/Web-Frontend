@@ -1,9 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, useController, FormProvider } from 'react-hook-form';
 import type { FieldError } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Menu, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Button } from '../../../../../../components/UI/Button';
 import { IconButton } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
@@ -13,12 +17,19 @@ import { useSnackbar } from '../../../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../../../hooks/useFormSubmit';
 import { useSchema } from '../../../../../../utils/validation';
 import { extractErrorMessage } from '../../../../../../utils/errorHandler';
+import { getInitials } from '../../../../../../utils/getInitials';
 import { SchemaField } from '../../SchemaField';
 import { PostFormSchema } from './PostFormSchema';
 import type { PostFormValues } from './IPostForm';
 import {
-  FormContainer,
   FormWrapper,
+  ComposerIdentityRow,
+  ComposerAvatar,
+  ComposerName,
+  AudiencePill,
+  AudienceOptionItem,
+  AudienceOptionTitle,
+  AudienceOptionDescription,
   AttachmentSection,
   AttachmentSectionLabel,
   AttachmentList,
@@ -27,13 +38,12 @@ import {
 
 interface PostFormProps {
   post?: CompanyPostResponse;
+  companyName?: string;
   onSuccess: () => void;
   onCancel?: () => void;
 }
 
-const POST_FIELD_ENTRIES = Object.entries(PostFormSchema);
-
-export const PostForm: React.FC<PostFormProps> = ({ post, onSuccess, onCancel }) => {
+export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess, onCancel }) => {
   const isEditMode = Boolean(post);
   const { fieldRules, defaultValues } = useSchema(PostFormSchema, post);
 
@@ -43,9 +53,14 @@ export const PostForm: React.FC<PostFormProps> = ({ post, onSuccess, onCancel })
   });
 
   const {
+    control,
     handleSubmit,
     formState: { errors },
   } = methods;
+  const {
+    field: { value: isPublic, onChange: setIsPublic },
+  } = useController({ control, name: 'isPublic', defaultValue: false });
+  const [audienceAnchor, setAudienceAnchor] = useState<HTMLElement | null>(null);
   const { showSuccess, showError } = useSnackbar();
   const { saving, withSaving } = useFormSubmit();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
@@ -125,74 +140,116 @@ export const PostForm: React.FC<PostFormProps> = ({ post, onSuccess, onCancel })
 
   return (
     <FormProvider {...methods}>
-      <FormContainer>
-        <FormWrapper>
-          {POST_FIELD_ENTRIES.map(([key, field]) => (
-            <SchemaField
-              key={key}
-              name={key}
-              field={field}
-              error={errors[key as keyof PostFormValues] as FieldError | undefined}
-              disablePortal
-            />
-          ))}
-
-          <AttachmentSection>
-            <AttachmentSectionLabel>Attachments</AttachmentSectionLabel>
-            <input
-              type="file"
-              ref={fileInputRef}
-              multiple
-              onChange={handleFilesChange}
-              style={{ display: 'none' }}
-            />
-
-            {(existingAttachments.length > 0 || newFiles.length > 0) && (
-              <AttachmentList>
-                {existingAttachments.map((attachment) => (
-                  <AttachmentItem key={`existing-${attachment.id}`}>
-                    {attachment.fileName || 'Attachment'}
-                    <IconButton
-                      size="small"
-                      variant="text"
-                      color="secondary"
-                      aria-label="Remove attachment"
-                      onClick={() => removeExistingAttachment(attachment.id)}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  </AttachmentItem>
-                ))}
-                {newFiles.map((file, index) => (
-                  <AttachmentItem key={`new-${file.name}-${index}`}>
-                    {file.name}
-                    <IconButton
-                      size="small"
-                      variant="text"
-                      color="secondary"
-                      aria-label="Remove attachment"
-                      onClick={() => removeNewFile(index)}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  </AttachmentItem>
-                ))}
-              </AttachmentList>
-            )}
-
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              type="button"
-              startIcon={<AttachFileIcon fontSize="small" />}
-              onClick={handleAddFiles}
+      <FormWrapper>
+        <ComposerIdentityRow>
+          <ComposerAvatar>{getInitials(companyName)}</ComposerAvatar>
+          <div>
+            <ComposerName>{companyName || 'Company'}</ComposerName>
+            <AudiencePill type="button" onClick={(e) => setAudienceAnchor(e.currentTarget)}>
+              {isPublic ? <PublicOutlinedIcon fontSize="small" /> : <LockOutlinedIcon fontSize="small" />}
+              {isPublic ? 'Anyone' : 'Private'}
+              <ExpandMoreIcon fontSize="small" />
+            </AudiencePill>
+            <Menu
+              anchorEl={audienceAnchor}
+              open={Boolean(audienceAnchor)}
+              onClose={() => setAudienceAnchor(null)}
+              sx={{ zIndex: 9000 }}
             >
-              Add Files
-            </Button>
-          </AttachmentSection>
-        </FormWrapper>
-      </FormContainer>
+              <MenuItem
+                selected={Boolean(isPublic)}
+                onClick={() => {
+                  setIsPublic(true);
+                  setAudienceAnchor(null);
+                }}
+              >
+                <AudienceOptionItem>
+                  <PublicOutlinedIcon fontSize="small" />
+                  <div>
+                    <AudienceOptionTitle>Anyone</AudienceOptionTitle>
+                    <AudienceOptionDescription>
+                      Anyone can view this post, even without logging in
+                    </AudienceOptionDescription>
+                  </div>
+                </AudienceOptionItem>
+              </MenuItem>
+              <MenuItem
+                selected={!isPublic}
+                onClick={() => {
+                  setIsPublic(false);
+                  setAudienceAnchor(null);
+                }}
+              >
+                <AudienceOptionItem>
+                  <LockOutlinedIcon fontSize="small" />
+                  <div>
+                    <AudienceOptionTitle>Private</AudienceOptionTitle>
+                    <AudienceOptionDescription>
+                      Only people signed in to your company can see this post
+                    </AudienceOptionDescription>
+                  </div>
+                </AudienceOptionItem>
+              </MenuItem>
+            </Menu>
+          </div>
+        </ComposerIdentityRow>
+
+        <SchemaField
+          name="content"
+          field={PostFormSchema.content}
+          error={errors.content as FieldError | undefined}
+          disablePortal
+        />
+
+        <AttachmentSection>
+          <AttachmentSectionLabel>Attachments</AttachmentSectionLabel>
+          <input type="file" ref={fileInputRef} multiple onChange={handleFilesChange} style={{ display: 'none' }} />
+
+          {(existingAttachments.length > 0 || newFiles.length > 0) && (
+            <AttachmentList>
+              {existingAttachments.map((attachment) => (
+                <AttachmentItem key={`existing-${attachment.id}`}>
+                  {attachment.fileName || 'Attachment'}
+                  <IconButton
+                    size="small"
+                    variant="text"
+                    color="secondary"
+                    aria-label="Remove attachment"
+                    onClick={() => removeExistingAttachment(attachment.id)}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </AttachmentItem>
+              ))}
+              {newFiles.map((file, index) => (
+                <AttachmentItem key={`new-${file.name}-${index}`}>
+                  {file.name}
+                  <IconButton
+                    size="small"
+                    variant="text"
+                    color="secondary"
+                    aria-label="Remove attachment"
+                    onClick={() => removeNewFile(index)}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </AttachmentItem>
+              ))}
+            </AttachmentList>
+          )}
+
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            type="button"
+            startIcon={<AttachFileIcon fontSize="small" />}
+            onClick={handleAddFiles}
+          >
+            Add Files
+          </Button>
+        </AttachmentSection>
+      </FormWrapper>
     </FormProvider>
   );
 };

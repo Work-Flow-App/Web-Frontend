@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { CircularProgress } from '@mui/material';
-import { Button } from '../../../../../components/UI/Button';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
@@ -12,11 +12,26 @@ import { useFetch } from '../../../../../hooks/useFetch';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useCompanyRole } from '../../../../../contexts/CompanyRoleContext';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
+import { getInitials } from '../../../../../utils/getInitials';
 import { PostForm } from './PostForm';
 import { PostCard } from './PostCard';
-import { TabHeader, TabHeaderText, TabTitle, TabDescription, FeedList, EmptyState, LoadingContainer } from './PostsTab.styles';
+import {
+  TabHeader,
+  TabHeaderText,
+  TabTitle,
+  TabDescription,
+  ComposeBox,
+  ComposeAvatar,
+  FeedList,
+  EmptyState,
+  LoadingContainer,
+} from './PostsTab.styles';
 
-export const PostsTab: React.FC = () => {
+interface PostsTabProps {
+  companyName?: string;
+}
+
+export const PostsTab: React.FC<PostsTabProps> = ({ companyName }) => {
   const { showSuccess, showError } = useSnackbar();
   const { canEdit, canDelete } = useCompanyRole();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -37,6 +52,7 @@ export const PostsTab: React.FC = () => {
         children: (
           <PostForm
             post={post}
+            companyName={companyName}
             onSuccess={() => {
               resetGlobalModalOuterProps();
               refetch();
@@ -46,7 +62,7 @@ export const PostsTab: React.FC = () => {
         ),
       });
     },
-    [setGlobalModalOuterProps, resetGlobalModalOuterProps, refetch]
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, refetch, companyName]
   );
 
   const handleDelete = useCallback(
@@ -88,14 +104,17 @@ export const PostsTab: React.FC = () => {
       <TabHeader>
         <TabHeaderText>
           <TabTitle>Company Posts</TabTitle>
-          <TabDescription>Share updates and announcements with your team.</TabDescription>
+          <TabDescription>Share updates and announcements — mark a post public to let anyone view it without logging in.</TabDescription>
         </TabHeaderText>
-        {canEdit && (
-          <Button variant="contained" color="primary" size="medium" onClick={() => openPostForm()}>
-            New Post
-          </Button>
-        )}
       </TabHeader>
+
+      {canEdit && (
+        <ComposeBox type="button" onClick={() => openPostForm()}>
+          <ComposeAvatar>{getInitials(companyName)}</ComposeAvatar>
+          <span>Share an update...</span>
+          <AttachFileIcon fontSize="small" />
+        </ComposeBox>
+      )}
 
       {loading ? (
         <LoadingContainer>

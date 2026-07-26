@@ -27,6 +27,47 @@ export const TabDescription = styled(Typography)(({ theme }) => ({
   color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
 }));
 
+export const ComposeBox = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(12),
+  width: '100%',
+  padding: rem(12),
+  marginBottom: rem(20),
+  border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
+  borderRadius: rem(24),
+  backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
+  color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
+  fontSize: rem(14),
+  textAlign: 'left',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
+  },
+  '& svg': {
+    marginLeft: 'auto',
+    color: theme.palette.colors?.grey_400 || theme.palette.text.secondary,
+    flexShrink: 0,
+  },
+}));
+
+export const ComposeAvatar = styled(Box)(({ theme }) => ({
+  width: rem(36),
+  height: rem(36),
+  minWidth: rem(36),
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+  fontSize: rem(13),
+  fontWeight: 700,
+  flexShrink: 0,
+}));
+
 export const FeedList = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',

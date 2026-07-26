@@ -11,6 +11,7 @@ import { VerifyEmail } from './pages/auth/VerifyEmail'
 import { ResendVerification } from './pages/auth/ResendVerification'
 import { CompanyPage } from './pages/company/CompanyPage'
 import { CompanyProfile } from './pages/company/CompanyProfile'
+import { PublicCompanyProfile } from './pages/public/PublicCompanyProfile'
 import {
   WorkerPage,
   WorkerDashboard,
@@ -76,6 +77,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/resend-verification" element={<ResendVerification />} />
+            <Route path="/public/company/:companyId" element={<PublicCompanyProfile />} />
 
             {/* Protected routes - With Layout (Sidebar + TopNav) */}
             <Route element={<Layout />}>
