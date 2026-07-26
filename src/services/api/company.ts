@@ -1,4 +1,4 @@
-import { CompanyApi, Configuration } from '../../../workflow-api';
+import { CompanyApi, Configuration, PublicCompanyViewsApi } from '../../../workflow-api';
 import type {
   CompanyProfileUpdateRequest,
   CompanyPostCreateRequest,
@@ -18,6 +18,7 @@ export type {
   CompanyPostCreateRequest,
   CompanyPostUpdateRequest,
   CompanyPostAttachmentResponse,
+  PublicCompanyProfileResponse,
 } from '../../../workflow-api';
 
 export interface CompanyDocumentUploadPayload {
@@ -43,6 +44,11 @@ export interface CompanyDocumentUpdatePayload {
 function getCompanyApi(): CompanyApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
   return new CompanyApi(config, env.apiBaseUrl, axiosInstance);
+}
+
+function getPublicCompanyApi(): PublicCompanyViewsApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new PublicCompanyViewsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const companyService = {
@@ -122,6 +128,21 @@ export const companyService = {
 
   async deletePost(postId: number) {
     return await getCompanyApi().companyDeletePost(postId);
+  },
+
+  /**
+   * Public views — no authentication required, used for shareable company/post links
+   */
+  async getPublicProfile(companyId: number) {
+    return await getPublicCompanyApi().publicCompanyGetPublicProfile(companyId);
+  },
+
+  async getPublicPosts(companyId: number) {
+    return await getPublicCompanyApi().publicCompanyGetPublicPosts(companyId);
+  },
+
+  async getPublicDocuments(companyId: number) {
+    return await getPublicCompanyApi().publicCompanyGetPublicDocuments(companyId);
   },
 };
 

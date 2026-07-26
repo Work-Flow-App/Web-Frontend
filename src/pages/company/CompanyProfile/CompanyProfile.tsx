@@ -1,18 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { FieldError } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
+import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
+import CheckIcon from '@mui/icons-material/Check';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import { Button } from '../../../components/UI/Button';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
-import type { PageAction } from '../../../components/UI/PageWrapper';
 import { companyService } from '../../../services/api';
 import type { CompanyProfileResponse } from '../../../services/api';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { copyToClipboard } from '../../../utils/clipboard';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { useCompanyRole } from '../../../contexts/CompanyRoleContext';
 import { useFetch } from '../../../hooks/useFetch';
@@ -20,23 +23,48 @@ import { useFormSubmit } from '../../../hooks/useFormSubmit';
 import { CompanyProfileFormSchema } from './CompanyProfileSchema';
 import type { CompanyProfileField } from './CompanyProfileSchema';
 import {
-  SectionsGrid,
-  SectionCard,
-  SectionTitle,
-  FieldsGrid,
-  LoadingContainer,
+  PageContent,
+  ProfileHeaderCard,
+  HeaderRow,
+  HeaderTop,
+  IdBlock,
+  HeaderTitle,
+  HeaderTagline,
+  HeaderMetaRow,
+  HeaderMetaDot,
+  HeaderActionsRow,
+  CopyLinkWrap,
+  CopyLinkButton,
+  CopyTooltip,
   TabsWrapper,
   StyledTabs,
   StyledTab,
   TabContent,
-  EmptySectionState,
-  EmptySectionText,
+  SectionsGrid,
+  SideCol,
+  SectionCard,
+  SectionTitle,
+  FieldsGrid,
+  InfoGroup,
+  InfoGroupLabel,
+  InfoRow,
+  InfoIconBadge,
+  InfoRowMain,
+  InfoRowLabel,
+  InfoRowValue,
+  InfoAddButton,
+  EmptyCard,
+  EmptyCardIconBadge,
+  EmptyCardTitle,
+  EmptyCardText,
+  LoadingContainer,
 } from './CompanyProfile.styles';
 import type { CompanyProfileFormData } from './ICompanyProfile';
 import { BillingSettings } from '../../settings/BillingSettings';
 import { LogoUpload, CompanySnapshot, DocumentsTab, PostsTab, SchemaField } from './components';
 
 const TABS = ['overview', 'documents', 'posts', 'billing'] as const;
+const DEFAULT_TAGLINE_PROMPT = 'Add a tagline to tell people what your company does';
 
 type SchemaEntry = [keyof CompanyProfileFormData, CompanyProfileField];
 
@@ -44,6 +72,10 @@ const SCHEMA_ENTRIES = Object.entries(CompanyProfileFormSchema) as SchemaEntry[]
 const COMPANY_GRID_FIELDS = SCHEMA_ENTRIES.filter(
   ([key, field]) => field.section === 'company' && key !== 'name' && key !== 'description'
 );
+const READ_ONLY_COMPANY_FIELDS = SCHEMA_ENTRIES.filter(([key, field]) => field.section === 'company' && key !== 'name');
+const GENERAL_FIELDS = READ_ONLY_COMPANY_FIELDS.filter(([, field]) => field.group === 'general');
+const CONTACT_FIELDS = READ_ONLY_COMPANY_FIELDS.filter(([, field]) => field.group === 'contact');
+const BUSINESS_FIELDS = READ_ONLY_COMPANY_FIELDS.filter(([, field]) => field.group === 'business');
 const ADDRESS_FIELDS = SCHEMA_ENTRIES.filter(([, field]) => field.section === 'address');
 const BANK_FIELDS = SCHEMA_ENTRIES.filter(([, field]) => field.section === 'bank');
 
@@ -66,6 +98,8 @@ export const CompanyProfile: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const buildFormValues = (data: CompanyProfileResponse) => ({
     name: data.name || '',
@@ -162,45 +196,144 @@ export const CompanyProfile: React.FC = () => {
 
   const handleLogoChange = () => refetchProfile();
 
-  const pageActions: PageAction[] = useMemo(() => {
-    if (activeTab !== TABS.indexOf('overview') || !canEdit) return [];
-    if (isEditing) {
-      return [
-        { label: 'Cancel', variant: 'outlined', color: 'secondary', onClick: handleCancel, disabled: isSaving },
-        {
-          label: isSaving ? 'Saving...' : 'Save Changes',
-          variant: 'contained',
-          color: 'primary',
-          onClick: handleSubmit(onSubmit),
-          disabled: isSaving,
-        },
-      ];
+  const handleCopyPublicLink = useCallback(async () => {
+    if (!profile?.id) return;
+    const link = `${window.location.origin}/public/company/${profile.id}`;
+    const success = await copyToClipboard(link);
+    if (success) {
+      setLinkCopied(true);
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = setTimeout(() => setLinkCopied(false), 1600);
+    } else {
+      showError('Failed to copy link.');
     }
-    return [{ label: 'Edit Profile', variant: 'contained', color: 'primary', onClick: handleEdit }];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, canEdit, isEditing, isSaving, profile]);
+  }, [profile?.id, showError]);
+
+  const renderInfoRow = ([key, field]: SchemaEntry) => {
+    const Icon = field.icon;
+    const value = profileValues?.[key];
+    const isTextarea = field.control === 'textarea';
+    return (
+      <InfoRow key={key}>
+        {Icon && (
+          <InfoIconBadge>
+            <Icon fontSize="small" />
+          </InfoIconBadge>
+        )}
+        <InfoRowMain>
+          <InfoRowLabel>{field.label}</InfoRowLabel>
+          {value ? (
+            <InfoRowValue>{value}</InfoRowValue>
+          ) : !isTextarea && canEdit ? (
+            <InfoAddButton type="button" onClick={handleEdit}>
+              + Add {field.label}
+            </InfoAddButton>
+          ) : (
+            <InfoRowValue $empty>Not provided</InfoRowValue>
+          )}
+        </InfoRowMain>
+      </InfoRow>
+    );
+  };
+
+  const renderPlainInfoRow = (
+    [key, field]: SchemaEntry,
+    Icon: React.ComponentType<{ fontSize?: 'small' | 'medium' | 'large' }>
+  ) => {
+    const value = profileValues?.[key];
+    return (
+      <InfoRow key={key}>
+        <InfoIconBadge>
+          <Icon fontSize="small" />
+        </InfoIconBadge>
+        <InfoRowMain>
+          <InfoRowLabel>{field.label}</InfoRowLabel>
+          <InfoRowValue $empty={!value}>{value || 'Not provided'}</InfoRowValue>
+        </InfoRowMain>
+      </InfoRow>
+    );
+  };
 
   if (isLoading) {
     return (
-      <PageWrapper title="Company Profile">
+      <PageContent>
         <LoadingContainer>
           <CircularProgress size={40} />
         </LoadingContainer>
-      </PageWrapper>
+      </PageContent>
     );
   }
 
   return (
     <FormProvider {...methods}>
-      <PageWrapper title="Company Profile" actions={pageActions}>
-        <TabsWrapper>
-          <StyledTabs value={activeTab} onChange={(_: SyntheticEvent, val: number) => setActiveTab(val)}>
-            <StyledTab label="Overview" />
-            <StyledTab label="Documents" />
-            <StyledTab label="Posts" />
-            <StyledTab label="Billing" />
-          </StyledTabs>
-        </TabsWrapper>
+      <PageContent>
+        <ProfileHeaderCard>
+          <HeaderRow>
+            <LogoUpload
+              logoUrl={profile?.logoUrl}
+              companyName={profile?.name}
+              editable={canEdit}
+              onLogoChange={handleLogoChange}
+            />
+
+            <HeaderTop>
+              <IdBlock>
+                <HeaderTitle>{profile?.name || 'Company'}</HeaderTitle>
+                <HeaderTagline>{profile?.tagline || DEFAULT_TAGLINE_PROMPT}</HeaderTagline>
+                {(profile?.email || profile?.currency) && (
+                  <HeaderMetaRow>
+                    {profile?.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
+                    {profile?.email && profile?.currency && <HeaderMetaDot>&bull;</HeaderMetaDot>}
+                    {profile?.currency && <span>Currency: {profile.currency}</span>}
+                  </HeaderMetaRow>
+                )}
+              </IdBlock>
+
+              <HeaderActionsRow>
+                {profile?.id && (
+                  <CopyLinkWrap>
+                    <CopyLinkButton
+                      type="button"
+                      $copied={linkCopied}
+                      onClick={handleCopyPublicLink}
+                      aria-label="Copy public profile link"
+                      title="Copy public profile link"
+                    >
+                      {linkCopied ? <CheckIcon /> : <IosShareOutlinedIcon />}
+                    </CopyLinkButton>
+                    <CopyTooltip $visible={linkCopied}>Copied!</CopyTooltip>
+                  </CopyLinkWrap>
+                )}
+
+                {activeTab === TABS.indexOf('overview') &&
+                  canEdit &&
+                  (isEditing ? (
+                    <>
+                      <Button variant="outlined" color="secondary" onClick={handleCancel} disabled={isSaving}>
+                        Cancel
+                      </Button>
+                      <Button variant="contained" color="primary" onClick={handleSubmit(onSubmit)} disabled={isSaving}>
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="contained" color="primary" onClick={handleEdit}>
+                      Edit Profile
+                    </Button>
+                  ))}
+              </HeaderActionsRow>
+            </HeaderTop>
+          </HeaderRow>
+
+          <TabsWrapper>
+            <StyledTabs value={activeTab} onChange={(_: SyntheticEvent, val: number) => setActiveTab(val)}>
+              <StyledTab label="Overview" />
+              <StyledTab label="Documents" />
+              <StyledTab label="Posts" />
+              <StyledTab label="Billing" />
+            </StyledTabs>
+          </TabsWrapper>
+        </ProfileHeaderCard>
 
         {activeTab === TABS.indexOf('documents') && (
           <TabContent>
@@ -210,7 +343,7 @@ export const CompanyProfile: React.FC = () => {
 
         {activeTab === TABS.indexOf('posts') && (
           <TabContent>
-            <PostsTab />
+            <PostsTab companyName={profile?.name} />
           </TabContent>
         )}
 
@@ -231,99 +364,125 @@ export const CompanyProfile: React.FC = () => {
               <SectionCard>
                 <SectionTitle>Company Information</SectionTitle>
 
-                <LogoUpload
-                  logoUrl={profile?.logoUrl}
-                  companyName={profile?.name}
-                  editable={canEdit}
-                  onLogoChange={handleLogoChange}
-                />
-
-                <SchemaField
-                  isEditing={isEditing}
-                  name="name"
-                  field={CompanyProfileFormSchema.name}
-                  error={errors.name}
-                  viewValue={profileValues?.name}
-                />
-                <SchemaField
-                  isEditing={isEditing}
-                  name="description"
-                  field={CompanyProfileFormSchema.description}
-                  viewValue={profileValues?.description}
-                />
-                <FieldsGrid>
-                  {COMPANY_GRID_FIELDS.map(([key, field]) => (
+                {isEditing ? (
+                  <>
                     <SchemaField
-                      key={key}
-                      isEditing={isEditing}
-                      name={key}
-                      field={field}
-                      error={errors[key] as FieldError | undefined}
-                      viewValue={profileValues?.[key]}
+                      isEditing
+                      name="name"
+                      field={CompanyProfileFormSchema.name}
+                      error={errors.name}
+                      viewValue={profileValues?.name}
                     />
-                  ))}
-                </FieldsGrid>
-              </SectionCard>
-
-              {/* Address */}
-              <SectionCard>
-                <SectionTitle>Address</SectionTitle>
-                {isEditing || hasAddressData ? (
-                  <FieldsGrid>
-                    {ADDRESS_FIELDS.map(([key, field]) => (
-                      <SchemaField
-                        key={key}
-                        isEditing={isEditing}
-                        name={key}
-                        field={field}
-                        error={errors[key] as FieldError | undefined}
-                        viewValue={profileValues?.[key]}
-                      />
-                    ))}
-                  </FieldsGrid>
+                    <SchemaField
+                      isEditing
+                      name="description"
+                      field={CompanyProfileFormSchema.description}
+                      viewValue={profileValues?.description}
+                    />
+                    <FieldsGrid>
+                      {COMPANY_GRID_FIELDS.map(([key, field]) => (
+                        <SchemaField
+                          key={key}
+                          isEditing
+                          name={key}
+                          field={field}
+                          error={errors[key] as FieldError | undefined}
+                          viewValue={profileValues?.[key]}
+                        />
+                      ))}
+                    </FieldsGrid>
+                  </>
                 ) : (
-                  <EmptySectionState>
-                    <EmptySectionText>No address on file yet.</EmptySectionText>
-                    {canEdit && (
-                      <Button variant="text" color="primary" size="small" onClick={handleEdit}>
-                        Add Address
-                      </Button>
-                    )}
-                  </EmptySectionState>
+                  <>
+                    <InfoGroup>
+                      <InfoGroupLabel>General</InfoGroupLabel>
+                      {GENERAL_FIELDS.map(renderInfoRow)}
+                    </InfoGroup>
+                    <InfoGroup>
+                      <InfoGroupLabel>Contact</InfoGroupLabel>
+                      {CONTACT_FIELDS.map(renderInfoRow)}
+                    </InfoGroup>
+                    <InfoGroup>
+                      <InfoGroupLabel>Business</InfoGroupLabel>
+                      {BUSINESS_FIELDS.map(renderInfoRow)}
+                    </InfoGroup>
+                  </>
                 )}
               </SectionCard>
 
-              {/* Bank Details */}
-              <SectionCard>
-                <SectionTitle>Bank Details</SectionTitle>
-                {isEditing || hasBankData ? (
-                  <FieldsGrid>
-                    {BANK_FIELDS.map(([key, field]) => (
-                      <SchemaField
-                        key={key}
-                        isEditing={isEditing}
-                        name={key}
-                        field={field}
-                        error={errors[key] as FieldError | undefined}
-                        viewValue={profileValues?.[key]}
-                      />
-                    ))}
-                  </FieldsGrid>
-                ) : (
-                  <EmptySectionState>
-                    <EmptySectionText>No bank details on file yet.</EmptySectionText>
-                    {canEdit && (
-                      <Button variant="text" color="primary" size="small" onClick={handleEdit}>
-                        Add Bank Details
-                      </Button>
-                    )}
-                  </EmptySectionState>
-                )}
-              </SectionCard>
+              <SideCol>
+                {/* Address */}
+                <SectionCard>
+                  <SectionTitle>Address</SectionTitle>
+                  {isEditing ? (
+                    <FieldsGrid>
+                      {ADDRESS_FIELDS.map(([key, field]) => (
+                        <SchemaField
+                          key={key}
+                          isEditing
+                          name={key}
+                          field={field}
+                          error={errors[key] as FieldError | undefined}
+                          viewValue={profileValues?.[key]}
+                        />
+                      ))}
+                    </FieldsGrid>
+                  ) : hasAddressData ? (
+                    ADDRESS_FIELDS.map((entry) => renderPlainInfoRow(entry, PlaceOutlinedIcon))
+                  ) : (
+                    <EmptyCard>
+                      <EmptyCardIconBadge>
+                        <PlaceOutlinedIcon />
+                      </EmptyCardIconBadge>
+                      <EmptyCardTitle>Address</EmptyCardTitle>
+                      <EmptyCardText>No address on file yet.</EmptyCardText>
+                      {canEdit && (
+                        <Button variant="outlined" color="secondary" size="small" onClick={handleEdit}>
+                          + Add Address
+                        </Button>
+                      )}
+                    </EmptyCard>
+                  )}
+                </SectionCard>
+
+                {/* Bank Details */}
+                <SectionCard>
+                  <SectionTitle>Bank Details</SectionTitle>
+                  {isEditing ? (
+                    <FieldsGrid>
+                      {BANK_FIELDS.map(([key, field]) => (
+                        <SchemaField
+                          key={key}
+                          isEditing
+                          name={key}
+                          field={field}
+                          error={errors[key] as FieldError | undefined}
+                          viewValue={profileValues?.[key]}
+                        />
+                      ))}
+                    </FieldsGrid>
+                  ) : hasBankData ? (
+                    BANK_FIELDS.map((entry) => renderPlainInfoRow(entry, AccountBalanceOutlinedIcon))
+                  ) : (
+                    <EmptyCard>
+                      <EmptyCardIconBadge>
+                        <AccountBalanceOutlinedIcon />
+                      </EmptyCardIconBadge>
+                      <EmptyCardTitle>Bank Details</EmptyCardTitle>
+                      <EmptyCardText>No bank details on file yet.</EmptyCardText>
+                      {canEdit && (
+                        <Button variant="outlined" color="secondary" size="small" onClick={handleEdit}>
+                          + Add Bank Details
+                        </Button>
+                      )}
+                    </EmptyCard>
+                  )}
+                </SectionCard>
+              </SideCol>
             </SectionsGrid>
           </>
         )}
-      </PageWrapper>
+      </PageContent>
     </FormProvider>
   );
 };

@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { Button } from '../../../../../components/UI/Button';
+import React, { useRef, useState } from 'react';
+import { Menu, MenuItem } from '@mui/material';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
@@ -10,15 +11,8 @@ import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../../hooks/useFormSubmit';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
 import { ValidationRules } from '../../../../../utils/validation';
-import {
-  LogoRow,
-  LogoPreview,
-  LogoImage,
-  LogoInitials,
-  LogoActions,
-  LogoButtonRow,
-  LogoHint,
-} from './LogoUpload.styles';
+import { getInitials } from '../../../../../utils/getInitials';
+import { LogoBox, LogoImage, LogoInitials, LogoEditButton } from './LogoUpload.styles';
 
 const MAX_LOGO_SIZE_MB = 5;
 const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
@@ -30,21 +24,22 @@ interface LogoUploadProps {
   onLogoChange: () => void;
 }
 
-const getInitials = (name?: string): string => {
-  if (!name) return 'CO';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return 'CO';
-  if (parts.length === 1) return parts[0].slice(0, 2);
-  return `${parts[0][0]}${parts[1][0]}`;
-};
-
 export const LogoUpload: React.FC<LogoUploadProps> = ({ logoUrl, companyName, editable, onLogoChange }) => {
   const { showSuccess, showError } = useSnackbar();
   const { saving, withSaving } = useFormSubmit();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const handleUploadClick = () => fileInputRef.current?.click();
+
+  const handleEditButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (logoUrl) {
+      setMenuAnchor(e.currentTarget);
+    } else {
+      handleUploadClick();
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +69,7 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({ logoUrl, companyName, ed
   };
 
   const handleRemove = () => {
+    setMenuAnchor(null);
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.SMALL,
@@ -104,37 +100,43 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({ logoUrl, companyName, ed
   };
 
   return (
-    <LogoRow>
-      <LogoPreview>
-        {logoUrl ? (
-          <LogoImage src={logoUrl} alt={`${companyName || 'Company'} logo`} />
-        ) : (
-          <LogoInitials>{getInitials(companyName)}</LogoInitials>
-        )}
-      </LogoPreview>
+    <LogoBox>
+      {logoUrl ? (
+        <LogoImage src={logoUrl} alt={`${companyName || 'Company'} logo`} />
+      ) : (
+        <LogoInitials>{getInitials(companyName)}</LogoInitials>
+      )}
 
       {editable && (
-        <LogoActions>
-          <LogoButtonRow>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-            <Button variant="outlined" color="secondary" size="small" onClick={handleUploadClick} disabled={saving}>
-              {saving ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
-            </Button>
-            {logoUrl && (
-              <Button variant="text" color="error" size="small" onClick={handleRemove} disabled={saving}>
-                Remove
-              </Button>
-            )}
-          </LogoButtonRow>
-          <LogoHint>PNG or JPG, up to {MAX_LOGO_SIZE_MB}MB.</LogoHint>
-        </LogoActions>
+        <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          <LogoEditButton
+            type="button"
+            title={logoUrl ? 'Change logo' : 'Upload logo'}
+            disabled={saving}
+            onClick={handleEditButtonClick}
+          >
+            <EditOutlinedIcon />
+          </LogoEditButton>
+          <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
+            <MenuItem
+              onClick={() => {
+                setMenuAnchor(null);
+                handleUploadClick();
+              }}
+            >
+              Change Logo
+            </MenuItem>
+            <MenuItem onClick={handleRemove}>Remove Logo</MenuItem>
+          </Menu>
+        </>
       )}
-    </LogoRow>
+    </LogoBox>
   );
 };

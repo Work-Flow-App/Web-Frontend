@@ -1,0 +1,1 @@
+export { PublicCompanyProfile } from './PublicCompanyProfile';

@@ -1,11 +1,25 @@
+import type { ComponentType } from 'react';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
+import LabelOutlinedIcon from '@mui/icons-material/LabelOutlined';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import { InputValidationRules } from '../../../utils/validation';
 import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
 import type { SchemaFieldDefinition } from './components/SchemaField';
 
 export type ProfileSection = 'company' | 'address' | 'bank';
+export type ProfileFieldGroup = 'general' | 'contact' | 'business';
 
 export interface CompanyProfileField extends SchemaFieldDefinition {
   section: ProfileSection;
+  /** Icon-row group on the read-only Overview tab. Only set for section:'company' fields shown there. */
+  group?: ProfileFieldGroup;
+  /** Icon shown in the read-only Overview tab's icon-row list. */
+  icon?: ComponentType<{ fontSize?: 'small' | 'medium' | 'large' }>;
 }
 
 const CURRENCY_OPTIONS = Object.values(CompanyProfileResponseCurrencyEnum).map((c) => ({
@@ -32,6 +46,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     isRequired: false,
     section: 'company',
     control: 'textarea',
+    group: 'general',
+    icon: DescriptionOutlinedIcon,
   },
   website: {
     title: 'website',
@@ -41,6 +57,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Website',
     isRequired: false,
     section: 'company',
+    group: 'general',
+    icon: LanguageOutlinedIcon,
   },
   tagline: {
     title: 'tagline',
@@ -50,6 +68,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Tagline',
     isRequired: false,
     section: 'company',
+    group: 'general',
+    icon: LabelOutlinedIcon,
   },
   email: {
     title: 'email',
@@ -60,6 +80,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     isRequired: false,
     section: 'company',
     control: 'email',
+    group: 'contact',
+    icon: MailOutlineIcon,
   },
   contactEmail: {
     title: 'contactEmail',
@@ -70,6 +92,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     isRequired: false,
     section: 'company',
     control: 'email',
+    group: 'contact',
+    icon: MailOutlineIcon,
   },
   contactNumber: {
     title: 'contactNumber',
@@ -79,6 +103,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Contact Number',
     isRequired: false,
     section: 'company',
+    group: 'contact',
+    icon: PhoneOutlinedIcon,
   },
   telephone: {
     title: 'telephone',
@@ -88,6 +114,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Telephone',
     isRequired: false,
     section: 'company',
+    group: 'contact',
+    icon: PhoneOutlinedIcon,
   },
   mobile: {
     title: 'mobile',
@@ -97,6 +125,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Mobile',
     isRequired: false,
     section: 'company',
+    group: 'contact',
+    icon: PhoneOutlinedIcon,
   },
   fax: {
     title: 'fax',
@@ -106,6 +136,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'Fax',
     isRequired: false,
     section: 'company',
+    group: 'contact',
+    icon: PrintOutlinedIcon,
   },
   vatNumber: {
     title: 'vatNumber',
@@ -115,6 +147,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     label: 'VAT Number',
     isRequired: false,
     section: 'company',
+    group: 'business',
+    icon: ReceiptLongOutlinedIcon,
   },
   currency: {
     title: 'currency',
@@ -127,6 +161,8 @@ export const CompanyProfileFormSchema: Record<string, CompanyProfileField> = {
     control: 'dropdown',
     dropdownOptions: CURRENCY_OPTIONS,
     dropdownClearable: true,
+    group: 'business',
+    icon: PaidOutlinedIcon,
   },
   addressLine1: {
     title: 'addressLine1',
