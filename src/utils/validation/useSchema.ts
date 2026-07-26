@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { SchemaGenerator } from './SchemaGenerator';
+import { buildDynamicDefaultValues } from './buildDynamicDefaultValues';
 import type {
   IFields,
   IFieldTitles,
@@ -18,12 +19,17 @@ export interface ISchema {
   isRequireds: IFieldIsRequired;
 }
 
-export const useSchema = (fields: IFields, dynamicDefaultValues?: IDefaultValues): ISchema => {
+/**
+ * @param source When editing an existing record, pass it to hydrate defaultValues from its
+ * same-named fields (falling back to each field's own schema defaultValue). Omit for create mode
+ * — defaultValues then come straight from the schema.
+ */
+export const useSchema = (fields: IFields, source?: object): ISchema => {
   const methods = useMemo(() => {
     const schema = new SchemaGenerator(fields);
     const fieldTitles = schema.getTitles();
     const fieldRules = schema.getRules();
-    const defaultValues = dynamicDefaultValues || schema.getDefaultValues();
+    const defaultValues = source ? buildDynamicDefaultValues(fields, source) : schema.getDefaultValues();
     const placeHolders = schema.getPlaceHolders();
     const fieldLabels = schema.getLabels();
     const isRequireds = schema.getIsRequireds();
@@ -36,7 +42,7 @@ export const useSchema = (fields: IFields, dynamicDefaultValues?: IDefaultValues
       fieldLabels,
       isRequireds,
     };
-  }, [fields, dynamicDefaultValues]);
+  }, [fields, source]);
 
   return methods;
 };
