@@ -256,6 +256,107 @@ export const DateGroupDivider = styled(Box)(({ theme }) => ({
   margin: theme.spacing(2, 0),
 }));
 
+export const MessageBubbleActions = styled(Box)(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  flexShrink: 0,
+  marginLeft: theme.spacing(1),
+  opacity: 0.7,
+  transition: 'opacity 0.15s ease',
+  '&:hover': {
+    opacity: 1,
+  },
+}));
+
+interface MessageProps {
+  isMine?: boolean;
+}
+
+// ─── Message hover actions ────────────────────────────────────────────────────
+
+export const MessageActionGroup = styled(Box)(({ theme }) => ({
+  display: 'none',
+  alignItems: 'center',
+  gap: theme.spacing(0.25),
+  alignSelf: 'center',
+  flexShrink: 0,
+}));
+
+export const MessageRowWithActions = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isMine',
+})<MessageProps>(({ isMine }) => ({
+  display: 'flex',
+  flexDirection: isMine ? 'row-reverse' : 'row',
+  alignItems: 'flex-end',
+  gap: rem(10),
+  marginBottom: rem(16),
+  [`&:hover .msg-action-group`]: {
+    display: 'flex',
+  },
+}));
+
+export const MessageEditIconBtn = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: rem(26),
+  height: rem(26),
+  borderRadius: rem(6),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  transition: 'all 0.15s ease',
+  padding: 0,
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_50,
+    color: theme.palette.primary.main,
+    borderColor: theme.palette.primary.main,
+  },
+}));
+
+export const MessageDeleteIconBtn = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: rem(26),
+  height: rem(26),
+  borderRadius: rem(6),
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
+  cursor: 'pointer',
+  color: theme.palette.error.main,
+  transition: 'all 0.15s ease',
+  padding: 0,
+  '&:hover': {
+    backgroundColor: '#FEF2F2',
+    borderColor: theme.palette.error.main,
+  },
+}));
+
+export const MessageEditInputRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  alignItems: 'flex-end',
+  marginTop: theme.spacing(0.5),
+}));
+
+export const MessageEditTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    fontSize: rem(13),
+    borderRadius: rem(8),
+    backgroundColor: theme.palette.colors.white,
+    minWidth: rem(200),
+  },
+}));
+
+export const MessageEditActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(0.5),
+  flexShrink: 0,
+}));
+
 export const DateGroupLine = styled(Box)(({ theme }) => ({
   flex: 1,
   height: rem(1),
@@ -270,10 +371,6 @@ export const DateGroupText = styled(Typography)(({ theme }) => ({
 }));
 
 // ─── Message bubbles ──────────────────────────────────────────────────────────
-
-interface MessageProps {
-  isMine?: boolean;
-}
 
 export const MessageRow = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isMine',

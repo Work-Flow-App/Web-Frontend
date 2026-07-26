@@ -4,6 +4,7 @@ import type {
   JobWorkflowUpdateRequest,
   JobWorkflowStepResponse,
   JobWorkflowStepUpdateRequest,
+  JobWorkflowStepCreateRequest,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
@@ -13,6 +14,7 @@ export type {
   JobWorkflowUpdateRequest,
   JobWorkflowStepResponse,
   JobWorkflowStepUpdateRequest,
+  JobWorkflowStepCreateRequest,
 };
 
 function getJobWorkflowApi(): JobWorkflowsApi {
@@ -41,6 +43,10 @@ export const jobWorkflowService = {
     return await getJobWorkflowApi().jobWorkflowUpdateJobWorkflow(jobWorkflowId, data);
   },
 
+  async addStep(jobWorkflowId: number, data: JobWorkflowStepCreateRequest) {
+    return await getJobWorkflowApi().jobWorkflowAddStep(jobWorkflowId, data);
+  },
+
   async updateStep(jobWorkflowId: number, stepId: number, data: JobWorkflowStepUpdateRequest) {
     return await getJobWorkflowApi().jobWorkflowUpdateStep(jobWorkflowId, stepId, data);
   },
@@ -55,3 +61,4 @@ export const jobWorkflowService = {
 };
 
 export default jobWorkflowService;
+

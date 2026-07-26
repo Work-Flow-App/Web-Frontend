@@ -5,6 +5,10 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -82,6 +86,12 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const [selectedPostToStepId, setSelectedPostToStepId] = useState<number | null>(null);
+
+  // ── Edit / delete state ──────────────────────────────────────────────────────
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // When viewFilter changes: if a specific step is selected, lock target step to viewFilter.
   // When 'all' is selected, use selectedPostToStepId (or default to first step).
@@ -255,6 +265,50 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     });
   };
 
+  // ── Edit / delete handlers ──────────────────────────────────────────────────
+
+  const startEdit = (item: CombinedTimelineItem) => {
+    setEditingId(item.id ?? null);
+    setEditingContent(item.content || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingContent('');
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !editingContent.trim()) return;
+    setSavingEdit(true);
+    try {
+      await stepActivityService.updateComment(editingId, {
+        content: editingContent.trim(),
+        type: postType as StepCommentCreateRequestTypeEnum,
+      });
+      showSuccess('Message updated');
+      cancelEdit();
+      fetchAllTimelines(steps);
+    } catch {
+      showError('Failed to update message');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async (item: CombinedTimelineItem) => {
+    if (!item.id) return;
+    setDeletingId(item.id);
+    try {
+      await stepActivityService.deleteComment(item.id);
+      showSuccess('Message deleted');
+      fetchAllTimelines(steps);
+    } catch {
+      showError('Failed to delete message');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   // ── Feed renderer ───────────────────────────────────────────────────────────
 
   const renderFeed = () => {
@@ -295,11 +349,14 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
 
       const isMine = !!(currentUserId && item.actorId === currentUserId);
       const isAttachment = item.itemType === 'ATTACHMENT';
+      const isComment = item.itemType === 'COMMENT' || !isAttachment;
+      const isEditing = editingId === item.id;
+      const isDeleting = deletingId === item.id;
       const fileName = extractFileName(item.fileUrl);
       const ts = getTypeStyle(item.discussionType as string);
 
       nodes.push(
-        <SS.MessageRow key={`${item.stepId}-${item.id}-${idx}`} isMine={isMine}>
+        <SS.MessageRowWithActions key={`${item.stepId}-${item.id}-${idx}`} isMine={isMine}>
           <SS.MessageAvatarCircle avatarColor={getAvatarColor(item.actorUsername)}>
             {getInitials(item.actorUsername)}
           </SS.MessageAvatarCircle>
@@ -318,33 +375,88 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               </SS.MessageTypeBadge>
             </SS.MessageMetaRow>
 
-            <SS.MessageBubble isMine={isMine}>
-              {isAttachment ? (
-                <SS.AttachmentRow>
-                  {getFileIcon(fileName)}
-                  <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
-                  {item.fileUrl && (
-                    <Tooltip title="Download">
-                      <MuiIconButton
-                        size="small"
-                        onClick={() => window.open(item.fileUrl, '_blank')}
-                        sx={{ color: isMine ? 'rgba(255,255,255,0.8)' : 'text.secondary' }}
-                      >
-                        <DownloadIcon fontSize="small" />
-                      </MuiIconButton>
-                    </Tooltip>
-                  )}
-                </SS.AttachmentRow>
-              ) : (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: item.content || item.description || '—',
+            {isEditing ? (
+              /* ── Inline edit mode ─────────────────────────────────── */
+              <SS.MessageEditInputRow>
+                <SS.MessageEditTextField
+                  size="small"
+                  value={editingContent}
+                  onChange={e => setEditingContent(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
+                    if (e.key === 'Escape') cancelEdit();
                   }}
+                  multiline
+                  maxRows={4}
+                  autoFocus
+                  fullWidth
                 />
-              )}
-            </SS.MessageBubble>
+                <SS.MessageEditActions>
+                  <Tooltip title="Save (Enter)">
+                    <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
+                      {savingEdit
+                        ? <CircularProgress size={12} />
+                        : <CheckIcon sx={{ fontSize: 14 }} />}
+                    </SS.MessageEditIconBtn>
+                  </Tooltip>
+                  <Tooltip title="Cancel (Esc)">
+                    <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
+                      <CloseIcon sx={{ fontSize: 14 }} />
+                    </SS.MessageEditIconBtn>
+                  </Tooltip>
+                </SS.MessageEditActions>
+              </SS.MessageEditInputRow>
+            ) : (
+              /* ── Normal display mode ──────────────────────────────── */
+              <SS.MessageBubble isMine={isMine}>
+                {isAttachment ? (
+                  <SS.AttachmentRow>
+                    {getFileIcon(fileName)}
+                    <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
+                    {item.fileUrl && (
+                      <Tooltip title="Download">
+                        <MuiIconButton
+                          size="small"
+                          onClick={() => window.open(item.fileUrl, '_blank')}
+                          sx={{ color: isMine ? 'rgba(255,255,255,0.8)' : 'text.secondary' }}
+                        >
+                          <DownloadIcon fontSize="small" />
+                        </MuiIconButton>
+                      </Tooltip>
+                    )}
+                  </SS.AttachmentRow>
+                ) : (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: item.content || item.description || '—',
+                    }}
+                  />
+                )}
+              </SS.MessageBubble>
+            )}
           </SS.MessageContentBox>
-        </SS.MessageRow>
+
+          {/* ── Edit / Delete action buttons (visible on row hover) ── */}
+          {isComment && !isEditing && (
+            <SS.MessageActionGroup className="msg-action-group">
+              <Tooltip title="Edit message">
+                <SS.MessageEditIconBtn onClick={() => startEdit(item)}>
+                  <EditIcon sx={{ fontSize: 13 }} />
+                </SS.MessageEditIconBtn>
+              </Tooltip>
+              <Tooltip title="Delete message">
+                <SS.MessageDeleteIconBtn
+                  onClick={() => handleDelete(item)}
+                  disabled={isDeleting}
+                >
+                  {isDeleting
+                    ? <CircularProgress size={12} color="error" />
+                    : <DeleteIcon sx={{ fontSize: 13 }} />}
+                </SS.MessageDeleteIconBtn>
+              </Tooltip>
+            </SS.MessageActionGroup>
+          )}
+        </SS.MessageRowWithActions>
       );
     });
 
