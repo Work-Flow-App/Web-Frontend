@@ -7,6 +7,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import { Badge } from '../../../components/UI/Badge';
+import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { TabsWrapper, StyledTabs, StyledTab, TabContent } from '../../company/CompanyProfile/CompanyProfile.styles';
 import { companyService } from '../../../services/api';
 import type { CompanyDocumentResponse, CompanyPostResponse, PublicCompanyProfileResponse } from '../../../services/api';
@@ -91,7 +92,9 @@ export const PublicCompanyProfile: React.FC = () => {
   return (
     <PageContainer>
       <TopBar>
-        <BrandLink to="/login">WorkFloww</BrandLink>
+        <BrandLink to="/login">
+          <FloowLogo variant="light" height="28px" />
+        </BrandLink>
         <SignInButtonLink to="/login">Sign in</SignInButtonLink>
       </TopBar>
 

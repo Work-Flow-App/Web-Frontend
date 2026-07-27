@@ -19,11 +19,10 @@ export const TopBar = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
 }));
 
-export const BrandLink = styled(Link)(({ theme }) => ({
-  fontSize: rem(18),
-  fontWeight: 700,
-  color: theme.palette.primary.main,
-  textDecoration: 'none',
+export const BrandLink = styled(Link)(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  lineHeight: 0,
 }));
 
 export const SignInButtonLink = styled(Link)(({ theme }) => ({
