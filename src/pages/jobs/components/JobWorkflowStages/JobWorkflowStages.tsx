@@ -884,11 +884,28 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
 
     try {
       setSavingReorder(true);
-      const updatePromises = localSteps.map((step, idx) => {
-        if (!step.id) return Promise.resolve();
-        return jobWorkflowService.updateStep(jobWorkflow.id!, step.id, { orderIndex: idx + 1 });
-      });
-      await Promise.all(updatePromises);
+      const workflowId = jobWorkflow.id;
+
+      // Two-pass update: parallel PATCHes to the same orderIndex range can collide
+      // mid-flight (e.g. swapping steps 1 and 3 briefly duplicates an index) and the
+      // backend rejects the conflicting write. Push every step to a temporary,
+      // guaranteed-unique index first, then commit the real target indexes — neither
+      // pass can ever collide with itself, regardless of request ordering.
+      const TEMP_OFFSET = 100000;
+      await Promise.all(
+        localSteps.map((step, idx) =>
+          step.id
+            ? jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: TEMP_OFFSET + idx + 1 })
+            : Promise.resolve()
+        )
+      );
+      await Promise.all(
+        localSteps.map((step, idx) =>
+          step.id
+            ? jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: idx + 1 })
+            : Promise.resolve()
+        )
+      );
       showSuccess('Final step re-ordering saved successfully');
       setIsReordering(false);
       fetchJobWorkflow();
@@ -896,6 +913,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     } catch (err) {
       console.error('Error committing reordered steps:', err);
       showError('Failed to save final step order');
+      setIsReordering(false);
       fetchJobWorkflow();
     } finally {
       setSavingReorder(false);
