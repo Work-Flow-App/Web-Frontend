@@ -16,6 +16,7 @@ import { CompanyProfileResponseCurrencyEnum } from '../../../../workflow-api';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { copyToClipboard } from '../../../utils/clipboard';
+import { slugify } from '../../../utils/slugify';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { useCompanyRole } from '../../../contexts/CompanyRoleContext';
 import { useFetch } from '../../../hooks/useFetch';
@@ -198,7 +199,8 @@ export const CompanyProfile: React.FC = () => {
 
   const handleCopyPublicLink = useCallback(async () => {
     if (!profile?.id) return;
-    const link = `${window.location.origin}/public/company/${profile.id}`;
+    const slug = profile.name ? slugify(profile.name) : '';
+    const link = `${window.location.origin}/public/company/${profile.id}${slug ? `/${slug}` : ''}`;
     const success = await copyToClipboard(link);
     if (success) {
       setLinkCopied(true);
@@ -207,7 +209,7 @@ export const CompanyProfile: React.FC = () => {
     } else {
       showError('Failed to copy link.');
     }
-  }, [profile?.id, showError]);
+  }, [profile?.id, profile?.name, showError]);
 
   const renderInfoRow = ([key, field]: SchemaEntry) => {
     const Icon = field.icon;
