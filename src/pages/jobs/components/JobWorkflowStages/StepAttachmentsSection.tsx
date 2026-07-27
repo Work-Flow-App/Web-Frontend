@@ -1,18 +1,14 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Tooltip } from '@mui/material';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import DescriptionIcon from '@mui/icons-material/Description';
 import { stepActivityService } from '../../../../services/api';
 import type { StepAttachmentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
-import * as S from '../../JobDetailsPage.styles';
+import * as SPage from '../../JobDetailsPage.styles';
+import * as S from './JobWorkflowStages.styles';
 
 interface StepAttachmentsSectionProps {
   stepId: number;
@@ -20,18 +16,18 @@ interface StepAttachmentsSectionProps {
 }
 
 const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <InsertDriveFileIcon fontSize="small" />;
+  if (!fileType) return <S.StyledGenericFileIcon />;
 
   if (fileType.startsWith('image/')) {
-    return <ImageIcon fontSize="small" sx={{ color: 'success.main' }} />;
+    return <S.StyledImageIcon />;
   }
   if (fileType === 'application/pdf') {
-    return <PictureAsPdfIcon fontSize="small" sx={{ color: 'error.main' }} />;
+    return <S.StyledPdfIcon />;
   }
   if (fileType.includes('word') || fileType.includes('document')) {
-    return <DescriptionIcon fontSize="small" sx={{ color: 'info.main' }} />;
+    return <S.StyledDocIcon />;
   }
-  return <InsertDriveFileIcon fontSize="small" sx={{ color: 'text.secondary' }} />;
+  return <S.StyledGenericFileIcon />;
 };
 
 export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId, onUpdate }) => {
@@ -106,51 +102,50 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
 
   if (loading) {
     return (
-      <S.EventNoteBox>
-        <S.EventNoteHeader>
-          <S.EventNoteTitle>Attachments</S.EventNoteTitle>
-        </S.EventNoteHeader>
+      <SPage.EventNoteBox>
+        <SPage.EventNoteHeader>
+          <SPage.EventNoteTitle>Attachments</SPage.EventNoteTitle>
+        </SPage.EventNoteHeader>
         <Loader size={20} centered minHeight="60px" />
-      </S.EventNoteBox>
+      </SPage.EventNoteBox>
     );
   }
 
   return (
-    <S.EventNoteBox>
-      <S.EventNoteHeader>
-        <S.EventNoteTitle>Attachments</S.EventNoteTitle>
-        <S.EventNoteEditButton onClick={handleUploadClick} disabled={uploading}>
+    <SPage.EventNoteBox>
+      <SPage.EventNoteHeader>
+        <SPage.EventNoteTitle>Attachments</SPage.EventNoteTitle>
+        <SPage.EventNoteEditButton onClick={handleUploadClick} disabled={uploading}>
           {uploading ? 'Uploading...' : 'Add'}
-        </S.EventNoteEditButton>
-      </S.EventNoteHeader>
+        </SPage.EventNoteEditButton>
+      </SPage.EventNoteHeader>
 
-      <input
+      <S.HiddenFileInput
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        style={{ display: 'none' }}
         onClick={(e) => e.stopPropagation()}
       />
 
       {attachments.length === 0 ? (
-        <S.UploadDropzone onClick={handleUploadClick}>
-          <AttachFileIcon sx={{ fontSize: 24, color: 'text.secondary', mb: 0.5 }} />
-          <S.EventNoteContent>Click to upload attachments</S.EventNoteContent>
-        </S.UploadDropzone>
+        <SPage.UploadDropzone onClick={handleUploadClick}>
+          <S.StyledAttachFileIcon />
+          <SPage.EventNoteContent>Click to upload attachments</SPage.EventNoteContent>
+        </SPage.UploadDropzone>
       ) : (
-        <S.AttachmentList>
+        <SPage.AttachmentList>
           {attachments.map((attachment) => (
-            <S.AttachmentItem key={attachment.id}>
+            <SPage.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
-              <S.AttachmentFileName>
+              <SPage.AttachmentFileName>
                 <div className="name">{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
                   <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
                   </div>
                 )}
-              </S.AttachmentFileName>
-              <S.AttachmentActions>
+              </SPage.AttachmentFileName>
+              <SPage.AttachmentActions>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
@@ -166,23 +161,24 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
                   <IconButton
                     size="small"
                     variant="text"
-                    color="danger"
+                    color="error"
                     onClick={(e) => attachment.id && handleDeleteAttachment(attachment.id, e)}
                     aria-label="Delete attachment"
                   >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </S.AttachmentActions>
-            </S.AttachmentItem>
+              </SPage.AttachmentActions>
+            </SPage.AttachmentItem>
           ))}
 
-          <S.AddMoreButton onClick={handleUploadClick}>
-            <AttachFileIcon sx={{ fontSize: 14 }} />
+          <SPage.AddMoreButton onClick={handleUploadClick}>
+            <S.StyledAttachFileSmallIcon />
             Add more
-          </S.AddMoreButton>
-        </S.AttachmentList>
+          </SPage.AddMoreButton>
+        </SPage.AttachmentList>
       )}
-    </S.EventNoteBox>
+    </SPage.EventNoteBox>
   );
 };
+
