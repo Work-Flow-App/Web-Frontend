@@ -24,4 +24,6 @@ export interface IDataTableBody<T = ITableRow> {
   enableStickyLeft?: boolean;
   /** Enable sticky right columns (for actions) */
   enableStickyRight?: boolean;
+  /** Optional ID of a row to highlight */
+  highlightedRowId?: string | number;
 }

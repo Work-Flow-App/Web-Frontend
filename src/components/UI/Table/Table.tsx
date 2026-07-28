@@ -87,6 +87,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   customiseColumns = false,
   allColumnLabels,
   onVisibleColumnsChange,
+  highlightedRowId,
 }: Omit<IEnhancedTable<T>, 'columns' | 'data'> & {
   allColumnLabels?: string[];
   onVisibleColumnsChange?: (visible: string[]) => void;
@@ -109,6 +110,14 @@ const TableInner = <T extends ITableRow = ITableRow>({
         />
       )}
 
+
+      {/* Top Pagination */}
+      <Footer
+        showPagination={showPagination}
+        maxPageButtons={maxPageButtons}
+        showPrevNext={showPrevNext}
+        showFirstLast={showFirstLast}
+      />
 
       <StyledTableContainer>
         <StyledTable>
@@ -139,6 +148,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
               emptyMessage={emptyMessage}
               enableStickyLeft={enableStickyLeft}
               enableStickyRight={enableStickyRight}
+              highlightedRowId={highlightedRowId}
             />
           </StyledTableBody>
         </StyledTable>
@@ -163,6 +173,8 @@ const Table = <T extends ITableRow = ITableRow>({
   data,
   rowsPerPage = 10,
   customiseColumns = false,
+  onSelectionChange,
+  selectedRows,
   ...props
 }: IEnhancedTable<T>) => {
   const allColumnLabels = useMemo(() => columns.map((c) => c.label), [columns]);
@@ -178,6 +190,8 @@ const Table = <T extends ITableRow = ITableRow>({
       initialData={data}
       initialColumns={visibleTableColumns}
       initialRowsPerPage={rowsPerPage}
+      onSelectionChange={onSelectionChange}
+      selectedRows={selectedRows}
     >
       <TableInner<T> 
         customiseColumns={customiseColumns}

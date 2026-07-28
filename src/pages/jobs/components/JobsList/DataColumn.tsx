@@ -50,7 +50,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Created At',
       accessor: 'createdAt',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => {
         if (!row.createdAt) return '-';
         try {
@@ -70,7 +70,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Job No',
       accessor: 'jobRef',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.jobRef ?? row.id ?? '-',
     },
     {
@@ -78,7 +78,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Workfloow',
       accessor: 'workflowName',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.workflowName || '-',
     },
     {
@@ -86,7 +86,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Customer',
       accessor: 'customerName',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.customerName || '-',
     },
     {
@@ -94,7 +94,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Client',
       accessor: 'clientName',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.clientName || '-',
     },
     {
@@ -102,7 +102,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Job value',
       accessor: 'jobValue',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.jobValue || '-',
     },
     {
@@ -110,7 +110,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Post Code',
       accessor: 'postCode',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => row.postCode || '-',
     },
     {
@@ -118,7 +118,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       label: 'Status',
       accessor: 'status',
       sortable: true,
-      width: 'auto',
+      width: '10rem',
       render: (row) => {
         const statusText = row.status || 'UNKNOWN';
         return <StatusChip label={statusText.replace(/_/g, ' ')} color={getStatusColor(statusText)} size="small" />;
@@ -131,7 +131,7 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
     id: `field_${field.id}`,
     label: field.label || field.name || '',
     sortable: false,
-    width: 'auto',
+    width: '10rem',
     render: (row) => {
       const value = row.fieldValues?.[field.id?.toString() || ''];
       if (!value) return '-';

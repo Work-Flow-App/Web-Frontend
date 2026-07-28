@@ -85,9 +85,9 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
     try {
       setLoadingWorkflow(true);
       const response = await jobWorkflowService.getJobWorkflowByJobId(job.id);
-      const sorted = [...(response.data.steps || [])].sort(
-        (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
-      );
+      const sorted = [...(response.data.steps || [])]
+        .filter((step) => step.status?.toUpperCase() !== 'SKIPPED')
+        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       setSteps(sorted);
     } catch {
       setSteps([]);

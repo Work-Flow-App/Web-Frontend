@@ -150,9 +150,9 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     setLoadingWorkflow(true);
     try {
       const res = await jobWorkflowService.getJobWorkflowByJobId(job.id);
-      const sorted = [...(res.data.steps || [])].sort(
-        (a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)
-      );
+      const sorted = [...(res.data.steps || [])]
+        .filter((step) => step.status?.toUpperCase() !== 'SKIPPED')
+        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       setSteps(sorted);
       if (sorted.length && sorted[0].id) {
         setSelectedPostToStepId(sorted[0].id);

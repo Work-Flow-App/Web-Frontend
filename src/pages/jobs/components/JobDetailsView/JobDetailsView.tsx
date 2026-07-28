@@ -92,6 +92,9 @@ export const JobDetailsView: React.FC = () => {
   }, [fetchJobDetails]);
 
   const handleBackClick = () => {
+    if (jobId) {
+      localStorage.setItem('highlightJobId', jobId);
+    }
     navigate('/company/jobs');
   };
 

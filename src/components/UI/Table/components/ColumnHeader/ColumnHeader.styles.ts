@@ -67,8 +67,8 @@ export const getFirstColumnStickyHeaderSx = (
   sortable: boolean
 ): SxProps<Theme> => ({
   position: 'sticky',
-  left: hasSelectable ? '48px' : 0,
-  zIndex: 5,
+  left: hasSelectable ? '3rem' : 0,
+  zIndex: 4,
   background: headerBg,
   boxShadow: `1px 0 0 0 ${borderColor}`,
   cursor: sortable ? 'pointer' : 'default',
@@ -101,7 +101,7 @@ export const getActionsCellStickyHeaderSx = (
 ): SxProps<Theme> => ({
   position: 'sticky',
   right: 0,
-  zIndex: 3,
+  zIndex: 4,
   background: bg,
   borderLeft: `1px solid ${borderColor}`,
 });
@@ -113,7 +113,7 @@ export const getActionsCellDefaultHeaderSx = (bg: string): SxProps<Theme> => ({
 export const ActionsHeaderContent = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '0.25rem',
 });
 
 // ─── SearchCellWrapper sticky style (used with `style` prop) ──────────────────
@@ -124,8 +124,8 @@ export const getFirstColumnStickySearchStyle = (
   hasSelectable: boolean
 ): CSSProperties => ({
   position: 'sticky',
-  left: hasSelectable ? '48px' : 0,
-  zIndex: 3,
+  left: hasSelectable ? '3rem' : 0,
+  zIndex: 4,
   background: bg,
   boxShadow: `1px 0 0 0 ${borderColor}`,
 });

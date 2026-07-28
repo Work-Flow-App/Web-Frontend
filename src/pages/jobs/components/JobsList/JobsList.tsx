@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import { Search } from '../../../../components/UI/Search';
 import Table from '../../../../components/UI/Table/Table';
@@ -51,9 +51,22 @@ export const JobsList: React.FC = () => {
   const [searchKey, setSearchKey] = useState(0);
   const [filters, setFilters] = useState<JobFilters>({});
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedJobIds, setSelectedJobIds] = useState<(string | number)[]>([]);
+  const [highlightedJobId, setHighlightedJobId] = useState<string | number | undefined>(undefined);
 
+  const location = useLocation();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
+
+  // Read highlightJobId from localStorage
+  useEffect(() => {
+    const savedId = localStorage.getItem('highlightJobId');
+    if (savedId) {
+      // Use Number or String depending on format, job IDs are numbers
+      setHighlightedJobId(Number(savedId));
+      localStorage.removeItem('highlightJobId');
+    }
+  }, []);
 
   // Debounce search input → searchQuery (triggers API refetch)
   useEffect(() => {
@@ -327,6 +340,56 @@ export const JobsList: React.FC = () => {
     },
     [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
+
+  const handleBulkArchive = useCallback(() => {
+    const isSelected = selectedJobIds.length > 0;
+    const idsToArchive = isSelected
+      ? selectedJobIds
+      : jobs.filter((job) => job.status === 'COMPLETED').map((job) => job.id);
+
+    if (idsToArchive.length === 0) {
+      showError(
+        isSelected
+          ? 'No jobs selected to archive.'
+          : 'No completed jobs found to archive.'
+      );
+      return;
+    }
+
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.SMALL,
+      fieldName: 'bulkArchiveJobs',
+      children: (
+        <ConfirmationModal
+          title={isSelected ? 'Archive Selected Jobs' : 'Archive All Completed Jobs'}
+          message={`Are you sure you want to archive ${idsToArchive.length} job(s)?`}
+          description={
+            isSelected
+              ? 'This will archive the selected jobs and remove them from the active list.'
+              : 'This will archive all jobs with status "Completed" and remove them from the active list.'
+          }
+          variant="default"
+          confirmButtonText="Archive"
+          cancelButtonText="Cancel"
+          onConfirm={async () => {
+            try {
+              await Promise.all(idsToArchive.map((id) => jobService.archiveJob(Number(id))));
+              showSuccess(`Successfully archived ${idsToArchive.length} job(s)`);
+              setSelectedJobIds([]);
+              resetGlobalModalOuterProps();
+              fetchJobs();
+            } catch (error) {
+              showError(extractErrorMessage(error, 'Failed to archive jobs'));
+              resetGlobalModalOuterProps();
+            }
+          }}
+          onCancel={() => resetGlobalModalOuterProps()}
+        />
+      ),
+    });
+  }, [selectedJobIds, jobs, fetchJobs, showSuccess, showError, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+
   const handleDuplicateJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
@@ -527,7 +590,16 @@ export const JobsList: React.FC = () => {
     <PageWrapper
       title="All Jobs"
       description="Manage jobs, assign workers, and track progress."
-      actions={[{ label: 'Create Job', onClick: handleAddJob, variant: 'contained', color: 'primary' }]}
+      actions={[
+        {
+          label: selectedJobIds.length > 0 ? 'Archive All Marked Jobs' : 'Archive All Completed Jobs',
+          onClick: handleBulkArchive,
+          variant: 'outlined',
+          color: 'secondary',
+          disabled: showArchived,
+        },
+        { label: 'Create Job', onClick: handleAddJob, variant: 'contained', color: 'primary' }
+      ]}
       headerExtra={
         <HeaderControls>
           <Search
@@ -574,6 +646,9 @@ export const JobsList: React.FC = () => {
         columns={columns}
         data={jobs}
         selectable
+        selectedRows={selectedJobIds}
+        onSelectionChange={setSelectedJobIds}
+        highlightedRowId={highlightedJobId}
         showActions
         customiseColumns={true}
         actions={tableActions}
@@ -586,7 +661,7 @@ export const JobsList: React.FC = () => {
               ? 'No jobs match the current filters.'
               : 'No jobs found. Add your first job to get started.'
         }
-        rowsPerPage={100}
+        rowsPerPage={10}
         showPagination={true}
         enableStickyLeft={true}
       />
