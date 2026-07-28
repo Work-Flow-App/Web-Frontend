@@ -106,8 +106,16 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
       case FieldType.TEXT:
         return <Input name={fieldName} placeholder={`Enter ${field.label}`} hideErrorMessage={false} />;
       case FieldType.NUMBER:
+        // type="text" avoids the native number input silently stripping a leading zero
+        // (e.g. phone numbers like "07598655422" losing the leading 0).
         return (
-          <Input type="number" name={fieldName} placeholder={`Enter ${field.label}`} hideErrorMessage={false} />
+          <Input
+            type="text"
+            inputProps={{ inputMode: 'numeric', pattern: '[0-9.\\-]*' }}
+            name={fieldName}
+            placeholder={`Enter ${field.label}`}
+            hideErrorMessage={false}
+          />
         );
       case FieldType.DATE:
         return <Input type="date" name={fieldName} hideErrorMessage={false} />;
