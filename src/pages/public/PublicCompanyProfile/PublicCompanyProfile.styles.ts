@@ -19,11 +19,10 @@ export const TopBar = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
 }));
 
-export const BrandLink = styled(Link)(({ theme }) => ({
-  fontSize: rem(18),
-  fontWeight: 700,
-  color: theme.palette.primary.main,
-  textDecoration: 'none',
+export const BrandLink = styled('a')(() => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  lineHeight: 0,
 }));
 
 export const SignInButtonLink = styled(Link)(({ theme }) => ({
@@ -32,7 +31,7 @@ export const SignInButtonLink = styled(Link)(({ theme }) => ({
   border: `1px solid ${theme.palette.primary.main}`,
   color: theme.palette.primary.main,
   fontSize: rem(13),
-  fontWeight: 600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   textDecoration: 'none',
   '&:hover': {
     backgroundColor: `${theme.palette.primary.main}0D`,
@@ -88,7 +87,7 @@ export const LogoImage = styled('img')(() => ({
 
 export const LogoInitials = styled(Typography)(({ theme }) => ({
   fontSize: rem(26),
-  fontWeight: 700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.primary.main,
 }));
 
@@ -102,7 +101,7 @@ export const ProfileInfo = styled(Box)(() => ({
 
 export const CompanyName = styled(Typography)(({ theme }) => ({
   fontSize: rem(22),
-  fontWeight: 700,
+  fontWeight: theme.typography.fontWeightBold,
   color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
 }));
 
@@ -202,7 +201,7 @@ export const DocumentTitleRow = styled(Box)(() => ({
 
 export const DocumentTitleText = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
-  fontWeight: 600,
+  fontWeight: theme.typography.fontWeightSemiBold,
   color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
 }));
 
