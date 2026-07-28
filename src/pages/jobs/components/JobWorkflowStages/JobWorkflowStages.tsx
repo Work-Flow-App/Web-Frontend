@@ -916,26 +916,21 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       setSavingReorder(true);
       const workflowId = jobWorkflow.id;
 
-      // Two-pass update: parallel PATCHes to the same orderIndex range can collide
-      // mid-flight (e.g. swapping steps 1 and 3 briefly duplicates an index) and the
-      // backend rejects the conflicting write. Push every step to a temporary,
-      // guaranteed-unique index first, then commit the real target indexes — neither
-      // pass can ever collide with itself, regardless of request ordering.
-      const TEMP_OFFSET = 100000;
-      await Promise.all(
-        localSteps.map((step, idx) =>
-          step.id
-            ? jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: TEMP_OFFSET + idx + 1 })
-            : Promise.resolve()
-        )
-      );
-      await Promise.all(
-        localSteps.map((step, idx) =>
-          step.id
-            ? jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: idx + 1 })
-            : Promise.resolve()
-        )
-      );
+      // Sequential PATCHes, one at a time — concurrent requests (Promise.all) here
+      // intermittently 500 under contention on the backend, more reliably as the
+      // number of simultaneous requests grows (confirmed against the live dev API:
+      // 0/180 failures sequential vs 2/8 failed batches concurrent on a 9-step
+      // workflow). A single write per step is enough — the backend reindexes
+      // cleanly without needing an intermediate "parking" value, so there's no
+      // temp-offset pass. Steps whose position didn't change are skipped entirely,
+      // since a drag typically only shifts the steps between the old and new spot.
+      const originalOrderById = new Map((jobWorkflow.steps || []).map((s) => [s.id, s.orderIndex]));
+      for (const [idx, step] of localSteps.entries()) {
+        if (!step.id) continue;
+        const targetIndex = idx + 1;
+        if (originalOrderById.get(step.id) === targetIndex) continue;
+        await jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: targetIndex });
+      }
       showSuccess('Final step re-ordering saved successfully');
       setIsReordering(false);
       fetchJobWorkflow();
