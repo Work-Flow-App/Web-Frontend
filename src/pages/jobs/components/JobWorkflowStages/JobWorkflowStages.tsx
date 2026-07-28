@@ -35,6 +35,8 @@ import { jobWorkflowService, workerService, workflowService } from '../../../../
 import type { JobWorkflowResponse, JobWorkflowStepResponse } from '../../../../services/api';
 import { JobWorkflowStepResponseStatusEnum, JobWorkflowStepResponseSlaStatusEnum, type JobWorkflowStepCreateRequest } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { StepCommentsSection } from './StepCommentsSection';
 import { StepAttachmentsSection } from './StepAttachmentsSection';
 import { AddStepModal } from './AddStepModal';
@@ -115,7 +117,7 @@ const getStatusInfo = (status?: string) => {
     case JobWorkflowStepResponseStatusEnum.Pending:
       return { label: 'PENDING', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#FFF8E1', chipColor: '#F9A825', variant: 'default' as const };
     case JobWorkflowStepResponseStatusEnum.Skipped:
-      return { label: 'SKIPPED', isCompleted: false, isInProgress: false, isDelayed: true, chipBg: '#FFEBEE', chipColor: '#C62828', variant: 'delayed' as const };
+      return { label: 'SKIPPED', isCompleted: true, isInProgress: false, isDelayed: false, chipBg: '#F3F4F6', chipColor: '#4B5563', variant: 'completed' as const };
     case JobWorkflowStepResponseStatusEnum.Initiated:
       return { label: 'INITIATED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F3E5F5', chipColor: '#7B1FA2', variant: 'default' as const };
     case JobWorkflowStepResponseStatusEnum.NotStarted:
@@ -327,9 +329,9 @@ const SortableStepRow: React.FC<SortableStepRowProps> = ({
                     <S.DeleteActionButton
                       size="small"
                       onClick={(e) => onDeleteStep(step, e)}
-                      disabled={updatingStep === step.id}
-                      aria-label="Delete step"
-                      title="Delete Step"
+                      disabled={updatingStep === step.id || step.status === JobWorkflowStepResponseStatusEnum.Skipped}
+                      aria-label="Skip step"
+                      title="Skip Step"
                     >
                       <S.SmallIconDelete />
                     </S.DeleteActionButton>
@@ -573,6 +575,7 @@ const SortableStepRow: React.FC<SortableStepRowProps> = ({
 
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
+  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
   const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -646,14 +649,14 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       setAllWorkers(allWorkersResponse.data || []);
 
       const sorted = response.data.steps
-        ? [...response.data.steps]
-            .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-            .filter((step) => step.status !== JobWorkflowStepResponseStatusEnum.Skipped)
+        ? [...response.data.steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
         : [];
       setLocalSteps(sorted);
 
       const activeStep = sorted.find(
-        (step) => step.status !== JobWorkflowStepResponseStatusEnum.Completed
+        (step) =>
+          step.status !== JobWorkflowStepResponseStatusEnum.Completed &&
+          step.status !== JobWorkflowStepResponseStatusEnum.Skipped
       );
       if (activeStep?.id) setExpandedStepId(activeStep.id);
     } catch {
@@ -782,23 +785,50 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
-  const handleDeleteStep = async (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
+  const handleDeleteStep = (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!step.id || !jobWorkflow?.id) return;
-    try {
-      setUpdatingStep(step.id);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, {
-        status: JobWorkflowStepResponseStatusEnum.Skipped as any,
-      });
-      showSuccess('Step deleted successfully');
-      fetchJobWorkflow();
-      onStepUpdate?.();
-    } catch (error) {
-      console.error('Error deleting step:', error);
-      showError('Failed to delete step');
-    } finally {
-      setUpdatingStep(null);
-    }
+    const stepId = step.id;
+    const workflowId = jobWorkflow.id;
+
+    const performSkip = async () => {
+      try {
+        setUpdatingStep(stepId);
+        await jobWorkflowService.updateStep(workflowId, stepId, {
+          status: JobWorkflowStepResponseStatusEnum.Skipped as any,
+        });
+        showSuccess('Step skipped successfully');
+        resetGlobalModalOuterProps();
+        fetchJobWorkflow();
+        onStepUpdate?.();
+      } catch (error) {
+        console.error('Error skipping step:', error);
+        showError(extractErrorMessage(error, 'Failed to skip step'));
+      } finally {
+        setUpdatingStep(null);
+      }
+    };
+
+    // Whether this step has related comments/attachments/work logs — and whether that
+    // blocks a permanent delete — is decided by the backend automatically; the frontend
+    // just triggers the skip and surfaces whatever outcome/message comes back.
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.SMALL,
+      fieldName: 'skipStep',
+      children: (
+        <ConfirmationModal
+          title="Skip Step"
+          message="Are you sure you want to skip this step?"
+          description="The step will be marked as Skipped and stay visible in the timeline."
+          variant="warning"
+          confirmButtonText="Skip Step"
+          cancelButtonText="Cancel"
+          onConfirm={performSkip}
+          onCancel={() => resetGlobalModalOuterProps()}
+        />
+      ),
+    });
   };
 
   const handleAddStepSubmit = async (data: JobWorkflowStepCreateRequest) => {

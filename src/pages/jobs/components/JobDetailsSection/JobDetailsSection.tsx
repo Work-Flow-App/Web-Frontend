@@ -571,12 +571,20 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           </Select>
         );
       }
+      // NUMBER fields use type="text" rather than the native type="number": a numeric
+      // input silently strips leading zeros as you type (e.g. phone numbers like
+      // "07598655422" lose the leading 0), since it treats the value as a real number.
+      const isNumberField = field.jobFieldType === 'NUMBER';
       return (
         <OutlinedInput
           size="small"
-          type={field.jobFieldType === 'NUMBER' ? 'number' : field.jobFieldType === 'DATE' ? 'date' : 'text'}
+          type={field.jobFieldType === 'DATE' ? 'date' : 'text'}
+          inputProps={isNumberField ? { inputMode: 'numeric', pattern: '[0-9.\\-]*' } : undefined}
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            const next = isNumberField ? e.target.value.replace(/[^0-9.-]/g, '') : e.target.value;
+            setEditValue(next);
+          }}
           disabled={isSaving}
           autoFocus
           sx={{ flex: 1, height: '2rem', fontSize: '0.875rem' }}

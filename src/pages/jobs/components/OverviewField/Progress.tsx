@@ -22,8 +22,10 @@ export const Progress: React.FC<ProgressProps> = ({ jobId, workflowUpdateTrigger
         
         setTotalSteps(steps.length);
         
-        // Count how many steps are COMPLETED
-        const completed = steps.filter((step: any) => step.status === 'COMPLETED').length;
+        // Skipped steps also count as progressed, same as completed ones
+        const completed = steps.filter(
+          (step: any) => step.status === 'COMPLETED' || step.status === 'SKIPPED'
+        ).length;
         setCompletedSteps(completed);
       } catch (error) {
         console.error('Failed to fetch job workflow for progress:', error);
