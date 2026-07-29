@@ -1,10 +1,14 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import { TextField } from '@mui/material';
 import Table from '../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../components/UI/Table/ITable';
-import { Button } from '../../../components/UI/Button';
+import { Button, IconButton } from '../../../components/UI/Button';
+import { Badge } from '../../../components/UI/Badge';
 import { Loader } from '../../../components/UI';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import {
@@ -13,6 +17,8 @@ import {
   mapCertificateToRow,
   type CertificateTableRow,
 } from '../../worker/components/CertificateForm';
+import { AvatarUpload } from '../../worker/components/AvatarUpload';
+import { WeeklyHoursCard } from '../../worker/components/WeeklyHoursCard';
 import { workerService, certificateService } from '../../../services/api';
 import { useCompanyRole } from '../../../contexts/CompanyRoleContext';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
@@ -29,11 +35,59 @@ export const WorkerDetail: React.FC = () => {
 
   const numericWorkerId = Number(workerId);
 
-  const { data: worker, loading: loadingWorker } = useFetch(
+  const {
+    data: worker,
+    loading: loadingWorker,
+    refetch: refetchWorker,
+  } = useFetch(
     () => workerService.getWorkerById(numericWorkerId),
     [numericWorkerId],
     { onError: (err) => showError(extractErrorMessage(err, 'Failed to load worker')) }
   );
+
+  const handlePhotoUpload = useCallback(
+    async (file: File) => {
+      await workerService.uploadWorkerPhoto(numericWorkerId, file);
+      refetchWorker();
+      showSuccess('Photo updated successfully.');
+    },
+    [numericWorkerId, refetchWorker, showSuccess]
+  );
+
+  const fetchWorkerWeeklyHours = useCallback(
+    (date?: string) => workerService.getWorkerWeeklyHours(numericWorkerId, date),
+    [numericWorkerId]
+  );
+
+  const [isEditingRate, setIsEditingRate] = useState(false);
+  const [rateInput, setRateInput] = useState('');
+  const [savingRate, setSavingRate] = useState(false);
+
+  const handleRateEditStart = useCallback(() => {
+    setRateInput(worker?.hourlyRate != null ? String(worker.hourlyRate) : '');
+    setIsEditingRate(true);
+  }, [worker?.hourlyRate]);
+
+  const handleRateCancel = useCallback(() => setIsEditingRate(false), []);
+
+  const handleRateSave = useCallback(async () => {
+    const parsed = Number(rateInput);
+    if (rateInput.trim() === '' || Number.isNaN(parsed) || parsed < 0) {
+      showError('Enter a valid hourly rate.');
+      return;
+    }
+    setSavingRate(true);
+    try {
+      await workerService.updateWorkerRate(numericWorkerId, parsed);
+      refetchWorker();
+      setIsEditingRate(false);
+      showSuccess('Hourly rate updated.');
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to update hourly rate'));
+    } finally {
+      setSavingRate(false);
+    }
+  }, [rateInput, numericWorkerId, refetchWorker, showSuccess, showError]);
 
   const {
     data: rawCertificates,
@@ -108,44 +162,123 @@ export const WorkerDetail: React.FC = () => {
 
   const certificateColumns = useMemo(() => createCertificateColumns(), []);
 
-  const pageActions = useMemo(
-    () => (canManageWorkers ? [{ label: 'Upload Certificate', onClick: handleUploadCertificate, variant: 'contained' as const, color: 'primary' as const }] : []),
-    [canManageWorkers]
-  );
-
   if (loadingWorker) {
     return <Loader />;
   }
 
   return (
-    <PageWrapper
-      title={worker?.name || 'Worker'}
-      description={worker?.email}
-      actions={pageActions}
-      headerExtra={
-        <Button
-          variant="outlined"
-          color="secondary"
-          size="small"
-          startIcon={<ArrowBackIcon fontSize="small" />}
-          onClick={() => navigate('/company/workers')}
-        >
-          Back to Workers
-        </Button>
-      }
-    >
-      <S.SectionTitle variant="subtitle1">Certificates</S.SectionTitle>
-      <Table<CertificateTableRow>
-        columns={certificateColumns}
-        data={certificates}
-        showActions={canManageWorkers}
-        actions={certificateActions}
-        loading={loadingCertificates}
-        emptyMessage="No certificates on file for this worker."
-        rowsPerPage={10}
-        showPagination
-      />
-    </PageWrapper>
+    <S.PageContent>
+      <S.ProfileHeaderCard>
+        <AvatarUpload photoUrl={worker?.photoUrl} name={worker?.name} editable={canManageWorkers} onUpload={handlePhotoUpload} />
+
+        <S.HeaderTop>
+          <S.IdBlock>
+            <S.HeaderTitleRow>
+              <S.HeaderTitle>{worker?.name || 'Worker'}</S.HeaderTitle>
+              {worker?.archived && (
+                <Badge variant="default" size="small">
+                  Archived
+                </Badge>
+              )}
+            </S.HeaderTitleRow>
+            <S.HeaderMetaRow>
+              {worker?.username && <span>@{worker.username}</span>}
+              {worker?.email && (
+                <>
+                  <S.HeaderMetaDot>&bull;</S.HeaderMetaDot>
+                  <a href={`mailto:${worker.email}`}>{worker.email}</a>
+                </>
+              )}
+              {(worker?.telephone || worker?.mobile) && (
+                <>
+                  <S.HeaderMetaDot>&bull;</S.HeaderMetaDot>
+                  <span>{worker?.telephone || worker?.mobile}</span>
+                </>
+              )}
+            </S.HeaderMetaRow>
+          </S.IdBlock>
+
+          <S.HeaderActionsRow>
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              startIcon={<ArrowBackIcon fontSize="small" />}
+              onClick={() => navigate('/company/workers')}
+            >
+              Back to Workers
+            </Button>
+            {canManageWorkers && (
+              <Button variant="contained" color="primary" size="small" onClick={handleUploadCertificate}>
+                Upload Certificate
+              </Button>
+            )}
+          </S.HeaderActionsRow>
+        </S.HeaderTop>
+      </S.ProfileHeaderCard>
+
+      <S.StatsRow>
+        <WeeklyHoursCard fetchHours={fetchWorkerWeeklyHours} />
+
+        <S.RateCard>
+          <S.RateMainCol>
+            <S.RateLabel>Hourly Rate</S.RateLabel>
+            {isEditingRate ? (
+              <S.RateEditRow>
+                <TextField
+                  type="number"
+                  size="small"
+                  autoFocus
+                  value={rateInput}
+                  onChange={(e) => setRateInput(e.target.value)}
+                  disabled={savingRate}
+                  slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                  sx={{ width: 120 }}
+                />
+                <IconButton size="small" color="success" onClick={handleRateSave} disabled={savingRate} aria-label="Save rate">
+                  <CheckIcon fontSize="small" />
+                </IconButton>
+                <IconButton size="small" color="secondary" onClick={handleRateCancel} disabled={savingRate} aria-label="Cancel">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </S.RateEditRow>
+            ) : (
+              <S.RateEditRow>
+                <S.RateValue $empty={worker?.hourlyRate == null}>
+                  {worker?.hourlyRate != null ? (
+                    <>
+                      {worker.hourlyRate}
+                      <span>/hr</span>
+                    </>
+                  ) : (
+                    'Not set'
+                  )}
+                </S.RateValue>
+                {canManageWorkers && (
+                  <IconButton size="small" variant="text" color="secondary" onClick={handleRateEditStart} aria-label="Edit rate">
+                    <EditOutlinedIcon fontSize="small" />
+                  </IconButton>
+                )}
+              </S.RateEditRow>
+            )}
+          </S.RateMainCol>
+        </S.RateCard>
+      </S.StatsRow>
+
+      <div>
+        <S.SectionTitle variant="subtitle1">Certificates</S.SectionTitle>
+        <Table<CertificateTableRow>
+          columns={certificateColumns}
+          data={certificates}
+          showActions={canManageWorkers}
+          actions={certificateActions}
+          loading={loadingCertificates}
+          emptyMessage="No certificates on file for this worker."
+          rowsPerPage={10}
+          showPagination
+        />
+      </div>
+    </S.PageContent>
   );
 };
 

@@ -1,6 +1,7 @@
+import type { AxiosResponse } from 'axios';
 import { WorkersApi, Configuration } from '../../../workflow-api';
 import type {
-  WorkerResponse,
+  WorkerResponse as GeneratedWorkerResponse,
   WorkerCreateRequest,
   WorkerUpdateRequest,
   WorkerInviteResponse,
@@ -9,7 +10,45 @@ import type {
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
-export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse, WorkerPasswordResetRequest };
+export type { WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse, WorkerPasswordResetRequest };
+
+// v2: photoUrl + hourlyRate aren't in the generated client yet (it's generated from a deployed
+// API that doesn't have this branch) - extend the generated shape locally, same as certificate.ts/leave.ts.
+export interface WorkerResponse extends GeneratedWorkerResponse {
+  photoUrl?: string;
+  hourlyRate?: number;
+}
+
+// Worker self-service profile view - deliberately omits hourlyRate (company-only field).
+export interface WorkerProfileResponse {
+  id: number;
+  workerRef: number;
+  name: string;
+  initials?: string;
+  telephone?: string;
+  mobile?: string;
+  email?: string;
+  username: string;
+  photoUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkerWeeklyHoursResponse {
+  workerId: number;
+  weekStart: string;
+  weekEnd: string;
+  totalHours: number;
+  hasOpenVisit: boolean;
+}
+
+const MULTIPART_HEADERS = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+function buildPhotoFormData(file: File): FormData {
+  const form = new FormData();
+  form.append('file', file);
+  return form;
+}
 
 // Additional types for worker invitation system
 export interface WorkerInvitationRequest {
@@ -72,14 +111,14 @@ export const workerService = {
   /**
    * Get all workers
    */
-  async getAllWorkers() {
+  async getAllWorkers(): Promise<AxiosResponse<WorkerResponse[]>> {
     return await getWorkerApi().workerGetAllWorkers();
   },
 
   /**
    * Get worker by ID
    */
-  async getWorkerById(id: number) {
+  async getWorkerById(id: number): Promise<AxiosResponse<WorkerResponse>> {
     return await getWorkerApi().workerGetWorkerById(id);
   },
 
@@ -141,6 +180,60 @@ export const workerService = {
 
   async resetPassword(id: number, data: WorkerPasswordResetRequest) {
     return await getWorkerApi().workerResetWorkerUsernamePassword(id, data);
+  },
+
+  /**
+   * Worker self-service: get my own profile
+   */
+  async getMyProfile(): Promise<AxiosResponse<WorkerProfileResponse>> {
+    return axiosInstance.get<WorkerProfileResponse>(`${env.apiBaseUrl}/api/v1/worker/profile`);
+  },
+
+  /**
+   * Worker self-service: upload my own profile photo
+   */
+  async uploadMyPhoto(file: File): Promise<AxiosResponse<WorkerProfileResponse>> {
+    return axiosInstance.post<WorkerProfileResponse>(
+      `${env.apiBaseUrl}/api/v1/worker/profile/photo`,
+      buildPhotoFormData(file),
+      MULTIPART_HEADERS
+    );
+  },
+
+  /**
+   * Worker self-service: hours worked in a given week (defaults to the current week)
+   */
+  async getMyWeeklyHours(date?: string): Promise<AxiosResponse<WorkerWeeklyHoursResponse>> {
+    return axiosInstance.get<WorkerWeeklyHoursResponse>(`${env.apiBaseUrl}/api/v1/worker/profile/hours/weekly`, {
+      params: date ? { date } : undefined,
+    });
+  },
+
+  /**
+   * Company admin: upload a worker's profile photo
+   */
+  async uploadWorkerPhoto(id: number, file: File): Promise<AxiosResponse<WorkerResponse>> {
+    return axiosInstance.post<WorkerResponse>(
+      `${env.apiBaseUrl}/api/v1/workers/${id}/photo`,
+      buildPhotoFormData(file),
+      MULTIPART_HEADERS
+    );
+  },
+
+  /**
+   * Company admin: update a worker's hourly rate
+   */
+  async updateWorkerRate(id: number, hourlyRate: number): Promise<AxiosResponse<WorkerResponse>> {
+    return axiosInstance.patch<WorkerResponse>(`${env.apiBaseUrl}/api/v1/workers/${id}/rate`, { hourlyRate });
+  },
+
+  /**
+   * Company admin: hours worked by a worker in a given week (defaults to the current week)
+   */
+  async getWorkerWeeklyHours(id: number, date?: string): Promise<AxiosResponse<WorkerWeeklyHoursResponse>> {
+    return axiosInstance.get<WorkerWeeklyHoursResponse>(`${env.apiBaseUrl}/api/v1/workers/${id}/hours/weekly`, {
+      params: date ? { date } : undefined,
+    });
   },
 };
 

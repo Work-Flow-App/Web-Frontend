@@ -6,7 +6,7 @@ import type { LeaveRequestResponse } from '../../../services/api';
 
 export interface LeaveTableRow {
   id: number;
-  type: LeaveRequestResponse['type'];
+  type: LeaveRequestResponse['leaveType'];
   startDate: string;
   endDate: string;
   reason: string;
@@ -21,7 +21,7 @@ const LEAVE_STATUS_VARIANT: Record<LeaveRequestResponse['status'], BadgeVariant>
   CANCELLED: 'default',
 };
 
-const typeLabel = (value: LeaveRequestResponse['type']) =>
+const typeLabel = (value: LeaveRequestResponse['leaveType']) =>
   LEAVE_TYPE_OPTIONS.find((opt) => opt.value === value)?.label || value;
 
 export const createLeaveColumns = (): ITableColumn<LeaveTableRow>[] => [
@@ -65,7 +65,7 @@ export const createLeaveColumns = (): ITableColumn<LeaveTableRow>[] => [
 
 export const mapLeaveToRow = (req: LeaveRequestResponse): LeaveTableRow => ({
   id: req.id,
-  type: req.type,
+  type: req.leaveType,
   startDate: req.startDate,
   endDate: req.endDate,
   reason: req.reason || '-',

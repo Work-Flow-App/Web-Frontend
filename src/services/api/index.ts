@@ -12,6 +12,8 @@ export type { SignupRequest, LoginRequest, AuthResponse } from './auth';
 export { workerService } from './worker';
 export type {
   WorkerResponse,
+  WorkerProfileResponse,
+  WorkerWeeklyHoursResponse,
   WorkerCreateRequest,
   WorkerUpdateRequest,
   WorkerInviteResponse,
@@ -150,7 +152,7 @@ export type {
   CertificateUpdateRequest,
   CertificateUploadPayload,
   PagedCertificates,
-  ExpiringCertificatesGroup,
+  ExpiringCertificateResponse,
 } from './certificate';
 
 export { leaveService, LeaveType, LEAVE_TYPE_OPTIONS, LeaveStatus, LEAVE_STATUS_OPTIONS } from './leave';

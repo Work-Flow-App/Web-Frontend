@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Tabs, Tab } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import { PageWrapper } from '../../../components/UI/PageWrapper';
 import Table from '../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../components/UI/Table/ITable';
+import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import {
   CertificateForm,
@@ -13,7 +13,9 @@ import {
   type CertificateTableRow,
 } from '../components/CertificateForm';
 import { LeaveRequestForm } from '../components/LeaveRequestForm';
-import { certificateService, leaveService, LeaveStatus } from '../../../services/api';
+import { AvatarUpload } from '../components/AvatarUpload';
+import { WeeklyHoursCard } from '../components/WeeklyHoursCard';
+import { certificateService, leaveService, workerService, LeaveStatus } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { useFetch } from '../../../hooks';
@@ -24,6 +26,25 @@ export const WorkerProfile: React.FC = () => {
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
   const [activeTab, setActiveTab] = useState(0);
+
+  const {
+    data: profile,
+    loading: loadingProfile,
+    refetch: refetchProfile,
+  } = useFetch(() => workerService.getMyProfile(), [], {
+    onError: (err) => showError(extractErrorMessage(err, 'Failed to load profile')),
+  });
+
+  const handlePhotoUpload = useCallback(
+    async (file: File) => {
+      await workerService.uploadMyPhoto(file);
+      refetchProfile();
+      showSuccess('Photo updated successfully.');
+    },
+    [refetchProfile, showSuccess]
+  );
+
+  const fetchMyWeeklyHours = useCallback((date?: string) => workerService.getMyWeeklyHours(date), []);
 
   const {
     data: rawCertificates,
@@ -220,21 +241,65 @@ export const WorkerProfile: React.FC = () => {
   const certificateColumns = useMemo(() => createCertificateColumns(), []);
   const leaveColumns = useMemo(() => createLeaveColumns(), []);
 
-  const pageActions = useMemo(() => {
-    if (activeTab === 0) {
-      return [{ label: 'Upload Certificate', onClick: handleUploadCertificate, variant: 'contained' as const, color: 'primary' as const }];
-    }
-    return [{ label: 'Request Leave', onClick: handleRequestLeave, variant: 'contained' as const, color: 'primary' as const }];
-  }, [activeTab]);
+  if (loadingProfile) {
+    return (
+      <S.PageContent>
+        <S.LoadingContainer>
+          <CircularProgress size={40} />
+        </S.LoadingContainer>
+      </S.PageContent>
+    );
+  }
 
   return (
-    <PageWrapper title="My Profile" description="Manage your certificates and leave requests." actions={pageActions}>
-      <S.TabsWrapper>
-        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
-          <Tab icon={<WorkspacePremiumOutlinedIcon fontSize="small" />} iconPosition="start" label="Certificates" />
-          <Tab icon={<EventAvailableOutlinedIcon fontSize="small" />} iconPosition="start" label="Leave" />
-        </Tabs>
-      </S.TabsWrapper>
+    <S.PageContent>
+      <S.ProfileHeaderCard>
+        <S.HeaderRow>
+          <AvatarUpload photoUrl={profile?.photoUrl} name={profile?.name} editable onUpload={handlePhotoUpload} />
+
+          <S.HeaderTop>
+            <S.IdBlock>
+              <S.HeaderTitle>{profile?.name || 'Worker'}</S.HeaderTitle>
+              <S.HeaderMetaRow>
+                {profile?.username && <span>@{profile.username}</span>}
+                {profile?.email && (
+                  <>
+                    <S.HeaderMetaDot>&bull;</S.HeaderMetaDot>
+                    <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                  </>
+                )}
+                {(profile?.telephone || profile?.mobile) && (
+                  <>
+                    <S.HeaderMetaDot>&bull;</S.HeaderMetaDot>
+                    <span>{profile?.telephone || profile?.mobile}</span>
+                  </>
+                )}
+              </S.HeaderMetaRow>
+            </S.IdBlock>
+
+            <S.HeaderActionsRow>
+              {activeTab === 0 ? (
+                <Button variant="contained" color="primary" onClick={handleUploadCertificate}>
+                  Upload Certificate
+                </Button>
+              ) : (
+                <Button variant="contained" color="primary" onClick={handleRequestLeave}>
+                  Request Leave
+                </Button>
+              )}
+            </S.HeaderActionsRow>
+          </S.HeaderTop>
+        </S.HeaderRow>
+
+        <S.TabsWrapper>
+          <S.StyledTabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
+            <S.StyledTab icon={<WorkspacePremiumOutlinedIcon fontSize="small" />} iconPosition="start" label="Certificates" />
+            <S.StyledTab icon={<EventAvailableOutlinedIcon fontSize="small" />} iconPosition="start" label="Leave" />
+          </S.StyledTabs>
+        </S.TabsWrapper>
+      </S.ProfileHeaderCard>
+
+      <WeeklyHoursCard fetchHours={fetchMyWeeklyHours} />
 
       {activeTab === 0 && (
         <Table<CertificateTableRow>
@@ -261,7 +326,7 @@ export const WorkerProfile: React.FC = () => {
           showPagination
         />
       )}
-    </PageWrapper>
+    </S.PageContent>
   );
 };
 

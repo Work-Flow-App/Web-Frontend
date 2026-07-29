@@ -11,7 +11,7 @@ import * as S from './LeaveCalendar.styles';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const typeLabel = (value: LeaveCalendarEntry['type']) =>
+const typeLabel = (value: LeaveCalendarEntry['leaveType']) =>
   LEAVE_TYPE_OPTIONS.find((opt) => opt.value === value)?.label || value;
 
 const buildMonthGrid = (viewMonth: Dayjs): Dayjs[] => {
@@ -95,8 +95,8 @@ export const LeaveCalendar: React.FC = () => {
                 <S.DayCell key={day.format('YYYY-MM-DD')} isCurrentMonth={isCurrentMonth}>
                   <S.DayNumber isCurrentMonth={isCurrentMonth}>{day.format('D')}</S.DayNumber>
                   {dayEntries.map((entry, idx) => (
-                    <S.EntryChip key={`${entry.workerId}-${idx}`} title={`${entry.workerName} — ${typeLabel(entry.type)}`}>
-                      {entry.workerName} · {typeLabel(entry.type)}
+                    <S.EntryChip key={`${entry.workerId}-${idx}`} title={`${entry.workerName} — ${typeLabel(entry.leaveType)}`}>
+                      {entry.workerName} · {typeLabel(entry.leaveType)}
                     </S.EntryChip>
                   ))}
                 </S.DayCell>

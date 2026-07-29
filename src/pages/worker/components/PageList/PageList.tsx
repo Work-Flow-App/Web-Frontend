@@ -35,6 +35,7 @@ export const PageList: React.FC = () => {
       telephone: worker.telephone || '',
       mobile: worker.mobile || '',
       initials: worker.initials || '',
+      photoUrl: worker.photoUrl,
       addedOn: worker.createdAt ? new Date(worker.createdAt).toLocaleDateString() : '',
     }));
   }, [rawWorkers]);

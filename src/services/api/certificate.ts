@@ -59,10 +59,14 @@ export interface PagedCertificates {
   size: number;
 }
 
-export interface ExpiringCertificatesGroup {
+export interface ExpiringCertificateResponse {
+  certificateId: number;
   workerId: number;
   workerName: string;
-  certificates: CertificateResponse[];
+  type: CertificateType;
+  name: string;
+  expiryDate: string;
+  daysUntilExpiry: number;
 }
 
 const MULTIPART_HEADERS = { headers: { 'Content-Type': 'multipart/form-data' } };
@@ -128,7 +132,7 @@ export const certificateService = {
   },
 
   async getExpiringCertificates(days = 30) {
-    return axiosInstance.get<ExpiringCertificatesGroup[]>(`${env.apiBaseUrl}/api/v1/workers/certificates/expiring`, {
+    return axiosInstance.get<ExpiringCertificateResponse[]>(`${env.apiBaseUrl}/api/v1/workers/certificates/expiring`, {
       params: { days },
     });
   },

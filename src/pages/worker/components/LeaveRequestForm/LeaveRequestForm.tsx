@@ -42,7 +42,7 @@ export const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
     resolver: yupResolver(fieldRules),
     defaultValues: leaveRequest
       ? {
-          type: leaveRequest.type,
+          type: leaveRequest.leaveType,
           startDate: leaveRequest.startDate,
           endDate: leaveRequest.endDate,
           reason: leaveRequest.reason || '',
@@ -63,7 +63,7 @@ export const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
   const handleSubmit = useCallback(
     async (data: LeaveRequestFormData) => {
       const payload = {
-        type: extractDropdownValue(data.type),
+        leaveType: extractDropdownValue(data.type),
         startDate: data.startDate,
         endDate: data.endDate,
         reason: data.reason || undefined,

@@ -7,7 +7,7 @@ import Table, { Pagination } from '../../../components/UI/Table';
 import type { ITableAction } from '../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
 import { certificateService } from '../../../services/api';
-import type { ExpiringCertificatesGroup } from '../../../services/api';
+import type { ExpiringCertificateResponse } from '../../../services/api';
 import { useCompanyRole } from '../../../contexts/CompanyRoleContext';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
@@ -59,14 +59,14 @@ export const Compliance: React.FC = () => {
 
   // Expiring Soon tab
   const [days, setDays] = useState(30);
-  const [expiringGroups, setExpiringGroups] = useState<ExpiringCertificatesGroup[]>([]);
+  const [expiringCertificates, setExpiringCertificates] = useState<ExpiringCertificateResponse[]>([]);
   const [loadingExpiring, setLoadingExpiring] = useState(false);
 
   const fetchExpiring = useCallback(async () => {
     try {
       setLoadingExpiring(true);
       const { data } = await certificateService.getExpiringCertificates(days);
-      setExpiringGroups(Array.isArray(data) ? data : []);
+      setExpiringCertificates(Array.isArray(data) ? data : []);
     } catch (error) {
       showError(extractErrorMessage(error, 'Failed to load expiring certificates'));
     } finally {
@@ -78,12 +78,30 @@ export const Compliance: React.FC = () => {
     if (activeTab === 1) fetchExpiring();
   }, [activeTab, fetchExpiring]);
 
+  // The expiring-certificates endpoint returns a flat, lighter DTO (no fileUrl/issuingAuthority/etc.)
+  // so we adapt it into a CompanyCertificateTableRow directly rather than reusing mapCompanyCertificateToRow,
+  // which expects the fuller CertificateResponse shape from the "All Certificates" endpoint.
   const expiringRows = useMemo(
     (): CompanyCertificateTableRow[] =>
-      expiringGroups.flatMap((group) =>
-        group.certificates.map((cert) => mapCompanyCertificateToRow({ ...cert, workerName: group.workerName, workerId: group.workerId }))
-      ),
-    [expiringGroups]
+      expiringCertificates.map((cert) => ({
+        id: cert.certificateId,
+        workerId: cert.workerId,
+        workerName: cert.workerName,
+        name: cert.name,
+        type: cert.type,
+        expiryDate: cert.expiryDate,
+        raw: {
+          id: cert.certificateId,
+          workerId: cert.workerId,
+          workerName: cert.workerName,
+          type: cert.type,
+          name: cert.name,
+          expiryDate: cert.expiryDate,
+          daysUntilExpiry: cert.daysUntilExpiry,
+          expiringSoon: cert.daysUntilExpiry >= 0 && cert.daysUntilExpiry <= 30,
+        },
+      })),
+    [expiringCertificates]
   );
 
   const handleDelete = useCallback(

@@ -35,7 +35,7 @@ export interface LeaveRequestResponse {
   id: number;
   workerId: number;
   workerName?: string;
-  type: LeaveType;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
   reason?: string;
@@ -45,7 +45,7 @@ export interface LeaveRequestResponse {
 }
 
 export interface LeaveRequestCreatePayload {
-  type: LeaveType;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
   reason?: string;
@@ -54,7 +54,7 @@ export interface LeaveRequestCreatePayload {
 export interface LeaveCalendarEntry {
   workerId: number;
   workerName: string;
-  type: LeaveType;
+  leaveType: LeaveType;
   startDate: string;
   endDate: string;
 }
@@ -103,9 +103,9 @@ export const leaveService = {
     });
   },
 
-  async approveLeaveRequest(id: number, note?: string) {
+  async approveLeaveRequest(id: number, decisionNote?: string) {
     return axiosInstance.post<LeaveRequestResponse>(`${env.apiBaseUrl}/api/v1/workers/leave-requests/${id}/approve`, {
-      note,
+      decisionNote,
     });
   },
 

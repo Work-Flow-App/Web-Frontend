@@ -5,3 +5,7 @@ export { CertificateForm, getCertificateStatus, createCertificateColumns, mapCer
 export type { CertificateFormProps, CertificateStatusInfo, CertificateTableRow } from './CertificateForm';
 export { LeaveRequestForm } from './LeaveRequestForm';
 export type { LeaveRequestFormProps } from './LeaveRequestForm';
+export { AvatarUpload } from './AvatarUpload';
+export type { AvatarUploadProps } from './AvatarUpload';
+export { WeeklyHoursCard } from './WeeklyHoursCard';
+export type { WeeklyHoursCardProps } from './WeeklyHoursCard';
