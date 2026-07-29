@@ -4,64 +4,167 @@ import { floowColors } from '../../../../../theme/colors';
 
 export { EmptyFeedBox } from './StepActivityTab.styles';
 
-// ─── Layout ───────────────────────────────────────────────────────────────────
+// ─── Outer Layout (Rail + Right Content) ──────────────────────────────────────
 
-export const WorkLogsLayout = styled(Box)(({ theme }) => ({
+export const WorkLogsOuterLayout = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   width: '100%',
   backgroundColor: theme.palette.colors.white,
   borderRadius: rem(12),
-  border: `1px solid ${theme.palette.colors.grey_200}`,
+  border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   overflow: 'hidden',
+  position: 'relative',
 }));
 
-// ─── Top Horizontal Steps Navigation ──────────────────────────────────────────
+// ─── Left Steps Rail (max 2rem wide) ──────────────────────────────────────────
 
-export const StepsNavContainer = styled(Box)(({ theme }) => ({
+export const StepsRail = styled(Box)(({ theme }) => ({
+  width: rem(56),
+  maxWidth: rem(56),
+  flexShrink: 0,
+  borderRight: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
+  backgroundColor: theme.palette.colors.white,
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(1.5, 2),
-  overflowX: 'auto',
-  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  paddingTop: rem(10),
+  paddingBottom: rem(10),
+  zIndex: 2,
+}));
+
+export const StepsRailHeader = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: rem(4),
+  marginBottom: rem(8),
+  width: '100%',
+}));
+
+export const StepsRailTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(7),
+  fontWeight: Bold._700,
+  color: theme.palette.text.secondary,
+  letterSpacing: rem(0.5),
+  textTransform: 'uppercase',
+  lineHeight: 1,
+  textAlign: 'center',
+}));
+
+// ─── Search Wrapper & Input ───────────────────────────────────────────────────
+// Input is absolutely positioned, extends to the RIGHT of the rail, overlaying
+// the content area. No overflow clipping since it stays within the outer container.
+
+export const StepSearchWrapper = styled(Box)(() => ({
+  position: 'relative',
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+}));
+
+export const StepSearchInput = styled('input')(({ theme }) => ({
+  position: 'absolute',
+  left: '100%',        // starts right at the rail's right edge (3.5rem)
+  top: '50%',
+  transform: 'translateY(-50%)',
+  width: rem(72),
+  height: rem(26),
+  border: `${rem(1)} solid ${theme.palette.colors.grey_300}`,
+  borderLeft: 'none',
+  borderRadius: `0 ${rem(4)} ${rem(4)} 0`,
+  backgroundColor: theme.palette.colors.white,
+  fontSize: rem(12),
+  padding: `0 ${rem(6)}`,
+  outline: 'none',
+  zIndex: 10,
+  boxShadow: `${rem(2)} ${rem(2)} ${rem(8)} rgba(0,0,0,0.1)`,
+  // Remove number-type spin arrows
+  '&::-webkit-inner-spin-button, &::-webkit-outer-spin-button': {
+    appearance: 'none',
+    margin: 0,
+  },
+  '&[type=number]': {
+    MozAppearance: 'textfield',
+  },
+  '&:focus': {
+    borderColor: '#101a32',
+    boxShadow: `${rem(2)} ${rem(2)} ${rem(10)} rgba(16,26,50,0.15)`,
+  },
+  '&::placeholder': {
+    color: theme.palette.text.secondary,
+    fontSize: rem(11),
+  },
+}));
+
+// ─── Step Bubbles List ────────────────────────────────────────────────────────
+
+export const StepsBubbleList = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  flex: 1,
+  overflowY: 'auto',
+  overflowX: 'visible',
+  width: '100%',
+  paddingTop: rem(4),
   '&::-webkit-scrollbar': {
-    height: rem(4),
+    width: rem(2),
   },
   '&::-webkit-scrollbar-thumb': {
-    backgroundColor: theme.palette.colors.grey_300,
-    borderRadius: rem(4),
+    backgroundColor: floowColors.tailwind.gray[300],
+    borderRadius: rem(2),
   },
 }));
 
-export const StepBadge = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isActive',
-})<{ isActive?: boolean }>(({ theme, isActive }) => ({
+export const StepBubbleItem = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}));
+
+export const StepConnector = styled(Box)(({ theme }) => ({
+  width: rem(2),
+  height: rem(10),
+  backgroundColor: theme.palette.colors.grey_200,
+  flexShrink: 0,
+}));
+
+export const StepCircle = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isActive' && prop !== 'stepColor',
+})<{ isActive?: boolean; stepColor?: string }>(({ theme, isActive, stepColor }) => ({
+  // Fills most of the 3.5rem (56px) rail — 44px circle, 6px padding each side
+  width: rem(44),
+  height: rem(44),
+  borderRadius: '50%',
+  backgroundColor: isActive ? '#101a32' : theme.palette.colors.white,
+  border: `${rem(2.5)} solid ${isActive ? '#101a32' : (stepColor || theme.palette.colors.grey_300)}`,
+  color: isActive ? floowColors.white : theme.palette.text.primary,
+  fontSize: rem(14),
+  fontWeight: Bold._700,
   display: 'flex',
   alignItems: 'center',
-  gap: rem(6),
-  padding: `${rem(6)} ${rem(12)}`,
-  borderRadius: rem(6),
-  border: `1px solid ${isActive ? '#101a32' : theme.palette.colors.grey_200}`,
-  backgroundColor: isActive ? '#101a32' : theme.palette.colors.white,
-  color: isActive ? floowColors.white : theme.palette.text.primary,
-  fontSize: rem(13),
-  fontWeight: Bold._600,
+  justifyContent: 'center',
   cursor: 'pointer',
-  whiteSpace: 'nowrap',
+  userSelect: 'none',
+  flexShrink: 0,
+  position: 'relative',
   transition: 'all 0.15s ease',
   '&:hover': {
     borderColor: '#101a32',
+    backgroundColor: isActive ? '#101a32' : floowColors.tailwind.gray[50],
   },
 }));
 
-export const StepDot = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'dotColor',
-})<{ dotColor?: string }>(({ dotColor }) => ({
-  width: rem(8),
-  height: rem(8),
-  borderRadius: '50%',
-  backgroundColor: dotColor || floowColors.white,
+// ─── Right Content Column ─────────────────────────────────────────────────────
+
+export const WorkLogsLayout = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minWidth: 0,
+  overflow: 'hidden',
 }));
 
 // ─── Summary Section ──────────────────────────────────────────────────────────
@@ -71,14 +174,13 @@ export const SummarySection = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   gap: theme.spacing(2),
   padding: theme.spacing(3),
-  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  borderBottom: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   backgroundColor: floowColors.tailwind.gray[50],
   [theme.breakpoints.down('lg')]: {
     flexDirection: 'column',
   },
 }));
 
-// Left Black Box
 export const TrackingBox = styled(Box)(({ theme }) => ({
   flex: 1,
   backgroundColor: '#101a32',
@@ -94,7 +196,7 @@ export const TrackingBox = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const TimerIconBox = styled(Box)(({ theme }) => ({
+export const TimerIconBox = styled(Box)(() => ({
   width: rem(64),
   height: rem(64),
   borderRadius: rem(16),
@@ -102,6 +204,7 @@ export const TimerIconBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  flexShrink: 0,
 }));
 
 export const TrackingInfo = styled(Box)(() => ({
@@ -114,7 +217,7 @@ export const TrackingLabel = styled(Typography)(() => ({
   fontSize: rem(11),
   fontWeight: Bold._700,
   color: 'rgba(255, 255, 255, 0.6)',
-  letterSpacing: '0.5px',
+  letterSpacing: rem(0.5),
   textTransform: 'uppercase',
 }));
 
@@ -125,7 +228,6 @@ export const TrackingTime = styled(Typography)(() => ({
   color: floowColors.white,
 }));
 
-// Right Grid
 export const StatsGrid = styled(Box)(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
@@ -142,7 +244,7 @@ export const StatsGrid = styled(Box)(({ theme }) => ({
 
 export const StatBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
-  border: `1px solid ${theme.palette.colors.grey_200}`,
+  border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   borderRadius: rem(12),
   padding: theme.spacing(2.5, 3),
   display: 'flex',
@@ -160,7 +262,7 @@ export const StatLabel = styled(Typography)(({ theme }) => ({
   fontSize: rem(11),
   fontWeight: Bold._700,
   color: theme.palette.text.secondary,
-  letterSpacing: '0.5px',
+  letterSpacing: rem(0.5),
   textTransform: 'uppercase',
 }));
 
@@ -173,90 +275,123 @@ export const StatValue = styled(Typography)(({ theme }) => ({
 
 // ─── Table Section ────────────────────────────────────────────────────────────
 
-export const TableContainer = styled(Box)(({ theme }) => ({
-  width: '100%',
-  overflowX: 'auto',
-  minHeight: rem(400),
+export const TableSectionTitle = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: Bold._700,
+  color: theme.palette.text.secondary,
+  letterSpacing: rem(0.5),
+  textTransform: 'uppercase',
+  padding: theme.spacing(3, 3, 2, 3),
 }));
 
-export const Table = styled('table')(({ theme }) => ({
+export const TableContainer = styled(Box)(() => ({
+  width: '100%',
+  overflowX: 'auto',
+  minHeight: rem(200),
+  '&::-webkit-scrollbar': {
+    height: rem(4),
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: floowColors.tailwind.gray[300],
+    borderRadius: rem(2),
+  },
+}));
+
+export const Table = styled('table')(() => ({
   width: '100%',
   borderCollapse: 'collapse',
   textAlign: 'left',
-  minWidth: rem(800),
+  minWidth: rem(560),
 }));
 
 export const Th = styled('th')(({ theme }) => ({
-  padding: theme.spacing(2, 3),
+  padding: `${rem(10)} ${rem(16)}`,
   fontSize: rem(11),
   fontWeight: Bold._700,
   color: theme.palette.text.secondary,
   textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-  borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  letterSpacing: rem(0.5),
+  borderBottom: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   backgroundColor: floowColors.tailwind.gray[50],
+  whiteSpace: 'nowrap',
 }));
 
-export const Td = styled('td')(({ theme }) => ({
-  padding: theme.spacing(2.5, 3),
-  fontSize: rem(14),
-  color: theme.palette.text.primary,
-  borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
-  verticalAlign: 'middle',
+// Header row — no pointer cursor, no hover highlight
+export const Tr = styled('tr')(() => ({
+  // header row only
 }));
 
-export const Tr = styled('tr')(({ theme }) => ({
+// Data rows — 3.5rem height, clickable
+export const DataTr = styled('tr')(({ theme }) => ({
+  height: rem(56),
+  maxHeight: rem(56),
+  cursor: 'pointer',
   transition: 'background-color 0.15s ease',
   '&:hover': {
     backgroundColor: floowColors.tailwind.gray[50],
   },
 }));
 
+export const Td = styled('td')(({ theme }) => ({
+  padding: `0 ${rem(16)}`,
+  height: rem(56),
+  maxHeight: rem(56),
+  fontSize: rem(13),
+  color: theme.palette.text.primary,
+  borderBottom: `${rem(1)} solid ${theme.palette.colors.grey_100}`,
+  verticalAlign: 'middle',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+}));
+
+// Notes cell — truncated with ellipsis
+export const NotesTd = styled('td')(({ theme }) => ({
+  padding: `0 ${rem(16)}`,
+  height: rem(56),
+  maxHeight: rem(56),
+  maxWidth: rem(180),
+  fontSize: rem(13),
+  color: theme.palette.text.secondary,
+  borderBottom: `${rem(1)} solid ${theme.palette.colors.grey_100}`,
+  verticalAlign: 'middle',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+}));
+
 export const UserBadge = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
+  gap: rem(6),
   fontWeight: Bold._600,
+  fontSize: rem(13),
 }));
 
 export const UserAvatar = styled(Box)(({ theme }) => ({
-  width: rem(32),
-  height: rem(32),
+  width: rem(20),
+  height: rem(20),
   borderRadius: '50%',
   backgroundColor: theme.palette.primary.main,
   color: floowColors.white,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: rem(12),
+  fontSize: rem(9),
   fontWeight: Bold._700,
+  flexShrink: 0,
 }));
 
 export const DurationText = styled(Typography)(({ theme }) => ({
-  fontSize: rem(14),
+  fontSize: rem(13),
   fontWeight: Bold._700,
   color: theme.palette.text.primary,
+  lineHeight: 1,
 }));
 
-export const ActionCell = styled(Box)(({ theme }) => ({
+export const ActionCell = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-}));
-
-export const NotesText = styled(Typography)(({ theme }) => ({
-  fontSize: rem(13.5),
-  color: theme.palette.text.secondary,
-  lineHeight: 1.5,
-}));
-
-export const TableSectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: rem(12),
-  fontWeight: Bold._700,
-  color: theme.palette.text.secondary,
-  letterSpacing: '0.5px',
-  textTransform: 'uppercase',
-  padding: theme.spacing(3, 3, 2, 3),
+  gap: rem(2),
 }));
 
 export const EmptyStateRow = styled('td')(({ theme }) => ({
@@ -266,3 +401,114 @@ export const EmptyStateRow = styled('td')(({ theme }) => ({
   fontSize: rem(14),
 }));
 
+// ─── Note Detail Popup ────────────────────────────────────────────────────────
+
+// Backdrop covers the full viewport for click-outside detection.
+// The card is independently fixed-positioned (not flex-centred here).
+export const NotePopupBackdrop = styled(Box)(() => ({
+  position: 'fixed',
+  inset: 0,
+  zIndex: 1300,
+  backgroundColor: 'rgba(0, 0, 0, 0.22)',
+}));
+
+// Card is fixed-positioned and centred on the clicked row.
+// `yOffset` (px from top of viewport) is the row's vertical mid-point.
+export const NotePopupCard = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'yOffset',
+})<{ yOffset?: number }>(({ theme, yOffset }) => ({
+  position: 'fixed',
+  // Horizontally centred in the viewport
+  left: '50%',
+  // Vertically centred on the clicked row; fall back to viewport centre
+  top: yOffset !== undefined ? `${yOffset}px` : '50vh',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 1301,
+  backgroundColor: theme.palette.colors.white,
+  borderRadius: rem(12),
+  boxShadow: `0 ${rem(8)} ${rem(32)} rgba(0,0,0,0.16)`,
+  padding: `${rem(14)} ${rem(18)}`,
+  minWidth: rem(180),
+  maxWidth: rem(440),
+  width: 'fit-content',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(6),
+  border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
+  [theme.breakpoints.down('sm')]: {
+    maxWidth: `calc(100vw - ${rem(32)})`,
+    width: `calc(100vw - ${rem(32)})`,
+  },
+}));
+
+// First line: start→end time + ✕ button
+export const NotePopupHeader = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: rem(20),
+}));
+
+export const NotePopupTimeValue = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._600,
+  color: theme.palette.text.primary,
+  whiteSpace: 'nowrap',
+  lineHeight: 1,
+}));
+
+export const NotePopupCloseBtn = styled('button')(({ theme }) => ({
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: theme.palette.text.secondary,
+  padding: 0,
+  lineHeight: 1,
+  fontSize: rem(14),
+  borderRadius: '50%',
+  width: rem(18),
+  height: rem(18),
+  flexShrink: 0,
+  transition: 'color 0.12s, background-color 0.12s',
+  '&:hover': {
+    color: theme.palette.text.primary,
+    backgroundColor: floowColors.tailwind.gray[100],
+  },
+}));
+
+export const NotePopupDivider = styled('hr')(({ theme }) => ({
+  border: 'none',
+  borderTop: `${rem(1)} solid ${theme.palette.colors.grey_100}`,
+  margin: 0,
+}));
+
+// Second line: full note text — wraps naturally, no truncation
+export const NotePopupNoteText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  color: theme.palette.text.secondary,
+  lineHeight: 1.5,
+  wordBreak: 'break-word',
+  whiteSpace: 'pre-wrap',
+}));
+
+export const AllStepCircle = styled(StepCircle)(() => ({
+  fontSize: rem(12),
+}));
+
+export const StepNameText = styled(DurationText)(() => ({
+  fontWeight: 500,
+}));
+
+export const StepSelectDropdown = styled('select')(({ theme }) => ({
+  width: '100%',
+  height: '40px',
+  borderRadius: '8px',
+  borderColor: theme.palette.colors.grey_200,
+  padding: '0 12px',
+  outline: 'none',
+  fontSize: '14px',
+  backgroundColor: theme.palette.colors.white,
+}));

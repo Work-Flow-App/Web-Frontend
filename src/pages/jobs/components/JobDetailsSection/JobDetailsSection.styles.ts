@@ -63,13 +63,19 @@ export const FieldValue = styled(Typography)<{ $notSet?: boolean }>(({ theme, $n
   color: $notSet ? theme.palette.text.disabled : theme.palette.text.primary,
   fontWeight: $notSet ? 400 : 500,
   flex: 1,
+  minWidth: 0,
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+  whiteSpace: 'pre-wrap',
   fontStyle: $notSet ? 'italic' : 'normal',
 }));
 
 export const FieldAction = styled(Box)(({ theme }) => ({
   marginLeft: 'auto',
+  flexShrink: 0,
   display: 'flex',
   alignItems: 'center',
+  paddingLeft: theme.spacing(1),
 }));
 
 export const ActionButton = styled(Button)(({ theme }) => ({
@@ -88,6 +94,7 @@ export const DividerLine = styled(Box)(({ theme }) => ({
 
 export const InlineEditContainer = styled(Box)(() => ({
   flex: 1,
+  minWidth: 0,
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',

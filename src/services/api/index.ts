@@ -23,7 +23,24 @@ export type {
 } from './worker';
 
 export { companyService } from './company';
-export type { CompanyProfileResponse, CompanyProfileUpdateRequest, CompanyDashboardResponse } from './company';
+export {
+  CompanyDocumentResponseTypeEnum,
+  CompanyUploadDocumentTypeEnum,
+  CompanyUpdateDocumentTypeEnum,
+} from '../../../workflow-api';
+export type {
+  CompanyProfileResponse,
+  CompanyProfileUpdateRequest,
+  CompanyDashboardResponse,
+  CompanyDocumentResponse,
+  CompanyPostResponse,
+  CompanyPostCreateRequest,
+  CompanyPostUpdateRequest,
+  CompanyPostAttachmentResponse,
+  CompanyDocumentUploadPayload,
+  CompanyDocumentUpdatePayload,
+  PublicCompanyProfileResponse,
+} from './company';
 
 export { companyClientService } from './companyClient';
 export type { ClientResponse, ClientCreateRequest, ClientUpdateRequest } from './companyClient';

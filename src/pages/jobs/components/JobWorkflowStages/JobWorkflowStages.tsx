@@ -1,34 +1,47 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   CircularProgress,
-  Box,
   IconButton,
   TextField,
-  Select,
   MenuItem,
-  FormControl,
-  Chip,
   Collapse,
   Autocomplete,
   Tooltip,
 } from '@mui/material';
-
-import type { SelectChangeEvent } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 import TimerIcon from '@mui/icons-material/Timer';
+
 import type { JobResponse, WorkerResponse, WorkflowResponse } from '../../../../services/api';
 import { jobWorkflowService, workerService, workflowService } from '../../../../services/api';
 import type { JobWorkflowResponse, JobWorkflowStepResponse } from '../../../../services/api';
-import { JobWorkflowStepResponseStatusEnum, JobWorkflowStepResponseSlaStatusEnum } from '../../../../../workflow-api';
+import { JobWorkflowStepResponseStatusEnum, JobWorkflowStepResponseSlaStatusEnum, type JobWorkflowStepCreateRequest } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { StepCommentsSection } from './StepCommentsSection';
 import { StepAttachmentsSection } from './StepAttachmentsSection';
-import * as S from '../../JobDetailsPage.styles';
-import { styles } from './JobWorkflowStages.styles';
+import { AddStepModal } from './AddStepModal';
+import * as SPage from '../../JobDetailsPage.styles';
+import * as S from './JobWorkflowStages.styles';
 
 // ─── SLA Timer ────────────────────────────────────────────────────────────────
 
@@ -82,7 +95,7 @@ const SlaTimer: React.FC<{ step: JobWorkflowStepResponse }> = ({ step }) => {
 
   return (
     <Tooltip title="Time remaining until SLA breach" placement="top">
-      <S.SlaTimerChip
+      <SPage.SlaTimerChip
         icon={<TimerIcon />}
         label={label}
         size="small"
@@ -92,81 +105,512 @@ const SlaTimer: React.FC<{ step: JobWorkflowStepResponse }> = ({ step }) => {
   );
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface JobWorkflowStagesProps {
-  job: JobResponse;
-  onStepUpdate?: () => void;
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getStatusInfo = (status?: string) => {
   switch (status) {
     case JobWorkflowStepResponseStatusEnum.Completed:
-      return { label: 'COMPLETED', isCompleted: true,  isInProgress: false, isDelayed: false, chipBg: '#E8F5E9', chipColor: '#2E7D32' };
+      return { label: 'COMPLETED', isCompleted: true, isInProgress: false, isDelayed: false, chipBg: '#E8F5E9', chipColor: '#2E7D32', variant: 'completed' as const };
     case JobWorkflowStepResponseStatusEnum.Started:
-      return { label: 'STARTED',   isCompleted: false, isInProgress: true,  isDelayed: false, chipBg: '#E3F2FD', chipColor: '#1565C0' };
     case JobWorkflowStepResponseStatusEnum.Ongoing:
-      return { label: 'ONGOING',   isCompleted: false, isInProgress: true,  isDelayed: false, chipBg: '#E3F2FD', chipColor: '#1565C0' };
+      return { label: status === JobWorkflowStepResponseStatusEnum.Started ? 'STARTED' : 'ONGOING', isCompleted: false, isInProgress: true, isDelayed: false, chipBg: '#E3F2FD', chipColor: '#1565C0', variant: 'inProgress' as const };
     case JobWorkflowStepResponseStatusEnum.Pending:
-      return { label: 'PENDING',   isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#FFF8E1', chipColor: '#F9A825' };
+      return { label: 'PENDING', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#FFF8E1', chipColor: '#F9A825', variant: 'default' as const };
     case JobWorkflowStepResponseStatusEnum.Skipped:
-      return { label: 'SKIPPED',   isCompleted: false, isInProgress: false, isDelayed: true,  chipBg: '#FFEBEE', chipColor: '#C62828' };
+      return { label: 'SKIPPED', isCompleted: true, isInProgress: false, isDelayed: false, chipBg: '#F3F4F6', chipColor: '#4B5563', variant: 'completed' as const };
     case JobWorkflowStepResponseStatusEnum.Initiated:
-      return { label: 'INITIATED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F3E5F5', chipColor: '#7B1FA2' };
+      return { label: 'INITIATED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F3E5F5', chipColor: '#7B1FA2', variant: 'default' as const };
     case JobWorkflowStepResponseStatusEnum.NotStarted:
     default:
-      return { label: 'NOT_STARTED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F5F5F5', chipColor: '#616161' };
+      return { label: 'NOT_STARTED', isCompleted: false, isInProgress: false, isDelayed: false, chipBg: '#F5F5F5', chipColor: '#616161', variant: 'default' as const };
   }
 };
 
 const formatStepDate = (isoString?: string) => {
   if (!isoString) return '';
   const date = new Date(isoString);
-  const day     = date.getDate().toString().padStart(2, '0');
-  const month   = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year    = date.getFullYear();
-  let   hours   = date.getHours();
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  let hours = date.getHours();
   const minutes = date.getMinutes().toString().padStart(2, '0');
-  const ampm    = hours >= 12 ? 'PM' : 'AM';
+  const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12 || 12;
   return `${day}/${month}/${year} (${hours.toString().padStart(2, '0')}:${minutes}${ampm})`;
 };
 
 const formatDuration = (minutes?: number) => {
   if (minutes == null) return '';
-  const days  = Math.floor(minutes / (24 * 60));
+  const days = Math.floor(minutes / (24 * 60));
   const hours = Math.floor((minutes % (24 * 60)) / 60);
   const parts: string[] = [];
-  if (days  > 0) parts.push(`${days} day${days   > 1 ? 's' : ''}`);
+  if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
   if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
   return parts.length > 0 ? parts.join(' ') : '0 hours';
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Interfaces ───────────────────────────────────────────────────────────────
+
+interface JobWorkflowStagesProps {
+  job: JobResponse;
+  onStepUpdate?: () => void;
+}
+
+interface SortableStepRowProps {
+  step: JobWorkflowStepResponse;
+  index: number;
+  isLast: boolean;
+  isExpanded: boolean;
+  isReordering: boolean;
+  editingStepNameId: number | null;
+  stepNameValue: string;
+  updatingStep: number | null;
+  editingNotes: string;
+  editingStepId: number | null;
+  savingNotes: boolean;
+  editingDurationStepId: number | null;
+  editingDurationType: 'expected' | 'maximum' | null;
+  editDays: number | string;
+  editHours: number | string;
+  workers: Map<number, WorkerResponse>;
+  allWorkers: WorkerResponse[];
+  onToggleStep: (stepId: number) => void;
+  onStartEditStepName: (step: JobWorkflowStepResponse, e: React.MouseEvent) => void;
+  onCancelEditStepName: (e: React.MouseEvent) => void;
+  onSaveStepName: (step: JobWorkflowStepResponse, e: React.MouseEvent) => void;
+  onDeleteStep: (step: JobWorkflowStepResponse, e: React.MouseEvent) => void;
+  onStatusChange: (step: JobWorkflowStepResponse, newStatus: string) => void;
+  onAssignedChange: (step: JobWorkflowStepResponse, workerIds: number[]) => void;
+  onEditNotes: (step: JobWorkflowStepResponse, e: React.MouseEvent) => void;
+  onCancelEditNotes: () => void;
+  onSaveNotes: (step: JobWorkflowStepResponse) => void;
+  onEditDuration: (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent) => void;
+  onCancelEditDuration: (e: React.MouseEvent) => void;
+  onSaveDuration: (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent | React.KeyboardEvent) => void;
+  onStepUpdate?: () => void;
+  setStepNameValue: (val: string) => void;
+  setEditingNotes: (val: string) => void;
+  setEditDays: (val: number | string) => void;
+  setEditHours: (val: number | string) => void;
+}
+
+// ─── Sortable Step Component ──────────────────────────────────────────────────
+
+const SortableStepRow: React.FC<SortableStepRowProps> = ({
+  step,
+  index,
+  isLast,
+  isExpanded,
+  isReordering,
+  editingStepNameId,
+  stepNameValue,
+  updatingStep,
+  editingNotes,
+  editingStepId,
+  savingNotes,
+  editingDurationStepId,
+  editingDurationType,
+  editDays,
+  editHours,
+  workers,
+  allWorkers,
+  onToggleStep,
+  onStartEditStepName,
+  onCancelEditStepName,
+  onSaveStepName,
+  onDeleteStep,
+  onStatusChange,
+  onAssignedChange,
+  onEditNotes,
+  onCancelEditNotes,
+  onSaveNotes,
+  onEditDuration,
+  onCancelEditDuration,
+  onSaveDuration,
+  onStepUpdate,
+  setStepNameValue,
+  setEditingNotes,
+  setEditDays,
+  setEditHours,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: `step-${step.id}`,
+    disabled: !isReordering,
+  });
+
+  const dndStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const statusInfo = getStatusInfo(step.status);
+  const assignedWorkerIdsList = Array.from(step.assignedWorkerIds || []);
+  const assignedWorker = assignedWorkerIdsList.length > 0 ? workers.get(assignedWorkerIdsList[0]) ?? null : null;
+  const selectedWorkers = assignedWorkerIdsList
+    .map((id) => allWorkers.find((w) => w.id === id) ?? workers.get(id))
+    .filter((w): w is WorkerResponse => !!w);
+
+  return (
+    <>
+      {/* ── Re-Order mode: compact draggable title row only ── */}
+      {isReordering ? (
+        <S.ReorderDragRow ref={setNodeRef} style={dndStyle} {...attributes} {...listeners}>
+          <S.DragIcon />
+          <S.ReorderDragIndex>{index + 1}</S.ReorderDragIndex>
+          <S.ReorderDragTitle>{step.name || `Step ${index + 1}`}</S.ReorderDragTitle>
+        </S.ReorderDragRow>
+      ) : (
+        /* ── Normal mode: full step row ── */
+        <S.StepRowContainer ref={setNodeRef} style={dndStyle}>
+          {/* Connector line */}
+          {!isLast && (
+            statusInfo.isCompleted ? <S.TimelineLineCompleted /> : <S.TimelineLinePending />
+          )}
+
+          {/* Node */}
+          <S.TimelineNode
+            statusVariant={statusInfo.variant}
+            onClick={() => step.id && onToggleStep(step.id)}
+          >
+            {statusInfo.isCompleted ? (
+              <S.NodeIconCheck />
+            ) : statusInfo.isInProgress ? (
+              <S.NodeIconPlay />
+            ) : statusInfo.isDelayed ? (
+              <S.NodeIconClose />
+            ) : (
+              index + 1
+            )}
+          </S.TimelineNode>
+
+          {/* Step Content */}
+          <S.StepContentBox>
+            {/* Step Title Header */}
+            <S.StepTitleHeaderRow>
+              {editingStepNameId === step.id ? (
+                <S.StepTitleEditWrapper>
+                  <S.StepTitleIndexSpan>{index + 1}.</S.StepTitleIndexSpan>
+                  <S.StepTitleTextField
+                    size="small"
+                    value={stepNameValue}
+                    onChange={(e) => setStepNameValue(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    autoFocus
+                  />
+                  <S.ActionIconButton size="small" onClick={onCancelEditStepName} aria-label="Cancel step name edit">
+                    <S.SmallIconClose />
+                  </S.ActionIconButton>
+                  <S.ActionIconButton
+                    size="small"
+                    onClick={(e) => onSaveStepName(step, e)}
+                    disabled={updatingStep === step.id}
+                    aria-label="Save step name"
+                  >
+                    <S.SmallIconSave />
+                  </S.ActionIconButton>
+                </S.StepTitleEditWrapper>
+              ) : (
+                <>
+                  <SPage.StepTitleText onClick={() => step.id && onToggleStep(step.id)}>
+                    {index + 1}. {step.name || `Step ${index + 1}`}
+                  </SPage.StepTitleText>
+
+                  {/* Action Buttons */}
+                  <S.StepActionButtonsBox>
+                    <S.ActionIconButton
+                      size="small"
+                      onClick={(e) => onStartEditStepName(step, e)}
+                      aria-label="Edit step title"
+                      title="Edit Step Title"
+                    >
+                      <S.SmallIconEdit />
+                    </S.ActionIconButton>
+                    <S.DeleteActionButton
+                      size="small"
+                      onClick={(e) => onDeleteStep(step, e)}
+                      disabled={updatingStep === step.id || step.status === JobWorkflowStepResponseStatusEnum.Skipped}
+                      aria-label="Skip step"
+                      title="Skip Step"
+                    >
+                      <S.SmallIconDelete />
+                    </S.DeleteActionButton>
+                  </S.StepActionButtonsBox>
+                </>
+              )}
+            </S.StepTitleHeaderRow>
+
+            {/* Step description */}
+            <S.StepDescriptionText>
+              {step.description || 'No description'}
+            </S.StepDescriptionText>
+
+            {/* Chips row */}
+            <S.ChipsRowBox onClick={() => step.id && onToggleStep(step.id)}>
+              <S.StyledStatusChip
+                label={statusInfo.label}
+                size="small"
+                chipbg={statusInfo.chipBg}
+                chipcolor={statusInfo.chipColor}
+              />
+              {assignedWorker && (
+                <S.AssignedYouChip label="YOU" size="small" />
+              )}
+              <SlaTimer step={step} />
+            </S.ChipsRowBox>
+
+            {/* Expanded details */}
+            <Collapse in={isExpanded}>
+              <S.ExpandedPanelBox>
+                {/* Expected duration */}
+                {step.expectedDurationMinutes != null && (
+                  <SPage.StepDetailRow>
+                    <span className="label">Expected Duration Time</span>
+                    {editingDurationStepId === step.id && editingDurationType === 'expected' ? (
+                      <S.DurationEditRowBox onClick={(e) => e.stopPropagation()}>
+                        <S.DurationNumberInput
+                          type="number" size="small" value={editDays}
+                          onChange={(e) => setEditDays(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') onSaveDuration(step, 'expected', e); }}
+                        />
+                        <S.DurationUnitText>day</S.DurationUnitText>
+                        <S.DurationNumberInput
+                          type="number" size="small" value={editHours}
+                          onChange={(e) => setEditHours(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') onSaveDuration(step, 'expected', e); }}
+                        />
+                        <S.DurationUnitText>hours</S.DurationUnitText>
+                        <S.ActionIconButton size="small" onClick={onCancelEditDuration}>
+                          <S.SmallIconClose />
+                        </S.ActionIconButton>
+                        <S.ActionIconButton size="small" onClick={(e) => onSaveDuration(step, 'expected', e)} disabled={updatingStep === step.id}>
+                          <S.SmallIconSave />
+                        </S.ActionIconButton>
+                      </S.DurationEditRowBox>
+                    ) : (
+                      <S.DurationValueBox>
+                        <S.DurationValueText>{formatDuration(step.expectedDurationMinutes)}</S.DurationValueText>
+                        <S.ActionIconButton size="small" onClick={(e) => onEditDuration(step, 'expected', e)}>
+                          <S.SmallIconEdit />
+                        </S.ActionIconButton>
+                      </S.DurationValueBox>
+                    )}
+                  </SPage.StepDetailRow>
+                )}
+
+                {/* Maximum duration */}
+                {step.maximumDurationMinutes != null && (
+                  <SPage.StepDetailRow>
+                    <span className="label">Maximum Duration Time</span>
+                    {editingDurationStepId === step.id && editingDurationType === 'maximum' ? (
+                      <S.DurationEditRowBox onClick={(e) => e.stopPropagation()}>
+                        <S.DurationNumberInput
+                          type="number" size="small" value={editDays}
+                          onChange={(e) => setEditDays(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') onSaveDuration(step, 'maximum', e); }}
+                        />
+                        <S.DurationUnitText>day</S.DurationUnitText>
+                        <S.DurationNumberInput
+                          type="number" size="small" value={editHours}
+                          onChange={(e) => setEditHours(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') onSaveDuration(step, 'maximum', e); }}
+                        />
+                        <S.DurationUnitText>hours</S.DurationUnitText>
+                        <S.ActionIconButton size="small" onClick={onCancelEditDuration}>
+                          <S.SmallIconClose />
+                        </S.ActionIconButton>
+                        <S.ActionIconButton size="small" onClick={(e) => onSaveDuration(step, 'maximum', e)} disabled={updatingStep === step.id}>
+                          <S.SmallIconSave />
+                        </S.ActionIconButton>
+                      </S.DurationEditRowBox>
+                    ) : (
+                      <S.DurationValueBox>
+                        <S.DurationValueText>{formatDuration(step.maximumDurationMinutes)}</S.DurationValueText>
+                        <S.ActionIconButton size="small" onClick={(e) => onEditDuration(step, 'maximum', e)}>
+                          <S.SmallIconEdit />
+                        </S.ActionIconButton>
+                      </S.DurationValueBox>
+                    )}
+                  </SPage.StepDetailRow>
+                )}
+
+                {/* Status dropdown */}
+                <SPage.StepDetailRow>
+                  <span className="label">Status</span>
+                  <S.StatusSelectControl size="small">
+                    <S.StatusSelectComponent
+                      value={step.status || JobWorkflowStepResponseStatusEnum.NotStarted}
+                      onChange={(e: any) => onStatusChange(step, e.target.value as string)}
+                      disabled={updatingStep === step.id}
+                    >
+                      {Object.entries(JobWorkflowStepResponseStatusEnum).map(([key, value]) => {
+                        const info = getStatusInfo(value);
+                        return (
+                          <MenuItem key={key} value={value}>
+                            <S.StatusMenuItemChip
+                              label={info.label}
+                              size="small"
+                              chipbg={info.chipBg}
+                              chipcolor={info.chipColor}
+                            />
+                          </MenuItem>
+                        );
+                      })}
+                    </S.StatusSelectComponent>
+                  </S.StatusSelectControl>
+                </SPage.StepDetailRow>
+
+                {/* Dates */}
+                {step.startedAt && (
+                  <SPage.StepDetailRow>
+                    <span className="label">Started At</span>
+                    <S.DateValueText>{formatStepDate(step.startedAt)}</S.DateValueText>
+                  </SPage.StepDetailRow>
+                )}
+                {step.completedAt && (
+                  <SPage.StepDetailRow>
+                    <span className="label">Completed At</span>
+                    <S.DateValueText>{formatStepDate(step.completedAt)}</S.DateValueText>
+                  </SPage.StepDetailRow>
+                )}
+
+                {/* Assigned */}
+                <SPage.AssignedRow>
+                  <span className="label">Assigned</span>
+                  <SPage.AssignedAutocompleteWrapper>
+                    <Autocomplete
+                      multiple
+                      fullWidth
+                      options={allWorkers}
+                      value={selectedWorkers}
+                      getOptionLabel={(option) => option.name || ''}
+                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      onChange={(_, newValue) =>
+                        onAssignedChange(step, newValue.map((w) => w.id!))
+                      }
+                      disabled={updatingStep === step.id}
+                      disablePortal
+                      disableCloseOnSelect
+                      size="small"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder={selectedWorkers.length === 0 ? 'Unassigned' : ''}
+                          size="small"
+                        />
+                      )}
+                      renderOption={(props, option, { selected }) => {
+                        const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: React.Key };
+                        return (
+                          <SPage.WorkerMenuItem key={key} {...rest} selected={selected}>
+                            {option.name}
+                          </SPage.WorkerMenuItem>
+                        );
+                      }}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, tagIndex) => {
+                          const tagProps = getTagProps({ index: tagIndex });
+                          return (
+                            <SPage.AssignedWorkerChip
+                              {...tagProps}
+                              key={tagProps.key}
+                              label={option.name}
+                              size="small"
+                            />
+                          );
+                        })
+                      }
+                    />
+                  </SPage.AssignedAutocompleteWrapper>
+                </SPage.AssignedRow>
+
+                {/* Notes */}
+                <SPage.EventNoteBox>
+                  <SPage.EventNoteHeader>
+                    <SPage.EventNoteTitle>Notes</SPage.EventNoteTitle>
+                    {editingStepId === step.id ? (
+                      <S.NotesEditButtonsRow>
+                        <SPage.EventNoteEditButton onClick={() => onCancelEditNotes()}>
+                          Cancel
+                        </SPage.EventNoteEditButton>
+                        <SPage.EventNoteEditButton onClick={() => onSaveNotes(step)} disabled={savingNotes}>
+                          {savingNotes ? 'Saving...' : 'Save'}
+                        </SPage.EventNoteEditButton>
+                      </S.NotesEditButtonsRow>
+                    ) : (
+                      <SPage.EventNoteEditButton onClick={(e) => onEditNotes(step, e)}>Edit</SPage.EventNoteEditButton>
+                    )}
+                  </SPage.EventNoteHeader>
+                  {editingStepId === step.id ? (
+                    <S.NotesTextField
+                      multiline
+                      rows={3}
+                      fullWidth
+                      size="small"
+                      value={editingNotes}
+                      onChange={(e) => setEditingNotes(e.target.value)}
+                      placeholder="Enter notes..."
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <SPage.EventNoteContent>{step.description || 'No notes added yet.'}</SPage.EventNoteContent>
+                  )}
+                </SPage.EventNoteBox>
+
+                {/* Attachments */}
+                {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
+
+                {/* Comments */}
+                {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
+              </S.ExpandedPanelBox>
+            </Collapse>
+          </S.StepContentBox>
+        </S.StepRowContainer>
+      )}
+    </>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onStepUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
-  const [jobWorkflow, setJobWorkflow]               = useState<JobWorkflowResponse | null>(null);
-  const [workflow, setWorkflow]                     = useState<WorkflowResponse | null>(null);
-  const [loading, setLoading]                       = useState(true);
-  const [expandedStepId, setExpandedStepId]         = useState<number | null>(null);
-  const [workers, setWorkers]                       = useState<Map<number, WorkerResponse>>(new Map());
-  const [allWorkers, setAllWorkers]                 = useState<WorkerResponse[]>([]);
-  const [editingStepId, setEditingStepId]           = useState<number | null>(null);
-  const [editingNotes, setEditingNotes]             = useState<string>('');
-  const [savingNotes, setSavingNotes]               = useState(false);
-  const [updatingStep, setUpdatingStep]             = useState<number | null>(null);
+  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
+  const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
+  const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [expandedStepId, setExpandedStepId] = useState<number | null>(null);
+  const [workers, setWorkers] = useState<Map<number, WorkerResponse>>(new Map());
+  const [allWorkers, setAllWorkers] = useState<WorkerResponse[]>([]);
+
+  // Re-order mode & local steps state
+  const [isReordering, setIsReordering] = useState(false);
+  const [localSteps, setLocalSteps] = useState<JobWorkflowStepResponse[]>([]);
+  const [savingReorder, setSavingReorder] = useState(false);
+
+  // Add step modal state
+  const [addModalOpen, setAddModalOpen] = useState(false);
+
+  // Editing step & workflow states
+  const [editingStepId, setEditingStepId] = useState<number | null>(null);
+  const [editingNotes, setEditingNotes] = useState<string>('');
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [updatingStep, setUpdatingStep] = useState<number | null>(null);
   const [editingWorkflowName, setEditingWorkflowName] = useState(false);
-  const [workflowNameValue, setWorkflowNameValue]   = useState('');
+  const [workflowNameValue, setWorkflowNameValue] = useState('');
   const [savingWorkflowName, setSavingWorkflowName] = useState(false);
-  const [editingStepNameId, setEditingStepNameId]   = useState<number | null>(null);
-  const [stepNameValue, setStepNameValue]           = useState('');
+  const [editingStepNameId, setEditingStepNameId] = useState<number | null>(null);
+  const [stepNameValue, setStepNameValue] = useState('');
   const [editingDurationStepId, setEditingDurationStepId] = useState<number | null>(null);
-  const [editingDurationType, setEditingDurationType]     = useState<'expected' | 'maximum' | null>(null);
-  const [editDays, setEditDays]   = useState<number | string>('');
+  const [editingDurationType, setEditingDurationType] = useState<'expected' | 'maximum' | null>(null);
+  const [editDays, setEditDays] = useState<number | string>('');
   const [editHours, setEditHours] = useState<number | string>('');
+
+  // Sensors for Drag and Drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   // ─── Data fetching ──────────────────────────────────────────────────────────
 
@@ -204,7 +648,12 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
       const allWorkersResponse = await workerService.getAllWorkers();
       setAllWorkers(allWorkersResponse.data || []);
 
-      const activeStep = response.data.steps?.find(
+      const sorted = response.data.steps
+        ? [...response.data.steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+        : [];
+      setLocalSteps(sorted);
+
+      const activeStep = sorted.find(
         (step) =>
           step.status !== JobWorkflowStepResponseStatusEnum.Completed &&
           step.status !== JobWorkflowStepResponseStatusEnum.Skipped
@@ -213,6 +662,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     } catch {
       console.log('No workflow found for job:', job.id);
       setJobWorkflow(null);
+      setLocalSteps([]);
     } finally {
       setLoading(false);
     }
@@ -230,7 +680,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     if (step.id) { setEditingStepId(step.id); setEditingNotes(step.description || ''); }
   };
 
-  const handleCancelEdit = () => { setEditingStepId(null); setEditingNotes(''); };
+  const handleCancelEditNotes = () => { setEditingStepId(null); setEditingNotes(''); };
 
   const handleSaveNotes = async (step: JobWorkflowStepResponse) => {
     if (!step.id || !jobWorkflow?.id) return;
@@ -270,7 +720,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     if (!step.id || !jobWorkflow?.id) return;
     try {
       setUpdatingStep(step.id);
-      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { assignedWorkerIds: workerIds });
+      await jobWorkflowService.updateStep(jobWorkflow.id, step.id, { assignedWorkerIds: workerIds as any });
       showSuccess('Assignment updated successfully');
       fetchJobWorkflow();
       onStepUpdate?.();
@@ -335,6 +785,65 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
+  const handleDeleteStep = (step: JobWorkflowStepResponse, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!step.id || !jobWorkflow?.id) return;
+    const stepId = step.id;
+    const workflowId = jobWorkflow.id;
+
+    const performSkip = async () => {
+      try {
+        setUpdatingStep(stepId);
+        await jobWorkflowService.updateStep(workflowId, stepId, {
+          status: JobWorkflowStepResponseStatusEnum.Skipped as any,
+        });
+        showSuccess('Step skipped successfully');
+        resetGlobalModalOuterProps();
+        fetchJobWorkflow();
+        onStepUpdate?.();
+      } catch (error) {
+        console.error('Error skipping step:', error);
+        showError(extractErrorMessage(error, 'Failed to skip step'));
+      } finally {
+        setUpdatingStep(null);
+      }
+    };
+
+    // Whether this step has related comments/attachments/work logs — and whether that
+    // blocks a permanent delete — is decided by the backend automatically; the frontend
+    // just triggers the skip and surfaces whatever outcome/message comes back.
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.SMALL,
+      fieldName: 'skipStep',
+      children: (
+        <ConfirmationModal
+          title="Skip Step"
+          message="Are you sure you want to skip this step?"
+          description="The step will be marked as Skipped and stay visible in the timeline."
+          variant="warning"
+          confirmButtonText="Skip Step"
+          cancelButtonText="Cancel"
+          onConfirm={performSkip}
+          onCancel={() => resetGlobalModalOuterProps()}
+        />
+      ),
+    });
+  };
+
+  const handleAddStepSubmit = async (data: JobWorkflowStepCreateRequest) => {
+    if (!jobWorkflow?.id) return;
+    try {
+      await jobWorkflowService.addStep(jobWorkflow.id, data);
+      showSuccess('Step added successfully to this job');
+      fetchJobWorkflow();
+      onStepUpdate?.();
+    } catch (error) {
+      console.error('Error adding step:', error);
+      showError('Failed to add step to job');
+    }
+  };
+
   const handleEditDuration = (step: JobWorkflowStepResponse, type: 'expected' | 'maximum', e: React.MouseEvent) => {
     e.stopPropagation();
     if (step.id) {
@@ -380,418 +889,242 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
     }
   };
 
-  // ─── Derived state ───────────────────────────────────────────────────────────
+  // ─── Drag & Drop Reorder Handlers (LOCAL state only during drag) ────────────
 
-  const sortedSteps = jobWorkflow?.steps
-    ? [...jobWorkflow.steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-    : [];
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = localSteps.findIndex((s) => `step-${s.id}` === active.id);
+    const newIndex = localSteps.findIndex((s) => `step-${s.id}` === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Rearrange local state ONLY (no API call during drag)
+    const newStepList = arrayMove(localSteps, oldIndex, newIndex);
+    setLocalSteps(newStepList);
+  };
+
+  // Final batch API call when clicking "Done"
+  const handleDoneReordering = async () => {
+    if (!jobWorkflow?.id) {
+      setIsReordering(false);
+      return;
+    }
+
+    try {
+      setSavingReorder(true);
+      const workflowId = jobWorkflow.id;
+
+      // Sequential PATCHes, one at a time — concurrent requests (Promise.all) here
+      // intermittently 500 under contention on the backend, more reliably as the
+      // number of simultaneous requests grows (confirmed against the live dev API:
+      // 0/180 failures sequential vs 2/8 failed batches concurrent on a 9-step
+      // workflow). A single write per step is enough — the backend reindexes
+      // cleanly without needing an intermediate "parking" value, so there's no
+      // temp-offset pass. Steps whose position didn't change are skipped entirely,
+      // since a drag typically only shifts the steps between the old and new spot.
+      const originalOrderById = new Map((jobWorkflow.steps || []).map((s) => [s.id, s.orderIndex]));
+      for (const [idx, step] of localSteps.entries()) {
+        if (!step.id) continue;
+        const targetIndex = idx + 1;
+        if (originalOrderById.get(step.id) === targetIndex) continue;
+        await jobWorkflowService.updateStep(workflowId, step.id, { orderIndex: targetIndex });
+      }
+      showSuccess('Final step re-ordering saved successfully');
+      setIsReordering(false);
+      fetchJobWorkflow();
+      onStepUpdate?.();
+    } catch (err) {
+      console.error('Error committing reordered steps:', err);
+      showError('Failed to save final step order');
+      setIsReordering(false);
+      fetchJobWorkflow();
+    } finally {
+      setSavingReorder(false);
+    }
+  };
 
   // ─── Loading state ───────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <S.WorkflowSidebar>
-        <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
-        </S.WorkflowSidebarHeader>
-        <Box sx={styles.loadingContainer}>
+      <SPage.WorkflowSidebar>
+        <SPage.WorkflowSidebarHeader>
+          <SPage.WorkflowSidebarTitle>Workflow Steps</SPage.WorkflowSidebarTitle>
+        </SPage.WorkflowSidebarHeader>
+        <S.LoadingContainer>
           <CircularProgress size={32} />
-        </Box>
-      </S.WorkflowSidebar>
+        </S.LoadingContainer>
+      </SPage.WorkflowSidebar>
     );
   }
 
   // ─── Empty state ─────────────────────────────────────────────────────────────
 
-  if (!jobWorkflow || sortedSteps.length === 0) {
+  if (!jobWorkflow || localSteps.length === 0) {
     return (
-      <S.WorkflowSidebar>
-        <S.WorkflowSidebarHeader>
-          <S.WorkflowSidebarTitle>Workflow Name</S.WorkflowSidebarTitle>
-          <IconButton size="small">
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </S.WorkflowSidebarHeader>
-        <Box px={2} py={3}>
-          <S.PlaceholderText>No workflow assigned to this job</S.PlaceholderText>
-        </Box>
-      </S.WorkflowSidebar>
+      <SPage.WorkflowSidebar>
+        <SPage.WorkflowSidebarHeader>
+          <SPage.WorkflowSidebarTitle>Workflow Steps</SPage.WorkflowSidebarTitle>
+        </SPage.WorkflowSidebarHeader>
+        <S.EmptyStateContainer>
+          <SPage.PlaceholderText>No workflow steps assigned to this job</SPage.PlaceholderText>
+          {jobWorkflow?.id && (
+            <S.AddStepCardButton onClick={() => setAddModalOpen(true)}>
+              <S.SmallIconAdd /> Add New Step
+            </S.AddStepCardButton>
+          )}
+        </S.EmptyStateContainer>
+
+        {jobWorkflow?.id && (
+          <AddStepModal
+            open={addModalOpen}
+            onClose={() => setAddModalOpen(false)}
+            onSubmit={handleAddStepSubmit}
+            allWorkers={allWorkers}
+            nextOrderIndex={1}
+          />
+        )}
+      </SPage.WorkflowSidebar>
     );
   }
 
-  // ─── Main render ─────────────────────────────────────────────────────────────
+  // ─── Main Render ─────────────────────────────────────────────────────────────
 
   return (
-    <S.WorkflowSidebar>
-      {/* ── Header ── */}
-      <S.WorkflowSidebarHeader>
-        <S.WorkflowSidebarTitle>
+    <SPage.WorkflowSidebar>
+      {/* Header */}
+      <SPage.WorkflowSidebarHeader>
+        <SPage.WorkflowSidebarTitle>
           {editingWorkflowName ? (
-            <TextField
+            <S.WorkflowNameInput
               size="small"
               value={workflowNameValue}
               onChange={(e) => setWorkflowNameValue(e.target.value)}
               autoFocus
-              sx={styles.workflowNameTextField}
             />
           ) : (
             <>
               {workflow?.name || 'Workflow Name'}
-              <Box component="span" sx={styles.workflowNameAvatarRow}>
+              <S.WorkerAvatarsRow>
                 {Array.from(workers.values())
                   .slice(0, 2)
                   .map((worker) => (
-                    <Box key={worker.id} sx={styles.workerAvatar}>
+                    <S.WorkerAvatarBox key={worker.id}>
                       {worker.initials || worker.name?.substring(0, 2).toUpperCase()}
-                    </Box>
+                    </S.WorkerAvatarBox>
                   ))}
-              </Box>
+              </S.WorkerAvatarsRow>
             </>
           )}
-        </S.WorkflowSidebarTitle>
+        </SPage.WorkflowSidebarTitle>
 
-        {editingWorkflowName ? (
-          <Box sx={styles.workflowNameEditButtons}>
-            <IconButton size="small" onClick={handleCancelWorkflowNameEdit} aria-label="Cancel workflow name edit">
-              <CloseIcon fontSize="small" />
-            </IconButton>
-            <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName} aria-label="Save workflow name">
-              <SaveIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        ) : (
-          <IconButton size="small" onClick={handleEditWorkflowName} aria-label="Edit workflow name">
-            <EditIcon fontSize="small" />
-          </IconButton>
-        )}
-      </S.WorkflowSidebarHeader>
+        <S.HeaderActionsBox>
+          {editingWorkflowName ? (
+            <S.HeaderButtonsRow>
+              <IconButton size="small" onClick={handleCancelWorkflowNameEdit} aria-label="Cancel workflow name edit">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={handleSaveWorkflowName} disabled={savingWorkflowName} aria-label="Save workflow name">
+                <SaveIcon fontSize="small" />
+              </IconButton>
+            </S.HeaderButtonsRow>
+          ) : (
+            <>
+              <IconButton size="small" onClick={handleEditWorkflowName} aria-label="Edit workflow name">
+                <EditIcon fontSize="small" />
+              </IconButton>
 
-      {/* ── Timeline list ── */}
-      <Box sx={styles.timelineList}>
-        {sortedSteps.map((step, index) => {
-          const statusInfo = getStatusInfo(step.status);
-          const isLast     = index === sortedSteps.length - 1;
-          const isExpanded = step.id === expandedStepId;
+              {/* White background Re-Order / Done button */}
+              <S.ReOrderWhiteButton
+                variant="outlined"
+                size="small"
+                isreordering={isReordering ? 'true' : 'false'}
+                disabled={savingReorder}
+                onClick={() => {
+                  if (isReordering) {
+                    handleDoneReordering();
+                  } else {
+                    setIsReordering(true);
+                  }
+                }}
+              >
+                {savingReorder ? 'Saving...' : isReordering ? 'Done' : 'Re-Order'}
+              </S.ReOrderWhiteButton>
 
-          const assignedWorkerIdsList = Array.from(step.assignedWorkerIds || []);
-          const assignedWorker        = assignedWorkerIdsList.length > 0
-            ? workers.get(assignedWorkerIdsList[0]) ?? null
-            : null;
-          const selectedWorkers = assignedWorkerIdsList
-            .map((id) => allWorkers.find((w) => w.id === id) ?? workers.get(id))
-            .filter((w): w is WorkerResponse => !!w);
 
-          // Resolve which node style to use
-          const nodeStyle = statusInfo.isCompleted
-            ? styles.timelineNodeCompleted
-            : statusInfo.isInProgress
-              ? styles.timelineNodeInProgress
-              : statusInfo.isDelayed
-                ? styles.timelineNodeDelayed
-                : styles.timelineNodeDefault;
+            </>
+          )}
+        </S.HeaderActionsBox>
+      </SPage.WorkflowSidebarHeader>
 
-          return (
-            <Box key={step.id || index} sx={styles.stepRow}>
-              {/* Connector line */}
-              {!isLast && (
-                <Box sx={statusInfo.isCompleted ? styles.timelineLineCompleted : styles.timelineLinePending} />
-              )}
+      {/* Timeline list with DndContext */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={localSteps.map((s) => `step-${s.id}`)} strategy={verticalListSortingStrategy}>
+          <S.TimelineListWrapper>
+            {localSteps.map((step, index) => {
+              const isLast = index === localSteps.length - 1;
+              const isExpanded = step.id === expandedStepId;
 
-              {/* Node */}
-              <Box onClick={() => step.id && toggleStep(step.id)} sx={nodeStyle}>
-                {statusInfo.isCompleted ? (
-                  <CheckIcon sx={{ fontSize: 16 }} />
-                ) : statusInfo.isInProgress ? (
-                  <PlayArrowIcon sx={{ fontSize: 16 }} />
-                ) : statusInfo.isDelayed ? (
-                  <CloseIcon sx={{ fontSize: 16 }} />
-                ) : (
-                  index + 1
-                )}
-              </Box>
+              return (
+                <SortableStepRow
+                  key={step.id || index}
+                  step={step}
+                  index={index}
+                  isLast={isLast}
+                  isExpanded={isExpanded}
+                  isReordering={isReordering}
+                  editingStepNameId={editingStepNameId}
+                  stepNameValue={stepNameValue}
+                  updatingStep={updatingStep}
+                  editingNotes={editingNotes}
+                  editingStepId={editingStepId}
+                  savingNotes={savingNotes}
+                  editingDurationStepId={editingDurationStepId}
+                  editingDurationType={editingDurationType}
+                  editDays={editDays}
+                  editHours={editHours}
+                  workers={workers}
+                  allWorkers={allWorkers}
+                  onToggleStep={toggleStep}
+                  onStartEditStepName={handleEditStepName}
+                  onCancelEditStepName={handleCancelStepNameEdit}
+                  onSaveStepName={handleSaveStepName}
+                  onDeleteStep={handleDeleteStep}
+                  onStatusChange={handleStatusChange}
+                  onAssignedChange={handleAssignedChange}
+                  onEditNotes={handleEditNotes}
+                  onCancelEditNotes={handleCancelEditNotes}
+                  onSaveNotes={handleSaveNotes}
+                  onEditDuration={handleEditDuration}
+                  onCancelEditDuration={handleCancelEditDuration}
+                  onSaveDuration={handleSaveDuration}
+                  onStepUpdate={onStepUpdate}
+                  setStepNameValue={setStepNameValue}
+                  setEditingNotes={setEditingNotes}
+                  setEditDays={setEditDays}
+                  setEditHours={setEditHours}
+                />
+              );
+            })}
 
-              {/* Step content */}
-              <Box sx={styles.stepContent}>
+            {/* Always available Add Step Card Button at bottom */}
+            <S.AddStepCardButton onClick={() => setAddModalOpen(true)}>
+              <S.SmallIconAdd /> Add New Step
+            </S.AddStepCardButton>
+          </S.TimelineListWrapper>
+        </SortableContext>
+      </DndContext>
 
-                {/* Step title */}
-                <S.StepTitleContainer>
-                  {editingStepNameId === step.id ? (
-                    <S.StepTitleEditContainer>
-                      <S.StepTitleIndex>{index + 1}.</S.StepTitleIndex>
-                      <TextField
-                        size="small"
-                        value={stepNameValue}
-                        onChange={(e) => setStepNameValue(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        autoFocus
-                        sx={styles.stepNameTextField}
-                      />
-                      <IconButton size="small" onClick={handleCancelStepNameEdit} aria-label="Cancel step name edit">
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleSaveStepName(step, e)}
-                        disabled={updatingStep === step.id}
-                        aria-label="Save step name"
-                      >
-                        <SaveIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                    </S.StepTitleEditContainer>
-                  ) : (
-                    <>
-                      <S.StepTitleText onClick={(e) => handleEditStepName(step, e)}>
-                        {index + 1}. {step.name || `Step ${index + 1}`}
-                      </S.StepTitleText>
-                      <S.StepTitleEditButton onClick={(e) => handleEditStepName(step, e)}>
-                        <EditIcon sx={{ fontSize: 14 }} />
-                      </S.StepTitleEditButton>
-                    </>
-                  )}
-                </S.StepTitleContainer>
-
-                {/* Step description */}
-                <Box sx={styles.stepDescription}>
-                  {step.description || 'No description'}
-                </Box>
-
-                {/* Chips row */}
-                <Box onClick={() => step.id && toggleStep(step.id)} sx={styles.chipsRow}>
-                  <Chip
-                    label={statusInfo.label}
-                    size="small"
-                    sx={{
-                      ...styles.statusChip,
-                      backgroundColor: statusInfo.chipBg,
-                      color: statusInfo.chipColor,
-                    }}
-                  />
-                  {assignedWorker && (
-                    <Chip label="YOU" size="small" sx={styles.assignedChip} />
-                  )}
-                  <SlaTimer step={step} />
-                </Box>
-
-                {/* Expanded details */}
-                <Collapse in={isExpanded}>
-                  <Box sx={styles.expandedPanel}>
-
-                    {/* Expected duration */}
-                    {step.expectedDurationMinutes != null && (
-                      <S.StepDetailRow>
-                        <span className="label">Expected Duration Time</span>
-                        {editingDurationStepId === step.id && editingDurationType === 'expected' ? (
-                          <Box sx={styles.durationEditRow} onClick={(e) => e.stopPropagation()}>
-                            <TextField
-                              type="number" size="small" value={editDays}
-                              onChange={(e) => setEditDays(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
-                              sx={styles.durationTextField}
-                            />
-                            <span style={styles.durationLabel}>day</span>
-                            <TextField
-                              type="number" size="small" value={editHours}
-                              onChange={(e) => setEditHours(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'expected', e); }}
-                              sx={styles.durationTextField}
-                            />
-                            <span style={styles.durationLabel}>hours</span>
-                            <IconButton size="small" onClick={handleCancelEditDuration}>
-                              <CloseIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'expected', e)} disabled={updatingStep === step.id}>
-                              <SaveIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                          </Box>
-                        ) : (
-                          <Box sx={styles.durationValueBox}>
-                            <span style={styles.durationValueText}>{formatDuration(step.expectedDurationMinutes)}</span>
-                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'expected', e)} sx={styles.durationEditIconButton}>
-                              <EditIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                          </Box>
-                        )}
-                      </S.StepDetailRow>
-                    )}
-
-                    {/* Maximum duration */}
-                    {step.maximumDurationMinutes != null && (
-                      <S.StepDetailRow>
-                        <span className="label">Maximum Duration Time</span>
-                        {editingDurationStepId === step.id && editingDurationType === 'maximum' ? (
-                          <Box sx={styles.durationEditRow} onClick={(e) => e.stopPropagation()}>
-                            <TextField
-                              type="number" size="small" value={editDays}
-                              onChange={(e) => setEditDays(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
-                              sx={styles.durationTextField}
-                            />
-                            <span style={styles.durationLabel}>day</span>
-                            <TextField
-                              type="number" size="small" value={editHours}
-                              onChange={(e) => setEditHours(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveDuration(step, 'maximum', e); }}
-                              sx={styles.durationTextField}
-                            />
-                            <span style={styles.durationLabel}>hours</span>
-                            <IconButton size="small" onClick={handleCancelEditDuration}>
-                              <CloseIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                            <IconButton size="small" onClick={(e) => handleSaveDuration(step, 'maximum', e)} disabled={updatingStep === step.id}>
-                              <SaveIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                          </Box>
-                        ) : (
-                          <Box sx={styles.durationValueBox}>
-                            <span style={styles.durationValueText}>{formatDuration(step.maximumDurationMinutes)}</span>
-                            <IconButton size="small" onClick={(e) => handleEditDuration(step, 'maximum', e)} sx={styles.durationEditIconButton}>
-                              <EditIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                          </Box>
-                        )}
-                      </S.StepDetailRow>
-                    )}
-
-                    {/* Status dropdown */}
-                    <S.StepDetailRow>
-                      <span className="label">Status</span>
-                      <FormControl size="small" sx={styles.statusSelect}>
-                        <Select
-                          value={step.status || JobWorkflowStepResponseStatusEnum.NotStarted}
-                          onChange={(e: SelectChangeEvent) => handleStatusChange(step, e.target.value)}
-                          disabled={updatingStep === step.id}
-                          sx={styles.statusSelectInput}
-                        >
-                          {Object.entries(JobWorkflowStepResponseStatusEnum).map(([key, value]) => {
-                            const info = getStatusInfo(value);
-                            return (
-                              <MenuItem key={key} value={value} sx={{ fontSize: 12 }}>
-                                <Chip
-                                  label={info.label}
-                                  size="small"
-                                  sx={{
-                                    ...styles.statusMenuItemChip,
-                                    backgroundColor: info.chipBg,
-                                    color: info.chipColor,
-                                  }}
-                                />
-                              </MenuItem>
-                            );
-                          })}
-                        </Select>
-                      </FormControl>
-                    </S.StepDetailRow>
-
-                    {/* Dates */}
-                    {step.startedAt && (
-                      <S.StepDetailRow>
-                        <span className="label">Started At</span>
-                        <span style={styles.dateValueText}>{formatStepDate(step.startedAt)}</span>
-                      </S.StepDetailRow>
-                    )}
-                    {step.completedAt && (
-                      <S.StepDetailRow>
-                        <span className="label">Completed At</span>
-                        <span style={styles.dateValueText}>{formatStepDate(step.completedAt)}</span>
-                      </S.StepDetailRow>
-                    )}
-
-                    {/* Assigned */}
-                    <S.AssignedRow>
-                      <span className="label">Assigned</span>
-                      <S.AssignedAutocompleteWrapper>
-                        <Autocomplete
-                          multiple
-                          fullWidth
-                          options={allWorkers}
-                          value={selectedWorkers}
-                          getOptionLabel={(option) => option.name || ''}
-                          isOptionEqualToValue={(option, value) => option.id === value.id}
-                          onChange={(_, newValue) =>
-                            handleAssignedChange(step, newValue.map((w) => w.id!))
-                          }
-                          disabled={updatingStep === step.id}
-                          disablePortal
-                          disableCloseOnSelect
-                          size="small"
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              placeholder={selectedWorkers.length === 0 ? 'Unassigned' : ''}
-                              size="small"
-                            />
-                          )}
-                          renderOption={(props, option, { selected }) => {
-                            const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: React.Key };
-                            return (
-                              <S.WorkerMenuItem key={key} {...rest} selected={selected}>
-                                {option.name}
-                              </S.WorkerMenuItem>
-                            );
-                          }}
-                          renderTags={(value, getTagProps) =>
-                            value.map((option, index) => {
-                              const tagProps = getTagProps({ index });
-                              return (
-                                <S.AssignedWorkerChip
-                                  {...tagProps}
-                                  key={tagProps.key}
-                                  label={option.name}
-                                  size="small"
-                                />
-                              );
-                            })
-                          }
-                        />
-                      </S.AssignedAutocompleteWrapper>
-                    </S.AssignedRow>
-
-                    {/* Notes */}
-                    <S.EventNoteBox>
-                      <S.EventNoteHeader>
-                        <S.EventNoteTitle>Notes</S.EventNoteTitle>
-                        {editingStepId === step.id ? (
-                          <Box sx={styles.notesEditButtonRow}>
-                            <S.EventNoteEditButton onClick={() => handleCancelEdit()} style={{ color: '#666' }}>
-                              Cancel
-                            </S.EventNoteEditButton>
-                            <S.EventNoteEditButton onClick={() => handleSaveNotes(step)} disabled={savingNotes}>
-                              {savingNotes ? 'Saving...' : 'Save'}
-                            </S.EventNoteEditButton>
-                          </Box>
-                        ) : (
-                          <S.EventNoteEditButton onClick={(e) => handleEditNotes(step, e)}>Edit</S.EventNoteEditButton>
-                        )}
-                      </S.EventNoteHeader>
-                      {editingStepId === step.id ? (
-                        <TextField
-                          multiline
-                          rows={3}
-                          fullWidth
-                          size="small"
-                          value={editingNotes}
-                          onChange={(e) => setEditingNotes(e.target.value)}
-                          placeholder="Enter notes..."
-                          onClick={(e) => e.stopPropagation()}
-                          sx={styles.notesTextField}
-                        />
-                      ) : (
-                        <S.EventNoteContent>{step.description || 'No notes added yet.'}</S.EventNoteContent>
-                      )}
-                    </S.EventNoteBox>
-
-                    {/* Attachments */}
-                    {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
-
-                    {/* Comments */}
-                    {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
-                  </Box>
-                </Collapse>
-              </Box>
-            </Box>
-          );
-        })}
-      </Box>
-    </S.WorkflowSidebar>
+      {/* Add step modal */}
+      <AddStepModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSubmit={handleAddStepSubmit}
+        allWorkers={allWorkers}
+        nextOrderIndex={localSteps.length + 1}
+      />
+    </SPage.WorkflowSidebar>
   );
 };

@@ -75,7 +75,7 @@ export const BillingSettings: React.FC = () => {
           </Typography>
         </S.SectionHeader>
         <S.ActionsRow>
-          <Button variant="contained" onClick={() => navigate('/subscribe')}>
+          <Button variant="contained" size="small" onClick={() => navigate('/subscribe')}>
             Subscribe Now
           </Button>
         </S.ActionsRow>
@@ -86,15 +86,11 @@ export const BillingSettings: React.FC = () => {
   const currentStatus = status.status as SubscriptionStatusResponseStatusEnum | undefined;
   const statusConfig = currentStatus ? STATUS_CONFIG[currentStatus] : undefined;
 
-  const canManageBilling = currentStatus
-    ? MANAGEABLE_STATUSES.includes(currentStatus)
-    : false;
+  const canManageBilling = currentStatus ? MANAGEABLE_STATUSES.includes(currentStatus) : false;
 
   const canCancel = currentStatus === SubscriptionStatusResponseStatusEnum.Active;
 
-  const needsSubscription = currentStatus
-    ? SUBSCRIBE_STATUSES.includes(currentStatus)
-    : false;
+  const needsSubscription = currentStatus ? SUBSCRIBE_STATUSES.includes(currentStatus) : false;
 
   const handleManageBilling = async () => {
     setLoadingPortal(true);
@@ -140,9 +136,7 @@ export const BillingSettings: React.FC = () => {
               Status
             </Typography>
           </S.LabelText>
-          {statusConfig && (
-            <Chip label={statusConfig.label} color={statusConfig.color} size="small" />
-          )}
+          {statusConfig && <Chip label={statusConfig.label} color={statusConfig.color} size="small" />}
         </S.StatusRow>
 
         {currentStatus === SubscriptionStatusResponseStatusEnum.Trial && status.trialEndsAt && (
@@ -184,32 +178,26 @@ export const BillingSettings: React.FC = () => {
               variant="outlined"
               onClick={handleManageBilling}
               disabled={loadingPortal}
+              size="small"
               startIcon={loadingPortal ? <CircularProgress size={16} /> : undefined}
             >
               Manage Billing
             </Button>
           )}
           {canCancel && (
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => setCancelDialogOpen(true)}
-            >
+            <Button variant="outlined" size="small" color="error" onClick={() => setCancelDialogOpen(true)}>
               Cancel Subscription
             </Button>
           )}
         </S.ActionsRow>
       </S.SectionWrapper>
 
-      <Dialog
-        open={cancelDialogOpen}
-        onClose={() => !cancelling && setCancelDialogOpen(false)}
-      >
+      <Dialog open={cancelDialogOpen} onClose={() => !cancelling && setCancelDialogOpen(false)}>
         <DialogTitle>Cancel Subscription</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Your subscription will be cancelled at the end of the current billing period. You'll keep
-            full access until then.
+            Your subscription will be cancelled at the end of the current billing period. You'll keep full access until
+            then.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

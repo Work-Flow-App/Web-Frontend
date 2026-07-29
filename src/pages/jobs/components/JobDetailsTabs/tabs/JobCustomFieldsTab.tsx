@@ -1,5 +1,6 @@
 import React from 'react';
 import type { JobResponse, JobTemplateFieldResponse } from '../../../../../services/api';
+import { extractFieldValue } from '../../../../../utils/fieldValueHelper';
 import * as S from '../../../JobDetailsPage.styles';
 
 interface JobCustomFieldsTabProps {
@@ -42,12 +43,7 @@ export const JobCustomFieldsTab: React.FC<JobCustomFieldsTabProps> = ({ job, tem
                       <S.FieldsGroupTitle>Required Fields</S.FieldsGroupTitle>
                       {requiredFields.map(([key, fieldValueResponse]) => {
                         const fieldDef = fieldDefinitionMap.get(key);
-                        const value =
-                          fieldValueResponse &&
-                          typeof fieldValueResponse === 'object' &&
-                          'value' in fieldValueResponse
-                            ? String(fieldValueResponse.value || '-')
-                            : String(fieldValueResponse || '-');
+                        const value = extractFieldValue(fieldValueResponse);
 
                         const label = fieldDef?.label || key;
                         const fieldType = fieldDef?.jobFieldType || 'TEXT';
@@ -74,12 +70,7 @@ export const JobCustomFieldsTab: React.FC<JobCustomFieldsTabProps> = ({ job, tem
                       )}
                       {optionalFields.map(([key, fieldValueResponse]) => {
                         const fieldDef = fieldDefinitionMap.get(key);
-                        const value =
-                          fieldValueResponse &&
-                          typeof fieldValueResponse === 'object' &&
-                          'value' in fieldValueResponse
-                            ? String(fieldValueResponse.value || '-')
-                            : String(fieldValueResponse || '-');
+                        const value = extractFieldValue(fieldValueResponse);
 
                         const label = fieldDef?.label || key;
                         const fieldType = fieldDef?.jobFieldType || 'TEXT';
