@@ -19,6 +19,7 @@ export const LeaveRequestFormFields: React.FC = () => {
           preFetchedOptions={LEAVE_TYPE_OPTIONS}
           fullWidth
           disableClearable
+          disablePortal
         />
       </FormField>
 

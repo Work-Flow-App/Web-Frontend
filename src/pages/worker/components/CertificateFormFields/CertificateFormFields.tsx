@@ -18,6 +18,7 @@ export const CertificateFormFields: React.FC = () => {
           preFetchedOptions={CERTIFICATE_TYPE_OPTIONS}
           fullWidth
           disableClearable
+          disablePortal
         />
       </FormField>
 
