@@ -92,7 +92,7 @@ export const PublicCompanyProfile: React.FC = () => {
   return (
     <PageContainer>
       <TopBar>
-        <BrandLink to="/login">
+        <BrandLink href="https://www.workfloow.app/" target="_blank" rel="noopener noreferrer">
           <FloowLogo variant="light" height="28px" />
         </BrandLink>
         <SignInButtonLink to="/login">Sign in</SignInButtonLink>

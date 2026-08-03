@@ -57,11 +57,11 @@ const getStatusInfo = (status?: string) => {
     case JobWorkflowStepResponseStatusEnum.Skipped:
       return {
         label: 'SKIPPED',
-        isCompleted: false,
+        isCompleted: true,
         isInProgress: false,
-        isDelayed: true,
-        chipBg: '#FFEBEE',
-        chipColor: '#C62828',
+        isDelayed: false,
+        chipBg: '#F3F4F6',
+        chipColor: '#4B5563',
       };
     case JobWorkflowStepResponseStatusEnum.Initiated:
       return {

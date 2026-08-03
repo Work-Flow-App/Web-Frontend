@@ -8,7 +8,10 @@ export interface InvitationTableRow {
   id: number;
   invitationId: number;
   email: string;
-  token: string;
+  // The list endpoint never returns the raw invite token (security by design) - see
+  // workerService.getWorkerInvitations. The invitation link column below is non-functional
+  // until there's a backend way to surface it.
+  token?: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
   createdAt: string;
   expiresAt: string | null;

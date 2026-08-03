@@ -1,4 +1,5 @@
-import { WorkersApi, Configuration } from '../../../workflow-api';
+import type { AxiosResponse } from 'axios';
+import { WorkersApi, WorkerProfileSelfServiceApi, Configuration } from '../../../workflow-api';
 import type {
   WorkerResponse,
   WorkerCreateRequest,
@@ -10,6 +11,31 @@ import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
 export type { WorkerResponse, WorkerCreateRequest, WorkerUpdateRequest, WorkerInviteResponse, WorkerPasswordResetRequest };
+
+// The generated WorkerProfileResponse/WorkerWeeklyHoursResponse mark every field optional
+// (Jackson's nullable-by-default stance), but a successful response always carries these -
+// narrowed here so callers don't need optional chaining for data that's always present.
+export interface WorkerProfileResponse {
+  id: number;
+  workerRef: number;
+  name: string;
+  initials?: string;
+  telephone?: string;
+  mobile?: string;
+  email?: string;
+  username: string;
+  photoUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkerWeeklyHoursResponse {
+  workerId: number;
+  weekStart: string;
+  weekEnd: string;
+  totalHours: number;
+  hasOpenVisit: boolean;
+}
 
 // Additional types for worker invitation system
 export interface WorkerInvitationRequest {
@@ -25,7 +51,9 @@ export interface WorkerInvitationResponse {
 export interface WorkerInvitationStatus {
   invitationId: number;
   email: string;
-  token: string;
+  // Not returned by the list endpoint (WorkerInvitationStatusResponse has no token field) -
+  // the backend never exposes raw invite tokens outside the invite-creation response.
+  token?: string;
   status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
   createdAt: string;
   expiresAt: string;
@@ -68,18 +96,25 @@ function getWorkerApi(): WorkersApi {
   return new WorkersApi(config, env.apiBaseUrl, axiosInstance);
 }
 
+function getWorkerProfileSelfApi(): WorkerProfileSelfServiceApi {
+  const config = new Configuration({
+    basePath: env.apiBaseUrl,
+  });
+  return new WorkerProfileSelfServiceApi(config, env.apiBaseUrl, axiosInstance);
+}
+
 export const workerService = {
   /**
    * Get all workers
    */
-  async getAllWorkers() {
+  async getAllWorkers(): Promise<AxiosResponse<WorkerResponse[]>> {
     return await getWorkerApi().workerGetAllWorkers();
   },
 
   /**
    * Get worker by ID
    */
-  async getWorkerById(id: number) {
+  async getWorkerById(id: number): Promise<AxiosResponse<WorkerResponse>> {
     return await getWorkerApi().workerGetWorkerById(id);
   },
 
@@ -105,31 +140,19 @@ export const workerService = {
   },
 
   /**
-   * Send invitation email to worker (using generated API)
-   */
-  async sendInvitation(data: WorkerInvitationRequest) {
-    return await getWorkerApi().workerSendInvitation(data);
-  },
-
-  /**
-   * Send worker invitation by email (new invitation system)
+   * Send worker invitation by email
    */
   async sendWorkerInvitation(data: WorkerInvitationRequest): Promise<WorkerInvitationResponse> {
-    const response = await axiosInstance.post<WorkerInvitationResponse>(
-      `${env.apiBaseUrl}/api/v1/workers/invite`,
-      data
-    );
-    return response.data;
+    const response = await getWorkerApi().workerSendInvitation(data);
+    return response.data as WorkerInvitationResponse;
   },
 
   /**
    * Get all worker invitations status
    */
   async getWorkerInvitations(): Promise<WorkerInvitationStatus[]> {
-    const response = await axiosInstance.get<WorkerInvitationStatus[]>(
-      `${env.apiBaseUrl}/api/v1/workers/invites`
-    );
-    return response.data;
+    const response = await getWorkerApi().workerGetInvitationStatus();
+    return response.data as WorkerInvitationStatus[];
   },
 
   /**
@@ -141,6 +164,48 @@ export const workerService = {
 
   async resetPassword(id: number, data: WorkerPasswordResetRequest) {
     return await getWorkerApi().workerResetWorkerUsernamePassword(id, data);
+  },
+
+  /**
+   * Worker self-service: get my own profile
+   */
+  async getMyProfile(): Promise<AxiosResponse<WorkerProfileResponse>> {
+    return (await getWorkerProfileSelfApi().workerProfileSelfGetOwnProfile()) as AxiosResponse<WorkerProfileResponse>;
+  },
+
+  /**
+   * Worker self-service: upload my own profile photo
+   */
+  async uploadMyPhoto(file: File): Promise<AxiosResponse<WorkerProfileResponse>> {
+    return (await getWorkerProfileSelfApi().workerProfileSelfUploadOwnPhoto(file)) as AxiosResponse<WorkerProfileResponse>;
+  },
+
+  /**
+   * Worker self-service: hours worked in a given week (defaults to the current week)
+   */
+  async getMyWeeklyHours(date?: string): Promise<AxiosResponse<WorkerWeeklyHoursResponse>> {
+    return (await getWorkerProfileSelfApi().workerProfileSelfGetOwnWeeklyHours(date)) as AxiosResponse<WorkerWeeklyHoursResponse>;
+  },
+
+  /**
+   * Company admin: upload a worker's profile photo
+   */
+  async uploadWorkerPhoto(id: number, file: File): Promise<AxiosResponse<WorkerResponse>> {
+    return await getWorkerApi().workerUploadPhotoForWorker(id, file);
+  },
+
+  /**
+   * Company admin: update a worker's hourly rate
+   */
+  async updateWorkerRate(id: number, hourlyRate: number): Promise<AxiosResponse<WorkerResponse>> {
+    return await getWorkerApi().workerUpdateHourlyRate(id, { hourlyRate });
+  },
+
+  /**
+   * Company admin: hours worked by a worker in a given week (defaults to the current week)
+   */
+  async getWorkerWeeklyHours(id: number, date?: string): Promise<AxiosResponse<WorkerWeeklyHoursResponse>> {
+    return (await getWorkerApi().workerGetWeeklyHoursForWorker(id, date)) as AxiosResponse<WorkerWeeklyHoursResponse>;
   },
 };
 

@@ -1,5 +1,6 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
-import { MemberInfo, MemberName, MemberEmail } from '../../../../components/UI/Table/Table.styles';
+import { AvatarCell, Avatar, MemberInfo, MemberName, MemberEmail } from '../../../../components/UI/Table/Table.styles';
+import { getInitials } from '../../../../utils/getInitials';
 
 export interface WorkerTableRow {
   id: number;
@@ -9,6 +10,7 @@ export interface WorkerTableRow {
   telephone: string;
   mobile: string;
   initials: string;
+  photoUrl?: string;
   addedOn: string;
 }
 
@@ -27,10 +29,19 @@ export const columns: ITableColumn<WorkerTableRow>[] = [
     sortable: true,
     width: 'auto',
     render: (row) => (
-      <MemberInfo>
-        <MemberName>{row.name}</MemberName>
-        <MemberEmail>{row.email}</MemberEmail>
-      </MemberInfo>
+      <AvatarCell>
+        <Avatar>
+          {row.photoUrl ? (
+            <img src={row.photoUrl} alt={row.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            getInitials(row.name)
+          )}
+        </Avatar>
+        <MemberInfo>
+          <MemberName>{row.name}</MemberName>
+          <MemberEmail>{row.email}</MemberEmail>
+        </MemberInfo>
+      </AvatarCell>
     ),
   },
   {
