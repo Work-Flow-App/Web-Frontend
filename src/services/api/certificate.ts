@@ -1,3 +1,6 @@
+import type { AxiosResponse } from 'axios';
+import { WorkerCertificatesApi, WorkerCertificatesSelfServiceApi, Configuration } from '../../../workflow-api';
+import type { PageMetadata } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
@@ -18,6 +21,9 @@ export const CERTIFICATE_TYPE_OPTIONS: { value: CertificateType; label: string }
   { value: CertificateType.Other, label: 'Other' },
 ];
 
+// The generated WorkerCertificateResponse marks every field optional (Jackson's nullable-by-default
+// stance), but a successful response always carries these - narrowed here so callers don't need
+// optional chaining for data that's always present.
 export interface CertificateResponse {
   id: number;
   workerId: number;
@@ -34,8 +40,8 @@ export interface CertificateResponse {
   createdAt?: string;
 }
 
+// Matches WorkerCertificateUpdateRequest - the backend doesn't allow changing type after upload.
 export interface CertificateUpdateRequest {
-  type?: CertificateType;
   name?: string;
   issuingAuthority?: string;
   issueDate?: string;
@@ -51,12 +57,10 @@ export interface CertificateUploadPayload {
   expiryDate?: string;
 }
 
+// PagedModelWorkerCertificateResponse nests pagination info under `page` (Spring HATEOAS shape).
 export interface PagedCertificates {
   content: CertificateResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+  page?: PageMetadata;
 }
 
 export interface ExpiringCertificateResponse {
@@ -69,72 +73,72 @@ export interface ExpiringCertificateResponse {
   daysUntilExpiry: number;
 }
 
-const MULTIPART_HEADERS = { headers: { 'Content-Type': 'multipart/form-data' } };
+function getCertificateApi(): WorkerCertificatesApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new WorkerCertificatesApi(config, env.apiBaseUrl, axiosInstance);
+}
 
-function buildCertificateFormData(payload: CertificateUploadPayload): FormData {
-  const form = new FormData();
-  form.append('file', payload.file);
-  form.append('type', payload.type);
-  form.append('name', payload.name);
-  if (payload.issuingAuthority) form.append('issuingAuthority', payload.issuingAuthority);
-  if (payload.issueDate) form.append('issueDate', payload.issueDate);
-  if (payload.expiryDate) form.append('expiryDate', payload.expiryDate);
-  return form;
+function getCertificateSelfApi(): WorkerCertificatesSelfServiceApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new WorkerCertificatesSelfServiceApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const certificateService = {
   /**
    * Worker self-service
    */
-  async getMyCertificates() {
-    return axiosInstance.get<CertificateResponse[]>(`${env.apiBaseUrl}/api/v1/worker/certificates`);
+  async getMyCertificates(): Promise<AxiosResponse<CertificateResponse[]>> {
+    return (await getCertificateSelfApi().workerCertificateSelfGetOwnCertificates()) as AxiosResponse<CertificateResponse[]>;
   },
 
-  async uploadMyCertificate(payload: CertificateUploadPayload) {
-    return axiosInstance.post<CertificateResponse>(
-      `${env.apiBaseUrl}/api/v1/worker/certificates`,
-      buildCertificateFormData(payload),
-      MULTIPART_HEADERS
-    );
+  async uploadMyCertificate(payload: CertificateUploadPayload): Promise<AxiosResponse<CertificateResponse>> {
+    return (await getCertificateSelfApi().workerCertificateSelfUploadOwnCertificate(
+      payload.type,
+      payload.name,
+      payload.file,
+      payload.issuingAuthority,
+      payload.issueDate,
+      payload.expiryDate
+    )) as AxiosResponse<CertificateResponse>;
   },
 
-  async updateMyCertificate(id: number, data: CertificateUpdateRequest) {
-    return axiosInstance.patch<CertificateResponse>(`${env.apiBaseUrl}/api/v1/worker/certificates/${id}`, data);
+  async updateMyCertificate(id: number, data: CertificateUpdateRequest): Promise<AxiosResponse<CertificateResponse>> {
+    return (await getCertificateSelfApi().workerCertificateSelfUpdateOwnCertificate(id, data)) as AxiosResponse<CertificateResponse>;
   },
 
   async deleteMyCertificate(id: number) {
-    return axiosInstance.delete(`${env.apiBaseUrl}/api/v1/worker/certificates/${id}`);
+    return await getCertificateSelfApi().workerCertificateSelfDeleteOwnCertificate(id);
   },
 
   /**
    * Company admin
    */
-  async getWorkerCertificates(workerId: number) {
-    return axiosInstance.get<CertificateResponse[]>(`${env.apiBaseUrl}/api/v1/workers/${workerId}/certificates`);
+  async getWorkerCertificates(workerId: number): Promise<AxiosResponse<CertificateResponse[]>> {
+    return (await getCertificateApi().workerCertificateGetCertificatesForWorker(workerId)) as AxiosResponse<CertificateResponse[]>;
   },
 
-  async uploadWorkerCertificate(workerId: number, payload: CertificateUploadPayload) {
-    return axiosInstance.post<CertificateResponse>(
-      `${env.apiBaseUrl}/api/v1/workers/${workerId}/certificates`,
-      buildCertificateFormData(payload),
-      MULTIPART_HEADERS
-    );
+  async uploadWorkerCertificate(workerId: number, payload: CertificateUploadPayload): Promise<AxiosResponse<CertificateResponse>> {
+    return (await getCertificateApi().workerCertificateUploadCertificateForWorker(
+      workerId,
+      payload.type,
+      payload.name,
+      payload.file,
+      payload.issuingAuthority,
+      payload.issueDate,
+      payload.expiryDate
+    )) as AxiosResponse<CertificateResponse>;
   },
 
   async deleteWorkerCertificate(workerId: number, id: number) {
-    return axiosInstance.delete(`${env.apiBaseUrl}/api/v1/workers/${workerId}/certificates/${id}`);
+    return await getCertificateApi().workerCertificateDeleteCertificate(workerId, id);
   },
 
-  async getAllCertificates(page = 0, size = 20) {
-    return axiosInstance.get<PagedCertificates>(`${env.apiBaseUrl}/api/v1/workers/certificates`, {
-      params: { page, size },
-    });
+  async getAllCertificates(page = 0, size = 20): Promise<AxiosResponse<PagedCertificates>> {
+    return (await getCertificateApi().workerCertificateListCompanyCertificates(page, size)) as AxiosResponse<PagedCertificates>;
   },
 
-  async getExpiringCertificates(days = 30) {
-    return axiosInstance.get<ExpiringCertificateResponse[]>(`${env.apiBaseUrl}/api/v1/workers/certificates/expiring`, {
-      params: { days },
-    });
+  async getExpiringCertificates(days = 30): Promise<AxiosResponse<ExpiringCertificateResponse[]>> {
+    return (await getCertificateApi().workerCertificateGetExpiringCertificates(days)) as AxiosResponse<ExpiringCertificateResponse[]>;
   },
 };
 

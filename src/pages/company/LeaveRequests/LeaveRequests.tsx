@@ -40,7 +40,7 @@ export const LeaveRequests: React.FC = () => {
         size: PAGE_SIZE,
       });
       setRows((data.content || []).map(mapLeaveRequestToRow));
-      setTotalPages(Math.max(1, data.totalPages || 1));
+      setTotalPages(Math.max(1, data.page?.totalPages || 1));
     } catch (error) {
       showError(extractErrorMessage(error, 'Failed to load leave requests'));
     } finally {

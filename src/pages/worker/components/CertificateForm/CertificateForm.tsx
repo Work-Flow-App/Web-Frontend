@@ -73,7 +73,6 @@ export const CertificateForm: React.FC<CertificateFormProps> = ({
 
         if (isEdit && certificate) {
           await certificateService.updateMyCertificate(certificate.id, {
-            type,
             name: data.name,
             issuingAuthority: data.issuingAuthority || undefined,
             issueDate: data.issueDate || undefined,

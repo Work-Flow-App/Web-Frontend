@@ -7,7 +7,12 @@ import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
 import { LEAVE_TYPE_OPTIONS } from '../../../../services/api';
 
-export const LeaveRequestFormFields: React.FC = () => {
+export interface LeaveRequestFormFieldsProps {
+  /** Editing an existing request - leaveType can't be changed after submission, so the field is locked */
+  isEdit?: boolean;
+}
+
+export const LeaveRequestFormFields: React.FC<LeaveRequestFormFieldsProps> = ({ isEdit = false }) => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(LeaveRequestFormSchema);
 
   return (
@@ -20,6 +25,7 @@ export const LeaveRequestFormFields: React.FC = () => {
           fullWidth
           disableClearable
           disablePortal
+          disabled={isEdit}
         />
       </FormField>
 

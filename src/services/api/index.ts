@@ -159,6 +159,7 @@ export { leaveService, LeaveType, LEAVE_TYPE_OPTIONS, LeaveStatus, LEAVE_STATUS_
 export type {
   LeaveRequestResponse,
   LeaveRequestCreatePayload,
+  LeaveRequestUpdatePayload,
   LeaveCalendarEntry,
   CompanyLeaveRequestFilters,
   PagedLeaveRequests,

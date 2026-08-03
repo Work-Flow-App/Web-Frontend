@@ -62,19 +62,22 @@ export const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
 
   const handleSubmit = useCallback(
     async (data: LeaveRequestFormData) => {
-      const payload = {
-        leaveType: extractDropdownValue(data.type),
-        startDate: data.startDate,
-        endDate: data.endDate,
-        reason: data.reason || undefined,
-      };
-
       try {
         if (isEdit && leaveRequest) {
-          await leaveService.updateLeaveRequest(leaveRequest.id, payload);
+          // Backend doesn't support changing leaveType after submission - only dates/reason are editable.
+          await leaveService.updateLeaveRequest(leaveRequest.id, {
+            startDate: data.startDate,
+            endDate: data.endDate,
+            reason: data.reason || undefined,
+          });
           showSuccess('Leave request updated');
         } else {
-          await leaveService.submitLeaveRequest(payload);
+          await leaveService.submitLeaveRequest({
+            leaveType: extractDropdownValue(data.type),
+            startDate: data.startDate,
+            endDate: data.endDate,
+            reason: data.reason || undefined,
+          });
           showSuccess('Leave request submitted');
         }
         onSuccess?.();
@@ -102,7 +105,7 @@ export const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
       onSubmit={handleSubmit}
       isModal={isModal}
     >
-      <LeaveRequestFormFields />
+      <LeaveRequestFormFields isEdit={isEdit} />
     </SetupFormWrapper>
   );
 };

@@ -1,3 +1,6 @@
+import type { AxiosResponse } from 'axios';
+import { CompanyLeaveRequestsApi, WorkerLeaveRequestsSelfServiceApi, Configuration } from '../../../workflow-api';
+import type { PageMetadata } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
@@ -31,6 +34,9 @@ export const LEAVE_STATUS_OPTIONS: { value: LeaveStatus; label: string }[] = [
   { value: LeaveStatus.Cancelled, label: 'Cancelled' },
 ];
 
+// The generated LeaveRequestResponse marks every field optional (Jackson's nullable-by-default
+// stance), but a successful response always carries these - narrowed here so callers don't need
+// optional chaining for data that's always present.
 export interface LeaveRequestResponse {
   id: number;
   workerId: number;
@@ -51,6 +57,13 @@ export interface LeaveRequestCreatePayload {
   reason?: string;
 }
 
+// Matches LeaveRequestUpdateRequest - the backend doesn't allow changing leaveType after submission.
+export interface LeaveRequestUpdatePayload {
+  startDate: string;
+  endDate: string;
+  reason?: string;
+}
+
 export interface LeaveCalendarEntry {
   workerId: number;
   workerName: string;
@@ -65,60 +78,63 @@ export interface CompanyLeaveRequestFilters {
   size?: number;
 }
 
+// PagedModelLeaveRequestResponse nests pagination info under `page` (Spring HATEOAS shape).
 export interface PagedLeaveRequests {
   content: LeaveRequestResponse[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+  page?: PageMetadata;
+}
+
+function getLeaveApi(): CompanyLeaveRequestsApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new CompanyLeaveRequestsApi(config, env.apiBaseUrl, axiosInstance);
+}
+
+function getLeaveSelfApi(): WorkerLeaveRequestsSelfServiceApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new WorkerLeaveRequestsSelfServiceApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const leaveService = {
   /**
    * Worker self-service
    */
-  async getMyLeaveRequests() {
-    return axiosInstance.get<LeaveRequestResponse[]>(`${env.apiBaseUrl}/api/v1/worker/leave-requests`);
+  async getMyLeaveRequests(): Promise<AxiosResponse<LeaveRequestResponse[]>> {
+    return (await getLeaveSelfApi().workerLeaveRequestSelfGetOwnLeaveRequests()) as AxiosResponse<LeaveRequestResponse[]>;
   },
 
-  async submitLeaveRequest(data: LeaveRequestCreatePayload) {
-    return axiosInstance.post<LeaveRequestResponse>(`${env.apiBaseUrl}/api/v1/worker/leave-requests`, data);
+  async submitLeaveRequest(data: LeaveRequestCreatePayload): Promise<AxiosResponse<LeaveRequestResponse>> {
+    return (await getLeaveSelfApi().workerLeaveRequestSelfSubmitLeaveRequest(data)) as AxiosResponse<LeaveRequestResponse>;
   },
 
-  async updateLeaveRequest(id: number, data: Partial<LeaveRequestCreatePayload>) {
-    return axiosInstance.patch<LeaveRequestResponse>(`${env.apiBaseUrl}/api/v1/worker/leave-requests/${id}`, data);
+  async updateLeaveRequest(id: number, data: LeaveRequestUpdatePayload): Promise<AxiosResponse<LeaveRequestResponse>> {
+    return (await getLeaveSelfApi().workerLeaveRequestSelfUpdateOwnLeaveRequest(id, data)) as AxiosResponse<LeaveRequestResponse>;
   },
 
   async cancelLeaveRequest(id: number) {
-    return axiosInstance.delete(`${env.apiBaseUrl}/api/v1/worker/leave-requests/${id}`);
+    return await getLeaveSelfApi().workerLeaveRequestSelfCancelOwnLeaveRequest(id);
   },
 
   /**
    * Company admin
    */
-  async getCompanyLeaveRequests(filters: CompanyLeaveRequestFilters = {}) {
+  async getCompanyLeaveRequests(filters: CompanyLeaveRequestFilters = {}): Promise<AxiosResponse<PagedLeaveRequests>> {
     const { status, page = 0, size = 20 } = filters;
-    return axiosInstance.get<PagedLeaveRequests>(`${env.apiBaseUrl}/api/v1/workers/leave-requests`, {
-      params: { status, page, size },
-    });
+    return (await getLeaveApi().companyLeaveRequestListLeaveRequests(status, page, size)) as AxiosResponse<PagedLeaveRequests>;
   },
 
-  async approveLeaveRequest(id: number, decisionNote?: string) {
-    return axiosInstance.post<LeaveRequestResponse>(`${env.apiBaseUrl}/api/v1/workers/leave-requests/${id}/approve`, {
-      decisionNote,
-    });
+  async approveLeaveRequest(id: number, decisionNote?: string): Promise<AxiosResponse<LeaveRequestResponse>> {
+    return (await getLeaveApi().companyLeaveRequestApproveLeaveRequest(
+      id,
+      decisionNote !== undefined ? { decisionNote } : undefined
+    )) as AxiosResponse<LeaveRequestResponse>;
   },
 
-  async rejectLeaveRequest(id: number, decisionNote: string) {
-    return axiosInstance.post<LeaveRequestResponse>(`${env.apiBaseUrl}/api/v1/workers/leave-requests/${id}/reject`, {
-      decisionNote,
-    });
+  async rejectLeaveRequest(id: number, decisionNote: string): Promise<AxiosResponse<LeaveRequestResponse>> {
+    return (await getLeaveApi().companyLeaveRequestRejectLeaveRequest(id, { decisionNote })) as AxiosResponse<LeaveRequestResponse>;
   },
 
-  async getLeaveCalendar(from: string, to: string) {
-    return axiosInstance.get<LeaveCalendarEntry[]>(`${env.apiBaseUrl}/api/v1/workers/leave-requests/calendar`, {
-      params: { from, to },
-    });
+  async getLeaveCalendar(from: string, to: string): Promise<AxiosResponse<LeaveCalendarEntry[]>> {
+    return (await getLeaveApi().companyLeaveRequestGetLeaveCalendar(from, to)) as AxiosResponse<LeaveCalendarEntry[]>;
   },
 };
 
