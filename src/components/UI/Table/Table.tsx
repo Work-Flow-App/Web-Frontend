@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import type { ITable, ITableRow } from './ITable';
-import { DataTableContextProvider } from './context';
+import { DataTableContextProvider, useDataRow, useDataColumn, usePagination } from './context';
 import { TitleHeader } from './components/TitleHeader';
 import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
-import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer } from './Table.styles';
+import { MobileResponsive } from './components/MobileResponsive';
+import { Loader } from '../Loader';
+import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer, MobileResponsiveCardsContainer } from './Table.styles';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -97,6 +99,16 @@ const TableInner = <T extends ITableRow = ITableRow>({
 }) => {
   const hasTitleHeader = Boolean(title || titleActions);
 
+  const { filteredRows } = useDataRow();
+  const { columns } = useDataColumn();
+  const { currentPage, rowsPerPage } = usePagination();
+
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredRows.slice(startIndex, endIndex);
+  }, [filteredRows, currentPage, rowsPerPage]);
+
   const headerActions = hasTitleHeader ? (
     <HeaderActionsContainer>
       {titleActions}
@@ -158,6 +170,34 @@ const TableInner = <T extends ITableRow = ITableRow>({
           </StyledTableBody>
         </StyledTable>
       </StyledTableContainer>
+
+      {/* Mobile Responsive Cards View */}
+      <MobileResponsiveCardsContainer>
+        {loading && paginatedRows.length === 0 ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+            <Loader size={40} centered={false} />
+          </div>
+        ) : paginatedRows.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+            {emptyMessage}
+          </div>
+        ) : (
+          paginatedRows.map((row) => (
+            <MobileResponsive
+              key={row.id}
+              row={row}
+              columns={columns}
+              selectable={selectable}
+              showActions={showActions}
+              actions={actions}
+              renderActions={renderActions}
+              onActionClick={onActionClick}
+              onRowClick={onRowClick}
+              highlightedRowId={highlightedRowId}
+            />
+          ))
+        )}
+      </MobileResponsiveCardsContainer>
 
       {/* Footer with Pagination */}
       <Footer
