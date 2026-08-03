@@ -6,9 +6,14 @@ import { jobWorkflowService } from '../../../../services/api';
 interface ProgressProps {
   jobId: number;
   workflowUpdateTrigger?: number;
+  excludeSkipped?: boolean;
 }
 
-export const Progress: React.FC<ProgressProps> = ({ jobId, workflowUpdateTrigger = 0 }) => {
+export const Progress: React.FC<ProgressProps> = ({ 
+  jobId, 
+  workflowUpdateTrigger = 0,
+  excludeSkipped = true 
+}) => {
   const [completedSteps, setCompletedSteps] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -20,14 +25,23 @@ export const Progress: React.FC<ProgressProps> = ({ jobId, workflowUpdateTrigger
         const response = await jobWorkflowService.getJobWorkflowByJobId(jobId);
         const steps = response.data?.steps || [];
         
-        // Filter out deleted/skipped steps
-        const activeSteps = steps.filter((step: any) => step.status?.toUpperCase() !== 'SKIPPED');
-        
-        setTotalSteps(activeSteps.length);
-        
-        // Count how many steps are COMPLETED
-        const completed = activeSteps.filter((step: any) => step.status === 'COMPLETED').length;
-        setCompletedSteps(completed);
+        if (excludeSkipped) {
+          // Filter out deleted/skipped steps
+          const activeSteps = steps.filter((step: any) => step.status?.toUpperCase() !== 'SKIPPED');
+          setTotalSteps(activeSteps.length);
+          
+          // Count how many steps are COMPLETED
+          const completed = activeSteps.filter((step: any) => step.status === 'COMPLETED').length;
+          setCompletedSteps(completed);
+        } else {
+          // Skipped steps also count as progressed, same as completed ones
+          setTotalSteps(steps.length);
+          
+          const completed = steps.filter(
+            (step: any) => step.status === 'COMPLETED' || step.status === 'SKIPPED'
+          ).length;
+          setCompletedSteps(completed);
+        }
       } catch (error) {
         console.error('Failed to fetch job workflow for progress:', error);
       } finally {
@@ -36,7 +50,7 @@ export const Progress: React.FC<ProgressProps> = ({ jobId, workflowUpdateTrigger
     };
 
     fetchWorkflow();
-  }, [jobId, workflowUpdateTrigger]);
+  }, [jobId, workflowUpdateTrigger, excludeSkipped]);
 
   const progressPercentage = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
