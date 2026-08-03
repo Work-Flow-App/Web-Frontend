@@ -46,6 +46,8 @@ export interface IEnhancedTable<T = ITableRow> extends Omit<ITable<T>, 'sortConf
   titleActions?: React.ReactNode;
   /** Enable pagination */
   showPagination?: boolean;
+  /** Enable top pagination */
+  showTopPagination?: boolean;
   /** Rows per page */
   rowsPerPage?: number;
   /** Maximum page buttons */
@@ -77,6 +79,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   loading = false,
   emptyMessage = 'No data available',
   showPagination = true,
+  showTopPagination = true,
   maxPageButtons = 5,
   showPrevNext = true,
   showFirstLast = false,
@@ -112,12 +115,14 @@ const TableInner = <T extends ITableRow = ITableRow>({
 
 
       {/* Top Pagination */}
-      <Footer
-        showPagination={showPagination}
-        maxPageButtons={maxPageButtons}
-        showPrevNext={showPrevNext}
-        showFirstLast={showFirstLast}
-      />
+      {showTopPagination && (
+        <Footer
+          showPagination={showPagination}
+          maxPageButtons={maxPageButtons}
+          showPrevNext={showPrevNext}
+          showFirstLast={showFirstLast}
+        />
+      )}
 
       <StyledTableContainer>
         <StyledTable>
