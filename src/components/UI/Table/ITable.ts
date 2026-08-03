@@ -83,6 +83,8 @@ export interface ITable<T = ITableRow> {
   width?: string;
   /** Custom className for the table container */
   className?: string;
+  /** Optional ID of a row to highlight (e.g. when returning to the page) */
+  highlightedRowId?: string | number;
 }
 
 export interface IStyledTableProps {

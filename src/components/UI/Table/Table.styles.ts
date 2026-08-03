@@ -1,4 +1,4 @@
-import { styled } from '@mui/material/styles';
+import { styled, keyframes } from '@mui/material/styles';
 import { Box, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import type { IStyledTableProps, IStyledTableCellProps, IStyledCheckboxProps, IStyledStatusPillProps } from './ITable';
 import { floowColors } from '../../../theme/colors';
@@ -33,6 +33,10 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   border: 'none',
   overflow: 'auto',
   position: 'relative',
+  maxHeight: 'calc(100vh - 17.5rem)',
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 
   '&::-webkit-scrollbar': {
     width: '0.5rem',
@@ -65,6 +69,9 @@ export const StyledTableHead = styled(TableHead)(({ theme }) => ({
   background: theme.palette.mode === 'dark' ? theme.palette.colors.grey_200 : theme.palette.colors.grey_50,
   borderBottom: `1px solid ${theme.palette.mode === 'dark' ? theme.palette.colors.grey_300 : theme.palette.colors.grey_100}`,
   display: 'table-header-group',
+  position: 'sticky',
+  top: 0,
+  zIndex: 3,
 }));
 
 export const StyledTableBody = styled(TableBody)(({ theme }) => ({
@@ -72,21 +79,51 @@ export const StyledTableBody = styled(TableBody)(({ theme }) => ({
   display: 'table-row-group',
 }));
 
-export const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? theme.palette.colors.grey_200 : theme.palette.colors.grey_100}`,
-  transition: 'background 0.2s ease',
-  background: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.colors.white,
-  display: 'table-row',
-  width: '100%',
+const highlightFade = keyframes`
+  0% {
+    background-color: rgba(33, 150, 243, 0.25);
+  }
+  100% {
+    background-color: transparent;
+  }
+`;
 
-  '&:last-child': {
-    borderBottom: 'none',
-  },
+export const StyledTableRow = styled(TableRow)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+  // Use theme's primary/brand color if available, falling back to blue tint that matches surrounding UI
+  const primaryColor = theme.palette.primary.main || '#2196f3';
+  const highlightColor = isDark ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.03)';
+  const highlightHoverColor = isDark ? 'rgba(33, 150, 243, 0.12)' : 'rgba(33, 150, 243, 0.06)';
 
-  '&:hover': {
-    background: theme.palette.mode === 'dark' ? theme.palette.colors.grey_50 : theme.palette.colors.grey_50,
-  },
-}));
+  return {
+    borderBottom: `1px solid ${isDark ? theme.palette.colors.grey_200 : theme.palette.colors.grey_100}`,
+    transition: 'background 0.2s ease',
+    background: isDark ? theme.palette.background.paper : theme.palette.colors.white,
+    display: 'table-row',
+    width: '100%',
+
+    '&.highlighted-row': {
+      background: `${highlightColor} !important`,
+      '& td': {
+        background: `${highlightColor} !important`,
+      },
+    },
+
+    '&:last-child': {
+      borderBottom: 'none',
+    },
+
+    '&:hover': {
+      background: isDark ? theme.palette.colors.grey_50 : theme.palette.colors.grey_50,
+      '&.highlighted-row': {
+        background: `${highlightHoverColor} !important`,
+        '& td': {
+          background: `${highlightHoverColor} !important`,
+        },
+      },
+    },
+  };
+});
 
 export const StyledHeaderCell = styled(TableCell, {
   shouldForwardProp: (prop) => prop !== 'sortable',
@@ -120,7 +157,7 @@ export const StyledHeaderCell = styled(TableCell, {
       '&:first-of-type': {
         position: 'sticky',
         left: 0,
-        zIndex: 3,
+        zIndex: 5,
         background: headerBg,
 
         '&::after': {
@@ -372,4 +409,27 @@ export const DateSub = styled(Box)(({ theme }) => ({
   fontWeight: 400,
   color: theme.palette.colors.grey_500,
   fontFamily: 'Manrope, sans-serif',
+}));
+
+export const MobileResponsiveCardsContainer = styled(Box)(({ theme }) => ({
+  display: 'none',
+  flexDirection: 'column',
+  width: '100%',
+  gap: '1rem',
+  [theme.breakpoints.down('md')]: {
+    display: 'flex',
+    maxHeight: 'calc(100vh - 17.5rem)',
+    overflowY: 'auto',
+    paddingRight: '0.25rem',
+    '&::-webkit-scrollbar': {
+      width: '0.25rem',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: 'transparent',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: theme.palette.colors.grey_300,
+      borderRadius: '0.125rem',
+    },
+  },
 }));

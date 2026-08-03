@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import type { ITable, ITableRow } from './ITable';
-import { DataTableContextProvider } from './context';
+import { DataTableContextProvider, useDataRow, useDataColumn, usePagination } from './context';
 import { TitleHeader } from './components/TitleHeader';
 import { ColumnHeader } from './components/ColumnHeader';
 import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
-import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer } from './Table.styles';
+import { MobileResponsive } from './components/MobileResponsive';
+import { Loader } from '../Loader';
+import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer, MobileResponsiveCardsContainer } from './Table.styles';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -46,6 +48,8 @@ export interface IEnhancedTable<T = ITableRow> extends Omit<ITable<T>, 'sortConf
   titleActions?: React.ReactNode;
   /** Enable pagination */
   showPagination?: boolean;
+  /** Enable top pagination */
+  showTopPagination?: boolean;
   /** Rows per page */
   rowsPerPage?: number;
   /** Maximum page buttons */
@@ -77,6 +81,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   loading = false,
   emptyMessage = 'No data available',
   showPagination = true,
+  showTopPagination = true,
   maxPageButtons = 5,
   showPrevNext = true,
   showFirstLast = false,
@@ -87,11 +92,22 @@ const TableInner = <T extends ITableRow = ITableRow>({
   customiseColumns = false,
   allColumnLabels,
   onVisibleColumnsChange,
+  highlightedRowId,
 }: Omit<IEnhancedTable<T>, 'columns' | 'data'> & {
   allColumnLabels?: string[];
   onVisibleColumnsChange?: (visible: string[]) => void;
 }) => {
   const hasTitleHeader = Boolean(title || titleActions);
+
+  const { filteredRows } = useDataRow();
+  const { columns } = useDataColumn();
+  const { currentPage, rowsPerPage } = usePagination();
+
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredRows.slice(startIndex, endIndex);
+  }, [filteredRows, currentPage, rowsPerPage]);
 
   const headerActions = hasTitleHeader ? (
     <HeaderActionsContainer>
@@ -109,6 +125,16 @@ const TableInner = <T extends ITableRow = ITableRow>({
         />
       )}
 
+
+      {/* Top Pagination */}
+      {showTopPagination && (
+        <Footer
+          showPagination={showPagination}
+          maxPageButtons={maxPageButtons}
+          showPrevNext={showPrevNext}
+          showFirstLast={showFirstLast}
+        />
+      )}
 
       <StyledTableContainer>
         <StyledTable>
@@ -139,10 +165,39 @@ const TableInner = <T extends ITableRow = ITableRow>({
               emptyMessage={emptyMessage}
               enableStickyLeft={enableStickyLeft}
               enableStickyRight={enableStickyRight}
+              highlightedRowId={highlightedRowId}
             />
           </StyledTableBody>
         </StyledTable>
       </StyledTableContainer>
+
+      {/* Mobile Responsive Cards View */}
+      <MobileResponsiveCardsContainer>
+        {loading && paginatedRows.length === 0 ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+            <Loader size={40} centered={false} />
+          </div>
+        ) : paginatedRows.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+            {emptyMessage}
+          </div>
+        ) : (
+          paginatedRows.map((row) => (
+            <MobileResponsive
+              key={row.id}
+              row={row}
+              columns={columns}
+              selectable={selectable}
+              showActions={showActions}
+              actions={actions}
+              renderActions={renderActions}
+              onActionClick={onActionClick}
+              onRowClick={onRowClick}
+              highlightedRowId={highlightedRowId}
+            />
+          ))
+        )}
+      </MobileResponsiveCardsContainer>
 
       {/* Footer with Pagination */}
       <Footer
@@ -163,6 +218,8 @@ const Table = <T extends ITableRow = ITableRow>({
   data,
   rowsPerPage = 10,
   customiseColumns = false,
+  onSelectionChange,
+  selectedRows,
   ...props
 }: IEnhancedTable<T>) => {
   const allColumnLabels = useMemo(() => columns.map((c) => c.label), [columns]);
@@ -178,6 +235,8 @@ const Table = <T extends ITableRow = ITableRow>({
       initialData={data}
       initialColumns={visibleTableColumns}
       initialRowsPerPage={rowsPerPage}
+      onSelectionChange={onSelectionChange}
+      selectedRows={selectedRows}
     >
       <TableInner<T> 
         customiseColumns={customiseColumns}

@@ -94,7 +94,7 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
     );
   }
 
-  const steps = jobWorkflow.steps || [];
+  const steps = (jobWorkflow.steps || []).filter((step) => step.status?.toUpperCase() !== 'SKIPPED');
   const progress = calculateWorkflowProgress(steps);
 
   return (

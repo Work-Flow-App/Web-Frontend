@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import type { ViewTab } from './JobFilterPanel';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import { Search } from '../../../../components/UI/Search';
 import Table from '../../../../components/UI/Table/Table';
@@ -44,16 +45,29 @@ import { JOB_STATUS_OPTIONS } from '../../../../enums';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
-  const [showArchived, setShowArchived] = useState(false);
+  const [viewTab, setViewTab] = useState<ViewTab>('active');
   const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchKey, setSearchKey] = useState(0);
   const [filters, setFilters] = useState<JobFilters>({});
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedJobIds, setSelectedJobIds] = useState<(string | number)[]>([]);
+  const [highlightedJobId, setHighlightedJobId] = useState<string | number | undefined>(undefined);
 
+  const location = useLocation();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
+
+  // Read highlightJobId from localStorage
+  useEffect(() => {
+    const savedId = localStorage.getItem('highlightJobId');
+    if (savedId) {
+      // Use Number or String depending on format, job IDs are numbers
+      setHighlightedJobId(Number(savedId));
+      localStorage.removeItem('highlightJobId');
+    }
+  }, []);
 
   // Debounce search input → searchQuery (triggers API refetch)
   useEffect(() => {
@@ -113,8 +127,12 @@ export const JobsList: React.FC = () => {
     loading,
     refetch: fetchJobs,
   } = useFetch<JobResponse[]>(
-    () => (showArchived ? jobService.getArchivedJobs() : jobService.getAllJobs(apiFilters)),
-    [showArchived, apiFilters],
+    () => {
+      if (viewTab === 'archived') return jobService.getArchivedJobs();
+      if (viewTab === 'completed') return jobService.getAllJobs({ ...apiFilters, status: 'COMPLETED' });
+      return jobService.getAllJobs(apiFilters);
+    },
+    [viewTab, apiFilters],
     {
       skip: loadingTemplates,
       onError: (error) => showError(extractErrorMessage(error, 'Failed to load jobs')),
@@ -122,7 +140,7 @@ export const JobsList: React.FC = () => {
   );
 
   const jobs = useMemo<JobTableRow[]>(() => {
-    return (rawJobs ?? []).map((job: JobResponse) => {
+    const mapped = (rawJobs ?? []).map((job: JobResponse) => {
       const fieldValues: { [key: string]: string } = {};
       if (job.fieldValues) {
         Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
@@ -165,7 +183,12 @@ export const JobsList: React.FC = () => {
         assetNames,
       };
     });
-  }, [rawJobs, assets, templates, customers, clients, workflows]);
+    // In Active tab, filter out completed jobs (they have their own tab)
+    if (viewTab === 'active') {
+      return mapped.filter((job) => job.status !== 'COMPLETED');
+    }
+    return mapped;
+  }, [rawJobs, assets, templates, customers, clients, workflows, viewTab]);
 
   // No-template modal on first load
   useEffect(() => {
@@ -327,6 +350,76 @@ export const JobsList: React.FC = () => {
     },
     [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
+
+  const handleBulkArchive = useCallback(() => {
+    if (selectedJobIds.length === 0) {
+      showError('No jobs selected to archive.');
+      return;
+    }
+
+    setGlobalModalOuterProps({
+      isOpen: true,
+      size: ModalSizes.SMALL,
+      fieldName: 'bulkArchiveJobs',
+      children: (
+        <ConfirmationModal
+          title="Archive All Marked Jobs"
+          message={`Are you sure you want to archive ${selectedJobIds.length} job(s)?`}
+          description="This will archive the selected jobs and remove them from the active list."
+          variant="default"
+          confirmButtonText="Archive"
+          cancelButtonText="Cancel"
+          onConfirm={async () => {
+            try {
+              await Promise.all(selectedJobIds.map((id) => jobService.archiveJob(Number(id))));
+              showSuccess(`Successfully archived ${selectedJobIds.length} job(s)`);
+              setSelectedJobIds([]);
+              resetGlobalModalOuterProps();
+              fetchJobs();
+            } catch (error) {
+              showError(extractErrorMessage(error, 'Failed to archive jobs'));
+              resetGlobalModalOuterProps();
+            }
+          }}
+          onCancel={() => resetGlobalModalOuterProps()}
+        />
+      ),
+    });
+  }, [selectedJobIds, fetchJobs, showSuccess, showError, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+
+  const handleRestoreJob = useCallback(
+    (job: JobTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'restoreJob',
+        children: (
+          <ConfirmationModal
+            title="Restore Job"
+            message={`Are you sure you want to restore Job #${job.jobRef ?? job.id}?`}
+            description="This will restore the job back to the active list."
+            variant="default"
+            confirmButtonText="Restore"
+            cancelButtonText="Cancel"
+            onConfirm={async () => {
+              try {
+                await jobService.restoreJob(job.id);
+                showSuccess(`Job #${job.jobRef ?? job.id} restored successfully`);
+                resetGlobalModalOuterProps();
+                fetchJobs();
+              } catch (error) {
+                showError(extractErrorMessage(error, 'Failed to restore job'));
+                resetGlobalModalOuterProps();
+              }
+            }}
+            onCancel={() => resetGlobalModalOuterProps()}
+          />
+        ),
+      });
+    },
+    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+  );
+
   const handleDuplicateJob = useCallback(
     (job: JobTableRow) => {
       setGlobalModalOuterProps({
@@ -396,14 +489,20 @@ export const JobsList: React.FC = () => {
   );
 
   const tableActions: ITableAction<JobTableRow>[] = useMemo(
-    () => [
-      { id: 'edit', label: 'Edit', onClick: handleEditJob },
-      { id: 'duplicate', label: 'Duplicate', onClick: handleDuplicateJob },
-      ...(!showArchived
-        ? [{ id: 'archive', label: 'Archive', onClick: handleArchiveJob, color: 'error' as const }]
-        : [{ id: 'delete', label: 'Delete', onClick: handleDeleteJob, color: 'error' as const }]),
-    ],
-    [handleEditJob, handleDuplicateJob, handleArchiveJob, handleDeleteJob, showArchived]
+    () => {
+      if (viewTab === 'archived') {
+        return [
+          { id: 'restore', label: 'Restore', onClick: handleRestoreJob },
+          { id: 'delete', label: 'Delete', onClick: handleDeleteJob, color: 'error' as const },
+        ];
+      }
+      return [
+        { id: 'edit', label: 'Edit', onClick: handleEditJob },
+        { id: 'duplicate', label: 'Duplicate', onClick: handleDuplicateJob },
+        { id: 'archive', label: 'Archive', onClick: handleArchiveJob, color: 'error' as const },
+      ];
+    },
+    [handleEditJob, handleDuplicateJob, handleArchiveJob, handleDeleteJob, handleRestoreJob, viewTab]
   );
 
   const columns = useMemo(() => generateJobColumns(templateFields), [templateFields]);
@@ -439,13 +538,21 @@ export const JobsList: React.FC = () => {
       });
     }
 
-    if (showArchived) {
+    if (viewTab === 'archived') {
       chips.push({
         key: 'archived',
         label: 'Archived jobs',
-        onDelete: () => setShowArchived(false),
+        onDelete: () => setViewTab('active'),
       });
       return chips;
+    }
+
+    if (viewTab === 'completed') {
+      chips.push({
+        key: 'completed',
+        label: 'Completed jobs',
+        onDelete: () => setViewTab('active'),
+      });
     }
 
     if (filters.status) {
@@ -509,25 +616,38 @@ export const JobsList: React.FC = () => {
       });
     }
     return chips;
-  }, [filters, searchQuery, showArchived]);
+  }, [filters, searchQuery, viewTab]);
 
   const clearAllFilters = useCallback(() => {
     setFilters({});
-    setShowArchived(false);
+    setViewTab('active');
     setSearchInput('');
     setSearchQuery('');
     setSearchKey((k) => k + 1);
   }, []);
 
   // Badge count: one per active filter dimension + 1 if archived
-  const activeBadgeCount = Object.keys(filters).length + (showArchived ? 1 : 0);
+  const activeBadgeCount = Object.keys(filters).length + (viewTab !== 'active' ? 1 : 0);
   const hasActiveFilters = activeBadgeCount > 0;
 
   return (
     <PageWrapper
       title="All Jobs"
       description="Manage jobs, assign workers, and track progress."
-      actions={[{ label: 'Create Job', onClick: handleAddJob, variant: 'contained', color: 'primary' }]}
+      actions={[
+        ...(selectedJobIds.length > 0
+          ? [
+              {
+                label: 'Archive All Marked Jobs',
+                onClick: handleBulkArchive,
+                variant: 'outlined' as const,
+                color: 'secondary' as const,
+                disabled: viewTab === 'archived',
+              },
+            ]
+          : []),
+        { label: 'Create Job', onClick: handleAddJob, variant: 'contained', color: 'primary' },
+      ]}
       headerExtra={
         <HeaderControls>
           <Search
@@ -574,28 +694,34 @@ export const JobsList: React.FC = () => {
         columns={columns}
         data={jobs}
         selectable
+        selectedRows={selectedJobIds}
+        onSelectionChange={setSelectedJobIds}
+        highlightedRowId={highlightedJobId}
         showActions
         customiseColumns={true}
         actions={tableActions}
         onRowClick={handleRowClick}
         loading={loading || loadingTemplates}
         emptyMessage={
-          showArchived
+          viewTab === 'archived'
             ? 'No archived jobs found.'
-            : activeChips.length > 0
-              ? 'No jobs match the current filters.'
-              : 'No jobs found. Add your first job to get started.'
+            : viewTab === 'completed'
+              ? 'No completed jobs found.'
+              : activeChips.length > 0
+                ? 'No jobs match the current filters.'
+                : 'No jobs found. Add your first job to get started.'
         }
         rowsPerPage={100}
         showPagination={true}
+        showTopPagination={false}
         enableStickyLeft={true}
       />
 
       <JobFilterPanel
         anchorEl={filterAnchorEl}
         onClose={() => setFilterAnchorEl(null)}
-        showArchived={showArchived}
-        onToggleArchived={setShowArchived}
+        viewTab={viewTab}
+        onChangeViewTab={setViewTab}
         currentFilters={filters}
         onApply={setFilters}
         templateOptions={templateOptions}

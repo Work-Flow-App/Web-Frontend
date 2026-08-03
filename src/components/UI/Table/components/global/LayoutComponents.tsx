@@ -21,7 +21,7 @@ export const ParentContainer = styled(Box)(({ theme }) => ({
 export const LeftContainer = styled(Box)(({ theme }) => ({
   position: 'sticky',
   left: 0,
-  zIndex: 2,
+  zIndex: 1,
   background: theme.palette.colors.white,
   borderRight: `1px solid ${theme.palette.colors.grey_100}`,
   flexShrink: 0,
@@ -62,7 +62,7 @@ export const CenterContainer = styled(Box)(({ theme }) => ({
 export const RightContainer = styled(Box)(({ theme }) => ({
   position: 'sticky',
   right: 0,
-  zIndex: 2,
+  zIndex: 1,
   background: theme.palette.colors.white,
   borderLeft: `1px solid ${theme.palette.colors.grey_100}`,
   flexShrink: 0,

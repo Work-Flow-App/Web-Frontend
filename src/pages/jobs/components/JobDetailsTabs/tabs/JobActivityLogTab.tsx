@@ -172,9 +172,10 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
       setLoading(true);
       const workflowResponse = await jobWorkflowService.getJobWorkflowByJobId(job.id);
       const workflow = workflowResponse.data;
-      if (!workflow?.steps || workflow.steps.length === 0) { setSteps([]); return; }
+      const activeSteps = (workflow?.steps || []).filter((step: JobWorkflowStepResponse) => step.status?.toUpperCase() !== 'SKIPPED');
+      if (activeSteps.length === 0) { setSteps([]); return; }
       const stepsWithTimeline = await Promise.all(
-        workflow.steps.map(async (step: JobWorkflowStepResponse) => {
+        activeSteps.map(async (step: JobWorkflowStepResponse) => {
           if (!step.id) return { ...step, timeline: [] };
           try {
             const res = await stepActivityService.getTimeline(step.id);
@@ -188,7 +189,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
       setSteps(stepsWithTimeline);
 
       const minuteResults = await Promise.all(
-        workflow.steps.map(async (step: JobWorkflowStepResponse) => {
+        activeSteps.map(async (step: JobWorkflowStepResponse) => {
           if (!step.id) return 0;
           try {
             const res = await visitLogService.getVisitLogs(step.id);

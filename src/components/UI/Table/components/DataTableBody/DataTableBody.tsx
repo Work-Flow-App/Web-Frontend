@@ -50,6 +50,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
   emptyMessage = 'No data available',
   enableStickyLeft = false,
   enableStickyRight = false,
+  highlightedRowId,
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -132,6 +133,7 @@ const DataTableBody: React.FC<IDataTableBody> = ({
           onClick={(e) => handleRowClick(row, e)}
           title={onRowClick ? 'Click to view details' : undefined}
           sx={getStyledTableRowStyles(!!onRowClick)}
+          className={row.id === highlightedRowId ? 'highlighted-row' : ''}
         >
           {enableStickyLeft ? (
             <>

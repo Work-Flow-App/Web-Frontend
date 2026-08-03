@@ -17,6 +17,8 @@ import {
   FilterLabel,
 } from './JobFilterPanel.styles';
 
+export type ViewTab = 'active' | 'completed' | 'archived';
+
 const STATUS_OPTIONS: DropdownOption[] = [
   { label: 'New', value: 'NEW' },
   { label: 'Pending', value: 'PENDING' },
@@ -34,8 +36,8 @@ const toOption = (options: DropdownOption[], value?: string): DropdownOption | '
 interface JobFilterPanelProps {
   anchorEl: HTMLElement | null;
   onClose: () => void;
-  showArchived: boolean;
-  onToggleArchived: (archived: boolean) => void;
+  viewTab: ViewTab;
+  onChangeViewTab: (tab: ViewTab) => void;
   currentFilters: JobFilters;
   onApply: (filters: JobFilters) => void;
   templateOptions: DropdownOption[];
@@ -47,8 +49,8 @@ interface JobFilterPanelProps {
 export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   anchorEl,
   onClose,
-  showArchived,
-  onToggleArchived,
+  viewTab,
+  onChangeViewTab,
   currentFilters,
   onApply,
   templateOptions,
@@ -72,15 +74,14 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   const set = (key: keyof JobFilters) => (v: string | number) =>
     setDraft((prev) => ({ ...prev, [key]: (v as string) || undefined }));
 
-  const handleViewToggle = (_: React.MouseEvent, value: 'active' | 'archived' | null) => {
+  const handleViewToggle = (_: React.MouseEvent, value: ViewTab | null) => {
     if (!value) return;
-    const archived = value === 'archived';
-    if (archived) {
+    if (value !== 'active') {
       setDraft({});
       setDropdownKey((k) => k + 1);
       onApply({});
     }
-    onToggleArchived(archived);
+    onChangeViewTab(value);
   };
 
   const handleApply = () => {
@@ -95,9 +96,12 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
     setDraft({});
     setDropdownKey((k) => k + 1);
     onApply({});
-    onToggleArchived(false);
+    onChangeViewTab('active');
     onClose();
   };
+
+  const isFiltersDisabled = viewTab === 'archived';
+  const isStatusDisabled = viewTab === 'archived' || viewTab === 'completed';
 
   return (
     <FilterPopover
@@ -117,28 +121,30 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
         <PanelBody>
           <FilterRow label="View">
             <ViewToggleGroup
-              value={showArchived ? 'archived' : 'active'}
+              value={viewTab}
               exclusive
               onChange={handleViewToggle}
               size="small"
               fullWidth
             >
               <ToggleButton value="active">Active</ToggleButton>
+              <ToggleButton value="completed">Completed</ToggleButton>
               <ToggleButton value="archived">Archived</ToggleButton>
             </ViewToggleGroup>
           </FilterRow>
 
-          <FilterSection $disabled={showArchived}>
+          <FilterSection $disabled={isFiltersDisabled}>
             <FilterRow label="Status">
               <StandaloneDropdown
                 key={`status-${dropdownKey}`}
                 name="filter-status"
-                placeHolder="Any status"
+                placeHolder={isStatusDisabled ? 'Completed' : 'Any status'}
                 preFetchedOptions={STATUS_OPTIONS}
                 defaultValue={toOption(STATUS_OPTIONS, draft.status) as unknown as string}
                 onChange={set('status')}
                 hideErrorMessage
                 fullWidth
+                disabled={isStatusDisabled}
               />
             </FilterRow>
 
@@ -210,7 +216,7 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
           <Button variant="outlined" color="secondary" size="small" onClick={handleClear}>
             Reset all
           </Button>
-          <Button variant="contained" color="primary" size="small" onClick={handleApply} disabled={showArchived}>
+          <Button variant="contained" color="primary" size="small" onClick={handleApply} disabled={isFiltersDisabled}>
             Apply filters
           </Button>
         </PanelFooter>
