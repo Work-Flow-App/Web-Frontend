@@ -34,9 +34,6 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   overflow: 'auto',
   position: 'relative',
   maxHeight: 'calc(100vh - 17.5rem)',
-  [theme.breakpoints.down('md')]: {
-    display: 'none',
-  },
 
   '&::-webkit-scrollbar': {
     width: '0.5rem',
@@ -409,27 +406,4 @@ export const DateSub = styled(Box)(({ theme }) => ({
   fontWeight: 400,
   color: theme.palette.colors.grey_500,
   fontFamily: 'Manrope, sans-serif',
-}));
-
-export const MobileResponsiveCardsContainer = styled(Box)(({ theme }) => ({
-  display: 'none',
-  flexDirection: 'column',
-  width: '100%',
-  gap: '1rem',
-  [theme.breakpoints.down('md')]: {
-    display: 'flex',
-    maxHeight: 'calc(100vh - 17.5rem)',
-    overflowY: 'auto',
-    paddingRight: '0.25rem',
-    '&::-webkit-scrollbar': {
-      width: '0.25rem',
-    },
-    '&::-webkit-scrollbar-track': {
-      background: 'transparent',
-    },
-    '&::-webkit-scrollbar-thumb': {
-      background: theme.palette.colors.grey_300,
-      borderRadius: '0.125rem',
-    },
-  },
 }));
