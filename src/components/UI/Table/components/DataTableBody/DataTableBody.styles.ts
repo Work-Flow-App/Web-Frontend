@@ -6,7 +6,7 @@ export const getCheckboxCellStickyStyles = (
 ): SxProps<Theme> => ({
   position: 'sticky',
   left: 0,
-  zIndex: 10,
+  zIndex: 1,
   cursor: 'pointer',
   backgroundColor: bodyBg,
   transition: 'background-color 0.2s ease',
@@ -33,8 +33,8 @@ export const getFirstColumnStickyStyles = (
   hasSelectable: boolean
 ): SxProps<Theme> => ({
   position: 'sticky',
-  left: hasSelectable ? '48px' : 0,
-  zIndex: 10,
+  left: hasSelectable ? '3rem' : 0,
+  zIndex: 1,
   backgroundColor: bodyBg,
   boxShadow: `1px 0 0 0 ${borderColor}`,
   transition: 'background-color 0.2s ease',
@@ -50,7 +50,7 @@ export const getActionsCellStickyStyles = (
 ): SxProps<Theme> => ({
   position: 'sticky',
   right: 0,
-  zIndex: 2,
+  zIndex: 1,
   backgroundColor: bodyBg,
   borderLeft: `1px solid ${borderColor}`,
   transition: 'background-color 0.2s ease',

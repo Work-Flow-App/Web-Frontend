@@ -57,4 +57,8 @@ export interface IDataTableContextProviderProps<T = ITableRow> {
   initialData?: T[];
   initialColumns?: ITableColumn<T>[];
   initialRowsPerPage?: number;
+  /** Callback fired whenever the set of selected row IDs changes */
+  onSelectionChange?: (selectedIds: (string | number)[]) => void;
+  /** Controlled selected row IDs */
+  selectedRows?: (string | number)[];
 }

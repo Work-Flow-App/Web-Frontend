@@ -99,7 +99,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
     try {
       setLoadingItems(true);
       const workflowResponse = await jobWorkflowService.getJobWorkflowByJobId(job.id);
-      const steps = workflowResponse.data?.steps || [];
+      const steps = (workflowResponse.data?.steps || []).filter((step: any) => step.status?.toUpperCase() !== 'SKIPPED');
       if (steps.length === 0) return;
 
       const sorted = [...steps].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));

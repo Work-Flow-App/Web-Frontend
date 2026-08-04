@@ -61,8 +61,9 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
       // --- Workflow attachments ---
       if (workflowResponse.status === 'fulfilled') {
         const workflow = workflowResponse.value.data;
-        if (workflow?.steps?.length) {
-          const attachmentPromises = workflow.steps.map(async (step: JobWorkflowStepResponse) => {
+        const steps = (workflow?.steps || []).filter((step: JobWorkflowStepResponse) => step.status?.toUpperCase() !== 'SKIPPED');
+        if (steps.length) {
+          const attachmentPromises = steps.map(async (step: JobWorkflowStepResponse) => {
             if (!step.id) return [];
             try {
               const response = await stepActivityService.getAttachments(step.id);

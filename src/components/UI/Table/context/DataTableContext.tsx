@@ -34,6 +34,8 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
   initialData = [],
   initialColumns = [],
   initialRowsPerPage = 10,
+  onSelectionChange,
+  selectedRows: controlledSelectedRows,
 }: IDataTableContextProviderProps<T>) => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,7 +44,7 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
 
   // DataRows State
   const [rows, setRows] = useState<T[]>(initialData);
-  const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
+  const [selectedRows, setSelectedRows] = useState<(string | number)[]>(controlledSelectedRows || []);
   const [sortConfig, setSortConfig] = useState<ISortConfig | null>(null);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
 
@@ -50,6 +52,18 @@ export const DataTableContextProvider = <T extends ITableRow = ITableRow>({
   React.useEffect(() => {
     setRows(initialData);
   }, [initialData]);
+
+  // Sync selectedRows from props if controlled
+  React.useEffect(() => {
+    if (controlledSelectedRows !== undefined) {
+      setSelectedRows(controlledSelectedRows);
+    }
+  }, [controlledSelectedRows]);
+
+  // Notify parent when selection changes
+  React.useEffect(() => {
+    onSelectionChange?.(selectedRows);
+  }, [selectedRows, onSelectionChange]);
 
   // DataColumn State
   const [columns, setColumns] = useState<ITableColumn<T>[]>(initialColumns);

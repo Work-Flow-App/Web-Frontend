@@ -491,6 +491,26 @@ export interface EstimateResponse {
 export interface EstimateUpdateRequest {
     'notes'?: string;
 }
+export interface ExpiringCertificateResponse {
+    'certificateId'?: number;
+    'workerId'?: number;
+    'workerName'?: string;
+    'type'?: ExpiringCertificateResponseTypeEnum;
+    'name'?: string;
+    'expiryDate'?: string;
+    'daysUntilExpiry'?: number;
+}
+
+export const ExpiringCertificateResponseTypeEnum = {
+    License: 'LICENSE',
+    Safety: 'SAFETY',
+    TradeQualification: 'TRADE_QUALIFICATION',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+
+export type ExpiringCertificateResponseTypeEnum = typeof ExpiringCertificateResponseTypeEnum[keyof typeof ExpiringCertificateResponseTypeEnum];
+
 export interface FieldValueResponse {
     'name'?: string;
     'label'?: string;
@@ -822,6 +842,80 @@ export const JobWorkflowUpdateRequestStatusEnum = {
 
 export type JobWorkflowUpdateRequestStatusEnum = typeof JobWorkflowUpdateRequestStatusEnum[keyof typeof JobWorkflowUpdateRequestStatusEnum];
 
+export interface LeaveCalendarEntryResponse {
+    'workerId'?: number;
+    'workerName'?: string;
+    'leaveType'?: LeaveCalendarEntryResponseLeaveTypeEnum;
+    'startDate'?: string;
+    'endDate'?: string;
+}
+
+export const LeaveCalendarEntryResponseLeaveTypeEnum = {
+    Annual: 'ANNUAL',
+    Sick: 'SICK',
+    Unpaid: 'UNPAID',
+    Other: 'OTHER'
+} as const;
+
+export type LeaveCalendarEntryResponseLeaveTypeEnum = typeof LeaveCalendarEntryResponseLeaveTypeEnum[keyof typeof LeaveCalendarEntryResponseLeaveTypeEnum];
+
+export interface LeaveRequestCreateRequest {
+    'leaveType': LeaveRequestCreateRequestLeaveTypeEnum;
+    'startDate': string;
+    'endDate': string;
+    'reason'?: string;
+}
+
+export const LeaveRequestCreateRequestLeaveTypeEnum = {
+    Annual: 'ANNUAL',
+    Sick: 'SICK',
+    Unpaid: 'UNPAID',
+    Other: 'OTHER'
+} as const;
+
+export type LeaveRequestCreateRequestLeaveTypeEnum = typeof LeaveRequestCreateRequestLeaveTypeEnum[keyof typeof LeaveRequestCreateRequestLeaveTypeEnum];
+
+export interface LeaveRequestDecisionRequest {
+    'decisionNote'?: string;
+}
+export interface LeaveRequestResponse {
+    'id'?: number;
+    'workerId'?: number;
+    'workerName'?: string;
+    'leaveType'?: LeaveRequestResponseLeaveTypeEnum;
+    'startDate'?: string;
+    'endDate'?: string;
+    'reason'?: string;
+    'status'?: LeaveRequestResponseStatusEnum;
+    'decisionByUsername'?: string;
+    'decisionAt'?: string;
+    'decisionNote'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+
+export const LeaveRequestResponseLeaveTypeEnum = {
+    Annual: 'ANNUAL',
+    Sick: 'SICK',
+    Unpaid: 'UNPAID',
+    Other: 'OTHER'
+} as const;
+
+export type LeaveRequestResponseLeaveTypeEnum = typeof LeaveRequestResponseLeaveTypeEnum[keyof typeof LeaveRequestResponseLeaveTypeEnum];
+export const LeaveRequestResponseStatusEnum = {
+    Pending: 'PENDING',
+    Approved: 'APPROVED',
+    Rejected: 'REJECTED',
+    Cancelled: 'CANCELLED'
+} as const;
+
+export type LeaveRequestResponseStatusEnum = typeof LeaveRequestResponseStatusEnum[keyof typeof LeaveRequestResponseStatusEnum];
+
+export interface LeaveRequestUpdateRequest {
+    'startDate': string;
+    'endDate': string;
+    'reason'?: string;
+}
 export interface LineItemCreateRequest {
     'productCode': string;
     'productDescription': string;
@@ -1016,6 +1110,14 @@ export interface PagedModelAssetResponse {
 }
 export interface PagedModelJobResponse {
     'content'?: Array<JobResponse>;
+    'page'?: PageMetadata;
+}
+export interface PagedModelLeaveRequestResponse {
+    'content'?: Array<LeaveRequestResponse>;
+    'page'?: PageMetadata;
+}
+export interface PagedModelWorkerCertificateResponse {
+    'content'?: Array<WorkerCertificateResponse>;
     'page'?: PageMetadata;
 }
 export interface PasswordResetResponse {
@@ -1221,6 +1323,40 @@ export interface WorkerAssignedStepResponse {
     'assignedAssets'?: Array<AssetAssignmentResponse>;
     'jobAddress'?: AddressResponse;
 }
+export interface WorkerCertificateResponse {
+    'id'?: number;
+    'workerId'?: number;
+    'workerName'?: string;
+    'type'?: WorkerCertificateResponseTypeEnum;
+    'name'?: string;
+    'issuingAuthority'?: string;
+    'issueDate'?: string;
+    'expiryDate'?: string;
+    'daysUntilExpiry'?: number;
+    'expiringSoon'?: boolean;
+    'fileName'?: string;
+    'fileUrl'?: string;
+    'uploadedByUsername'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+
+export const WorkerCertificateResponseTypeEnum = {
+    License: 'LICENSE',
+    Safety: 'SAFETY',
+    TradeQualification: 'TRADE_QUALIFICATION',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+
+export type WorkerCertificateResponseTypeEnum = typeof WorkerCertificateResponseTypeEnum[keyof typeof WorkerCertificateResponseTypeEnum];
+
+export interface WorkerCertificateUpdateRequest {
+    'name'?: string;
+    'issuingAuthority'?: string;
+    'issueDate'?: string;
+    'expiryDate'?: string;
+}
 export interface WorkerCreateRequest {
     'name': string;
     'initials'?: string;
@@ -1275,6 +1411,22 @@ export interface WorkerPasswordResetRequest {
     'newPassword': string;
     'newUsername'?: string;
 }
+export interface WorkerProfileResponse {
+    'id'?: number;
+    'workerRef'?: number;
+    'name'?: string;
+    'initials'?: string;
+    'telephone'?: string;
+    'mobile'?: string;
+    'email'?: string;
+    'username'?: string;
+    'photoUrl'?: string;
+    'createdAt'?: string;
+    'updatedAt'?: string;
+}
+export interface WorkerRateUpdateRequest {
+    'hourlyRate': number;
+}
 export interface WorkerResponse {
     'id'?: number;
     'workerRef'?: number;
@@ -1284,6 +1436,8 @@ export interface WorkerResponse {
     'mobile'?: string;
     'email'?: string;
     'username'?: string;
+    'photoUrl'?: string;
+    'hourlyRate'?: number;
     'loginLocked'?: boolean;
     'archived'?: boolean;
     'createdAt'?: string;
@@ -1310,6 +1464,13 @@ export interface WorkerUpdateRequest {
     'telephone'?: string;
     'mobile'?: string;
     'email': string;
+}
+export interface WorkerWeeklyHoursResponse {
+    'workerId'?: number;
+    'weekStart'?: string;
+    'weekEnd'?: string;
+    'totalHours'?: number;
+    'hasOpenVisit'?: boolean;
 }
 export interface WorkflowBulkUpdateRequest {
     'name'?: string;
@@ -4793,6 +4954,456 @@ export const CompanyUploadDocumentTypeEnum = {
     Other: 'OTHER'
 } as const;
 export type CompanyUploadDocumentTypeEnum = typeof CompanyUploadDocumentTypeEnum[keyof typeof CompanyUploadDocumentTypeEnum];
+
+
+/**
+ * CompanyLeaveRequestsApi - axios parameter creator
+ */
+export const CompanyLeaveRequestsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Approve a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} [leaveRequestDecisionRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestApproveLeaveRequest: async (id: number, leaveRequestDecisionRequest?: LeaveRequestDecisionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyLeaveRequestApproveLeaveRequest', 'id', id)
+            const localVarPath = `/api/v1/workers/leave-requests/{id}/approve`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(leaveRequestDecisionRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get approved leave calendar company-wide for a date range
+         * @param {string} from 
+         * @param {string} to 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestGetLeaveCalendar: async (from: string, to: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'from' is not null or undefined
+            assertParamExists('companyLeaveRequestGetLeaveCalendar', 'from', from)
+            // verify required parameter 'to' is not null or undefined
+            assertParamExists('companyLeaveRequestGetLeaveCalendar', 'to', to)
+            const localVarPath = `/api/v1/workers/leave-requests/calendar`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (from !== undefined) {
+                localVarQueryParameter['from'] = (from as any instanceof Date) ?
+                    (from as any).toISOString().substring(0,10) :
+                    from;
+            }
+
+            if (to !== undefined) {
+                localVarQueryParameter['to'] = (to as any instanceof Date) ?
+                    (to as any).toISOString().substring(0,10) :
+                    to;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get a single leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestGetLeaveRequest: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyLeaveRequestGetLeaveRequest', 'id', id)
+            const localVarPath = `/api/v1/workers/leave-requests/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List leave requests company-wide, optionally filtered by status
+         * @param {CompanyLeaveRequestListLeaveRequestsStatusEnum} [status] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestListLeaveRequests: async (status?: CompanyLeaveRequestListLeaveRequestsStatusEnum, page?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/workers/leave-requests`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Reject a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} leaveRequestDecisionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestRejectLeaveRequest: async (id: number, leaveRequestDecisionRequest: LeaveRequestDecisionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyLeaveRequestRejectLeaveRequest', 'id', id)
+            // verify required parameter 'leaveRequestDecisionRequest' is not null or undefined
+            assertParamExists('companyLeaveRequestRejectLeaveRequest', 'leaveRequestDecisionRequest', leaveRequestDecisionRequest)
+            const localVarPath = `/api/v1/workers/leave-requests/{id}/reject`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(leaveRequestDecisionRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * CompanyLeaveRequestsApi - functional programming interface
+ */
+export const CompanyLeaveRequestsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = CompanyLeaveRequestsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Approve a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} [leaveRequestDecisionRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyLeaveRequestApproveLeaveRequest(id: number, leaveRequestDecisionRequest?: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyLeaveRequestApproveLeaveRequest(id, leaveRequestDecisionRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyLeaveRequestsApi.companyLeaveRequestApproveLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get approved leave calendar company-wide for a date range
+         * @param {string} from 
+         * @param {string} to 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyLeaveRequestGetLeaveCalendar(from: string, to: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LeaveCalendarEntryResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyLeaveRequestGetLeaveCalendar(from, to, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyLeaveRequestsApi.companyLeaveRequestGetLeaveCalendar']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get a single leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyLeaveRequestGetLeaveRequest(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyLeaveRequestGetLeaveRequest(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyLeaveRequestsApi.companyLeaveRequestGetLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List leave requests company-wide, optionally filtered by status
+         * @param {CompanyLeaveRequestListLeaveRequestsStatusEnum} [status] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyLeaveRequestListLeaveRequests(status?: CompanyLeaveRequestListLeaveRequestsStatusEnum, page?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelLeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyLeaveRequestListLeaveRequests(status, page, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyLeaveRequestsApi.companyLeaveRequestListLeaveRequests']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Reject a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} leaveRequestDecisionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyLeaveRequestRejectLeaveRequest(id: number, leaveRequestDecisionRequest: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyLeaveRequestRejectLeaveRequest(id, leaveRequestDecisionRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyLeaveRequestsApi.companyLeaveRequestRejectLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * CompanyLeaveRequestsApi - factory interface
+ */
+export const CompanyLeaveRequestsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = CompanyLeaveRequestsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Approve a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} [leaveRequestDecisionRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestApproveLeaveRequest(id: number, leaveRequestDecisionRequest?: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.companyLeaveRequestApproveLeaveRequest(id, leaveRequestDecisionRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get approved leave calendar company-wide for a date range
+         * @param {string} from 
+         * @param {string} to 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestGetLeaveCalendar(from: string, to: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<LeaveCalendarEntryResponse>> {
+            return localVarFp.companyLeaveRequestGetLeaveCalendar(from, to, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get a single leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestGetLeaveRequest(id: number, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.companyLeaveRequestGetLeaveRequest(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List leave requests company-wide, optionally filtered by status
+         * @param {CompanyLeaveRequestListLeaveRequestsStatusEnum} [status] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestListLeaveRequests(status?: CompanyLeaveRequestListLeaveRequestsStatusEnum, page?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelLeaveRequestResponse> {
+            return localVarFp.companyLeaveRequestListLeaveRequests(status, page, size, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Reject a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestDecisionRequest} leaveRequestDecisionRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyLeaveRequestRejectLeaveRequest(id: number, leaveRequestDecisionRequest: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.companyLeaveRequestRejectLeaveRequest(id, leaveRequestDecisionRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * CompanyLeaveRequestsApi - object-oriented interface
+ */
+export class CompanyLeaveRequestsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Approve a pending leave request
+     * @param {number} id 
+     * @param {LeaveRequestDecisionRequest} [leaveRequestDecisionRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyLeaveRequestApproveLeaveRequest(id: number, leaveRequestDecisionRequest?: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig) {
+        return CompanyLeaveRequestsApiFp(this.configuration).companyLeaveRequestApproveLeaveRequest(id, leaveRequestDecisionRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get approved leave calendar company-wide for a date range
+     * @param {string} from 
+     * @param {string} to 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyLeaveRequestGetLeaveCalendar(from: string, to: string, options?: RawAxiosRequestConfig) {
+        return CompanyLeaveRequestsApiFp(this.configuration).companyLeaveRequestGetLeaveCalendar(from, to, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get a single leave request
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyLeaveRequestGetLeaveRequest(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyLeaveRequestsApiFp(this.configuration).companyLeaveRequestGetLeaveRequest(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List leave requests company-wide, optionally filtered by status
+     * @param {CompanyLeaveRequestListLeaveRequestsStatusEnum} [status] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyLeaveRequestListLeaveRequests(status?: CompanyLeaveRequestListLeaveRequestsStatusEnum, page?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return CompanyLeaveRequestsApiFp(this.configuration).companyLeaveRequestListLeaveRequests(status, page, size, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Reject a pending leave request
+     * @param {number} id 
+     * @param {LeaveRequestDecisionRequest} leaveRequestDecisionRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyLeaveRequestRejectLeaveRequest(id: number, leaveRequestDecisionRequest: LeaveRequestDecisionRequest, options?: RawAxiosRequestConfig) {
+        return CompanyLeaveRequestsApiFp(this.configuration).companyLeaveRequestRejectLeaveRequest(id, leaveRequestDecisionRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+export const CompanyLeaveRequestListLeaveRequestsStatusEnum = {
+    Pending: 'PENDING',
+    Approved: 'APPROVED',
+    Rejected: 'REJECTED',
+    Cancelled: 'CANCELLED'
+} as const;
+export type CompanyLeaveRequestListLeaveRequestsStatusEnum = typeof CompanyLeaveRequestListLeaveRequestsStatusEnum[keyof typeof CompanyLeaveRequestListLeaveRequestsStatusEnum];
 
 
 /**
@@ -10279,6 +10890,1123 @@ export class SubscriptionApi extends BaseAPI {
 
 
 /**
+ * WorkerAssetsApi - axios parameter creator
+ */
+export const WorkerAssetsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Get full details of a specific assigned asset
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetGetAssignedAssetDetails: async (assetId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assetId' is not null or undefined
+            assertParamExists('workerAssetGetAssignedAssetDetails', 'assetId', assetId)
+            const localVarPath = `/api/v1/worker/assets/{assetId}`
+                .replace(`{${"assetId"}}`, encodeURIComponent(String(assetId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get all active assets assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetGetMyAssignedAssets: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/assets`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Update the physical address of an assigned asset
+         * @param {number} assignmentId 
+         * @param {AddressRequest} addressRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetUpdateAssetAddress: async (assignmentId: number, addressRequest: AddressRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'assignmentId' is not null or undefined
+            assertParamExists('workerAssetUpdateAssetAddress', 'assignmentId', assignmentId)
+            // verify required parameter 'addressRequest' is not null or undefined
+            assertParamExists('workerAssetUpdateAssetAddress', 'addressRequest', addressRequest)
+            const localVarPath = `/api/v1/worker/assets/assignments/{assignmentId}/address`
+                .replace(`{${"assignmentId"}}`, encodeURIComponent(String(assignmentId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(addressRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerAssetsApi - functional programming interface
+ */
+export const WorkerAssetsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerAssetsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Get full details of a specific assigned asset
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerAssetGetAssignedAssetDetails(assetId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerAssetGetAssignedAssetDetails(assetId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerAssetsApi.workerAssetGetAssignedAssetDetails']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get all active assets assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerAssetGetMyAssignedAssets(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<AssetAssignmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerAssetGetMyAssignedAssets(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerAssetsApi.workerAssetGetMyAssignedAssets']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Update the physical address of an assigned asset
+         * @param {number} assignmentId 
+         * @param {AddressRequest} addressRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerAssetUpdateAssetAddress(assignmentId: number, addressRequest: AddressRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetAssignmentResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerAssetUpdateAssetAddress(assignmentId, addressRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerAssetsApi.workerAssetUpdateAssetAddress']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerAssetsApi - factory interface
+ */
+export const WorkerAssetsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerAssetsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Get full details of a specific assigned asset
+         * @param {number} assetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetGetAssignedAssetDetails(assetId: number, options?: RawAxiosRequestConfig): AxiosPromise<AssetResponse> {
+            return localVarFp.workerAssetGetAssignedAssetDetails(assetId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get all active assets assigned to the current worker
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetGetMyAssignedAssets(options?: RawAxiosRequestConfig): AxiosPromise<Array<AssetAssignmentResponse>> {
+            return localVarFp.workerAssetGetMyAssignedAssets(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Update the physical address of an assigned asset
+         * @param {number} assignmentId 
+         * @param {AddressRequest} addressRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerAssetUpdateAssetAddress(assignmentId: number, addressRequest: AddressRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetAssignmentResponse> {
+            return localVarFp.workerAssetUpdateAssetAddress(assignmentId, addressRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerAssetsApi - object-oriented interface
+ */
+export class WorkerAssetsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Get full details of a specific assigned asset
+     * @param {number} assetId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerAssetGetAssignedAssetDetails(assetId: number, options?: RawAxiosRequestConfig) {
+        return WorkerAssetsApiFp(this.configuration).workerAssetGetAssignedAssetDetails(assetId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get all active assets assigned to the current worker
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerAssetGetMyAssignedAssets(options?: RawAxiosRequestConfig) {
+        return WorkerAssetsApiFp(this.configuration).workerAssetGetMyAssignedAssets(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update the physical address of an assigned asset
+     * @param {number} assignmentId 
+     * @param {AddressRequest} addressRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerAssetUpdateAssetAddress(assignmentId: number, addressRequest: AddressRequest, options?: RawAxiosRequestConfig) {
+        return WorkerAssetsApiFp(this.configuration).workerAssetUpdateAssetAddress(assignmentId, addressRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * WorkerCertificatesApi - axios parameter creator
+ */
+export const WorkerCertificatesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Delete a worker\'s certificate
+         * @param {number} workerId 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateDeleteCertificate: async (workerId: number, id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workerId' is not null or undefined
+            assertParamExists('workerCertificateDeleteCertificate', 'workerId', workerId)
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerCertificateDeleteCertificate', 'id', id)
+            const localVarPath = `/api/v1/workers/{workerId}/certificates/{id}`
+                .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)))
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List certificates for a specific worker
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateGetCertificatesForWorker: async (workerId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workerId' is not null or undefined
+            assertParamExists('workerCertificateGetCertificatesForWorker', 'workerId', workerId)
+            const localVarPath = `/api/v1/workers/{workerId}/certificates`
+                .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List certificates expiring within N days, company-wide
+         * @param {number} [days] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateGetExpiringCertificates: async (days?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/workers/certificates/expiring`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (days !== undefined) {
+                localVarQueryParameter['days'] = days;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List all certificates company-wide, paginated
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateListCompanyCertificates: async (page?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/workers/certificates`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Upload a certificate on behalf of a worker
+         * @param {number} workerId 
+         * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateUploadCertificateForWorker: async (workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'workerId' is not null or undefined
+            assertParamExists('workerCertificateUploadCertificateForWorker', 'workerId', workerId)
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('workerCertificateUploadCertificateForWorker', 'type', type)
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('workerCertificateUploadCertificateForWorker', 'name', name)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('workerCertificateUploadCertificateForWorker', 'file', file)
+            const localVarPath = `/api/v1/workers/{workerId}/certificates`
+                .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (name !== undefined) {
+                localVarQueryParameter['name'] = name;
+            }
+
+            if (issuingAuthority !== undefined) {
+                localVarQueryParameter['issuingAuthority'] = issuingAuthority;
+            }
+
+            if (issueDate !== undefined) {
+                localVarQueryParameter['issueDate'] = (issueDate as any instanceof Date) ?
+                    (issueDate as any).toISOString().substring(0,10) :
+                    issueDate;
+            }
+
+            if (expiryDate !== undefined) {
+                localVarQueryParameter['expiryDate'] = (expiryDate as any instanceof Date) ?
+                    (expiryDate as any).toISOString().substring(0,10) :
+                    expiryDate;
+            }
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerCertificatesApi - functional programming interface
+ */
+export const WorkerCertificatesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerCertificatesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Delete a worker\'s certificate
+         * @param {number} workerId 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateDeleteCertificate(workerId: number, id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateDeleteCertificate(workerId, id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateDeleteCertificate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List certificates for a specific worker
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateGetCertificatesForWorker(workerId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerCertificateResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateGetCertificatesForWorker(workerId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateGetCertificatesForWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List certificates expiring within N days, company-wide
+         * @param {number} [days] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateGetExpiringCertificates(days?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ExpiringCertificateResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateGetExpiringCertificates(days, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateGetExpiringCertificates']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List all certificates company-wide, paginated
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateListCompanyCertificates(page?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelWorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateListCompanyCertificates(page, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateListCompanyCertificates']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Upload a certificate on behalf of a worker
+         * @param {number} workerId 
+         * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateUploadCertificateForWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerCertificatesApi - factory interface
+ */
+export const WorkerCertificatesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerCertificatesApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Delete a worker\'s certificate
+         * @param {number} workerId 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateDeleteCertificate(workerId: number, id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workerCertificateDeleteCertificate(workerId, id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List certificates for a specific worker
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateGetCertificatesForWorker(workerId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerCertificateResponse>> {
+            return localVarFp.workerCertificateGetCertificatesForWorker(workerId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List certificates expiring within N days, company-wide
+         * @param {number} [days] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateGetExpiringCertificates(days?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<ExpiringCertificateResponse>> {
+            return localVarFp.workerCertificateGetExpiringCertificates(days, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List all certificates company-wide, paginated
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateListCompanyCertificates(page?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelWorkerCertificateResponse> {
+            return localVarFp.workerCertificateListCompanyCertificates(page, size, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Upload a certificate on behalf of a worker
+         * @param {number} workerId 
+         * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
+            return localVarFp.workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerCertificatesApi - object-oriented interface
+ */
+export class WorkerCertificatesApi extends BaseAPI {
+    /**
+     * 
+     * @summary Delete a worker\'s certificate
+     * @param {number} workerId 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateDeleteCertificate(workerId: number, id: number, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateDeleteCertificate(workerId, id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List certificates for a specific worker
+     * @param {number} workerId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateGetCertificatesForWorker(workerId: number, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateGetCertificatesForWorker(workerId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List certificates expiring within N days, company-wide
+     * @param {number} [days] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateGetExpiringCertificates(days?: number, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateGetExpiringCertificates(days, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List all certificates company-wide, paginated
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateListCompanyCertificates(page?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateListCompanyCertificates(page, size, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Upload a certificate on behalf of a worker
+     * @param {number} workerId 
+     * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
+     * @param {string} name 
+     * @param {File} file 
+     * @param {string} [issuingAuthority] 
+     * @param {string} [issueDate] 
+     * @param {string} [expiryDate] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+export const WorkerCertificateUploadCertificateForWorkerTypeEnum = {
+    License: 'LICENSE',
+    Safety: 'SAFETY',
+    TradeQualification: 'TRADE_QUALIFICATION',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+export type WorkerCertificateUploadCertificateForWorkerTypeEnum = typeof WorkerCertificateUploadCertificateForWorkerTypeEnum[keyof typeof WorkerCertificateUploadCertificateForWorkerTypeEnum];
+
+
+/**
+ * WorkerCertificatesSelfServiceApi - axios parameter creator
+ */
+export const WorkerCertificatesSelfServiceApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Delete an own certificate
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfDeleteOwnCertificate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerCertificateSelfDeleteOwnCertificate', 'id', id)
+            const localVarPath = `/api/v1/worker/certificates/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List the current worker\'s certificates
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfGetOwnCertificates: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/certificates`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Update metadata of an own certificate
+         * @param {number} id 
+         * @param {WorkerCertificateUpdateRequest} workerCertificateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfUpdateOwnCertificate: async (id: number, workerCertificateUpdateRequest: WorkerCertificateUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerCertificateSelfUpdateOwnCertificate', 'id', id)
+            // verify required parameter 'workerCertificateUpdateRequest' is not null or undefined
+            assertParamExists('workerCertificateSelfUpdateOwnCertificate', 'workerCertificateUpdateRequest', workerCertificateUpdateRequest)
+            const localVarPath = `/api/v1/worker/certificates/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(workerCertificateUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Upload a certificate for the current worker
+         * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfUploadOwnCertificate: async (type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'type' is not null or undefined
+            assertParamExists('workerCertificateSelfUploadOwnCertificate', 'type', type)
+            // verify required parameter 'name' is not null or undefined
+            assertParamExists('workerCertificateSelfUploadOwnCertificate', 'name', name)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('workerCertificateSelfUploadOwnCertificate', 'file', file)
+            const localVarPath = `/api/v1/worker/certificates`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (name !== undefined) {
+                localVarQueryParameter['name'] = name;
+            }
+
+            if (issuingAuthority !== undefined) {
+                localVarQueryParameter['issuingAuthority'] = issuingAuthority;
+            }
+
+            if (issueDate !== undefined) {
+                localVarQueryParameter['issueDate'] = (issueDate as any instanceof Date) ?
+                    (issueDate as any).toISOString().substring(0,10) :
+                    issueDate;
+            }
+
+            if (expiryDate !== undefined) {
+                localVarQueryParameter['expiryDate'] = (expiryDate as any instanceof Date) ?
+                    (expiryDate as any).toISOString().substring(0,10) :
+                    expiryDate;
+            }
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerCertificatesSelfServiceApi - functional programming interface
+ */
+export const WorkerCertificatesSelfServiceApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerCertificatesSelfServiceApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Delete an own certificate
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateSelfDeleteOwnCertificate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfDeleteOwnCertificate(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfDeleteOwnCertificate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List the current worker\'s certificates
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateSelfGetOwnCertificates(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<WorkerCertificateResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfGetOwnCertificates(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfGetOwnCertificates']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Update metadata of an own certificate
+         * @param {number} id 
+         * @param {WorkerCertificateUpdateRequest} workerCertificateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateSelfUpdateOwnCertificate(id: number, workerCertificateUpdateRequest: WorkerCertificateUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfUpdateOwnCertificate(id, workerCertificateUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfUpdateOwnCertificate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Upload a certificate for the current worker
+         * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfUploadOwnCertificate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerCertificatesSelfServiceApi - factory interface
+ */
+export const WorkerCertificatesSelfServiceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerCertificatesSelfServiceApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Delete an own certificate
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfDeleteOwnCertificate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workerCertificateSelfDeleteOwnCertificate(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List the current worker\'s certificates
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfGetOwnCertificates(options?: RawAxiosRequestConfig): AxiosPromise<Array<WorkerCertificateResponse>> {
+            return localVarFp.workerCertificateSelfGetOwnCertificates(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Update metadata of an own certificate
+         * @param {number} id 
+         * @param {WorkerCertificateUpdateRequest} workerCertificateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfUpdateOwnCertificate(id: number, workerCertificateUpdateRequest: WorkerCertificateUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
+            return localVarFp.workerCertificateSelfUpdateOwnCertificate(id, workerCertificateUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Upload a certificate for the current worker
+         * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
+         * @param {string} name 
+         * @param {File} file 
+         * @param {string} [issuingAuthority] 
+         * @param {string} [issueDate] 
+         * @param {string} [expiryDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
+            return localVarFp.workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerCertificatesSelfServiceApi - object-oriented interface
+ */
+export class WorkerCertificatesSelfServiceApi extends BaseAPI {
+    /**
+     * 
+     * @summary Delete an own certificate
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateSelfDeleteOwnCertificate(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfDeleteOwnCertificate(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List the current worker\'s certificates
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateSelfGetOwnCertificates(options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfGetOwnCertificates(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update metadata of an own certificate
+     * @param {number} id 
+     * @param {WorkerCertificateUpdateRequest} workerCertificateUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateSelfUpdateOwnCertificate(id: number, workerCertificateUpdateRequest: WorkerCertificateUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfUpdateOwnCertificate(id, workerCertificateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Upload a certificate for the current worker
+     * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
+     * @param {string} name 
+     * @param {File} file 
+     * @param {string} [issuingAuthority] 
+     * @param {string} [issueDate] 
+     * @param {string} [expiryDate] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+export const WorkerCertificateSelfUploadOwnCertificateTypeEnum = {
+    License: 'LICENSE',
+    Safety: 'SAFETY',
+    TradeQualification: 'TRADE_QUALIFICATION',
+    Insurance: 'INSURANCE',
+    Other: 'OTHER'
+} as const;
+export type WorkerCertificateSelfUploadOwnCertificateTypeEnum = typeof WorkerCertificateSelfUploadOwnCertificateTypeEnum[keyof typeof WorkerCertificateSelfUploadOwnCertificateTypeEnum];
+
+
+/**
  * WorkerJobWorkflowsApi - axios parameter creator
  */
 export const WorkerJobWorkflowsApiAxiosParamCreator = function (configuration?: Configuration) {
@@ -11437,6 +13165,655 @@ export type WorkerJobWorkflowUploadAttachmentTypeEnum = typeof WorkerJobWorkflow
 
 
 /**
+ * WorkerLeaveRequestsSelfServiceApi - axios parameter creator
+ */
+export const WorkerLeaveRequestsSelfServiceApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Cancel a pending leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfCancelOwnLeaveRequest: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerLeaveRequestSelfCancelOwnLeaveRequest', 'id', id)
+            const localVarPath = `/api/v1/worker/leave-requests/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get a single own leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfGetOwnLeaveRequest: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerLeaveRequestSelfGetOwnLeaveRequest', 'id', id)
+            const localVarPath = `/api/v1/worker/leave-requests/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary List the current worker\'s leave requests
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfGetOwnLeaveRequests: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/leave-requests`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Submit a leave request
+         * @param {LeaveRequestCreateRequest} leaveRequestCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfSubmitLeaveRequest: async (leaveRequestCreateRequest: LeaveRequestCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'leaveRequestCreateRequest' is not null or undefined
+            assertParamExists('workerLeaveRequestSelfSubmitLeaveRequest', 'leaveRequestCreateRequest', leaveRequestCreateRequest)
+            const localVarPath = `/api/v1/worker/leave-requests`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(leaveRequestCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Edit a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestUpdateRequest} leaveRequestUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfUpdateOwnLeaveRequest: async (id: number, leaveRequestUpdateRequest: LeaveRequestUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerLeaveRequestSelfUpdateOwnLeaveRequest', 'id', id)
+            // verify required parameter 'leaveRequestUpdateRequest' is not null or undefined
+            assertParamExists('workerLeaveRequestSelfUpdateOwnLeaveRequest', 'leaveRequestUpdateRequest', leaveRequestUpdateRequest)
+            const localVarPath = `/api/v1/worker/leave-requests/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(leaveRequestUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerLeaveRequestsSelfServiceApi - functional programming interface
+ */
+export const WorkerLeaveRequestsSelfServiceApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerLeaveRequestsSelfServiceApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Cancel a pending leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerLeaveRequestSelfCancelOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerLeaveRequestSelfCancelOwnLeaveRequest(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerLeaveRequestsSelfServiceApi.workerLeaveRequestSelfCancelOwnLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get a single own leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerLeaveRequestSelfGetOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerLeaveRequestSelfGetOwnLeaveRequest(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerLeaveRequestsSelfServiceApi.workerLeaveRequestSelfGetOwnLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary List the current worker\'s leave requests
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerLeaveRequestSelfGetOwnLeaveRequests(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<LeaveRequestResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerLeaveRequestSelfGetOwnLeaveRequests(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerLeaveRequestsSelfServiceApi.workerLeaveRequestSelfGetOwnLeaveRequests']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Submit a leave request
+         * @param {LeaveRequestCreateRequest} leaveRequestCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest: LeaveRequestCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerLeaveRequestsSelfServiceApi.workerLeaveRequestSelfSubmitLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Edit a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestUpdateRequest} leaveRequestUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerLeaveRequestSelfUpdateOwnLeaveRequest(id: number, leaveRequestUpdateRequest: LeaveRequestUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LeaveRequestResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerLeaveRequestSelfUpdateOwnLeaveRequest(id, leaveRequestUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerLeaveRequestsSelfServiceApi.workerLeaveRequestSelfUpdateOwnLeaveRequest']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerLeaveRequestsSelfServiceApi - factory interface
+ */
+export const WorkerLeaveRequestsSelfServiceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerLeaveRequestsSelfServiceApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Cancel a pending leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfCancelOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.workerLeaveRequestSelfCancelOwnLeaveRequest(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get a single own leave request
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfGetOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.workerLeaveRequestSelfGetOwnLeaveRequest(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary List the current worker\'s leave requests
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfGetOwnLeaveRequests(options?: RawAxiosRequestConfig): AxiosPromise<Array<LeaveRequestResponse>> {
+            return localVarFp.workerLeaveRequestSelfGetOwnLeaveRequests(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Submit a leave request
+         * @param {LeaveRequestCreateRequest} leaveRequestCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest: LeaveRequestCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Edit a pending leave request
+         * @param {number} id 
+         * @param {LeaveRequestUpdateRequest} leaveRequestUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerLeaveRequestSelfUpdateOwnLeaveRequest(id: number, leaveRequestUpdateRequest: LeaveRequestUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<LeaveRequestResponse> {
+            return localVarFp.workerLeaveRequestSelfUpdateOwnLeaveRequest(id, leaveRequestUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerLeaveRequestsSelfServiceApi - object-oriented interface
+ */
+export class WorkerLeaveRequestsSelfServiceApi extends BaseAPI {
+    /**
+     * 
+     * @summary Cancel a pending leave request
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerLeaveRequestSelfCancelOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerLeaveRequestsSelfServiceApiFp(this.configuration).workerLeaveRequestSelfCancelOwnLeaveRequest(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get a single own leave request
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerLeaveRequestSelfGetOwnLeaveRequest(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerLeaveRequestsSelfServiceApiFp(this.configuration).workerLeaveRequestSelfGetOwnLeaveRequest(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary List the current worker\'s leave requests
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerLeaveRequestSelfGetOwnLeaveRequests(options?: RawAxiosRequestConfig) {
+        return WorkerLeaveRequestsSelfServiceApiFp(this.configuration).workerLeaveRequestSelfGetOwnLeaveRequests(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Submit a leave request
+     * @param {LeaveRequestCreateRequest} leaveRequestCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest: LeaveRequestCreateRequest, options?: RawAxiosRequestConfig) {
+        return WorkerLeaveRequestsSelfServiceApiFp(this.configuration).workerLeaveRequestSelfSubmitLeaveRequest(leaveRequestCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Edit a pending leave request
+     * @param {number} id 
+     * @param {LeaveRequestUpdateRequest} leaveRequestUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerLeaveRequestSelfUpdateOwnLeaveRequest(id: number, leaveRequestUpdateRequest: LeaveRequestUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkerLeaveRequestsSelfServiceApiFp(this.configuration).workerLeaveRequestSelfUpdateOwnLeaveRequest(id, leaveRequestUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * WorkerProfileSelfServiceApi - axios parameter creator
+ */
+export const WorkerProfileSelfServiceApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Get the current worker\'s own profile
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfGetOwnProfile: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/profile`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get the current worker\'s total worked hours for a given week
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfGetOwnWeeklyHours: async (date?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/profile/hours/weekly`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (date !== undefined) {
+                localVarQueryParameter['date'] = (date as any instanceof Date) ?
+                    (date as any).toISOString().substring(0,10) :
+                    date;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Upload/replace the current worker\'s own profile photo
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfUploadOwnPhoto: async (file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('workerProfileSelfUploadOwnPhoto', 'file', file)
+            const localVarPath = `/api/v1/worker/profile/photo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerProfileSelfServiceApi - functional programming interface
+ */
+export const WorkerProfileSelfServiceApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerProfileSelfServiceApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Get the current worker\'s own profile
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerProfileSelfGetOwnProfile(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerProfileSelfGetOwnProfile(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerProfileSelfServiceApi.workerProfileSelfGetOwnProfile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get the current worker\'s total worked hours for a given week
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerProfileSelfGetOwnWeeklyHours(date?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerWeeklyHoursResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerProfileSelfGetOwnWeeklyHours(date, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerProfileSelfServiceApi.workerProfileSelfGetOwnWeeklyHours']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Upload/replace the current worker\'s own profile photo
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerProfileSelfUploadOwnPhoto(file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerProfileSelfUploadOwnPhoto(file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerProfileSelfServiceApi.workerProfileSelfUploadOwnPhoto']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerProfileSelfServiceApi - factory interface
+ */
+export const WorkerProfileSelfServiceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerProfileSelfServiceApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Get the current worker\'s own profile
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfGetOwnProfile(options?: RawAxiosRequestConfig): AxiosPromise<WorkerProfileResponse> {
+            return localVarFp.workerProfileSelfGetOwnProfile(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get the current worker\'s total worked hours for a given week
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfGetOwnWeeklyHours(date?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerWeeklyHoursResponse> {
+            return localVarFp.workerProfileSelfGetOwnWeeklyHours(date, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Upload/replace the current worker\'s own profile photo
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerProfileSelfUploadOwnPhoto(file: File, options?: RawAxiosRequestConfig): AxiosPromise<WorkerProfileResponse> {
+            return localVarFp.workerProfileSelfUploadOwnPhoto(file, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerProfileSelfServiceApi - object-oriented interface
+ */
+export class WorkerProfileSelfServiceApi extends BaseAPI {
+    /**
+     * 
+     * @summary Get the current worker\'s own profile
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerProfileSelfGetOwnProfile(options?: RawAxiosRequestConfig) {
+        return WorkerProfileSelfServiceApiFp(this.configuration).workerProfileSelfGetOwnProfile(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get the current worker\'s total worked hours for a given week
+     * @param {string} [date] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerProfileSelfGetOwnWeeklyHours(date?: string, options?: RawAxiosRequestConfig) {
+        return WorkerProfileSelfServiceApiFp(this.configuration).workerProfileSelfGetOwnWeeklyHours(date, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Upload/replace the current worker\'s own profile photo
+     * @param {File} file 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerProfileSelfUploadOwnPhoto(file: File, options?: RawAxiosRequestConfig) {
+        return WorkerProfileSelfServiceApiFp(this.configuration).workerProfileSelfUploadOwnPhoto(file, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * WorkersApi - axios parameter creator
  */
 export const WorkersApiAxiosParamCreator = function (configuration?: Configuration) {
@@ -11623,6 +14000,50 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @param {number} id 
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerGetWeeklyHoursForWorker: async (id: number, date?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerGetWeeklyHoursForWorker', 'id', id)
+            const localVarPath = `/api/v1/workers/{id}/hours/weekly`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (date !== undefined) {
+                localVarQueryParameter['date'] = (date as any instanceof Date) ?
+                    (date as any).toISOString().substring(0,10) :
+                    date;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -11785,6 +14206,49 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * 
          * @param {number} id 
+         * @param {WorkerRateUpdateRequest} workerRateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerUpdateHourlyRate: async (id: number, workerRateUpdateRequest: WorkerRateUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerUpdateHourlyRate', 'id', id)
+            // verify required parameter 'workerRateUpdateRequest' is not null or undefined
+            assertParamExists('workerUpdateHourlyRate', 'workerRateUpdateRequest', workerRateUpdateRequest)
+            const localVarPath = `/api/v1/workers/{id}/rate`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(workerRateUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {WorkerUpdateRequest} workerUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11819,6 +14283,54 @@ export const WorkersApiAxiosParamCreator = function (configuration?: Configurati
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(workerUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerUploadPhotoForWorker: async (id: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerUploadPhotoForWorker', 'id', id)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('workerUploadPhotoForWorker', 'file', file)
+            const localVarPath = `/api/v1/workers/{id}/photo`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -11895,6 +14407,19 @@ export const WorkersApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {number} id 
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerGetWeeklyHoursForWorker(id: number, date?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerWeeklyHoursResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerGetWeeklyHoursForWorker(id, date, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerGetWeeklyHoursForWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -11945,6 +14470,19 @@ export const WorkersApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {number} id 
+         * @param {WorkerRateUpdateRequest} workerRateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerUpdateHourlyRate(id: number, workerRateUpdateRequest: WorkerRateUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerUpdateHourlyRate(id, workerRateUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerUpdateHourlyRate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {WorkerUpdateRequest} workerUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11953,6 +14491,19 @@ export const WorkersApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.workerUpdateWorker(id, workerUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerUpdateWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerUploadPhotoForWorker(id: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerUploadPhotoForWorker(id, file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkersApi.workerUploadPhotoForWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -12010,6 +14561,16 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @param {number} id 
+         * @param {string} [date] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerGetWeeklyHoursForWorker(id: number, date?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerWeeklyHoursResponse> {
+            return localVarFp.workerGetWeeklyHoursForWorker(id, date, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -12048,12 +14609,32 @@ export const WorkersApiFactory = function (configuration?: Configuration, basePa
         /**
          * 
          * @param {number} id 
+         * @param {WorkerRateUpdateRequest} workerRateUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerUpdateHourlyRate(id: number, workerRateUpdateRequest: WorkerRateUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerUpdateHourlyRate(id, workerRateUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
          * @param {WorkerUpdateRequest} workerUpdateRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         workerUpdateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
             return localVarFp.workerUpdateWorker(id, workerUpdateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerUploadPhotoForWorker(id: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<WorkerResponse> {
+            return localVarFp.workerUploadPhotoForWorker(id, file, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -12113,6 +14694,17 @@ export class WorkersApi extends BaseAPI {
     /**
      * 
      * @param {number} id 
+     * @param {string} [date] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerGetWeeklyHoursForWorker(id: number, date?: string, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerGetWeeklyHoursForWorker(id, date, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
@@ -12155,12 +14747,34 @@ export class WorkersApi extends BaseAPI {
     /**
      * 
      * @param {number} id 
+     * @param {WorkerRateUpdateRequest} workerRateUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerUpdateHourlyRate(id: number, workerRateUpdateRequest: WorkerRateUpdateRequest, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerUpdateHourlyRate(id, workerRateUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
      * @param {WorkerUpdateRequest} workerUpdateRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     public workerUpdateWorker(id: number, workerUpdateRequest: WorkerUpdateRequest, options?: RawAxiosRequestConfig) {
         return WorkersApiFp(this.configuration).workerUpdateWorker(id, workerUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {File} file 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerUploadPhotoForWorker(id: number, file: File, options?: RawAxiosRequestConfig) {
+        return WorkersApiFp(this.configuration).workerUploadPhotoForWorker(id, file, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
