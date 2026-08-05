@@ -1,0 +1,1 @@
+export { WorkerAssets } from './WorkerAssets';

@@ -1,6 +1,7 @@
 import {
   AssetsApi,
   AssetAssignmentsApi,
+  WorkerAssetsApi,
   Configuration,
   AssetResponseLocationTypeEnum,
   AssetAssignmentCreateRequestExplicitLocationTypeEnum,
@@ -48,6 +49,11 @@ function getAssetApi(): AssetsApi {
 function getAssetAssignmentApi(): AssetAssignmentsApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
   return new AssetAssignmentsApi(config, env.apiBaseUrl, axiosInstance);
+}
+
+function getWorkerAssetSelfApi(): WorkerAssetsApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new WorkerAssetsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 export const assetService = {
@@ -105,6 +111,21 @@ export const assetService = {
 
   async removeAttachment(id: number, fileUrl: string) {
     return await getAssetApi().assetRemoveAttachment(id, fileUrl);
+  },
+
+  /**
+   * Worker self-service
+   */
+  async getMyAssignedAssets() {
+    return await getWorkerAssetSelfApi().workerAssetGetMyAssignedAssets();
+  },
+
+  async getMyAssignedAssetDetails(assetId: number) {
+    return await getWorkerAssetSelfApi().workerAssetGetAssignedAssetDetails(assetId);
+  },
+
+  async updateMyAssetAddress(assignmentId: number, data: AddressRequest) {
+    return await getWorkerAssetSelfApi().workerAssetUpdateAssetAddress(assignmentId, data);
   },
 };
 

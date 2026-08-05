@@ -19,6 +19,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import { Search } from '../components/UI/Search';
@@ -275,6 +276,7 @@ export const Layout: React.FC = () => {
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
+    { id: 'worker-assets', label: 'My Assets', icon: <BuildOutlinedIcon />, href: '/worker/assets' },
     { id: 'worker-profile', label: 'My Profile', icon: <PersonIcon />, href: '/worker/profile' },
   ];
 

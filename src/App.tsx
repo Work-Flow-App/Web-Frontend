@@ -23,6 +23,7 @@ import {
   WorkerStepsList,
   WorkerStepDetail,
   WorkerProfile,
+  WorkerAssets,
 } from './pages/worker';
 import { InvitationsPage } from './pages/invitations';
 import { ClientPage } from './pages/client/ClientPage';
@@ -118,6 +119,7 @@ function App() {
                         <Route path="/worker/job-workflows/:jobWorkflowId" element={<WorkerJobWorkflowDetail />} />
                         <Route path="/worker/steps" element={<WorkerStepsList />} />
                         <Route path="/worker/steps/:stepId" element={<WorkerStepDetail />} />
+                        <Route path="/worker/assets" element={<WorkerAssets />} />
 
                         {/* Catch all route - 404 with Layout */}
                         <Route path="*" element={<NotFound />} />

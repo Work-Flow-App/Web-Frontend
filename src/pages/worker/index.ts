@@ -5,3 +5,4 @@ export { WorkerJobWorkflowDetail } from './WorkerJobWorkflowDetail';
 export { WorkerStepsList } from './WorkerStepsList';
 export { WorkerStepDetail } from './WorkerStepDetail';
 export { WorkerProfile } from './WorkerProfile';
+export { WorkerAssets } from './WorkerAssets';
