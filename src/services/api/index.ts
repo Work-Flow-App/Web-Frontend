@@ -164,3 +164,22 @@ export type {
   CompanyLeaveRequestFilters,
   PagedLeaveRequests,
 } from './leave';
+
+export {
+  formService,
+  triggerBlobDownload,
+  FormFieldDtoTypeEnum,
+  FormFieldDtoRoleTargetEnum,
+  FORM_FIELD_TYPE_OPTIONS,
+  FORM_FIELD_ROLE_TARGET_OPTIONS,
+  FORM_FIELD_TYPES_WITH_OPTIONS,
+} from './form';
+export type {
+  FormTemplateRequest,
+  FormFieldDto,
+  FormFieldValueDto,
+  FormFieldValueResponse,
+  FormSubmissionCreateRequest,
+  FormSubmissionResponse,
+  FormAttachmentResponse,
+} from './form';
