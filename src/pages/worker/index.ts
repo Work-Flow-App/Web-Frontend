@@ -6,3 +6,5 @@ export { WorkerStepsList } from './WorkerStepsList';
 export { WorkerStepDetail } from './WorkerStepDetail';
 export { WorkerProfile } from './WorkerProfile';
 export { WorkerAssets } from './WorkerAssets';
+export { WorkerForms } from './WorkerForms';
+export { WorkerFormDetail } from './WorkerFormDetail';

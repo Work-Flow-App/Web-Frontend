@@ -24,6 +24,8 @@ import {
   WorkerStepDetail,
   WorkerProfile,
   WorkerAssets,
+  WorkerForms,
+  WorkerFormDetail,
 } from './pages/worker';
 import { InvitationsPage } from './pages/invitations';
 import { ClientPage } from './pages/client/ClientPage';
@@ -37,6 +39,7 @@ import { EquipmentPage } from './pages/equipment/EquipmentPage';
 import { CustomersPage } from './pages/customers/CustomersPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { MapsPage, AssetsPage, AssetHistory } from './pages/assets';
+import { FormsPage, FormTemplateBuilderPage, FormSubmissionDetailPage } from './pages/forms';
 import { LineItemsPage } from './pages/lineItems';
 import { SubscribePage, SubscriptionSuccessPage, SubscriptionCancelPage } from './pages/subscription';
 import { NotFound } from './pages/NotFound';
@@ -107,6 +110,9 @@ function App() {
                         <Route path="/company/assets" element={<AssetsPage />} />
                         <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
                         <Route path="/company/assets/maps" element={<MapsPage />} />
+                        <Route path="/company/forms" element={<FormsPage />} />
+                        <Route path="/company/forms/templates/:templateId/builder" element={<FormTemplateBuilderPage />} />
+                        <Route path="/company/forms/submissions/:submissionId" element={<FormSubmissionDetailPage />} />
                         <Route path="/company/line-items" element={<LineItemsPage />} />
                         <Route path="/subscribe" element={<SubscribePage />} />
                         <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
@@ -120,6 +126,8 @@ function App() {
                         <Route path="/worker/steps" element={<WorkerStepsList />} />
                         <Route path="/worker/steps/:stepId" element={<WorkerStepDetail />} />
                         <Route path="/worker/assets" element={<WorkerAssets />} />
+                        <Route path="/worker/forms" element={<WorkerForms />} />
+                        <Route path="/worker/forms/:formId" element={<WorkerFormDetail />} />
 
                         {/* Catch all route - 404 with Layout */}
                         <Route path="*" element={<NotFound />} />

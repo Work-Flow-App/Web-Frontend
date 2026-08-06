@@ -539,6 +539,88 @@ export interface FinancialSummaryResponse {
 export interface ForgotPasswordRequest {
     'email': string;
 }
+export interface FormAttachmentResponse {
+    'fieldId'?: number;
+    'fieldLabel'?: string;
+    'fileName'?: string;
+    'fileUrl'?: string;
+    'fileType'?: string;
+}
+export interface FormFieldDto {
+    'id'?: number;
+    'name'?: string;
+    'label'?: string;
+    'type'?: FormFieldDtoTypeEnum;
+    'roleTarget'?: FormFieldDtoRoleTargetEnum;
+    'required'?: boolean;
+    'options'?: string;
+    'orderIndex'?: number;
+}
+
+export const FormFieldDtoTypeEnum = {
+    Text: 'TEXT',
+    TextArea: 'TEXT_AREA',
+    Date: 'DATE',
+    Checkbox: 'CHECKBOX',
+    Dropdown: 'DROPDOWN',
+    MultiSelect: 'MULTI_SELECT',
+    Boolean: 'BOOLEAN',
+    File: 'FILE'
+} as const;
+
+export type FormFieldDtoTypeEnum = typeof FormFieldDtoTypeEnum[keyof typeof FormFieldDtoTypeEnum];
+export const FormFieldDtoRoleTargetEnum = {
+    Company: 'COMPANY',
+    Worker: 'WORKER',
+    Both: 'BOTH'
+} as const;
+
+export type FormFieldDtoRoleTargetEnum = typeof FormFieldDtoRoleTargetEnum[keyof typeof FormFieldDtoRoleTargetEnum];
+
+export interface FormFieldValueDto {
+    'fieldId'?: number;
+    'stringValue'?: string;
+    'booleanValue'?: boolean;
+    'dateValue'?: string;
+    'jsonValue'?: string;
+}
+export interface FormFieldValueResponse {
+    'id'?: number;
+    'fieldId'?: number;
+    'fieldName'?: string;
+    'fieldLabel'?: string;
+    'fieldType'?: string;
+    'roleTarget'?: string;
+    'required'?: boolean;
+    'value'?: any;
+    'fileUrl'?: string;
+    'fileName'?: string;
+    'options'?: string;
+}
+export interface FormSubmissionCreateRequest {
+    'templateId'?: number;
+    'title'?: string;
+    'workerId'?: number;
+}
+export interface FormSubmissionResponse {
+    'id'?: number;
+    'title'?: string;
+    'status'?: string;
+    'templateId'?: number;
+    'templateName'?: string;
+    'workerId'?: number;
+    'workerName'?: string;
+    'values'?: Array<FormFieldValueResponse>;
+}
+export interface FormTemplateRequest {
+    'id'?: number;
+    'name'?: string;
+    'description'?: string;
+    'version'?: number;
+    'parentTemplateId'?: number;
+    'archived'?: boolean;
+    'fields'?: Array<FormFieldDto>;
+}
 export interface GoogleAuthRequest {
     'idToken': string;
     'tid'?: string;
@@ -4954,6 +5036,891 @@ export const CompanyUploadDocumentTypeEnum = {
     Other: 'OTHER'
 } as const;
 export type CompanyUploadDocumentTypeEnum = typeof CompanyUploadDocumentTypeEnum[keyof typeof CompanyUploadDocumentTypeEnum];
+
+
+/**
+ * CompanyFormsApi - axios parameter creator
+ */
+export const CompanyFormsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {FormSubmissionCreateRequest} formSubmissionCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormCreateDraft: async (formSubmissionCreateRequest: FormSubmissionCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'formSubmissionCreateRequest' is not null or undefined
+            assertParamExists('companyFormCreateDraft', 'formSubmissionCreateRequest', formSubmissionCreateRequest)
+            const localVarPath = `/api/v1/forms/drafts`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(formSubmissionCreateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormCreateTemplate: async (formTemplateRequest: FormTemplateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'formTemplateRequest' is not null or undefined
+            assertParamExists('companyFormCreateTemplate', 'formTemplateRequest', formTemplateRequest)
+            const localVarPath = `/api/v1/forms/templates`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(formTemplateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDeleteSubmission: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormDeleteSubmission', 'id', id)
+            const localVarPath = `/api/v1/forms/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDeleteTemplate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormDeleteTemplate', 'id', id)
+            const localVarPath = `/api/v1/forms/templates/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDownloadPdf: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormDownloadPdf', 'id', id)
+            const localVarPath = `/api/v1/forms/{id}/pdf`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAllSubmissions: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/forms`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAllTemplates: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/forms/templates`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAttachments: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormGetAttachments', 'id', id)
+            const localVarPath = `/api/v1/forms/{id}/attachments`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormSendToWorker: async (id: number, workerId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormSendToWorker', 'id', id)
+            // verify required parameter 'workerId' is not null or undefined
+            assertParamExists('companyFormSendToWorker', 'workerId', workerId)
+            const localVarPath = `/api/v1/forms/{id}/send/{workerId}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUpdateTemplate: async (id: number, formTemplateRequest: FormTemplateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormUpdateTemplate', 'id', id)
+            // verify required parameter 'formTemplateRequest' is not null or undefined
+            assertParamExists('companyFormUpdateTemplate', 'formTemplateRequest', formTemplateRequest)
+            const localVarPath = `/api/v1/forms/templates/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(formTemplateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUpdateValues: async (id: number, formFieldValueDto: Array<FormFieldValueDto>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormUpdateValues', 'id', id)
+            // verify required parameter 'formFieldValueDto' is not null or undefined
+            assertParamExists('companyFormUpdateValues', 'formFieldValueDto', formFieldValueDto)
+            const localVarPath = `/api/v1/forms/{id}/values`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(formFieldValueDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUploadFile: async (id: number, fieldId: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('companyFormUploadFile', 'id', id)
+            // verify required parameter 'fieldId' is not null or undefined
+            assertParamExists('companyFormUploadFile', 'fieldId', fieldId)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('companyFormUploadFile', 'file', file)
+            const localVarPath = `/api/v1/forms/{id}/fields/{fieldId}/file`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"fieldId"}}`, encodeURIComponent(String(fieldId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * CompanyFormsApi - functional programming interface
+ */
+export const CompanyFormsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = CompanyFormsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {FormSubmissionCreateRequest} formSubmissionCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormCreateDraft(formSubmissionCreateRequest: FormSubmissionCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormCreateDraft(formSubmissionCreateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormCreateDraft']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormCreateTemplate(formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormTemplateRequest>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormCreateTemplate(formTemplateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormCreateTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormDeleteSubmission(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormDeleteSubmission(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormDeleteSubmission']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormDeleteTemplate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormDeleteTemplate(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormDeleteTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormDownloadPdf(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormDownloadPdf(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormDownloadPdf']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormGetAllSubmissions(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormSubmissionResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormGetAllSubmissions(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormGetAllSubmissions']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormGetAllTemplates(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormTemplateRequest>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormGetAllTemplates(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormGetAllTemplates']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormGetAttachments(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormAttachmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormGetAttachments(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormGetAttachments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormSendToWorker(id: number, workerId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormSendToWorker(id, workerId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormSendToWorker']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormUpdateTemplate(id: number, formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormTemplateRequest>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormUpdateTemplate(id, formTemplateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormUpdateTemplate']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormUpdateValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormUpdateValues(id, formFieldValueDto, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormUpdateValues']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyFormUploadFile(id, fieldId, file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyFormsApi.companyFormUploadFile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * CompanyFormsApi - factory interface
+ */
+export const CompanyFormsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = CompanyFormsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {FormSubmissionCreateRequest} formSubmissionCreateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormCreateDraft(formSubmissionCreateRequest: FormSubmissionCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.companyFormCreateDraft(formSubmissionCreateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormCreateTemplate(formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig): AxiosPromise<FormTemplateRequest> {
+            return localVarFp.companyFormCreateTemplate(formTemplateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDeleteSubmission(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyFormDeleteSubmission(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDeleteTemplate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyFormDeleteTemplate(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormDownloadPdf(id: number, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.companyFormDownloadPdf(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAllSubmissions(options?: RawAxiosRequestConfig): AxiosPromise<Array<FormSubmissionResponse>> {
+            return localVarFp.companyFormGetAllSubmissions(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAllTemplates(options?: RawAxiosRequestConfig): AxiosPromise<Array<FormTemplateRequest>> {
+            return localVarFp.companyFormGetAllTemplates(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormGetAttachments(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<FormAttachmentResponse>> {
+            return localVarFp.companyFormGetAttachments(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} workerId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormSendToWorker(id: number, workerId: number, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.companyFormSendToWorker(id, workerId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {FormTemplateRequest} formTemplateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUpdateTemplate(id: number, formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig): AxiosPromise<FormTemplateRequest> {
+            return localVarFp.companyFormUpdateTemplate(id, formTemplateRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUpdateValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.companyFormUpdateValues(id, formFieldValueDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.companyFormUploadFile(id, fieldId, file, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * CompanyFormsApi - object-oriented interface
+ */
+export class CompanyFormsApi extends BaseAPI {
+    /**
+     * 
+     * @param {FormSubmissionCreateRequest} formSubmissionCreateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormCreateDraft(formSubmissionCreateRequest: FormSubmissionCreateRequest, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormCreateDraft(formSubmissionCreateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {FormTemplateRequest} formTemplateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormCreateTemplate(formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormCreateTemplate(formTemplateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormDeleteSubmission(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormDeleteSubmission(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormDeleteTemplate(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormDeleteTemplate(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormDownloadPdf(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormDownloadPdf(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormGetAllSubmissions(options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormGetAllSubmissions(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormGetAllTemplates(options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormGetAllTemplates(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormGetAttachments(id: number, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormGetAttachments(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {number} workerId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormSendToWorker(id: number, workerId: number, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormSendToWorker(id, workerId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {FormTemplateRequest} formTemplateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormUpdateTemplate(id: number, formTemplateRequest: FormTemplateRequest, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormUpdateTemplate(id, formTemplateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {Array<FormFieldValueDto>} formFieldValueDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormUpdateValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormUpdateValues(id, formFieldValueDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {number} fieldId 
+     * @param {File} file 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig) {
+        return CompanyFormsApiFp(this.configuration).companyFormUploadFile(id, fieldId, file, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
 
 
 /**
@@ -12004,6 +12971,470 @@ export const WorkerCertificateSelfUploadOwnCertificateTypeEnum = {
     Other: 'OTHER'
 } as const;
 export type WorkerCertificateSelfUploadOwnCertificateTypeEnum = typeof WorkerCertificateSelfUploadOwnCertificateTypeEnum[keyof typeof WorkerCertificateSelfUploadOwnCertificateTypeEnum];
+
+
+/**
+ * WorkerFormsApi - axios parameter creator
+ */
+export const WorkerFormsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormDownloadPdf: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerFormDownloadPdf', 'id', id)
+            const localVarPath = `/api/v1/worker/forms/{id}/pdf`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormFillValues: async (id: number, formFieldValueDto: Array<FormFieldValueDto>, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerFormFillValues', 'id', id)
+            // verify required parameter 'formFieldValueDto' is not null or undefined
+            assertParamExists('workerFormFillValues', 'formFieldValueDto', formFieldValueDto)
+            const localVarPath = `/api/v1/worker/forms/{id}/values`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(formFieldValueDto, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormGetAttachments: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerFormGetAttachments', 'id', id)
+            const localVarPath = `/api/v1/worker/forms/{id}/attachments`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormGetMyForms: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/worker/forms`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormSubmitForm: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerFormSubmitForm', 'id', id)
+            const localVarPath = `/api/v1/worker/forms/{id}/submit`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormUploadFile: async (id: number, fieldId: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('workerFormUploadFile', 'id', id)
+            // verify required parameter 'fieldId' is not null or undefined
+            assertParamExists('workerFormUploadFile', 'fieldId', fieldId)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('workerFormUploadFile', 'file', file)
+            const localVarPath = `/api/v1/worker/forms/{id}/fields/{fieldId}/file`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"fieldId"}}`, encodeURIComponent(String(fieldId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * WorkerFormsApi - functional programming interface
+ */
+export const WorkerFormsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = WorkerFormsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormDownloadPdf(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormDownloadPdf(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormDownloadPdf']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormFillValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormFillValues(id, formFieldValueDto, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormFillValues']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormGetAttachments(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormAttachmentResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormGetAttachments(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormGetAttachments']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormGetMyForms(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormSubmissionResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormGetMyForms(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormGetMyForms']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormSubmitForm(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormSubmitForm(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormSubmitForm']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async workerFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FormSubmissionResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerFormUploadFile(id, fieldId, file, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['WorkerFormsApi.workerFormUploadFile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * WorkerFormsApi - factory interface
+ */
+export const WorkerFormsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = WorkerFormsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormDownloadPdf(id: number, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.workerFormDownloadPdf(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {Array<FormFieldValueDto>} formFieldValueDto 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormFillValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.workerFormFillValues(id, formFieldValueDto, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormGetAttachments(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<FormAttachmentResponse>> {
+            return localVarFp.workerFormGetAttachments(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormGetMyForms(options?: RawAxiosRequestConfig): AxiosPromise<Array<FormSubmissionResponse>> {
+            return localVarFp.workerFormGetMyForms(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormSubmitForm(id: number, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.workerFormSubmitForm(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {number} fieldId 
+         * @param {File} file 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        workerFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<FormSubmissionResponse> {
+            return localVarFp.workerFormUploadFile(id, fieldId, file, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * WorkerFormsApi - object-oriented interface
+ */
+export class WorkerFormsApi extends BaseAPI {
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormDownloadPdf(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormDownloadPdf(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {Array<FormFieldValueDto>} formFieldValueDto 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormFillValues(id: number, formFieldValueDto: Array<FormFieldValueDto>, options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormFillValues(id, formFieldValueDto, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormGetAttachments(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormGetAttachments(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormGetMyForms(options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormGetMyForms(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormSubmitForm(id: number, options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormSubmitForm(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {number} fieldId 
+     * @param {File} file 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public workerFormUploadFile(id: number, fieldId: number, file: File, options?: RawAxiosRequestConfig) {
+        return WorkerFormsApiFp(this.configuration).workerFormUploadFile(id, fieldId, file, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
 
 
 /**

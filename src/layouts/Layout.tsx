@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
-import { Box, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
@@ -20,9 +19,9 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import { Search } from '../components/UI/Search';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
 import { companyService } from '../services/api/company';
@@ -72,13 +71,6 @@ const RightActions = ({
 
   return (
     <S.RightActionsContainer>
-      {/* Notification Icon */}
-      {/* <S.ActionButton role="button" aria-label="Notifications" tabIndex={0}>
-        <NotificationsIcon />
-      </S.ActionButton>
-
-      <S.ActionDivider aria-hidden={true} /> */}
-
       <S.UserAvatar
         role="button"
         aria-label="User profile"
@@ -161,7 +153,6 @@ const RightActions = ({
  */
 export const Layout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   // Wait for session restoration before rendering protected content
@@ -269,6 +260,7 @@ export const Layout: React.FC = () => {
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
+    { id: 'forms', label: 'Forms', icon: <DescriptionOutlinedIcon />, href: '/company/forms' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
   ];
 
@@ -277,6 +269,7 @@ export const Layout: React.FC = () => {
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
     { id: 'worker-assets', label: 'My Assets', icon: <BuildOutlinedIcon />, href: '/worker/assets' },
+    { id: 'worker-forms', label: 'My Forms', icon: <DescriptionOutlinedIcon />, href: '/worker/forms' },
     { id: 'worker-profile', label: 'My Profile', icon: <PersonIcon />, href: '/worker/profile' },
   ];
 
