@@ -9,9 +9,9 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { useFormSubmit } from '../../../hooks';
-import { formService, FormFieldDtoRoleTargetEnum, FormFieldDtoTypeEnum } from '../../../services/api';
+import { formService, FormFieldDtoRoleTargetEnum } from '../../../services/api';
 import type { FormSubmissionResponse } from '../../../services/api';
-import { buildFieldDefaultValues, formatFieldValueDisplay, buildFieldValueDtos } from '../../forms/utils/formFieldRender';
+import { buildFieldDefaultValues, buildFieldValueDtos, getMissingRequiredFieldLabels } from '../../forms/utils/formFieldRender';
 import { FormFieldRow } from '../../forms/components/FormFieldRow';
 import * as M from '../styles/WorkerMobile.styles';
 import * as S from './WorkerFormDetail.styles';
@@ -70,16 +70,6 @@ export const WorkerFormDetail: React.FC = () => {
     [values]
   );
 
-  const requiredIncomplete = useMemo(
-    () =>
-      values.some((v) => {
-        if (!v.required || v.fieldId == null || !editableFieldIds.has(v.fieldId)) return false;
-        if (v.fieldType === FormFieldDtoTypeEnum.File) return !v.fileUrl;
-        return formatFieldValueDisplay(v) === 'Not answered';
-      }),
-    [values, editableFieldIds]
-  );
-
   const handleSaveValues = async () => {
     if (!submission?.id) return;
     await withSaving(async () => {
@@ -120,6 +110,16 @@ export const WorkerFormDetail: React.FC = () => {
 
   const handleSubmit = () => {
     if (!submission?.id) return;
+
+    // Check the live form data, not the last-saved snapshot - a value just typed in but not
+    // yet "Save Progress"-d still counts as filled, since onConfirm below saves it anyway.
+    const data = methods.getValues();
+    const missing = getMissingRequiredFieldLabels(values, data, editableFieldIds);
+    if (missing.length > 0) {
+      showError(`Please fill in required field${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`);
+      return;
+    }
+
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.SMALL,
@@ -232,7 +232,7 @@ export const WorkerFormDetail: React.FC = () => {
             <Button variant="outlined" color="primary" onClick={handleSaveValues} disabled={saving || submitting}>
               {saving ? 'Saving...' : 'Save Progress'}
             </Button>
-            <Button variant="contained" color="primary" onClick={handleSubmit} disabled={saving || submitting || requiredIncomplete}>
+            <Button variant="contained" color="primary" onClick={handleSubmit} disabled={saving || submitting}>
               {submitting ? 'Submitting...' : 'Submit Form'}
             </Button>
           </S.ActionsRow>

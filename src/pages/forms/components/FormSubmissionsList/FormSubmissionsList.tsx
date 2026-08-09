@@ -120,6 +120,8 @@ export const FormSubmissionsList = forwardRef<FormSubmissionsListHandle>((_props
     <Table<FormSubmissionTableRow>
       columns={formSubmissionColumns}
       data={rows}
+      selectable
+      enableStickyLeft
       showActions
       actions={actions}
       onRowClick={handleRowClick}
@@ -127,6 +129,7 @@ export const FormSubmissionsList = forwardRef<FormSubmissionsListHandle>((_props
       emptyMessage="No form submissions yet. Create one from a template to get started."
       rowsPerPage={10}
       showPagination
+      showTopPagination={false}
     />
   );
 });

@@ -36,6 +36,7 @@ export const Value = styled('span')(({ theme }) => ({
 export const FileRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: rem(12),
   fontSize: rem(13.5),
   '& a': {

@@ -18,7 +18,7 @@ import { extractErrorMessage } from '../../utils/errorHandler';
 import { useFormSubmit } from '../../hooks';
 import { formService, workerService, FormFieldDtoRoleTargetEnum } from '../../services/api';
 import type { FormSubmissionResponse, WorkerResponse } from '../../services/api';
-import { buildFieldDefaultValues, buildFieldValueDtos } from './utils/formFieldRender';
+import { buildFieldDefaultValues, buildFieldValueDtos, getMissingRequiredFieldLabels } from './utils/formFieldRender';
 import { FormFieldRow } from './components/FormFieldRow';
 import * as S from './FormSubmissionDetailPage.styles';
 
@@ -88,9 +88,16 @@ export const FormSubmissionDetailPage: React.FC = () => {
 
   const handleSaveValues = async () => {
     if (!submission?.id) return;
+    const data = methods.getValues();
+
+    const missing = getMissingRequiredFieldLabels(values, data, editableFieldIds);
+    if (missing.length > 0) {
+      showError(`Please fill in required field${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`);
+      return;
+    }
+
     await withSaving(async () => {
       try {
-        const data = methods.getValues();
         const dtos = buildFieldValueDtos(values, data, editableFieldIds);
         const response = await formService.updateValues(submission.id!, dtos);
         setSubmission(response.data);

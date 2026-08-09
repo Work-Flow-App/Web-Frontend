@@ -31,7 +31,6 @@ export const FieldFormFields: React.FC = () => {
             placeHolder={placeHolders.type}
             fullWidth
             disableClearable
-            disablePortal
           />
         </FormField>
         <FormField label={fieldLabels.roleTarget} required={isRequireds.roleTarget}>
@@ -41,7 +40,6 @@ export const FieldFormFields: React.FC = () => {
             placeHolder={placeHolders.roleTarget}
             fullWidth
             disableClearable
-            disablePortal
           />
         </FormField>
       </FormRow>

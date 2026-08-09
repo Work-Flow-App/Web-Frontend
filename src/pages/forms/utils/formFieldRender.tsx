@@ -187,3 +187,40 @@ export const buildFieldValueDtos = (
   });
   return dtos;
 };
+
+/**
+ * Labels of required, currently-editable fields that are still empty in the live form data
+ * (react-hook-form's current values - not the last-saved snapshot, so a value just typed in
+ * counts as filled even before it's saved). Call this before a save/submit call to block it
+ * instead of silently persisting a required field left blank.
+ *
+ * Checkbox/Boolean are skipped - buildFieldValueDtos always resolves them to a concrete
+ * true/false (unset defaults to false), so there's no "unanswered" state to require. File
+ * fields are checked against the already-saved fileUrl, since uploads go through a separate
+ * endpoint rather than this form data.
+ */
+export const getMissingRequiredFieldLabels = (
+  fields: FormFieldValueResponse[],
+  data: Record<string, unknown>,
+  editableFieldIds: Set<number>
+): string[] => {
+  const missing: string[] = [];
+  fields.forEach((field) => {
+    if (!field.required || field.fieldId == null || !editableFieldIds.has(field.fieldId)) return;
+    const label = field.fieldLabel || field.fieldName || 'This field';
+
+    if (field.fieldType === FormFieldDtoTypeEnum.File) {
+      if (!field.fileUrl) missing.push(label);
+      return;
+    }
+    if (field.fieldType === FormFieldDtoTypeEnum.Checkbox || field.fieldType === FormFieldDtoTypeEnum.Boolean) return;
+
+    const raw = data[fieldFormName(field.fieldId)];
+    if (field.fieldType === FormFieldDtoTypeEnum.MultiSelect) {
+      if (parseMultiSelectValue(raw).length === 0) missing.push(label);
+      return;
+    }
+    if (!unwrapScalar(raw)) missing.push(label);
+  });
+  return missing;
+};
