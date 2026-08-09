@@ -168,6 +168,14 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
   const { palette } = theme;
 
   return {
+    // GlobalModal renders at zIndex 8000 (see GlobalModal.styled.tsx) - without this, a
+    // portaled popper (disablePortal={false}) opened from inside a modal falls back to the
+    // browser's default stacking order and renders behind the modal, invisible. Keep this
+    // below the Snackbar's 9999 so toast notifications always stay on top.
+    // !important because MUI's own .MuiAutocomplete-popper default (theme.zIndex.modal, 1300)
+    // is inserted after this styled-component's rule and wins the cascade otherwise.
+    zIndex: '9000 !important',
+
     '& .MuiAutocomplete-paper': {
       marginTop: rem(4),
       borderRadius: rem(6),

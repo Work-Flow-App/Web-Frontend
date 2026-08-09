@@ -8,6 +8,7 @@ import type { FormTemplateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { FormTemplateMetaForm } from '../FormTemplateMetaForm';
+import { VersionHistoryModal } from '../VersionHistoryModal';
 import { formTemplateColumns, mapTemplateToRow, type FormTemplateTableRow } from './DataColumn';
 
 export interface FormTemplatesListHandle {
@@ -38,7 +39,9 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
     fetchTemplates();
   }, [fetchTemplates]);
 
-  const rows = useMemo(() => templates.map(mapTemplateToRow), [templates]);
+  // Archived rows are superseded versions (editing a template archives the old one and creates
+  // a new version) - the main list only shows the current version of each template.
+  const rows = useMemo(() => templates.filter((t) => !t.archived).map(mapTemplateToRow), [templates]);
 
   const handleCreate = useCallback(() => {
     setGlobalModalOuterProps({
@@ -48,34 +51,20 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
       children: (
         <FormTemplateMetaForm
           isModal
-          onSuccess={async (template) => {
+          deferCreate
+          onSuccess={(draft) => {
             resetGlobalModalOuterProps();
-            // companyFormCreateTemplate's response reuses the request DTO and doesn't reliably
-            // echo back the real generated id, so re-fetch and resolve it from the list instead
-            // of trusting template.id directly (matches how the builder page itself looks it up).
-            try {
-              const response = await formService.getAllTemplates();
-              const list = Array.isArray(response.data) ? response.data : [];
-              setTemplates(list);
-              const created = list
-                .filter((t) => t.name === template.name)
-                .reduce<FormTemplateRequest | null>(
-                  (latest, t) => ((t.id ?? -Infinity) > (latest?.id ?? -Infinity) ? t : latest),
-                  null
-                );
-              if (created?.id != null) {
-                navigate(`/company/forms/templates/${created.id}/builder`);
-              } else {
-                showError('Template created, but could not open the builder automatically. Refresh and open it from the list.');
-              }
-            } catch (error) {
-              showError(extractErrorMessage(error, 'Template created, but failed to reload the list'));
-            }
+            // Nothing is persisted yet - the builder page creates the template once fields are
+            // added, so the first version already has real fields instead of an empty one that
+            // immediately gets archived and replaced.
+            navigate('/company/forms/templates/new/builder', {
+              state: { name: draft.name, description: draft.description },
+            });
           }}
         />
       ),
     });
-  }, [navigate, showError, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+  }, [navigate, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
   useImperativeHandle(ref, () => ({ openCreate: handleCreate }), [handleCreate]);
 
@@ -139,19 +128,34 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
     [navigate]
   );
 
+  const handleViewHistory = useCallback(
+    (row: FormTemplateTableRow) => {
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.SMALL,
+        fieldName: 'formTemplateVersionHistory',
+        children: <VersionHistoryModal templateId={row.id} templateName={row.name} allTemplates={templates} />,
+      });
+    },
+    [templates, setGlobalModalOuterProps]
+  );
+
   const actions: ITableAction<FormTemplateTableRow>[] = useMemo(
     () => [
       { id: 'edit', label: 'Edit Fields', onClick: handleRowClick },
       { id: 'rename', label: 'Rename', onClick: handleRename },
+      { id: 'history', label: 'Version History', onClick: handleViewHistory },
       { id: 'delete', label: 'Delete', onClick: handleDelete, color: 'error' as const },
     ],
-    [handleRowClick, handleRename, handleDelete]
+    [handleRowClick, handleRename, handleViewHistory, handleDelete]
   );
 
   return (
     <Table<FormTemplateTableRow>
       columns={formTemplateColumns}
       data={rows}
+      selectable
+      enableStickyLeft
       showActions
       actions={actions}
       onRowClick={handleRowClick}
@@ -159,6 +163,7 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
       emptyMessage="No form templates yet. Create your first template to get started."
       rowsPerPage={10}
       showPagination
+      showTopPagination={false}
     />
   );
 });

@@ -44,6 +44,14 @@ export const formTemplateColumns: ITableColumn<FormTemplateTableRow>[] = [
     width: '120',
   },
   {
+    id: 'version',
+    label: 'Version',
+    accessor: 'version',
+    sortable: true,
+    width: '100',
+    render: (row) => <Badge variant="default" size="small">{`v${row.version ?? 1}`}</Badge>,
+  },
+  {
     id: 'status',
     label: 'Status',
     width: '120',
