@@ -6,6 +6,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { Loader } from '../../components/UI';
 import { Button } from '../../components/UI/Button';
@@ -164,7 +167,7 @@ export const FormSubmissionDetailPage: React.FC = () => {
               await formService.deleteSubmission(submission.id!);
               showSuccess('Submission deleted');
               resetGlobalModalOuterProps();
-              navigate('/company/forms');
+              navigate('/company/forms?tab=submissions');
             } catch (error) {
               showError(extractErrorMessage(error, 'Failed to delete submission'));
               resetGlobalModalOuterProps();
@@ -189,79 +192,105 @@ export const FormSubmissionDetailPage: React.FC = () => {
       title={submission.title || 'Form Submission'}
       description="Fill in your fields, send the form to a worker, and export the finished PDF."
       actions={[
-        { label: 'Back to Forms', onClick: () => navigate('/company/forms'), variant: 'outlined', icon: <ArrowBackIcon /> },
+        { label: 'Back to Forms', onClick: () => navigate('/company/forms?tab=submissions'), variant: 'outlined', icon: <ArrowBackIcon /> },
         { label: 'Download PDF', onClick: handleDownloadPdf, variant: 'outlined', icon: <DownloadIcon /> },
         { label: 'Delete', onClick: handleDelete, variant: 'outlined', color: 'error', icon: <DeleteIcon /> },
       ]}
     >
       <FormProvider {...methods}>
         <S.DetailCard>
-          <S.SectionTitle>Overview</S.SectionTitle>
+          <S.CardHeader>
+            <S.SectionTitle>Overview</S.SectionTitle>
+          </S.CardHeader>
+          <S.CardBody>
+            <S.MetaRow>
+              <S.MetaItem>
+                <S.MetaIconBadge>
+                  <FlagOutlinedIcon />
+                </S.MetaIconBadge>
+                <S.MetaText>
+                  <span className="label">Status</span>
+                  <Badge variant={isFinalized ? 'success' : 'warning'} size="small">
+                    {submission.status || 'DRAFT'}
+                  </Badge>
+                </S.MetaText>
+              </S.MetaItem>
+              <S.MetaItem>
+                <S.MetaIconBadge>
+                  <DescriptionOutlinedIcon />
+                </S.MetaIconBadge>
+                <S.MetaText>
+                  <span className="label">Template</span>
+                  <span className="value">{submission.templateName || '-'}</span>
+                </S.MetaText>
+              </S.MetaItem>
+              <S.MetaItem>
+                <S.MetaIconBadge>
+                  <PersonOutlineIcon />
+                </S.MetaIconBadge>
+                <S.MetaText>
+                  <span className="label">Worker</span>
+                  <span className={submission.workerName ? 'value' : 'value muted'}>{submission.workerName || 'Unassigned'}</span>
+                </S.MetaText>
+              </S.MetaItem>
+            </S.MetaRow>
 
-          <S.MetaRow>
-            <S.MetaItem>
-              <span className="label">Status</span>
-              <Badge variant={isFinalized ? 'success' : 'warning'} size="small">
-                {submission.status || 'DRAFT'}
-              </Badge>
-            </S.MetaItem>
-            <S.MetaItem>
-              <span className="label">Template</span>
-              <span className="value">{submission.templateName || '-'}</span>
-            </S.MetaItem>
-            <S.MetaItem>
-              <span className="label">Worker</span>
-              <span className="value">{submission.workerName || 'Unassigned'}</span>
-            </S.MetaItem>
-          </S.MetaRow>
-
-          <S.InlineRow>
-            <div style={{ minWidth: 240 }}>
-              <FormField label="Send to Worker">
-                <Dropdown
-                  name="sendWorkerId"
-                  preFetchedOptions={workerOptions}
-                  placeHolder="Select a worker"
-                  value={selectedWorkerId ? selectedWorkerId.toString() : undefined}
-                  onChange={(value) => setSelectedWorkerId(value ? parseInt(value as string) : null)}
-                  disablePortal
-                  fullWidth
-                  disabled={isFinalized}
-                />
-              </FormField>
-            </div>
-            <Button variant="outlined" color="primary" onClick={handleSendToWorker} disabled={isFinalized} startIcon={<SendIcon fontSize="small" />}>
-              Send
-            </Button>
-          </S.InlineRow>
+            <S.SendToWorkerPanel>
+              <div style={{ minWidth: 240 }}>
+                <FormField label="Send to Worker">
+                  <Dropdown
+                    name="sendWorkerId"
+                    preFetchedOptions={workerOptions}
+                    placeHolder="Select a worker"
+                    value={selectedWorkerId ? selectedWorkerId.toString() : undefined}
+                    onChange={(value) => setSelectedWorkerId(value ? parseInt(value as string) : null)}
+                    disablePortal
+                    fullWidth
+                    disabled={isFinalized}
+                  />
+                </FormField>
+              </div>
+              <Button variant="outlined" color="primary" onClick={handleSendToWorker} disabled={isFinalized} startIcon={<SendIcon fontSize="small" />}>
+                Send
+              </Button>
+            </S.SendToWorkerPanel>
+          </S.CardBody>
         </S.DetailCard>
 
         <S.DetailCard>
-          <S.SectionTitle>Fields</S.SectionTitle>
+          <S.CardHeader>
+            <S.SectionTitle>Fields</S.SectionTitle>
+            <S.CountBadge>
+              {values.length} {values.length === 1 ? 'field' : 'fields'}
+            </S.CountBadge>
+          </S.CardHeader>
+          <S.CardBody>
+            {values.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                This template has no fields.
+              </Typography>
+            ) : (
+              <S.FieldsList>
+                {values.map((value) => (
+                  <FormFieldRow
+                    key={value.id ?? value.fieldId}
+                    value={value}
+                    isEditable={!isFinalized && value.fieldId != null && editableFieldIds.has(value.fieldId)}
+                    uploading={uploadingFieldId === value.fieldId}
+                    onUploadFile={handleUploadFile}
+                  />
+                ))}
+              </S.FieldsList>
+            )}
 
-          {values.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              This template has no fields.
-            </Typography>
-          ) : (
-            values.map((value) => (
-              <FormFieldRow
-                key={value.id ?? value.fieldId}
-                value={value}
-                isEditable={!isFinalized && value.fieldId != null && editableFieldIds.has(value.fieldId)}
-                uploading={uploadingFieldId === value.fieldId}
-                onUploadFile={handleUploadFile}
-              />
-            ))
-          )}
-
-          {!isFinalized && (
-            <S.ActionsRow>
-              <Button variant="contained" color="primary" onClick={handleSaveValues} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Values'}
-              </Button>
-            </S.ActionsRow>
-          )}
+            {!isFinalized && (
+              <S.ActionsRow>
+                <Button variant="contained" color="primary" onClick={handleSaveValues} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Values'}
+                </Button>
+              </S.ActionsRow>
+            )}
+          </S.CardBody>
         </S.DetailCard>
       </FormProvider>
     </PageWrapper>

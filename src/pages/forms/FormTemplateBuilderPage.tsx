@@ -37,15 +37,14 @@ import { useFormSubmit } from '../../hooks';
 import { useGlobalModalOuterContext, ModalSizes } from '../../components/UI/GlobalModal';
 import {
   formService,
-  FORM_FIELD_TYPE_OPTIONS,
   FORM_FIELD_ROLE_TARGET_OPTIONS,
   FormFieldDtoRoleTargetEnum,
 } from '../../services/api';
 import type { FormTemplateRequest } from '../../services/api';
 import { FieldForm, type BuilderField } from './components/FieldForm';
+import { typeLabel } from './utils/formFieldRender';
 import * as S from './FormTemplateBuilderPage.styles';
 
-const typeLabel = (value?: string) => FORM_FIELD_TYPE_OPTIONS.find((o) => o.value === value)?.label || value || 'Text';
 const roleLabel = (value?: string) => FORM_FIELD_ROLE_TARGET_OPTIONS.find((o) => o.value === value)?.label || value || 'Either';
 
 const ROLE_BADGE_VARIANT: Record<string, BadgeVariant> = {

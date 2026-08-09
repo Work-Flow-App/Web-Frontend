@@ -4,7 +4,7 @@ import { TextArea } from '../../../components/UI/Forms/TextArea';
 import { Dropdown } from '../../../components/UI/Forms/Dropdown';
 import { Checkbox } from '../../../components/UI/Forms/Checkbox';
 import { RadioGroup } from '../../../components/UI/Forms/Radio';
-import { FormFieldDtoTypeEnum } from '../../../services/api';
+import { FormFieldDtoTypeEnum, FORM_FIELD_TYPE_OPTIONS } from '../../../services/api';
 import type { FormFieldValueResponse, FormFieldValueDto } from '../../../services/api';
 import { extractFieldValue } from '../../../utils/fieldValueHelper';
 
@@ -15,6 +15,9 @@ import { extractFieldValue } from '../../../utils/fieldValueHelper';
  */
 
 export const fieldFormName = (fieldId: number) => `field_${fieldId}`;
+
+/** Human-readable label for a field type enum value, e.g. 'TEXT_AREA' -> 'Text Area'. */
+export const typeLabel = (value?: string) => FORM_FIELD_TYPE_OPTIONS.find((o) => o.value === value)?.label || value || 'Text';
 
 const parseOptionsList = (options?: string): { label: string; value: string }[] =>
   (options || '')
