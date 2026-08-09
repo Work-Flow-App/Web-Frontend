@@ -257,6 +257,31 @@ export const FieldMetaRow = styled(Box)(() => ({
   marginTop: rem(7),
 }));
 
+interface TintProps {
+  tint: string;
+}
+
+// Colored tag - same recipe as the submission views' type/role tags (tint at low opacity for
+// background, full tint for text), so "Text" (say) is the same blue everywhere in this feature.
+export const ColorTag = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'tint',
+})<TintProps>(({ theme, tint }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(4),
+  borderRadius: rem(12),
+  padding: `${rem(3)} ${rem(10)}`,
+  fontSize: rem(11),
+  fontWeight: Bold._700,
+  lineHeight: rem(16),
+  whiteSpace: 'nowrap',
+  backgroundColor: theme.palette.mode === 'dark' ? `${tint}26` : `${tint}1A`,
+  color: tint,
+  '& svg': {
+    fontSize: rem(12),
+  },
+}));
+
 // ─── Kebab (3-dot) button ─────────────────────────────────────────────────────
 
 export const FieldKebabButton = styled(IconButton)(() => ({

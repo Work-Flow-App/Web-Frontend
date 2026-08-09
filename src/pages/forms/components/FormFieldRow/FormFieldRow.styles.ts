@@ -36,9 +36,16 @@ export const LabelGroup = styled(Box)(() => ({
   minWidth: 0,
 }));
 
-// Tonal icon badge - a soft tint of the brand navy, not a rainbow per field type. Keeps every
-// field visually anchored the same restrained way; the icon shape itself carries the meaning.
-export const TypeIconBadge = styled(Box)(({ theme }) => ({
+interface TintProps {
+  tint: string;
+}
+
+// Tinted icon badge - each field type gets its own color (see FIELD_TYPE_COLOR in
+// FormFieldRow.tsx), the same "colored property icon" convention Notion/Airtable/ClickUp use.
+// Background is the type color at low opacity, icon is the full color.
+export const TypeIconBadge = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'tint',
+})<TintProps>(({ theme, tint }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -46,11 +53,29 @@ export const TypeIconBadge = styled(Box)(({ theme }) => ({
   height: rem(30),
   borderRadius: rem(8),
   flexShrink: 0,
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : `${floowColors.navy}0D`,
-  color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : floowColors.navy,
+  backgroundColor: theme.palette.mode === 'dark' ? `${tint}26` : `${tint}1A`,
+  color: tint,
   '& svg': {
     fontSize: rem(16),
   },
+}));
+
+// Colored role tag - replaces the shared Badge component here since this app's primary/
+// secondary theme colors are both near-black navy/grey, not distinct hues, so Badge's variants
+// couldn't give Company/Worker/Both genuinely different colors.
+export const RoleTag = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'tint',
+})<TintProps>(({ theme, tint }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  borderRadius: rem(12),
+  padding: `${rem(3)} ${rem(10)}`,
+  fontSize: rem(11),
+  fontWeight: Bold._700,
+  lineHeight: rem(16),
+  whiteSpace: 'nowrap',
+  backgroundColor: theme.palette.mode === 'dark' ? `${tint}26` : `${tint}1A`,
+  color: tint,
 }));
 
 export const Label = styled('span')(({ theme }) => ({

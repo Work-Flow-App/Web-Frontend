@@ -55,9 +55,15 @@ export const MetaItem = styled(Box)(() => ({
   gap: rem(12),
 }));
 
-// Same tonal navy treatment as the field-row type icons - one restrained accent used
-// consistently, not a color per item.
-export const MetaIconBadge = styled(Box)(({ theme }) => ({
+interface TintProps {
+  tint: string;
+}
+
+// Same colored-icon convention as the field rows below - each tile gets its own tint instead
+// of one flat neutral tone, so the card reads as more than a wall of grey.
+export const MetaIconBadge = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'tint',
+})<TintProps>(({ theme, tint }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -65,8 +71,8 @@ export const MetaIconBadge = styled(Box)(({ theme }) => ({
   height: rem(36),
   borderRadius: rem(10),
   flexShrink: 0,
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : `${floowColors.navy}0D`,
-  color: theme.palette.mode === 'dark' ? theme.palette.grey[300] : floowColors.navy,
+  backgroundColor: theme.palette.mode === 'dark' ? `${tint}26` : `${tint}1A`,
+  color: tint,
   '& svg': {
     fontSize: rem(18),
   },

@@ -1,12 +1,21 @@
 import React from 'react';
+import ShortTextIcon from '@mui/icons-material/ShortText';
+import NotesIcon from '@mui/icons-material/Notes';
+import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import CheckBoxOutlinedIcon from '@mui/icons-material/CheckBoxOutlined';
+import ArrowDropDownCircleOutlinedIcon from '@mui/icons-material/ArrowDropDownCircleOutlined';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
+import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { Input } from '../../../components/UI/Forms/Input';
 import { TextArea } from '../../../components/UI/Forms/TextArea';
 import { Dropdown } from '../../../components/UI/Forms/Dropdown';
 import { Checkbox } from '../../../components/UI/Forms/Checkbox';
 import { RadioGroup } from '../../../components/UI/Forms/Radio';
-import { FormFieldDtoTypeEnum, FORM_FIELD_TYPE_OPTIONS } from '../../../services/api';
+import { FormFieldDtoTypeEnum, FormFieldDtoRoleTargetEnum, FORM_FIELD_TYPE_OPTIONS } from '../../../services/api';
 import type { FormFieldValueResponse, FormFieldValueDto } from '../../../services/api';
 import { extractFieldValue } from '../../../utils/fieldValueHelper';
+import { floowColors } from '../../../theme/colors';
 
 /**
  * Shared dynamic-field rendering for custom form submissions (used by both the company
@@ -18,6 +27,42 @@ export const fieldFormName = (fieldId: number) => `field_${fieldId}`;
 
 /** Human-readable label for a field type enum value, e.g. 'TEXT_AREA' -> 'Text Area'. */
 export const typeLabel = (value?: string) => FORM_FIELD_TYPE_OPTIONS.find((o) => o.value === value)?.label || value || 'Text';
+
+/**
+ * Icon + color per field type - the "colored property icon" convention modern data-entry UIs
+ * (Notion, Airtable, ClickUp) use so a list of mixed field types reads at a glance. Shared by
+ * the builder's field list and the submission views' field rows so "Text" (say) is the same
+ * blue everywhere in the feature.
+ */
+export const TYPE_ICON: Record<string, React.ElementType> = {
+  [FormFieldDtoTypeEnum.Text]: ShortTextIcon,
+  [FormFieldDtoTypeEnum.TextArea]: NotesIcon,
+  [FormFieldDtoTypeEnum.Date]: EventOutlinedIcon,
+  [FormFieldDtoTypeEnum.Checkbox]: CheckBoxOutlinedIcon,
+  [FormFieldDtoTypeEnum.Dropdown]: ArrowDropDownCircleOutlinedIcon,
+  [FormFieldDtoTypeEnum.MultiSelect]: PlaylistAddCheckIcon,
+  [FormFieldDtoTypeEnum.Boolean]: ToggleOnOutlinedIcon,
+  [FormFieldDtoTypeEnum.File]: UploadFileIcon,
+};
+
+export const TYPE_COLOR: Record<string, string> = {
+  [FormFieldDtoTypeEnum.Text]: floowColors.blue.main,
+  [FormFieldDtoTypeEnum.TextArea]: floowColors.indigo.main,
+  [FormFieldDtoTypeEnum.Date]: floowColors.chart.quaternary,
+  [FormFieldDtoTypeEnum.Checkbox]: floowColors.success.main,
+  [FormFieldDtoTypeEnum.Dropdown]: floowColors.chart.quinary,
+  [FormFieldDtoTypeEnum.MultiSelect]: floowColors.chart.secondary,
+  [FormFieldDtoTypeEnum.Boolean]: '#0EA5E9',
+  [FormFieldDtoTypeEnum.File]: '#0D9488',
+};
+
+/** Distinct color per role - this theme's primary/secondary are both near-black navy/grey, so
+ * Badge's built-in variants can't tell Company/Worker/Both apart at a glance. */
+export const ROLE_COLOR: Record<string, string> = {
+  [FormFieldDtoRoleTargetEnum.Company]: floowColors.blue.main,
+  [FormFieldDtoRoleTargetEnum.Worker]: floowColors.chart.quaternary,
+  [FormFieldDtoRoleTargetEnum.Both]: floowColors.success.main,
+};
 
 const parseOptionsList = (options?: string): { label: string; value: string }[] =>
   (options || '')

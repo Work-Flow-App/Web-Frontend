@@ -27,10 +27,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ShortTextIcon from '@mui/icons-material/ShortText';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { Loader } from '../../components/UI';
 import { Badge } from '../../components/UI/Badge';
-import type { BadgeVariant } from '../../components/UI/Badge/Badge.types';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 import { useFormSubmit } from '../../hooks';
@@ -42,16 +42,11 @@ import {
 } from '../../services/api';
 import type { FormTemplateRequest } from '../../services/api';
 import { FieldForm, type BuilderField } from './components/FieldForm';
-import { typeLabel } from './utils/formFieldRender';
+import { typeLabel, TYPE_ICON, TYPE_COLOR, ROLE_COLOR } from './utils/formFieldRender';
+import { floowColors } from '../../theme/colors';
 import * as S from './FormTemplateBuilderPage.styles';
 
 const roleLabel = (value?: string) => FORM_FIELD_ROLE_TARGET_OPTIONS.find((o) => o.value === value)?.label || value || 'Either';
-
-const ROLE_BADGE_VARIANT: Record<string, BadgeVariant> = {
-  [FormFieldDtoRoleTargetEnum.Company]: 'secondary',
-  [FormFieldDtoRoleTargetEnum.Worker]: 'primary',
-  [FormFieldDtoRoleTargetEnum.Both]: 'default',
-};
 
 // ─── Sortable field row ─────────────────────────────────────────────────────────
 
@@ -75,6 +70,9 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({ field, index, onE
   const dndStyle = { transform: CSS.Transform.toString(transform), transition };
 
   const fieldColor = S.STEP_COLORS[index % S.STEP_COLORS.length];
+  const TypeIcon = TYPE_ICON[field.type || ''] || ShortTextIcon;
+  const typeColor = TYPE_COLOR[field.type || ''] || floowColors.slate.main;
+  const roleColor = ROLE_COLOR[field.roleTarget || FormFieldDtoRoleTargetEnum.Both] || floowColors.slate.main;
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
@@ -111,12 +109,11 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({ field, index, onE
           <S.FieldLabel>{field.label}</S.FieldLabel>
         </S.FieldTitleRow>
         <S.FieldMetaRow>
-          <Badge variant="default" size="small">
+          <S.ColorTag tint={typeColor}>
+            <TypeIcon />
             {typeLabel(field.type)}
-          </Badge>
-          <Badge variant={ROLE_BADGE_VARIANT[field.roleTarget || FormFieldDtoRoleTargetEnum.Both] ?? 'default'} size="small">
-            {roleLabel(field.roleTarget)}
-          </Badge>
+          </S.ColorTag>
+          <S.ColorTag tint={roleColor}>{roleLabel(field.roleTarget)}</S.ColorTag>
           {field.required && (
             <Badge variant="warning" size="small">
               Required
@@ -432,12 +429,18 @@ export const FormTemplateBuilderPage: React.FC = () => {
                   <S.FieldLabel>{activeField.label}</S.FieldLabel>
                 </S.FieldTitleRow>
                 <S.FieldMetaRow>
-                  <Badge variant="default" size="small">
-                    {typeLabel(activeField.type)}
-                  </Badge>
-                  <Badge variant={ROLE_BADGE_VARIANT[activeField.roleTarget || FormFieldDtoRoleTargetEnum.Both] ?? 'default'} size="small">
+                  {(() => {
+                    const ActiveTypeIcon = TYPE_ICON[activeField.type || ''] || ShortTextIcon;
+                    return (
+                      <S.ColorTag tint={TYPE_COLOR[activeField.type || ''] || floowColors.slate.main}>
+                        <ActiveTypeIcon />
+                        {typeLabel(activeField.type)}
+                      </S.ColorTag>
+                    );
+                  })()}
+                  <S.ColorTag tint={ROLE_COLOR[activeField.roleTarget || FormFieldDtoRoleTargetEnum.Both] || floowColors.slate.main}>
                     {roleLabel(activeField.roleTarget)}
-                  </Badge>
+                  </S.ColorTag>
                   {activeField.required && (
                     <Badge variant="warning" size="small">
                       Required

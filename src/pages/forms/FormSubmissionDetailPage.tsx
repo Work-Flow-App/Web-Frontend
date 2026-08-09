@@ -23,6 +23,7 @@ import { formService, workerService, FormFieldDtoRoleTargetEnum } from '../../se
 import type { FormSubmissionResponse, WorkerResponse } from '../../services/api';
 import { buildFieldDefaultValues, buildFieldValueDtos, getMissingRequiredFieldLabels } from './utils/formFieldRender';
 import { FormFieldRow } from './components/FormFieldRow';
+import { floowColors } from '../../theme/colors';
 import * as S from './FormSubmissionDetailPage.styles';
 
 const FINAL_STATUSES = ['SUBMITTED', 'COMPLETED'];
@@ -205,7 +206,7 @@ export const FormSubmissionDetailPage: React.FC = () => {
           <S.CardBody>
             <S.MetaRow>
               <S.MetaItem>
-                <S.MetaIconBadge>
+                <S.MetaIconBadge tint={isFinalized ? floowColors.success.main : floowColors.warning.main}>
                   <FlagOutlinedIcon />
                 </S.MetaIconBadge>
                 <S.MetaText>
@@ -216,7 +217,7 @@ export const FormSubmissionDetailPage: React.FC = () => {
                 </S.MetaText>
               </S.MetaItem>
               <S.MetaItem>
-                <S.MetaIconBadge>
+                <S.MetaIconBadge tint={floowColors.indigo.main}>
                   <DescriptionOutlinedIcon />
                 </S.MetaIconBadge>
                 <S.MetaText>
@@ -225,7 +226,7 @@ export const FormSubmissionDetailPage: React.FC = () => {
                 </S.MetaText>
               </S.MetaItem>
               <S.MetaItem>
-                <S.MetaIconBadge>
+                <S.MetaIconBadge tint={floowColors.chart.quaternary}>
                   <PersonOutlineIcon />
                 </S.MetaIconBadge>
                 <S.MetaText>
