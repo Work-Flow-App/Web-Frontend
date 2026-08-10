@@ -219,6 +219,7 @@ export const PageList: React.FC = () => {
         selectable
         showActions
         actions={tableActions}
+        onRowClick={handleViewProfile}
         loading={loading}
         emptyMessage="No workers found. Add your first worker to get started."
         rowsPerPage={10}

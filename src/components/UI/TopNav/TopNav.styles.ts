@@ -23,6 +23,14 @@ export const TopNavOuterWrapper = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('md')]: {
     padding: 0,
   },
+
+  [theme.breakpoints.down('sm')]: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
 }));
 
 /**

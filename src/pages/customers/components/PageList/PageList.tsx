@@ -154,6 +154,7 @@ export const PageList: React.FC = () => {
         rowsPerPage={10}
         showPagination={true}
         enableStickyLeft={true}
+        view={false}
       />
     </PageWrapper>
   );

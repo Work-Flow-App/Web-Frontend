@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
-import { Sidebar } from '../components/UI/Sidebar';
+import { Sidebar, BottomTab } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -298,6 +298,9 @@ export const Layout: React.FC = () => {
         onToggleCollapse={handleToggleSidebar}
         subtitle={isWorker ? 'Worker' : 'Company'}
       />
+
+      {/* Mobile Bottom Tab Navigation */}
+      <BottomTab items={sidebarItems} />
 
       {/* Right Section: TopNav + MainContent */}
       <S.PageRightSection>

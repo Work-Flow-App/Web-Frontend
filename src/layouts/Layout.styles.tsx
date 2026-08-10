@@ -17,9 +17,6 @@ export const PageWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-/**
- * Right section containing TopNav and content area
- */
 export const PageRightSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -28,7 +25,7 @@ export const PageRightSection = styled(Box)(({ theme }) => ({
   overflow: 'hidden',
 
   [theme.breakpoints.down('sm')]: {
-    height: 'auto',
+    paddingTop: rem(48),
   },
 }));
 
@@ -41,7 +38,7 @@ export const MainContent = styled(Box)(({ theme }) => ({
   background: theme.palette.colors.grey_50,
 
   [theme.breakpoints.down('sm')]: {
-    overflow: 'visible',
+    paddingBottom: rem(80),
   },
 }));
 
