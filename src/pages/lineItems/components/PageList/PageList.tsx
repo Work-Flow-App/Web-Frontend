@@ -162,7 +162,6 @@ export const PageList: React.FC = () => {
         emptyMessage="No line items found. Create your first line item to get started."
         rowsPerPage={10}
         showPagination={true}
-        view={false}
       />
     </PageWrapper>
   );

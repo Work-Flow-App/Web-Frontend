@@ -276,7 +276,6 @@ export const WorkerDetail: React.FC = () => {
           emptyMessage="No certificates on file for this worker."
           rowsPerPage={10}
           showPagination
-          view={false}
         />
       </div>
     </S.PageContent>

@@ -117,7 +117,6 @@ export const InvitationsPage: React.FC = () => {
           rowsPerPage={10}
           showPagination={true}
           enableStickyLeft={true}
-          view={false}
         />
       </PageWrapper>
     </InvitationsContainer>

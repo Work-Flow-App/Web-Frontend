@@ -43,13 +43,6 @@ export const PageHeader = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(1.5),
     gap: theme.spacing(1),
-    position: 'fixed',
-    top: rem(48),
-    left: 0,
-    right: 0,
-    zIndex: 900,
-    borderRadius: 0,
-    borderBottom: `1px solid ${theme.palette.colors?.grey_100 || theme.palette.divider}`,
   },
 }));
 
@@ -190,9 +183,7 @@ export const FilterButton = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const PageContent = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'headerHeight',
-})<{ headerHeight?: number }>(({ theme, headerHeight }) => ({
+export const PageContent = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
@@ -211,7 +202,6 @@ export const PageContent = styled(Box, {
   [theme.breakpoints.down('sm')]: {
     padding: `0 ${theme.spacing(1.5)}`,
     paddingBottom: theme.spacing(1.5),
-    paddingTop: headerHeight ? `${headerHeight}px` : 0,
   },
 }));
 

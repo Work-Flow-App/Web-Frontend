@@ -85,8 +85,6 @@ export interface ITable<T = ITableRow> {
   className?: string;
   /** Optional ID of a row to highlight (e.g. when returning to the page) */
   highlightedRowId?: string | number;
-  /** Show the view button on mobile responsive cards */
-  view?: boolean;
 }
 
 export interface IStyledTableProps {

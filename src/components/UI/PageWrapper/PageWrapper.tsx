@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useRef, useEffect } from 'react';
+import { memo, useCallback } from 'react';
 import { Button } from '../Button';
 import { Search } from '../Search';
 import { StandaloneDropdown } from '../Forms/Dropdown';
@@ -25,43 +25,6 @@ const PageWrapperContent = memo(
     headerExtra,
     maxWidth,
   }: PageWrapperProps) => {
-    const [headerHeight, setHeaderHeight] = useState(0);
-    const headerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      const element = headerRef.current;
-      if (!element) return;
-
-      const resizeObserver = new ResizeObserver((entries) => {
-        const isMobile = window.innerWidth < 600; // 'sm' breakpoint
-        if (isMobile) {
-          for (let entry of entries) {
-            setHeaderHeight(entry.target.getBoundingClientRect().height);
-          }
-        } else {
-          setHeaderHeight(0);
-        }
-      });
-
-      resizeObserver.observe(element);
-
-      // Handle resize to reset height if screen switches to desktop
-      const handleResize = () => {
-        const isMobile = window.innerWidth < 600;
-        if (!isMobile) {
-          setHeaderHeight(0);
-        } else if (element) {
-          setHeaderHeight(element.getBoundingClientRect().height);
-        }
-      };
-      window.addEventListener('resize', handleResize);
-
-      return () => {
-        resizeObserver.disconnect();
-        window.removeEventListener('resize', handleResize);
-      };
-    }, []);
-
     const handleDropdownChange = useCallback(
       (value: string | number | null) => {
         if (value !== null) {
@@ -73,7 +36,7 @@ const PageWrapperContent = memo(
 
     return (
       <S.PageContainer maxWidth={maxWidth}>
-        <S.PageHeader ref={headerRef}>
+        <S.PageHeader>
           <S.HeaderContent>
             <S.HeaderLeft>
               <S.Title>{title}</S.Title>
@@ -122,7 +85,7 @@ const PageWrapperContent = memo(
           </S.HeaderContent>
         </S.PageHeader>
 
-        <S.PageContent headerHeight={headerHeight}>{children}</S.PageContent>
+        <S.PageContent>{children}</S.PageContent>
       </S.PageContainer>
     );
   }
