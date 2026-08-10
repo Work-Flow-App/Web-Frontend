@@ -30,7 +30,7 @@ export const BottomTabContainer = styled(Box)(({ theme }) => ({
  * Flex layout row for buttons wrapper
  */
 export const BottomTabButtonsWrapper = styled(Box)(() => ({
-  display: 'flex',
+  display:'flex',
   flexDirection: 'row',
   justifyContent: 'space-around',
   alignItems: 'center',
