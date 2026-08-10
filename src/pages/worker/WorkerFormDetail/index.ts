@@ -1,0 +1,1 @@
+export { WorkerFormDetail } from './WorkerFormDetail';

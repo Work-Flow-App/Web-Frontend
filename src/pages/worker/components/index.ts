@@ -9,3 +9,7 @@ export { AvatarUpload } from './AvatarUpload';
 export type { AvatarUploadProps } from './AvatarUpload';
 export { WeeklyHoursCard } from './WeeklyHoursCard';
 export type { WeeklyHoursCardProps } from './WeeklyHoursCard';
+export { AssetAddressForm } from './AssetAddressForm';
+export type { AssetAddressFormProps } from './AssetAddressForm';
+export { AssetDetailModal } from './AssetDetailModal';
+export type { AssetDetailModalProps } from './AssetDetailModal';

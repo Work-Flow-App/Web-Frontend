@@ -482,7 +482,17 @@ export const BaseDropdown = memo((props: DropdownProps) => {
               autoComplete="off"
             />
           )}
-          PopperComponent={(props) => <S.CustomPopper {...props} className={`${props.className} custom-popper-class`} />}
+          PopperComponent={(props) => (
+            <S.CustomPopper
+              {...props}
+              className={`${props.className} custom-popper-class`}
+              // Popper defaults to `position: absolute` offset math, which is computed wrong
+              // when the anchor (this input) sits inside a `position: fixed` ancestor - like
+              // GlobalModal. Only matters once the popper actually portals out to <body>;
+              // disablePortal cases stay untouched since they never had this problem.
+              popperOptions={disablePortal ? undefined : { strategy: 'fixed' }}
+            />
+          )}
           renderOption={(props, option, state) => {
             const dropdownOption = option as DropdownOption;
             return (
