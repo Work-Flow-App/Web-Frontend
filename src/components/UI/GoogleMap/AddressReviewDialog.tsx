@@ -54,8 +54,9 @@ const AddressReviewDialog: React.FC<AddressReviewDialogProps> = ({ open, initial
   const handleConfirm = () => {
     if (!canConfirm) return;
     const composedAddress = formatAddress(values);
+    const fallbackLocation = initialValue ?? { location: { lat: 0, lng: 0 }, isManualAddressOnly: true };
     onConfirm({
-      ...(initialValue ?? { location: { lat: 0, lng: 0 } }),
+      ...fallbackLocation,
       address: composedAddress || values.street,
       streetLine: values.street,
       city: values.city,
@@ -87,23 +88,23 @@ const AddressReviewDialog: React.FC<AddressReviewDialogProps> = ({ open, initial
         <ReviewFieldsGrid>
           <div>
             <ReviewFieldLabel>Street Address</ReviewFieldLabel>
-            <ReviewFieldInput value={values.street} onChange={handleChange('street')} autoFocus fullWidth />
+            <ReviewFieldInput value={values.street} onChange={handleChange('street')} autoFocus fullWidth aria-label="Street Address" />
           </div>
           <div>
             <ReviewFieldLabel>City</ReviewFieldLabel>
-            <ReviewFieldInput value={values.city} onChange={handleChange('city')} fullWidth />
+            <ReviewFieldInput value={values.city} onChange={handleChange('city')} fullWidth aria-label="City" />
           </div>
           <div>
             <ReviewFieldLabel>State/Region</ReviewFieldLabel>
-            <ReviewFieldInput value={values.state} onChange={handleChange('state')} fullWidth />
+            <ReviewFieldInput value={values.state} onChange={handleChange('state')} fullWidth aria-label="State/Region" />
           </div>
           <div>
             <ReviewFieldLabel>Postal Code</ReviewFieldLabel>
-            <ReviewFieldInput value={values.postalCode} onChange={handleChange('postalCode')} fullWidth />
+            <ReviewFieldInput value={values.postalCode} onChange={handleChange('postalCode')} fullWidth aria-label="Postal Code" />
           </div>
           <div>
             <ReviewFieldLabel>Country</ReviewFieldLabel>
-            <ReviewFieldInput value={values.country} onChange={handleChange('country')} fullWidth />
+            <ReviewFieldInput value={values.country} onChange={handleChange('country')} fullWidth aria-label="Country" />
           </div>
         </ReviewFieldsGrid>
       </DialogContent>
