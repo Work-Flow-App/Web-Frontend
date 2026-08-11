@@ -750,6 +750,7 @@ export const EventNoteContent = styled('p')(({ theme }) => ({
   color: theme.palette.text.secondary,
   margin: 0,
   lineHeight: 1.5,
+  whiteSpace: 'pre-wrap',
 }));
 
 // Main Content Panel
@@ -2713,9 +2714,11 @@ export const ActivityBubble = styled(Box)(({ theme }) => ({
   color: theme.palette.text.primary,
   lineHeight: 1.6,
   wordBreak: 'break-word',
+  whiteSpace: 'pre-wrap',
 }));
 
 export const ActivityBubbleHtml = styled(Box)(() => ({
+  whiteSpace: 'pre-wrap',
   '& p': { margin: 0 },
   '& ul, & ol': { margin: `${rem(4)} 0`, paddingLeft: rem(20) },
   '& strong': { fontWeight: Bold._700 },

@@ -1,8 +1,44 @@
-import { Box, Typography, styled } from '@mui/material';
+import { Box, Typography, styled, IconButton } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { rem, Bold } from '../../../../../components/UI/Typography/utility';
 import { floowColors } from '../../../../../theme/colors';
+import { EmptyFeedBox } from './StepActivityTab.styles';
 
-export { EmptyFeedBox } from './StepActivityTab.styles';
+export const WorkLogsEmptyFeedBox = styled(EmptyFeedBox)(() => ({
+  minHeight: rem(300),
+}));
+
+export const EmptyFeedIcon = styled(AccessTimeIcon)(({ theme }) => ({
+  fontSize: rem(48),
+  color: theme.palette.colors.grey_200,
+}));
+
+export const JumpToStepButton = styled(IconButton)(() => ({
+  width: rem(32),
+  height: rem(32),
+  padding: 0,
+}));
+
+export const SearchStepIcon = styled(SearchIcon)(() => ({
+  fontSize: rem(20),
+}));
+
+export const TimerIcon = styled(AccessTimeIcon)(() => ({
+  fontSize: rem(32),
+  color: 'white',
+}));
+
+export const ActionEditIcon = styled(EditIcon)(() => ({
+  fontSize: rem(16),
+}));
+
+export const ActionDeleteIcon = styled(DeleteIcon)(() => ({
+  fontSize: rem(16),
+}));
+
 
 // ─── Outer Layout (Rail + Right Content) ──────────────────────────────────────
 
@@ -322,7 +358,7 @@ export const Tr = styled('tr')(() => ({
 }));
 
 // Data rows — 3.5rem height, clickable
-export const DataTr = styled('tr')(({ theme }) => ({
+export const DataTr = styled('tr')(() => ({
   height: rem(56),
   maxHeight: rem(56),
   cursor: 'pointer',
@@ -359,7 +395,7 @@ export const NotesTd = styled('td')(({ theme }) => ({
   textOverflow: 'ellipsis',
 }));
 
-export const UserBadge = styled(Box)(({ theme }) => ({
+export const UserBadge = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: rem(6),
@@ -412,16 +448,11 @@ export const NotePopupBackdrop = styled(Box)(() => ({
   backgroundColor: 'rgba(0, 0, 0, 0.22)',
 }));
 
-// Card is fixed-positioned and centred on the clicked row.
-// `yOffset` (px from top of viewport) is the row's vertical mid-point.
-export const NotePopupCard = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'yOffset',
-})<{ yOffset?: number }>(({ theme, yOffset }) => ({
+// Card is fixed-positioned and centered in the viewport.
+export const NotePopupCard = styled(Box)(({ theme }) => ({
   position: 'fixed',
-  // Horizontally centred in the viewport
   left: '50%',
-  // Vertically centred on the clicked row; fall back to viewport centre
-  top: yOffset !== undefined ? `${yOffset}px` : '50vh',
+  top: '50%',
   transform: 'translate(-50%, -50%)',
   zIndex: 1301,
   backgroundColor: theme.palette.colors.white,
@@ -429,15 +460,17 @@ export const NotePopupCard = styled(Box, {
   boxShadow: `0 ${rem(8)} ${rem(32)} rgba(0,0,0,0.16)`,
   padding: `${rem(14)} ${rem(18)}`,
   minWidth: rem(180),
-  maxWidth: rem(440),
+  maxWidth: '80vw',
+  maxHeight: '80vh',
   width: 'fit-content',
+  height: 'fit-content',
   display: 'flex',
   flexDirection: 'column',
   gap: rem(6),
   border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   [theme.breakpoints.down('sm')]: {
-    maxWidth: `calc(100vw - ${rem(32)})`,
-    width: `calc(100vw - ${rem(32)})`,
+    maxWidth: '80vw',
+    width: 'fit-content',
   },
 }));
 
@@ -485,13 +518,16 @@ export const NotePopupDivider = styled('hr')(({ theme }) => ({
   margin: 0,
 }));
 
-// Second line: full note text — wraps naturally, no truncation
+// Second line: full note text — wraps naturally, no truncation, scrolls if needed
 export const NotePopupNoteText = styled(Typography)(({ theme }) => ({
   fontSize: rem(13),
   color: theme.palette.text.secondary,
   lineHeight: 1.5,
   wordBreak: 'break-word',
   whiteSpace: 'pre-wrap',
+  overflowY: 'auto',
+  maxHeight: `calc(80vh - ${rem(60)})`,
+  boxSizing: 'border-box',
 }));
 
 export const AllStepCircle = styled(StepCircle)(() => ({

@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { CircularProgress, Tooltip, IconButton } from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
 import type {
   JobResponse,
   JobWorkflowStepResponse,
@@ -17,7 +13,6 @@ import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
 import { AddWorkLogModal } from './AddWorkLogModal';
 import { getStepColor } from './StepActivityTab.utils';
-import { rem } from '../../../../../components/UI/Typography/utility';
 import * as WS from './JobWorkLogsTab.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -73,8 +68,6 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [popupLog, setPopupLog] = useState<StepVisitLogResponse | null>(null);
-  // Vertical centre (px from viewport top) of the row that was clicked
-  const [popupY, setPopupY] = useState<number>(0);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -220,12 +213,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   // ── Modal helpers ────────────────────────────────────────────────────────────
 
   const handleRowClick = useCallback(
-    (log: StepVisitLogResponse, e: React.MouseEvent<HTMLTableRowElement>) => {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const rawY = rect.top + rect.height / 2;
-      // Clamp so the popup card (est. ~100px tall) never overflows the viewport
-      const clampedY = Math.max(60, Math.min(rawY, window.innerHeight - 60));
-      setPopupY(clampedY);
+    (log: StepVisitLogResponse) => {
       setPopupLog(log);
     },
     []
@@ -269,10 +257,10 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
 
   if (!steps.length) {
     return (
-      <WS.EmptyFeedBox sx={{ minHeight: 300 }}>
-        <AccessTimeIcon sx={{ fontSize: rem(48), color: 'grey.200' }} />
+      <WS.WorkLogsEmptyFeedBox>
+        <WS.EmptyFeedIcon />
         <span>No workflow steps found for this job.</span>
-      </WS.EmptyFeedBox>
+      </WS.WorkLogsEmptyFeedBox>
     );
   }
 
@@ -289,13 +277,12 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
           {/* Search icon + expanding input */}
           <WS.StepSearchWrapper>
             <Tooltip title={searchOpen ? 'Close' : 'Jump to step'} placement="right">
-              <IconButton
+              <WS.JumpToStepButton
                 size="medium"
                 onClick={handleSearchIconClick}
-                sx={{ width: rem(32), height: rem(32), padding: 0 }}
               >
-                <SearchIcon sx={{ fontSize: rem(20) }} />
-              </IconButton>
+                <WS.SearchStepIcon />
+              </WS.JumpToStepButton>
             </Tooltip>
 
             {searchOpen && (
@@ -368,7 +355,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         <WS.SummarySection>
           <WS.TrackingBox>
             <WS.TimerIconBox>
-              <AccessTimeIcon sx={{ fontSize: rem(32), color: 'white' }} />
+              <WS.TimerIcon />
             </WS.TimerIconBox>
             <WS.TrackingInfo>
               <WS.TrackingLabel>
@@ -447,7 +434,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                     /* Data row — clicking anywhere opens the popup */
                     <WS.DataTr
                       key={log.id}
-                      onClick={(e) => handleRowClick(log, e)}
+                      onClick={() => handleRowClick(log)}
                     >
                       <WS.Td>{formatDate(log.visitDate)}</WS.Td>
 
@@ -487,7 +474,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                               size="small"
                               onClick={() => openModal(log)}
                             >
-                              <EditIcon sx={{ fontSize: rem(16) }} />
+                              <WS.ActionEditIcon />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Delete">
@@ -496,7 +483,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
                               color="error"
                               onClick={() => log.id && handleDelete(log.id)}
                             >
-                              <DeleteIcon sx={{ fontSize: rem(16) }} />
+                              <WS.ActionDeleteIcon />
                             </IconButton>
                           </Tooltip>
                         </WS.ActionCell>
@@ -515,7 +502,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         /* Backdrop — click outside to close */
         <WS.NotePopupBackdrop onClick={() => setPopupLog(null)}>
           {/* Card — stop propagation so clicking inside doesn't close */}
-          <WS.NotePopupCard yOffset={popupY} onClick={(e) => e.stopPropagation()}>
+          <WS.NotePopupCard onClick={(e) => e.stopPropagation()}>
 
             {/* Line 1: start→end time + ✕ close button */}
             <WS.NotePopupHeader>

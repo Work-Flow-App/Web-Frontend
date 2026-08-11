@@ -1,6 +1,13 @@
-import { Box, Typography, TextField, styled } from '@mui/material';
+import { Box, Typography, TextField, styled, IconButton } from '@mui/material';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { rem, Bold } from '../../../../../components/UI/Typography/utility';
 import { floowColors } from '../../../../../theme/colors';
+import { Button } from '../../../../../components/UI/Button';
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
@@ -466,6 +473,7 @@ export const MessageBubble = styled(Box, {
   fontSize: rem(13.5),
   lineHeight: 1.65,
   wordBreak: 'break-word',
+  whiteSpace: 'pre-wrap',
   '& p': { margin: 0 },
   '& strong': { fontWeight: Bold._700 },
 }));
@@ -576,4 +584,56 @@ export const FilterTypeLabel = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
   fontWeight: theme.typography.fontWeightMedium,
   letterSpacing: '0.3px',
+}));
+
+// Styled components to eliminate inline sx props in TSX
+export const ActivityEmptyFeedBox = styled(EmptyFeedBox)(() => ({
+  minHeight: rem(300),
+}));
+
+export const EmptyFeedIcon = styled(ChatBubbleOutlineIcon)(({ theme }) => ({
+  fontSize: rem(48),
+  color: theme.palette.colors.grey_200,
+}));
+
+export const CheckIconStyled = styled(CheckIcon)(() => ({
+  fontSize: rem(14),
+}));
+
+export const CloseIconStyled = styled(CloseIcon)(() => ({
+  fontSize: rem(14),
+}));
+
+export const DownloadIconButton = styled(IconButton, {
+  shouldForwardProp: (prop) => prop !== 'isMine',
+})<{ isMine?: boolean }>(({ isMine, theme }) => ({
+  color: isMine ? 'rgba(255, 255, 255, 0.8)' : theme.palette.text.secondary,
+}));
+
+export const MessageEditIcon = styled(EditIcon)(() => ({
+  fontSize: rem(13),
+}));
+
+export const MessageDeleteIcon = styled(DeleteIcon)(() => ({
+  fontSize: rem(13),
+}));
+
+export const SidebarEmptyIcon = styled(ChatBubbleOutlineIcon)(() => ({
+  fontSize: rem(14),
+}));
+
+export const HeaderEmptyIcon = styled(ChatBubbleOutlineIcon)(() => ({
+  fontSize: rem(15),
+}));
+
+export const AttachIconStyled = styled(AttachFileIcon)(() => ({
+  fontSize: rem(16),
+}));
+
+export const SendButton = styled(Button)(({ theme }) => ({
+  flexShrink: 0,
+  borderRadius: rem(10),
+  height: rem(40),
+  paddingLeft: theme.spacing(2.5),
+  paddingRight: theme.spacing(2.5),
 }));
