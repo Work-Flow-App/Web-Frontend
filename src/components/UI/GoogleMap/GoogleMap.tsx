@@ -175,7 +175,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const handlePlaceSelect = useCallback(
     (place: PlaceDetails) => {
       if (place.isManualAddressOnly) {
-        setManualAddressHint(`Address saved as "${place.address}". Click on the map to set the pin location.`);
+        // With confirmBeforeSelect, nothing is saved yet until the dialog is confirmed —
+        // the "saved" hint would be misleading, and AddressReviewDialog itself is where
+        // the user edits the address at this point.
+        if (!confirmBeforeSelect) {
+          setManualAddressHint(`Address saved as "${place.address}". Click on the map to set the pin location.`);
+        }
       } else {
         setManualAddressHint(null);
         setMapCenter(place.location);
@@ -223,8 +228,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
     (place: PlaceDetails) => {
       setReviewOpen(false);
       setPendingReviewPlace(null);
-      setMapCenter(place.location);
-      setMapZoom(15);
+      if (!place.isManualAddressOnly) {
+        setMapCenter(place.location);
+        setMapZoom(15);
+      }
       onLocationSelect?.(place);
     },
     [onLocationSelect]
@@ -233,6 +240,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const handleReviewCancel = useCallback(() => {
     setReviewOpen(false);
     setPendingReviewPlace(null);
+    setManualAddressHint(null);
   }, []);
 
   if (!isGoogleMapsConfigured()) {
