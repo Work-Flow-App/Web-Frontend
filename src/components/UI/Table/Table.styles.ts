@@ -1,5 +1,6 @@
 import { styled, keyframes } from '@mui/material/styles';
-import { Box, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Box, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Typography } from '@mui/material';
+import { rem } from '../Typography/utility';
 import type { IStyledTableProps, IStyledTableCellProps, IStyledCheckboxProps, IStyledStatusPillProps } from './ITable';
 import { floowColors } from '../../../theme/colors';
 
@@ -36,6 +37,9 @@ export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   maxHeight: 'calc(100vh - 17.5rem)',
   [theme.breakpoints.down('md')]: {
     display: 'none',
+    '&.mobile-show-table': {
+      display: 'block',
+    },
   },
 
   '&::-webkit-scrollbar': {
@@ -417,19 +421,73 @@ export const MobileResponsiveCardsContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   gap: '1rem',
   [theme.breakpoints.down('md')]: {
-    display: 'flex',
-    maxHeight: 'calc(100vh - 17.5rem)',
-    overflowY: 'auto',
-    paddingRight: '0.25rem',
-    '&::-webkit-scrollbar': {
-      width: '0.25rem',
+    display: 'none',
+    '&.mobile-show-card': {
+      display: 'flex',
     },
-    '&::-webkit-scrollbar-track': {
-      background: 'transparent',
-    },
-    '&::-webkit-scrollbar-thumb': {
-      background: theme.palette.colors.grey_300,
-      borderRadius: '0.125rem',
-    },
+    maxHeight: 'none',
+    overflowY: 'visible',
+    paddingRight: 0,
   },
 }));
+
+export const ToggleViewWrapper = styled(Box)(({ theme }) => ({
+  display: 'none',
+  width: '100%',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  marginBottom: '0',
+  [theme.breakpoints.down('md')]: {
+    display: 'flex',
+  },
+}));
+
+export const ToggleSwitchTrack = styled(Box)(({ theme }) => {
+  const isDark = theme.palette.mode === 'dark';
+  return {
+    width: rem(84),
+    height: rem(32),
+    borderRadius: rem(16),
+    background: isDark ? theme.palette.colors.white : theme.palette.colors.black,
+    position: 'relative',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    padding: `0 ${rem(3)}`,
+    boxSizing: 'border-box',
+    userSelect: 'none',
+  };
+});
+
+export const ToggleSwitchText = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== '$active',
+})<{ $active: boolean }>(({ theme, $active }) => {
+  const isDark = theme.palette.mode === 'dark';
+  return {
+    fontFamily: 'Manrope, sans-serif',
+    fontSize: rem(12),
+    fontWeight: 700,
+    color: isDark ? theme.palette.colors.black : theme.palette.colors.white,
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    right: $active ? 'auto' : rem(10),
+    left: $active ? rem(10) : 'auto',
+    userSelect: 'none',
+    pointerEvents: 'none',
+  };
+});
+
+export const ToggleSwitchThumb = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$active',
+})<{ $active: boolean }>(({ theme, $active }) => {
+  const isDark = theme.palette.mode === 'dark';
+  return {
+    width: rem(26),
+    height: rem(26),
+    borderRadius: '50%',
+    background: isDark ? theme.palette.colors.black : theme.palette.colors.white,
+    transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: $active ? `translateX(${rem(52)})` : 'translateX(0)',
+  };
+});

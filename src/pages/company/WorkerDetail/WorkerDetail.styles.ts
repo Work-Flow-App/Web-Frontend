@@ -44,6 +44,9 @@ export const HeaderTop = styled(Box)(() => ({
 
 export const IdBlock = styled(Box)(() => ({
   minWidth: 0,
+  '@media (max-width: 600px)': {
+    width: '100%',
+  },
 }));
 
 export const HeaderTitleRow = styled(Box)(() => ({
@@ -87,6 +90,13 @@ export const HeaderActionsRow = styled(Box)(() => ({
   gap: rem(10),
   flex: 'none',
   flexWrap: 'wrap',
+
+  '@media (max-width: 600px)': {
+    width: '100%',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: rem(8),
+  },
 }));
 
 export const StatsRow = styled(Box)(() => ({

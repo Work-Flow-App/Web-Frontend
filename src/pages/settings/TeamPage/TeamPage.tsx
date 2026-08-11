@@ -239,6 +239,7 @@ export const TeamPage: React.FC = () => {
             rowsPerPage={10}
             showPagination={true}
             enableStickyLeft={true}
+            view={false}
           />
         )}
         {activeTab === 1 && (
@@ -250,6 +251,7 @@ export const TeamPage: React.FC = () => {
             rowsPerPage={10}
             showPagination={true}
             enableStickyLeft={true}
+            view={false}
           />
         )}
       </PageWrapper>

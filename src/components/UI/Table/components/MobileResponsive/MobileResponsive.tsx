@@ -34,6 +34,7 @@ interface IMobileResponsiveProps<T = ITableRow> {
   onActionClick?: (row: T, event: React.MouseEvent) => void;
   onRowClick?: (row: T) => void;
   highlightedRowId?: string | number;
+  showViewButton?: boolean;
 }
 
 const MobileResponsive = <T extends ITableRow = ITableRow>({
@@ -46,6 +47,7 @@ const MobileResponsive = <T extends ITableRow = ITableRow>({
   onActionClick,
   onRowClick,
   highlightedRowId,
+  showViewButton = true,
 }: IMobileResponsiveProps<T>) => {
   const { selectedRows, toggleRowSelection } = useDataRow();
 
@@ -85,29 +87,77 @@ const MobileResponsive = <T extends ITableRow = ITableRow>({
 
   // 1. Dynamic Title/ID resolution
   const getCardTitle = () => {
+    // Check for Line Item
+    const productCodeCol = columns.find((col) => col.id === 'productCode' || col.label === 'Product Code');
+    if (productCodeCol) {
+      const code = row[productCodeCol.accessor || 'productCode'] || row.productCode || '';
+      return `Product Code:${code}`;
+    }
+
+    // Check for Asset
+    const assetIdCol = columns.find((col) => col.label === 'Asset ID');
+    if (assetIdCol) {
+      const ref = row[assetIdCol.accessor || 'assetRef'] ?? row.assetRef ?? row.id;
+      return `Asset ID:${ref}`;
+    }
+
+    // Check for Workflow
+    const workflowIdCol = columns.find((col) => col.id === 'id' && col.label === 'ID');
+    if (workflowIdCol && ('workflowRef' in row || 'stepCount' in row)) {
+      const ref = row.workflowRef ?? row.id;
+      return `ID:${ref}`;
+    }
+
+    // Check for Job No
+    const jobNoCol = columns.find(
+      (col) =>
+        col.id === 'jobRef' ||
+        col.label.toLowerCase().includes('job no')
+    );
+    if (jobNoCol) {
+      const ref = row[jobNoCol.accessor || 'jobRef'] ?? row.jobRef ?? row.id;
+      return `Job No. ${ref}`;
+    }
+
+    // Check for Member (All Workers)
+    const memberCol = columns.find((col) => col.label === 'Member');
+    if (memberCol) {
+      return String(row[memberCol.accessor || 'name'] || row.name || '');
+    }
+
+    // Check for Template Name
+    const templateCol = columns.find((col) => col.label === 'Template Name');
+    if (templateCol) {
+      return String(row[templateCol.accessor || 'name'] || row.name || '');
+    }
+
+    // Check for Client
+    const clientCol = columns.find((col) => col.label === 'Client');
+    if (clientCol) {
+      return String(row[clientCol.accessor || 'name'] || row.name || '');
+    }
+
+    // Check for Customer
+    const customerCol = columns.find((col) => col.label === 'Customer');
+    if (customerCol) {
+      return String(row[customerCol.accessor || 'name'] || row.name || '');
+    }
+
+    // Fallbacks
     const titleCol = columns.find(
       (col) =>
         col.id === 'id' ||
         col.id === 'jobRef' ||
-        col.label.toLowerCase().includes('job no') ||
         col.label.toLowerCase().includes('ref')
     );
 
     if (titleCol) {
-      const val = titleCol.render
-        ? titleCol.render(row)
-        : titleCol.accessor
-          ? row[titleCol.accessor]
-          : '';
-      const stringVal = String(val ?? '');
-      
-      // Format nice Label if not present
-      if (
-        titleCol.label.toLowerCase().includes('job no') &&
-        !stringVal.toLowerCase().includes('job no')
-      ) {
-        return `Job No. ${stringVal}`;
+      const rawVal = titleCol.accessor ? row[titleCol.accessor] : '';
+      if (rawVal) {
+        return String(rawVal);
       }
+      const val = titleCol.render ? titleCol.render(row) : '';
+      const stringVal = typeof val === 'object' ? '' : String(val ?? '');
       return stringVal;
     }
 
@@ -119,9 +169,10 @@ const MobileResponsive = <T extends ITableRow = ITableRow>({
     );
 
     if (nameCol) {
-      return nameCol.render
-        ? String(nameCol.render(row))
-        : String(row[nameCol.accessor || ''] ?? '');
+      const rawVal = nameCol.accessor ? row[nameCol.accessor] : '';
+      if (rawVal) {
+        return String(rawVal);
+      }
     }
 
     return `No. ${row.id}`;
@@ -144,17 +195,56 @@ const MobileResponsive = <T extends ITableRow = ITableRow>({
 
   // 3. Resolve Display Fields (exclude title and status columns)
   const fieldsToRender = columns.filter((col) => {
-    const isTitleCol =
-      col.id === 'id' ||
-      col.id === 'jobRef' ||
-      col.label.toLowerCase().includes('job no') ||
-      col.label.toLowerCase().includes('ref');
     const isStatusCol = col.id === 'status' || col.label.toLowerCase() === 'status';
+    if (isStatusCol) return false;
 
-    if (isTitleCol || isStatusCol) return false;
+    // Check and exclude columns that are used in the top card title
+    const labelLower = col.label.toLowerCase();
+    
+    // Exclude for Jobs
+    const isJobTitleCol = col.id === 'jobRef' || labelLower.includes('job no');
+    if (isJobTitleCol) {
+      const jobNoCol = columns.find((c) => c.id === 'jobRef' || c.label.toLowerCase().includes('job no'));
+      if (jobNoCol) return false;
+    }
+
+    // Exclude for Line Item (Product Code)
+    if (col.id === 'productCode' || col.label === 'Product Code') {
+      return false;
+    }
+
+    // Exclude for Asset ID
+    if (col.label === 'Asset ID') {
+      return false;
+    }
+
+    // Exclude for Workflow ID
+    if (col.id === 'id' && col.label === 'ID') {
+      return false;
+    }
+
+    // Exclude for Member (All Workers page)
+    if (col.label === 'Member') {
+      return false;
+    }
+
+    // Exclude for Template Name
+    if (col.label === 'Template Name') {
+      return false;
+    }
+
+    // Exclude for Client
+    if (col.label === 'Client') {
+      return false;
+    }
+
+    // Exclude for Customer
+    if (col.label === 'Customer') {
+      return false;
+    }
 
     // Exclude postcode if rendered inline on Job Value
-    if (col.id === 'postCode' || col.label.toLowerCase() === 'post code') {
+    if (col.id === 'postCode' || labelLower === 'post code') {
       const colVal = col.render
         ? col.render(row)
         : col.accessor
@@ -256,7 +346,7 @@ const MobileResponsive = <T extends ITableRow = ITableRow>({
           <SelectorAvatar>{contact.initials}</SelectorAvatar>
           <SelectorName>{contact.name}</SelectorName>
         </UserSelector>
-        <ViewButton onClick={handleViewClick}>View</ViewButton>
+        {showViewButton && <ViewButton onClick={handleViewClick}>View</ViewButton>}
       </CardFooter>
     </CardContainer>
   );

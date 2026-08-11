@@ -170,6 +170,7 @@ export const Compliance: React.FC = () => {
             actions={actions}
             loading={loadingAll}
             emptyMessage="No certificates found."
+            view={false}
           />
           {totalPages > 1 && (
             <S.PaginationWrapper>
@@ -187,6 +188,7 @@ export const Compliance: React.FC = () => {
           actions={actions}
           loading={loadingExpiring}
           emptyMessage={`No certificates expiring in the next ${days} days.`}
+          view={false}
         />
       )}
     </PageWrapper>
