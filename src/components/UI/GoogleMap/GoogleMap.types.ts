@@ -62,6 +62,10 @@ export interface GoogleMapProps {
   searchInitialValue?: string;
   className?: string;
   showDirections?: boolean;
+  /** When true, every pick (search, manual entry, map click) opens AddressReviewDialog
+   * first — onLocationSelect only fires once the user confirms. Defaults to false, which
+   * keeps existing consumers (e.g. MapsList's search-to-pan usage) unchanged. */
+  confirmBeforeSelect?: boolean;
 }
 
 export interface PlacesAutocompleteProps {

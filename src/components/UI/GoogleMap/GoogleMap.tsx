@@ -5,6 +5,7 @@ import DirectionsIcon from '@mui/icons-material/Directions';
 import CloseIcon from '@mui/icons-material/Close';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../config/googleMaps';
 import PlacesAutocomplete from './PlacesAutocomplete';
+import AddressReviewDialog from './AddressReviewDialog';
 import type { GoogleMapProps, PlaceDetails } from './GoogleMap.types';
 import {
   MapContainer,
@@ -47,7 +48,7 @@ import {
   getMarkerIcon,
   getGeolocationErrorMessage,
 } from './GoogleMapConst';
-import { extractAddressComponents } from './PlacesAutocompleteConst';
+import { reverseGeocode, isSameLocation } from '../../../utils/googleGeocoding';
 import { Typography } from '@mui/material';
 
 const GoogleMap: React.FC<GoogleMapProps> = ({
@@ -64,6 +65,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   searchInitialValue,
   className,
   showDirections = false,
+  confirmBeforeSelect = false,
 }) => {
   const resolvedHeight = typeof height === 'number' ? `${height}px` : height;
 
@@ -82,15 +84,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   const [directionsLoading, setDirectionsLoading] = useState(false);
   const [directionsError, setDirectionsError] = useState<string | null>(null);
   const [manualAddressHint, setManualAddressHint] = useState<string | null>(null);
+  const [pendingReviewPlace, setPendingReviewPlace] = useState<PlaceDetails | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const allMarkers = useMemo(() => {
     const list = [...markers];
     if (selectedLocation) {
-      const overlaps = markers.some(
-        (m) =>
-          Math.abs(m.location.lat - selectedLocation.location.lat) < 0.001 &&
-          Math.abs(m.location.lng - selectedLocation.location.lng) < 0.001
-      );
+      const overlaps = markers.some((m) => isSameLocation(m.location, selectedLocation.location));
       if (!overlaps) list.push(selectedLocation);
     }
     return list;
@@ -181,32 +181,59 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
         setMapCenter(place.location);
         setMapZoom(15);
       }
+      if (confirmBeforeSelect) {
+        setPendingReviewPlace(place);
+        setReviewOpen(true);
+        return;
+      }
       onLocationSelect?.(place);
     },
-    [onLocationSelect]
+    [onLocationSelect, confirmBeforeSelect]
   );
 
   const handleMapClick = useCallback(
     (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return;
       const location = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ location }, (results, status) => {
-        if (status === 'OK' && results?.[0]) {
-          const components = extractAddressComponents(results[0].address_components);
-          onLocationSelect?.({
-            address: results[0].formatted_address,
-            location,
-            placeId: results[0].place_id,
-            ...components,
-          });
-        } else {
-          onLocationSelect?.({ address: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`, location });
+      reverseGeocode(location).then((structured) => {
+        const place: PlaceDetails = structured
+          ? {
+              address: structured.formattedAddress,
+              streetLine: structured.streetLine,
+              location,
+              placeId: structured.placeId,
+              city: structured.city,
+              state: structured.state,
+              postalCode: structured.postalCode,
+              country: structured.country,
+            }
+          : { address: `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`, location };
+        if (confirmBeforeSelect) {
+          setPendingReviewPlace(place);
+          setReviewOpen(true);
+          return;
         }
+        onLocationSelect?.(place);
       });
+    },
+    [onLocationSelect, confirmBeforeSelect]
+  );
+
+  const handleReviewConfirm = useCallback(
+    (place: PlaceDetails) => {
+      setReviewOpen(false);
+      setPendingReviewPlace(null);
+      setMapCenter(place.location);
+      setMapZoom(15);
+      onLocationSelect?.(place);
     },
     [onLocationSelect]
   );
+
+  const handleReviewCancel = useCallback(() => {
+    setReviewOpen(false);
+    setPendingReviewPlace(null);
+  }, []);
 
   if (!isGoogleMapsConfigured()) {
     return (
@@ -276,7 +303,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
                 <Marker
                   key={`${marker.location.lat}-${marker.location.lng}-${index}`}
                   position={marker.location}
-                  icon={getMarkerIcon(jobStatus, isInProgress)}
+                  icon={getMarkerIcon(jobStatus, isInProgress, !!marker.workerData)}
                   onClick={() => setSelectedMarker(marker)}
                 />
               );
@@ -401,6 +428,12 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
           )}
         </MapWrapper>
       </MapContainer>
+      <AddressReviewDialog
+        open={reviewOpen}
+        initialValue={pendingReviewPlace}
+        onConfirm={handleReviewConfirm}
+        onCancel={handleReviewCancel}
+      />
     </MapOuterBox>
   );
 };
