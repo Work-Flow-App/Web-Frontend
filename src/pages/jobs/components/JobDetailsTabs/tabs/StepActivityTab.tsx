@@ -1,18 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   Tooltip,
-  IconButton as MuiIconButton,
   CircularProgress,
   Typography,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
 import SendIcon from '@mui/icons-material/Send';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import DownloadIcon from '@mui/icons-material/Download';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
@@ -36,6 +29,7 @@ import {
   useGlobalModalOuterContext,
   ModalSizes,
 } from '../../../../../components/UI/GlobalModal';
+import { rem } from '../../../../../components/UI/Typography/utility';
 
 import { FilterByTypeScreen } from './FilterByTypeScreen';
 import * as SS from './StepActivityTab.styles';
@@ -323,8 +317,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!visibleItems.length) {
       return (
         <SS.EmptyFeedBox>
-          <ChatBubbleOutlineIcon sx={{ fontSize: 48, color: 'grey.200' }} />
-          <Typography fontSize={14} color="text.secondary">
+          <SS.EmptyFeedIcon />
+          <Typography fontSize={rem(14)} color="text.secondary">
             No activity yet. Start the discussion!
           </Typography>
         </SS.EmptyFeedBox>
@@ -396,12 +390,12 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                     <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
                       {savingEdit
                         ? <CircularProgress size={12} />
-                        : <CheckIcon sx={{ fontSize: 14 }} />}
+                        : <SS.CheckIconStyled />}
                     </SS.MessageEditIconBtn>
                   </Tooltip>
                   <Tooltip title="Cancel (Esc)">
                     <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
-                      <CloseIcon sx={{ fontSize: 14 }} />
+                      <SS.CloseIconStyled />
                     </SS.MessageEditIconBtn>
                   </Tooltip>
                 </SS.MessageEditActions>
@@ -415,13 +409,13 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                     <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
                     {item.fileUrl && (
                       <Tooltip title="Download">
-                        <MuiIconButton
+                        <SS.DownloadIconButton
                           size="small"
                           onClick={() => window.open(item.fileUrl, '_blank')}
-                          sx={{ color: isMine ? 'rgba(255,255,255,0.8)' : 'text.secondary' }}
+                          isMine={isMine}
                         >
                           <DownloadIcon fontSize="small" />
-                        </MuiIconButton>
+                        </SS.DownloadIconButton>
                       </Tooltip>
                     )}
                   </SS.AttachmentRow>
@@ -441,7 +435,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             <SS.MessageActionGroup className="msg-action-group">
               <Tooltip title="Edit message">
                 <SS.MessageEditIconBtn onClick={() => startEdit(item)}>
-                  <EditIcon sx={{ fontSize: 13 }} />
+                  <SS.MessageEditIcon />
                 </SS.MessageEditIconBtn>
               </Tooltip>
               <Tooltip title="Delete message">
@@ -451,7 +445,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 >
                   {isDeleting
                     ? <CircularProgress size={12} color="error" />
-                    : <DeleteIcon sx={{ fontSize: 13 }} />}
+                    : <SS.MessageDeleteIcon />}
                 </SS.MessageDeleteIconBtn>
               </Tooltip>
             </SS.MessageActionGroup>
@@ -469,11 +463,11 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
 
   if (!steps.length) {
     return (
-      <SS.EmptyFeedBox sx={{ minHeight: 300 }}>
-        <Typography color="text.secondary" fontSize={14}>
+      <SS.ActivityEmptyFeedBox>
+        <Typography color="text.secondary" fontSize={rem(14)}>
           No workflow steps found for this job.
         </Typography>
-      </SS.EmptyFeedBox>
+      </SS.ActivityEmptyFeedBox>
     );
   }
 
@@ -495,7 +489,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               <SS.StepCircleIcon
                 circleColor={viewFilter === 'all' ? undefined : undefined}
               >
-                <ChatBubbleOutlineIcon sx={{ fontSize: 14 }} />
+                <SS.SidebarEmptyIcon />
               </SS.StepCircleIcon>
               <SS.StepTextGroup>
                 <SS.StepNameText isActive={viewFilter === 'all'}>All Steps</SS.StepNameText>
@@ -543,7 +537,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 {activeStepIdx >= 0 ? (
                   activeStepIdx + 1
                 ) : (
-                  <ChatBubbleOutlineIcon sx={{ fontSize: 15 }} />
+                  <SS.HeaderEmptyIcon />
                 )}
               </SS.ChatHeaderCircle>
               <div>
@@ -591,7 +585,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 {uploading ? (
                   <CircularProgress size={14} />
                 ) : (
-                  <AttachFileIcon sx={{ fontSize: 16 }} />
+                  <SS.AttachIconStyled />
                 )}
                 Attach
               </SS.ToolbarActionButton>
@@ -635,15 +629,14 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 maxRows={4}
                 fullWidth
               />
-              <Button
+              <SS.SendButton
                 size="medium"
                 onClick={handleSend}
                 disabled={!message.trim() || sending || !postToStepId}
                 endIcon={<SendIcon />}
-                sx={{ flexShrink: 0, borderRadius: '10px', height: 40, px: 2.5 }}
               >
                 {sending ? 'Sending…' : 'Send'}
-              </Button>
+              </SS.SendButton>
             </SS.InputRow>
           </SS.InputAreaWrapper>
         </SS.ChatPanel>
