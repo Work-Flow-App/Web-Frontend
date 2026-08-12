@@ -12,21 +12,18 @@ export interface CustomAddressFieldProps {
   fieldId: number;
 }
 
-const toPlaceDetails = (value: StructuredAddressFieldValue | null): PlaceDetails | null =>
-  value
-    ? {
-        address: formatAddress(value),
-        streetLine: value.street,
-        city: value.city,
-        state: value.state,
-        postalCode: value.postalCode,
-        country: value.country,
-        location: {
-          lat: value.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
-          lng: value.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
-        },
-      }
-    : null;
+const toPlaceDetails = (value: StructuredAddressFieldValue | null): PlaceDetails | null => {
+  if (!value || value.latitude == null || value.longitude == null) return null;
+  return {
+    address: formatAddress(value),
+    streetLine: value.street,
+    city: value.city,
+    state: value.state,
+    postalCode: value.postalCode,
+    country: value.country,
+    location: { lat: value.latitude, lng: value.longitude },
+  };
+};
 
 /**
  * Address-type job template custom field. Unlike LocationMapField (which spreads a fixed
@@ -56,22 +53,32 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
       setSelectedLocation(place);
       setMapCenter(place.location);
       setMapZoom(15);
+    } else {
+      setSelectedLocation(null);
+      setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
+      setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
     }
   }, [rawValue]);
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setSelectedLocation(place);
-    setMapCenter(place.location);
-    setMapZoom(15);
     const value: StructuredAddressFieldValue = {
       street: place.streetLine || place.address || '',
       city: place.city || '',
       state: place.state || '',
       postalCode: place.postalCode || '',
       country: place.country || '',
-      latitude: place.location?.lat ?? null,
-      longitude: place.location?.lng ?? null,
+      latitude: place.isManualAddressOnly ? null : place.location?.lat ?? null,
+      longitude: place.isManualAddressOnly ? null : place.location?.lng ?? null,
     };
+
+    if (place.isManualAddressOnly) {
+      setSelectedLocation(null);
+    } else {
+      setSelectedLocation(place);
+      setMapCenter(place.location);
+      setMapZoom(15);
+    }
+
     setValue(fieldName, value, { shouldDirty: true });
   };
 
