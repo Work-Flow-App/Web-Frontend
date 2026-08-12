@@ -60,18 +60,39 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     try {
       setUploading(true);
-      await stepActivityService.uploadAttachment(stepId, file);
-      showSuccess('Attachment uploaded successfully');
+      const failedUploads: string[] = [];
+
+      for (const file of files) {
+        try {
+          await stepActivityService.uploadAttachment(stepId, file);
+        } catch (error) {
+          console.error(`Error uploading attachment ${file.name}:`, error);
+          failedUploads.push(file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (files.length === 1) {
+          showSuccess('Attachment uploaded successfully');
+        } else {
+          showSuccess('All attachments uploaded successfully');
+        }
+      } else if (failedUploads.length < files.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
       fetchAttachments();
       onUpdate?.();
     } catch (error) {
-      console.error('Error uploading attachment:', error);
-      showError('Failed to upload attachment');
+      console.error('Error during attachments upload:', error);
+      showError('Failed to upload attachments');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -125,6 +146,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
         ref={fileInputRef}
         onChange={handleFileChange}
         onClick={(e) => e.stopPropagation()}
+        multiple
       />
 
       {attachments.length === 0 ? (

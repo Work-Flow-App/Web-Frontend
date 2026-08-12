@@ -227,20 +227,47 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !postToStepId) return;
-    setUploading(true);
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !postToStepId) return;
+
     try {
-      await stepActivityService.uploadAttachment(
-        postToStepId, file, postType as UploadAttachmentTypeEnum
-      );
-      showSuccess('Attachment uploaded');
+      setUploading(true);
+      const failedUploads: string[] = [];
+
+      for (const file of files) {
+        try {
+          await stepActivityService.uploadAttachment(
+            postToStepId,
+            file,
+            postType as UploadAttachmentTypeEnum
+          );
+        } catch (error) {
+          console.error(`Error uploading attachment ${file.name}:`, error);
+          failedUploads.push(file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (files.length === 1) {
+          showSuccess('Attachment uploaded');
+        } else {
+          showSuccess('All attachments uploaded');
+        }
+      } else if (failedUploads.length < files.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
       fetchAllTimelines(steps);
-    } catch {
-      showError('Failed to upload attachment');
+    } catch (error) {
+      console.error('Error during attachments upload:', error);
+      showError('Failed to upload attachments');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -647,6 +674,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         ref={fileInputRef}
         onChange={handleFileChange}
         style={{ display: 'none' }}
+        multiple
       />
     </>
   );
