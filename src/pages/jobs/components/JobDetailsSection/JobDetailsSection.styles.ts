@@ -120,12 +120,6 @@ export const MapEditWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const MapActionButtons = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: theme.spacing(1),
-}));
-
 export const StyledGoogleMap = styled(GoogleMap)(() => ({
   height: '100% !important',
   // Scale Map/Satellite toggle container (top-left)
@@ -146,42 +140,6 @@ export const StyledGoogleMap = styled(GoogleMap)(() => ({
   '& .gm-style > div > .gmnoprint:has(.gm-bundled-control), & .gm-bundled-control': {
     transform: 'scale(0.65) !important',
     transformOrigin: 'bottom right !important',
-  },
-}));
-
-export const MapCancelButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  fontSize: '0.625rem',
-  fontWeight: 600,
-  borderRadius: '50rem',
-  backgroundColor: '#ffffff',
-  color: theme.palette.error.main,
-  border: `0.0625rem solid ${theme.palette.error.light}`,
-  padding: '0 0.5rem',
-  height: '1.375rem',
-  minWidth: 'auto',
-  lineHeight: 1,
-  '&:hover': {
-    backgroundColor: '#fff5f5',
-    borderColor: theme.palette.error.main,
-  },
-}));
-
-export const MapSaveButton = styled(Button)(({ theme }) => ({
-  textTransform: 'none',
-  fontSize: '0.625rem',
-  fontWeight: 600,
-  borderRadius: '50rem',
-  backgroundColor: '#ffffff',
-  color: theme.palette.primary.main,
-  border: `0.0625rem solid ${theme.palette.primary.light}`,
-  padding: '0 0.5rem',
-  height: '1.375rem',
-  minWidth: 'auto',
-  lineHeight: 1,
-  '&:hover': {
-    backgroundColor: '#f5f8ff',
-    borderColor: theme.palette.primary.main,
   },
 }));
 

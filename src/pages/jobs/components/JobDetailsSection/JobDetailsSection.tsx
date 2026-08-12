@@ -34,8 +34,9 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { AssignAssetModal } from '../../../assets/components';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap/GoogleMap.types';
 import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
-import { geocodeAddress } from '../../../../utils/mapDataHelpers';
+import { geocodeAddress, formatAddress } from '../../../../utils/googleGeocoding';
 import { extractFieldValue } from '../../../../utils/fieldValueHelper';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
@@ -65,12 +66,6 @@ const formatStatus = (status?: string) => {
     .split('_')
     .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
     .join(' ');
-};
-
-const formatJobAddress = (address?: JobResponse['address']) => {
-  if (!address) return '';
-  const parts = [address.street, address.city, address.state, address.postalCode, address.country].filter(Boolean);
-  return parts.join(', ');
 };
 
 const toDateInputValue = (value: string): string => {
@@ -109,8 +104,17 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const contactEmail = customer?.email || client?.email;
   const contactTelephone = customer?.telephone || client?.telephone;
   const contactMobile = customer?.mobile || client?.mobile;
-  const contactAddress = hasCustomer ? customer?.address?.street : client?.address;
-  const canEditContact = !!(customer || client);
+  // Was showing only customer.address.street (no city/postcode/country) — the
+  // Address row never actually included the postcode for customers.
+  const contactAddress = hasCustomer
+    ? formatAddress({
+        street: customer?.address?.street,
+        city: customer?.address?.city,
+        state: customer?.address?.county,
+        postalCode: customer?.address?.postalCode,
+        country: customer?.address?.country,
+      })
+    : client?.address;
 
   const handleAddressEditClick = async (target: 'address' | 'siteAddress') => {
     setEditingField(target);
@@ -119,17 +123,18 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     setEditValue(street);
 
     if (street) {
-      const loc = await geocodeAddress(street);
-      if (loc) {
+      const structured = await geocodeAddress(street);
+      if (structured) {
         setSelectedMapAddress({
           address: street,
-          location: loc,
+          streetLine: structured.streetLine,
+          location: structured.location,
           city: source?.city,
           state: target === 'address' ? customer?.address?.county : job.address?.state,
           postalCode: source?.postalCode,
           country: source?.country,
         });
-        setMapCenter(loc);
+        setMapCenter(structured.location);
         setMapZoom(15);
         return;
       }
@@ -145,19 +150,24 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     setEditValue(place.address);
     setMapCenter(place.location);
     setMapZoom(15);
+    handleSaveAddress(place);
   };
 
-  const handleSaveAddress = async () => {
+  const handleSaveAddress = async (place: PlaceDetails) => {
     const target = editingField as 'address' | 'siteAddress';
     setSavingField(target);
     try {
       if (target === 'address') {
         const addressObj = {
-          street: selectedMapAddress?.address || editValue || '',
-          city: selectedMapAddress?.city || customer?.address?.city || '',
-          county: selectedMapAddress?.state || customer?.address?.county || '',
-          postalCode: selectedMapAddress?.postalCode || customer?.address?.postalCode || '',
-          country: selectedMapAddress?.country || customer?.address?.country || '',
+          // Prefer the parsed street line over the full formatted address —
+          // `.address` includes city/postcode/country, and saving that into
+          // "street" is what produced duplicated-looking addresses once city/
+          // postcode/country were also stored and later joined back together.
+          street: place.streetLine || place.address || '',
+          city: place.city || customer?.address?.city || '',
+          county: place.state || customer?.address?.county || '',
+          postalCode: place.postalCode || customer?.address?.postalCode || '',
+          country: place.country || customer?.address?.country || '',
         };
         if (customer?.id) {
           const updateReq: CustomerUpdateRequest = {
@@ -186,14 +196,14 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       } else if (target === 'siteAddress' && job.id) {
         const updateReq: JobUpdateRequest = {
           address: {
-            street: selectedMapAddress?.address || editValue || '',
-            city: selectedMapAddress?.city || job.address?.city || '',
-            state: selectedMapAddress?.state || job.address?.state || '',
-            postalCode: selectedMapAddress?.postalCode || job.address?.postalCode || '',
-            country: selectedMapAddress?.country || job.address?.country || '',
+            street: place.streetLine || place.address || '',
+            city: place.city || job.address?.city || '',
+            state: place.state || job.address?.state || '',
+            postalCode: place.postalCode || job.address?.postalCode || '',
+            country: place.country || job.address?.country || '',
             additionalInfo: job.address?.additionalInfo,
-            latitude: selectedMapAddress?.location?.lat ?? job.address?.latitude,
-            longitude: selectedMapAddress?.location?.lng ?? job.address?.longitude,
+            latitude: place.location?.lat ?? job.address?.latitude,
+            longitude: place.location?.lng ?? job.address?.longitude,
           },
         };
         const res = await jobService.updateJob(job.id, updateReq);
@@ -201,8 +211,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       }
       showSuccess('Updated address successfully');
       setEditingField(null);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to update address';
+    } catch (err) {
+      const msg = extractErrorMessage(err, 'Failed to update address');
       console.error('[handleSaveAddress] Failed:', err);
       showError(msg);
     } finally {
@@ -317,8 +327,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       }
       showSuccess('Updated successfully');
       setEditingField(null);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+    } catch (err) {
+      const msg = extractErrorMessage(err, 'Failed to update');
       console.error('[handleSaveField] Failed:', err);
       showError(msg);
     } finally {
@@ -417,13 +427,15 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldIconContainer>{icon}</S.FieldIconContainer>
           <S.FieldLabel>{label}</S.FieldLabel>
           <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
-          {allowEdit && !isEditing && (
+          {allowEdit && (
             <S.FieldAction>
               <S.ActionButton
                 variant="text"
-                onClick={() => handleAddressEditClick(fieldKey as 'address' | 'siteAddress')}
+                onClick={() =>
+                  isEditing ? handleCancelEdit() : handleAddressEditClick(fieldKey as 'address' | 'siteAddress')
+                }
               >
-                {notSet ? 'Add' : 'Edit'}
+                {isEditing ? 'Cancel' : notSet ? 'Add' : 'Edit'}
               </S.ActionButton>
             </S.FieldAction>
           )}
@@ -530,8 +542,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         }
         showSuccess('Updated successfully');
         setEditingField(null);
-      } catch (err: any) {
-        const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+      } catch (err) {
+        const msg = extractErrorMessage(err, 'Failed to update');
         console.error('[handleFieldSave] Failed:', err);
         showError(msg);
       } finally {
@@ -650,27 +662,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               markers={selectedMapAddress ? [selectedMapAddress] : []}
               selectedLocation={selectedMapAddress}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox={true}
               searchInitialValue={customer?.address?.street || undefined}
             />
-            <S.MapActionButtons>
-              <S.MapCancelButton
-                variant="outlined"
-                size="small"
-                onClick={handleCancelEdit}
-                disabled={savingField === 'address'}
-              >
-                Cancel
-              </S.MapCancelButton>
-              <S.MapSaveButton
-                variant="contained"
-                size="small"
-                onClick={handleSaveAddress}
-                disabled={savingField === 'address'}
-              >
-                {savingField === 'address' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
-              </S.MapSaveButton>
-            </S.MapActionButtons>
+            {savingField === 'address' && <CircularProgress size={16} />}
           </S.MapEditWrapper>
         )}
 
@@ -731,7 +727,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldValue>#{job.jobRef ?? job.id}</S.FieldValue>
         </S.FieldRow>
 
-        {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatJobAddress(job.address))}
+        {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatAddress(job.address))}
 
         {editingField === 'siteAddress' && (
           <S.MapEditWrapper>
@@ -742,27 +738,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               markers={selectedMapAddress ? [selectedMapAddress] : []}
               selectedLocation={selectedMapAddress}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox={true}
               searchInitialValue={job.address?.street || undefined}
             />
-            <S.MapActionButtons>
-              <S.MapCancelButton
-                variant="outlined"
-                size="small"
-                onClick={handleCancelEdit}
-                disabled={savingField === 'siteAddress'}
-              >
-                Cancel
-              </S.MapCancelButton>
-              <S.MapSaveButton
-                variant="contained"
-                size="small"
-                onClick={handleSaveAddress}
-                disabled={savingField === 'siteAddress'}
-              >
-                {savingField === 'siteAddress' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
-              </S.MapSaveButton>
-            </S.MapActionButtons>
+            {savingField === 'siteAddress' && <CircularProgress size={16} />}
           </S.MapEditWrapper>
         )}
 
