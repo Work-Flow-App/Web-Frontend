@@ -276,6 +276,7 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
               markers={selectedLocation ? [selectedLocation] : []}
               selectedLocation={selectedLocation}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox
               searchInitialValue={selectedLocation?.address}
               height="300px"
