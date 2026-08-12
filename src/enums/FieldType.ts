@@ -4,6 +4,7 @@ export const FieldType = {
   DATE: 'DATE',
   BOOLEAN: 'BOOLEAN',
   DROPDOWN: 'DROPDOWN',
+  ADDRESS: 'ADDRESS',
 } as const;
 
 export type FieldType = typeof FieldType[keyof typeof FieldType];
@@ -14,4 +15,5 @@ export const FIELD_TYPE_OPTIONS = [
   { label: 'Date', value: FieldType.DATE },
   { label: 'Boolean', value: FieldType.BOOLEAN },
   { label: 'Dropdown', value: FieldType.DROPDOWN },
+  { label: 'Address', value: FieldType.ADDRESS },
 ];
