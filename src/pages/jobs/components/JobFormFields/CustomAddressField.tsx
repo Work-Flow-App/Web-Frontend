@@ -79,6 +79,10 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
       setMapZoom(15);
     }
 
+    // This is a self-caused change, not an external one — mark it already-synced so the
+    // resync effect (meant for external changes like async defaultValues) doesn't also
+    // fire for it and undo the map-position decision this handler just deliberately made.
+    syncedValueRef.current = value;
     setValue(fieldName, value, { shouldDirty: true });
   };
 
