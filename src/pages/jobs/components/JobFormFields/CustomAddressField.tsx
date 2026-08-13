@@ -41,13 +41,22 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
   );
   const [mapCenter, setMapCenter] = useState(selectedLocation?.location ?? GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(selectedLocation ? 15 : GOOGLE_MAPS_CONFIG.defaultZoom);
-  const syncedValueRef = useRef(rawValue);
+  // True for exactly one render cycle right after handleLocationSelect's own setValue call —
+  // lets the resync effect below tell "I caused this rawValue change myself" apart from a
+  // genuinely external one (e.g. RHF's defaultValues resolving async after mount), WITHOUT
+  // relying on object-reference equality across react-hook-form's setValue — RHF deep-clones
+  // the value before storing it, so watch() never echoes back the exact object we pass in,
+  // which is why a syncedValueRef-based identity check can never work here.
+  const selfWriteRef = useRef(false);
 
   // The whole job form's defaultValues can resolve asynchronously after this component
   // has already mounted (e.g. editing an existing job) — re-sync the pin once that lands.
+  // Skip this effect if it's a self-caused change from handleLocationSelect.
   useEffect(() => {
-    if (rawValue === syncedValueRef.current) return;
-    syncedValueRef.current = rawValue;
+    if (selfWriteRef.current) {
+      selfWriteRef.current = false;
+      return;
+    }
     const place = toPlaceDetails(parseAddressFieldValue(rawValue));
     if (place) {
       setSelectedLocation(place);
@@ -79,10 +88,9 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
       setMapZoom(15);
     }
 
-    // This is a self-caused change, not an external one — mark it already-synced so the
-    // resync effect (meant for external changes like async defaultValues) doesn't also
-    // fire for it and undo the map-position decision this handler just deliberately made.
-    syncedValueRef.current = value;
+    // Mark this as a self-caused write so the resync effect knows not to override the
+    // map-position decision we just deliberately made.
+    selfWriteRef.current = true;
     setValue(fieldName, value, { shouldDirty: true });
   };
 
