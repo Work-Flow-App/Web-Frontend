@@ -37,6 +37,12 @@ import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
 import { geocodeAddress, formatAddress } from '../../../../utils/googleGeocoding';
 import { extractFieldValue } from '../../../../utils/fieldValueHelper';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import {
+  isAddressField,
+  parseAddressFieldValue,
+  formatAddressFieldValue,
+  rebuildFieldValuesForResend,
+} from '../../../../utils/customAddressField';
 import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
@@ -502,6 +508,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   const getDisplayFieldValue = (field: JobTemplateFieldResponse): string => {
+    if (isAddressField(field)) {
+      return formatAddressFieldValue(job.fieldValues?.[String(field.id)]);
+    }
     const raw = getRawFieldValue(field.id!);
     if (!raw) return '';
     if (field.jobFieldType === 'DATE') return formatDate(raw);
@@ -518,6 +527,96 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const notSet = !rawValue;
     const label = `${field.required ? '* ' : ''}${field.label || field.name || ''}`;
 
+    if (isAddressField(field)) {
+      const handleCustomAddressEditClick = () => {
+        setEditingField(fieldKey);
+        const parsed = parseAddressFieldValue(job.fieldValues?.[String(field.id)]);
+        if (parsed) {
+          const location = {
+            lat: parsed.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
+            lng: parsed.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
+          };
+          setSelectedMapAddress({
+            address: displayValue,
+            streetLine: parsed.street,
+            city: parsed.city,
+            state: parsed.state,
+            postalCode: parsed.postalCode,
+            country: parsed.country,
+            location,
+          });
+          setMapCenter(location);
+          setMapZoom(15);
+          return;
+        }
+        setSelectedMapAddress(null);
+        setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
+        setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
+      };
+
+      const handleCustomAddressSelect = async (place: PlaceDetails) => {
+        if (!job.id || field.id === undefined) return;
+        setSelectedMapAddress(place);
+        setSavingField(fieldKey);
+        try {
+          const rebuilt = rebuildFieldValuesForResend(job.fieldValues, templateFields);
+          rebuilt[String(field.id)] = {
+            street: place.streetLine || place.address || '',
+            city: place.city || '',
+            state: place.state || '',
+            postalCode: place.postalCode || '',
+            country: place.country || '',
+            latitude: place.location?.lat ?? null,
+            longitude: place.location?.lng ?? null,
+          };
+          const res = await jobService.updateJob(job.id, { fieldValues: rebuilt });
+          onJobUpdate?.(res.data);
+          showSuccess('Updated successfully');
+          setEditingField(null);
+        } catch (err) {
+          const msg = extractErrorMessage(err, 'Failed to update');
+          console.error('[handleCustomAddressSelect] Failed:', err);
+          showError(msg);
+        } finally {
+          setSavingField(null);
+        }
+      };
+
+      return (
+        <React.Fragment key={fieldKey}>
+          <S.FieldRow>
+            <S.FieldIconContainer><LabelIcon /></S.FieldIconContainer>
+            <S.FieldLabel>{label}</S.FieldLabel>
+            <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+            <S.FieldAction>
+              <S.ActionButton
+                variant="text"
+                onClick={() => (isEditing ? handleCancelEdit() : handleCustomAddressEditClick())}
+              >
+                {isEditing ? 'Cancel' : notSet ? 'Add' : 'Edit'}
+              </S.ActionButton>
+            </S.FieldAction>
+          </S.FieldRow>
+          {isEditing && (
+            <S.MapEditWrapper>
+              <S.StyledGoogleMap
+                height="15rem"
+                center={mapCenter}
+                zoom={mapZoom}
+                markers={selectedMapAddress ? [selectedMapAddress] : []}
+                selectedLocation={selectedMapAddress}
+                onLocationSelect={handleCustomAddressSelect}
+                confirmBeforeSelect
+                showSearchBox
+                searchInitialValue={displayValue || undefined}
+              />
+              {isSaving && <CircularProgress size={16} />}
+            </S.MapEditWrapper>
+          )}
+        </React.Fragment>
+      );
+    }
+
     const handleFieldEditClick = () => {
       setEditingField(fieldKey);
       setEditValue(field.jobFieldType === 'DATE' ? toDateInputValue(rawValue) : rawValue);
@@ -527,11 +626,10 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       setSavingField(fieldKey);
       try {
         if (job.id && field.id !== undefined) {
-          // Clean ALL existing field values before re-sending (backend may reject nested objects)
-          const updatedFieldValues: Record<string, unknown> = {};
-          Object.entries(job.fieldValues || {}).forEach(([k, v]) => {
-            updatedFieldValues[k] = extractFieldValue(v);
-          });
+          // Resend every field, preserving any OTHER address-type field as its real
+          // structured object instead of flattening it to a string (see
+          // rebuildFieldValuesForResend's doc comment for why that matters).
+          const updatedFieldValues = rebuildFieldValuesForResend(job.fieldValues, templateFields);
           if (editValue === '') {
             delete updatedFieldValues[String(field.id)];
           } else {
