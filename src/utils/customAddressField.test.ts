@@ -95,9 +95,10 @@ describe('rebuildFieldValuesForResend', () => {
     expect(result['2']).toEqual({ ...address, latitude: null, longitude: null });
   });
 
-  it('drops an address field that fails to parse rather than resending garbage', () => {
-    const result = rebuildFieldValuesForResend({ '2': { city: 'no street' } }, templateFields);
-    expect(result['2']).toBeUndefined();
+  it('preserves the raw value when an address field fails to parse, rather than dropping it', () => {
+    const raw = { city: 'no street' };
+    const result = rebuildFieldValuesForResend({ '2': raw }, templateFields);
+    expect(result['2']).toBe(raw);
   });
 
   it('handles an empty/undefined existing map', () => {

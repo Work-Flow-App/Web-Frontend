@@ -152,10 +152,18 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setSelectedMapAddress(place);
     setEditValue(place.address);
-    setMapCenter(place.location);
-    setMapZoom(15);
+    // Google couldn't geocode this address — place.location is a {0,0} placeholder, not a
+    // real point. Don't drop a marker there or recenter the map on it (mirrors
+    // CustomAddressField.tsx / LocationMapField.tsx). handleSaveAddress still gets the raw
+    // `place` so it can apply the same guard to the lat/lng it persists.
+    if (place.isManualAddressOnly) {
+      setSelectedMapAddress(null);
+    } else {
+      setSelectedMapAddress(place);
+      setMapCenter(place.location);
+      setMapZoom(15);
+    }
     handleSaveAddress(place);
   };
 
@@ -208,8 +216,13 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             postalCode: place.postalCode || job.address?.postalCode || '',
             country: place.country || job.address?.country || '',
             additionalInfo: job.address?.additionalInfo,
-            latitude: place.location?.lat ?? job.address?.latitude,
-            longitude: place.location?.lng ?? job.address?.longitude,
+            // Never persist the {0,0} manual-address placeholder as a real geocoded point.
+            // AddressRequest's latitude/longitude are typed `number | undefined` (no null),
+            // so `undefined` here (which JSON.stringify then omits entirely) is this
+            // branch's equivalent of the `null` guard used elsewhere in this file where the
+            // target slot is loosely typed.
+            latitude: place.isManualAddressOnly ? undefined : place.location?.lat ?? job.address?.latitude,
+            longitude: place.isManualAddressOnly ? undefined : place.location?.lng ?? job.address?.longitude,
           },
         };
         const res = await jobService.updateJob(job.id, updateReq);
@@ -531,11 +544,13 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       const handleCustomAddressEditClick = () => {
         setEditingField(fieldKey);
         const parsed = parseAddressFieldValue(job.fieldValues?.[String(field.id)]);
-        if (parsed) {
-          const location = {
-            lat: parsed.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
-            lng: parsed.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
-          };
+        // Only build a marker when the saved value has real coordinates. Falling back to
+        // GOOGLE_MAPS_CONFIG.defaultCenter here would draw a marker at a fabricated
+        // location for any address saved without coordinates — mirrors
+        // CustomAddressField.tsx's toPlaceDetails helper, which returns null (no marker)
+        // in that same situation instead of a fake default-center pin.
+        if (parsed && parsed.latitude != null && parsed.longitude != null) {
+          const location = { lat: parsed.latitude, lng: parsed.longitude };
           setSelectedMapAddress({
             address: displayValue,
             streetLine: parsed.street,
@@ -556,7 +571,14 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
 
       const handleCustomAddressSelect = async (place: PlaceDetails) => {
         if (!job.id || field.id === undefined) return;
-        setSelectedMapAddress(place);
+        // Google couldn't geocode this address — place.location is a {0,0} placeholder,
+        // not a real point. Don't drop a marker there (mirrors handleLocationSelect above /
+        // CustomAddressField.tsx), and persist null instead of the fake point below.
+        if (place.isManualAddressOnly) {
+          setSelectedMapAddress(null);
+        } else {
+          setSelectedMapAddress(place);
+        }
         setSavingField(fieldKey);
         try {
           const rebuilt = rebuildFieldValuesForResend(job.fieldValues, templateFields);
@@ -566,8 +588,8 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             state: place.state || '',
             postalCode: place.postalCode || '',
             country: place.country || '',
-            latitude: place.location?.lat ?? null,
-            longitude: place.location?.lng ?? null,
+            latitude: place.isManualAddressOnly ? null : place.location?.lat ?? null,
+            longitude: place.isManualAddressOnly ? null : place.location?.lng ?? null,
           };
           const res = await jobService.updateJob(job.id, { fieldValues: rebuilt });
           onJobUpdate?.(res.data);
@@ -751,7 +773,12 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, true)}
         {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, true)}
 
-        {editingField === 'address' && (
+        {/* Only the "Address" row's isMapAddressField branch (fieldKey === 'address' && hasCustomer)
+            offers a map editor in the first place — without this same hasCustomer guard here, a
+            client-only job (no customer) would render this map ALONGSIDE the plain-text editor
+            for the same row, and confirming a pick would silently create a new
+            `Customer for Job #N` and reassign the job, with no warning. */}
+        {editingField === 'address' && hasCustomer && (
           <S.MapEditWrapper>
             <S.StyledGoogleMap
               height="15rem"

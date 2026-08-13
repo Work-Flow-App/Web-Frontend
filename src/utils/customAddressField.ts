@@ -96,7 +96,12 @@ export function rebuildFieldValuesForResend(
     const field = fieldsById.get(key);
     if (isAddressField(field)) {
       const parsed = parseAddressFieldValue(value);
-      if (parsed) result[key] = parsed;
+      // Preserve the raw value verbatim when it can't be parsed as a structured address —
+      // this shouldn't normally happen, but dropping the key here would be interpreted by
+      // callers as "field cleared" (see JobDetailsSection's `delete` semantics), silently
+      // destroying data if the backend ever returns a shape this parser doesn't recognize.
+      // Resending exactly what we received is a safe no-op either way.
+      result[key] = parsed ?? value;
       return;
     }
     result[key] = extractFieldValue(value);

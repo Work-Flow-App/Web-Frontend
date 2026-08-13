@@ -40,8 +40,11 @@ export interface WizardData {
     state?: string;
     postalCode?: string;
     country?: string;
-    latitude?: number;
-    longitude?: number;
+    // null (not just absent) specifically means "Google couldn't geocode this address" —
+    // see Step3AssignDetails' handleLocationSelect / isManualAddressOnly guard. Downstream
+    // consumers (Step4CustomFields) already treat null the same as absent via `!= null`.
+    latitude?: number | null;
+    longitude?: number | null;
   };
 }
 
