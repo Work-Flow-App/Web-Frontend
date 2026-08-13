@@ -72,6 +72,12 @@ const AddressReviewDialog: React.FC<AddressReviewDialogProps> = ({ open, initial
       onClose={onCancel}
       fullWidth
       maxWidth="xs"
+      // GoogleMap (and this dialog with it) is often rendered inside the app's own
+      // GlobalModal wizard (e.g. the Add Job Wizard's location step), which uses a
+      // hardcoded z-index of 8000 (GlobalModal.styled.tsx) — far above MUI's default
+      // theme.zIndex.modal (1300). Without this, the dialog opens but renders behind
+      // the wizard's own overlay: technically visible in the DOM, invisible on screen.
+      sx={{ zIndex: 8500 }}
       slotProps={{
         paper: {
           sx: isMobile
