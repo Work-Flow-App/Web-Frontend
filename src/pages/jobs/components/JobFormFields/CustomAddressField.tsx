@@ -97,27 +97,32 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId, error 
 
   if (!isGoogleMapsConfigured()) {
     return (
-      <Typography variant="body2" color="text.secondary">
-        Google Maps API key not configured.
-      </Typography>
+      <>
+        <Typography variant="body2" color="text.secondary">
+          Google Maps API key not configured.
+        </Typography>
+        {error && <FormHelperText error>{error}</FormHelperText>}
+      </>
     );
   }
 
   return (
-    <MapWrapper>
-      <GoogleMap
-        center={mapCenter}
-        zoom={mapZoom}
-        markers={selectedLocation ? [selectedLocation] : []}
-        selectedLocation={selectedLocation}
-        onLocationSelect={handleLocationSelect}
-        confirmBeforeSelect
-        showSearchBox
-        searchInitialValue={selectedLocation?.streetLine}
-        height="300px"
-      />
+    <>
+      <MapWrapper>
+        <GoogleMap
+          center={mapCenter}
+          zoom={mapZoom}
+          markers={selectedLocation ? [selectedLocation] : []}
+          selectedLocation={selectedLocation}
+          onLocationSelect={handleLocationSelect}
+          confirmBeforeSelect
+          showSearchBox
+          searchInitialValue={selectedLocation?.streetLine}
+          height="300px"
+        />
+      </MapWrapper>
       {error && <FormHelperText error>{error}</FormHelperText>}
-    </MapWrapper>
+    </>
   );
 };
 
