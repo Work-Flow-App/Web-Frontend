@@ -1,6 +1,7 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { StatusChip } from './JobsList.styles';
+import { isAddressField, formatAddressFieldValue } from '../../../../utils/customAddressField';
 
 const getStatusColor = (
   status: string
@@ -135,6 +136,10 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
     render: (row) => {
       const value = row.fieldValues?.[field.id?.toString() || ''];
       if (!value) return '-';
+
+      if (isAddressField(field)) {
+        return formatAddressFieldValue(value) || '-';
+      }
 
       // Format based on field type
       switch (field.jobFieldType) {
