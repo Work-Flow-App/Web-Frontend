@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { FormHelperText, Typography } from '@mui/material';
+import { Box, FormHelperText, Typography } from '@mui/material';
 import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../config/googleMaps';
@@ -97,17 +97,17 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId, error 
 
   if (!isGoogleMapsConfigured()) {
     return (
-      <>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Typography variant="body2" color="text.secondary">
           Google Maps API key not configured.
         </Typography>
         {error && <FormHelperText error>{error}</FormHelperText>}
-      </>
+      </Box>
     );
   }
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       <MapWrapper>
         <GoogleMap
           center={mapCenter}
@@ -122,7 +122,7 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId, error 
         />
       </MapWrapper>
       {error && <FormHelperText error>{error}</FormHelperText>}
-    </>
+    </Box>
   );
 };
 
