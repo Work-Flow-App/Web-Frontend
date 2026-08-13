@@ -141,11 +141,12 @@ export const JobsList: React.FC = () => {
   );
 
   const jobs = useMemo<JobTableRow[]>(() => {
+    const fieldsById = new Map(templateFields.filter((f) => f.id != null).map((f) => [String(f.id), f]));
     const mapped = (rawJobs ?? []).map((job: JobResponse) => {
       const fieldValues: { [key: string]: unknown } = {};
       if (job.fieldValues) {
-        const fieldsById = new Map(templateFields.filter((f) => f.id != null).map((f) => [String(f.id), f]));
         Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
+          // Preserve address fields as structured objects — String()-flattening here is what corrupted DataColumn's display before this fix.
           if (isAddressField(fieldsById.get(key))) {
             const parsed = parseAddressFieldValue(fieldValueResponse);
             if (parsed) fieldValues[key] = parsed;
