@@ -110,7 +110,7 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
     const fieldError = errors[fieldName] as any;
 
     if (isAddressField(field)) {
-      return <CustomAddressField fieldId={field.id!} />;
+      return <CustomAddressField fieldId={field.id!} error={fieldError?.message} />;
     }
 
     switch (field.jobFieldType) {
@@ -169,11 +169,12 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
           if (field.required) {
             const fieldName = `field_${field.id}`;
             const value = data[fieldName];
-            const isEmpty =
-              value === null ||
-              value === undefined ||
-              value === '' ||
-              (typeof value === 'object' && !('value' in value));
+            const isEmpty = isAddressField(field)
+              ? !parseAddressFieldValue(value)
+              : value === null ||
+                value === undefined ||
+                value === '' ||
+                (typeof value === 'object' && !('value' in value));
             if (isEmpty) {
               setError(fieldName, { message: `${field.label} is required` });
               hasRequiredErrors = true;

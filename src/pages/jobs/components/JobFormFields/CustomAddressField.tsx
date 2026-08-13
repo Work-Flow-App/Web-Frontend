@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Typography } from '@mui/material';
+import { FormHelperText, Typography } from '@mui/material';
 import GoogleMap from '../../../../components/UI/GoogleMap/GoogleMap';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap';
 import { GOOGLE_MAPS_CONFIG, isGoogleMapsConfigured } from '../../../../config/googleMaps';
@@ -10,6 +10,7 @@ import { MapWrapper } from './LocationMapField.styles';
 
 export interface CustomAddressFieldProps {
   fieldId: number;
+  error?: string;
 }
 
 const toPlaceDetails = (value: StructuredAddressFieldValue | null): PlaceDetails | null => {
@@ -31,7 +32,7 @@ const toPlaceDetails = (value: StructuredAddressFieldValue | null): PlaceDetails
  * fieldValues map — so this stores the whole structured address as a single object under
  * `field_<fieldId>`.
  */
-const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
+const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId, error }) => {
   const fieldName = `field_${fieldId}`;
   const { setValue, watch } = useFormContext();
   const rawValue = watch(fieldName);
@@ -115,6 +116,7 @@ const CustomAddressField: React.FC<CustomAddressFieldProps> = ({ fieldId }) => {
         searchInitialValue={selectedLocation?.streetLine}
         height="300px"
       />
+      {error && <FormHelperText error>{error}</FormHelperText>}
     </MapWrapper>
   );
 };
