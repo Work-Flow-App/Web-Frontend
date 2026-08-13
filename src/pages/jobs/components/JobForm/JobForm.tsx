@@ -8,6 +8,7 @@ import type { JobCreateRequest, JobUpdateRequest } from '../../../../services/ap
 import { JobCreateRequestStatusEnum, JobUpdateRequestStatusEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { isAddressField, parseAddressFieldValue } from '../../../../utils/customAddressField';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 
 export interface JobFormProps {
@@ -87,11 +88,11 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
               assignedWorkerId: job.assignedWorkerId,
               assetIds: assetIdsFormatted,
               workflowId: workflowIdFormatted,
-              addressStreet: [job.address?.street, job.address?.city, job.address?.state, job.address?.postalCode, job.address?.country].filter(Boolean).join(', '),
-              addressCity: '',
-              addressState: '',
-              addressPostalCode: '',
-              addressCountry: '',
+              addressStreet: job.address?.street || '',
+              addressCity: job.address?.city || '',
+              addressState: job.address?.state || '',
+              addressPostalCode: job.address?.postalCode || '',
+              addressCountry: job.address?.country || '',
               addressLatitude: job.address?.latitude ?? null,
               addressLongitude: job.address?.longitude ?? null,
             };
@@ -102,21 +103,30 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             fields.forEach((field) => {
               const fieldName = `field_${field.id}`;
               const fieldValue = job.fieldValues?.[field.id?.toString() || ''];
-              if (fieldValue !== undefined) {
-                // Extract the actual value from FieldValueResponse object
-                let extractedValue = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
-                  ? fieldValue.value
-                  : fieldValue;
-                // DATE fields: strip time component so <input type="date"> recognises the value
-                if (
-                  typeof fieldValue === 'object' && fieldValue !== null && 'type' in fieldValue &&
-                  (fieldValue as { type: string }).type === 'DATE' &&
-                  typeof extractedValue === 'string'
-                ) {
-                  extractedValue = extractedValue.split('T')[0];
-                }
-                formData[fieldName] = extractedValue;
+              if (fieldValue === undefined) return;
+
+              if (isAddressField(field)) {
+                const parsed = parseAddressFieldValue(fieldValue);
+                // StructuredAddressFieldValue isn't part of JobFormData's dynamic-field index
+                // signature (string | number | dropdown-shape | array) — cast through the
+                // container since a whole object is a deliberately-valid field_<id> value here.
+                if (parsed) (formData as Record<string, unknown>)[fieldName] = parsed;
+                return;
               }
+
+              // Extract the actual value from FieldValueResponse object
+              let extractedValue = typeof fieldValue === 'object' && fieldValue !== null && 'value' in fieldValue
+                ? fieldValue.value
+                : fieldValue;
+              // DATE fields: strip time component so <input type="date"> recognises the value
+              if (
+                typeof fieldValue === 'object' && fieldValue !== null && 'type' in fieldValue &&
+                (fieldValue as { type: string }).type === 'DATE' &&
+                typeof extractedValue === 'string'
+              ) {
+                extractedValue = extractedValue.split('T')[0];
+              }
+              formData[fieldName] = extractedValue;
             });
 
             setJobData(formData);
