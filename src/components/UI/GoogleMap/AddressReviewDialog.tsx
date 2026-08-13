@@ -77,7 +77,12 @@ const AddressReviewDialog: React.FC<AddressReviewDialogProps> = ({ open, initial
       // hardcoded z-index of 8000 (GlobalModal.styled.tsx) — far above MUI's default
       // theme.zIndex.modal (1300). Without this, the dialog opens but renders behind
       // the wizard's own overlay: technically visible in the DOM, invisible on screen.
-      sx={{ zIndex: 8500 }}
+      // 9000 matches this codebase's existing "above GlobalModal" convention (see
+      // Dropdown's CustomPopper and the MobileTimePicker overrides) rather than picking
+      // a new number — a job template can mix a Dropdown field and an Address field on
+      // the same wizard screen, so staying on the shared convention avoids a second,
+      // narrower stacking collision between the two.
+      sx={{ zIndex: 9000 }}
       slotProps={{
         paper: {
           sx: isMobile
