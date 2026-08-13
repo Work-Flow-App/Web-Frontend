@@ -13,6 +13,8 @@ import { FieldType } from '../../../../../enums';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
 import type { WizardData } from '../AddJobWizard';
+import CustomAddressField from '../../JobFormFields/CustomAddressField';
+import { isAddressField, parseAddressFieldValue } from '../../../../../utils/customAddressField';
 
 interface Step4Props {
   wizardData: WizardData;
@@ -69,14 +71,19 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
     templateFields.forEach((field) => {
       const fieldKey = field.id?.toString() || '';
       const raw = wizardData.fieldValues![fieldKey];
-      if (raw !== undefined && raw !== null) {
-        if (field.jobFieldType === 'DROPDOWN') {
-          values[`field_${field.id}`] = { label: String(raw), value: String(raw) };
-        } else if (field.jobFieldType === FieldType.DATE && typeof raw === 'string') {
-          values[`field_${field.id}`] = raw.split('T')[0];
-        } else {
-          values[`field_${field.id}`] = raw;
-        }
+      if (raw === undefined || raw === null) return;
+
+      if (isAddressField(field)) {
+        const parsed = parseAddressFieldValue(raw);
+        if (parsed) values[`field_${field.id}`] = parsed;
+        return;
+      }
+      if (field.jobFieldType === 'DROPDOWN') {
+        values[`field_${field.id}`] = { label: String(raw), value: String(raw) };
+      } else if (field.jobFieldType === FieldType.DATE && typeof raw === 'string') {
+        values[`field_${field.id}`] = raw.split('T')[0];
+      } else {
+        values[`field_${field.id}`] = raw;
       }
     });
     reset(values);
@@ -101,6 +108,10 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
     const fieldName = `field_${field.id}`;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fieldError = errors[fieldName] as any;
+
+    if (isAddressField(field)) {
+      return <CustomAddressField fieldId={field.id!} />;
+    }
 
     switch (field.jobFieldType) {
       case FieldType.TEXT:
