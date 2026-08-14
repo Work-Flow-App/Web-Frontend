@@ -5,6 +5,9 @@ export interface AssetHistoryRow {
   id: number;
   assignmentId: number;
   jobId?: number;
+  /** Human-facing job number (shown elsewhere in the app as "Job No", e.g. "#13") —
+   * display this, not the raw internal `jobId`, whenever showing a job reference to a user. */
+  jobRef?: number;
   assignedWorkerId?: number;
   assignedAt: string;
   returnedAt?: string;
@@ -28,11 +31,18 @@ export const assetHistoryColumns: ITableColumn<AssetHistoryRow>[] = [
   },
   {
     id: 'jobId',
-    label: 'Job ID',
+    label: 'Job No',
     accessor: 'jobId',
     sortable: true,
     width: 100,
-    render: (row) => row.jobId || '-',
+    // Show the human-facing job number ("#13"), not the raw internal jobId —
+    // matches the "Job No" label used everywhere else a job is referenced
+    // (e.g. Job Details). Fall back to the raw id only for older records that
+    // predate jobRef being populated.
+    render: (row) => {
+      const num = row.jobRef ?? row.jobId;
+      return num ? `#${num}` : '-';
+    },
   },
   {
     id: 'assignedWorkerId',
