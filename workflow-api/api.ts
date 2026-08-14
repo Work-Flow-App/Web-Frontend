@@ -67,6 +67,7 @@ export interface AssetAssignmentResponse {
     'assignmentId'?: number;
     'assetId'?: number;
     'jobId'?: number;
+    'jobRef'?: number;
     'assignedWorkerId'?: number;
     'assetName'?: string;
     'description'?: string;
@@ -10500,6 +10501,49 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        jobPatch: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('jobPatch', 'id', id)
+            // verify required parameter 'jobUpdateRequest' is not null or undefined
+            assertParamExists('jobPatch', 'jobUpdateRequest', jobUpdateRequest)
+            const localVarPath = `/api/v1/jobs/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(jobUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         jobUpdate: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('jobUpdate', 'id', id)
@@ -10646,6 +10690,19 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobPatch(id, jobUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async jobUpdate(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.jobUpdate(id, jobUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -10733,6 +10790,16 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          */
         jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
             return localVarFp.jobGetJobsByTemplate(templateId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
+            return localVarFp.jobPatch(id, jobUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10829,6 +10896,17 @@ export class JobsApi extends BaseAPI {
      */
     public jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig) {
         return JobsApiFp(this.configuration).jobGetJobsByTemplate(templateId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {JobUpdateRequest} jobUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobPatch(id, jobUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
