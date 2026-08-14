@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Typography,
   Chip,
@@ -10,12 +10,17 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  LinearProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionStatusResponseStatusEnum } from '../../../workflow-api';
+import type { UsageSummaryResponse } from '../../../workflow-api';
 import { subscriptionService } from '../../services/api/subscription';
+import { companyService } from '../../services/api/company';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { extractErrorMessage } from '../../utils/errorHandler';
+import { floowColors } from '../../theme/colors';
 import * as S from './BillingSettings.styled';
 
 type ChipColor = 'success' | 'warning' | 'error' | 'default' | 'info';
@@ -34,18 +39,31 @@ const STATUS_CONFIG: Partial<Record<string, StatusConfig>> = {
   [SubscriptionStatusResponseStatusEnum.Expired]: { label: 'Expired', color: 'error' },
 };
 
-const MANAGEABLE_STATUSES = [
+const MANAGEABLE_STATUSES: SubscriptionStatusResponseStatusEnum[] = [
   SubscriptionStatusResponseStatusEnum.Active,
   SubscriptionStatusResponseStatusEnum.PastDue,
   SubscriptionStatusResponseStatusEnum.Paused,
   SubscriptionStatusResponseStatusEnum.Cancelled,
 ];
 
-const SUBSCRIBE_STATUSES = [
+const SUBSCRIBE_STATUSES: SubscriptionStatusResponseStatusEnum[] = [
   SubscriptionStatusResponseStatusEnum.Expired,
   SubscriptionStatusResponseStatusEnum.Paused,
   SubscriptionStatusResponseStatusEnum.Cancelled,
 ];
+
+const formatBytes = (bytes?: number): string => {
+  if (!bytes) return '0 MB';
+  const gb = bytes / 1_000_000_000;
+  if (gb >= 1) return `${gb.toFixed(1)} GB`;
+  return `${(bytes / 1_000_000).toFixed(0)} MB`;
+};
+
+const meterColor = (used: number, limit: number, warningReached?: boolean): string => {
+  if (limit > 0 && used >= limit) return floowColors.error.main;
+  if (warningReached) return floowColors.warning.main;
+  return floowColors.success.main;
+};
 
 export const BillingSettings: React.FC = () => {
   const { status, isLoading, refresh } = useSubscription();
@@ -54,6 +72,15 @@ export const BillingSettings: React.FC = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [usage, setUsage] = useState<UsageSummaryResponse | null>(null);
+
+  useEffect(() => {
+    companyService
+      .getUsage()
+      .then((res) => setUsage(res.data))
+      .catch((error) => showError(extractErrorMessage(error, 'Failed to load usage data')));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) {
     return (
@@ -97,8 +124,8 @@ export const BillingSettings: React.FC = () => {
     try {
       const { data } = await subscriptionService.getPortalUrl();
       window.open((data as Record<string, string>).portalUrl, '_blank');
-    } catch {
-      showError('Failed to open billing portal. Please try again.');
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to open billing portal. Please try again.'));
     } finally {
       setLoadingPortal(false);
     }
@@ -111,8 +138,8 @@ export const BillingSettings: React.FC = () => {
       showSuccess('Subscription cancelled. You keep full access until the end of the billing period.');
       setCancelDialogOpen(false);
       refresh();
-    } catch {
-      showError('Failed to cancel subscription. Please try again.');
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to cancel subscription. Please try again.'));
     } finally {
       setCancelling(false);
     }
@@ -163,6 +190,84 @@ export const BillingSettings: React.FC = () => {
               {new Date(status.currentPeriodEnd).toLocaleDateString(undefined, { dateStyle: 'long' })}
             </Typography>
           </S.StatusRow>
+        )}
+
+        {usage && (
+          <S.UsageSection>
+            <Typography variant="subtitle2" fontWeight={600}>
+              Usage
+            </Typography>
+
+            <S.MeterRow>
+              <S.MeterLabelRow>
+                <Typography variant="body2" color="text.secondary">
+                  Jobs this month
+                </Typography>
+                <Typography variant="body2">
+                  {usage.jobsUsedThisMonth ?? 0} / {usage.jobsLimit ?? 0}
+                </Typography>
+              </S.MeterLabelRow>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, ((usage.jobsUsedThisMonth ?? 0) / (usage.jobsLimit || 1)) * 100)}
+                sx={{
+                  borderRadius: '2px',
+                  height: '6px',
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: meterColor(usage.jobsUsedThisMonth ?? 0, usage.jobsLimit ?? 0, usage.jobsWarningThresholdReached),
+                  },
+                }}
+              />
+            </S.MeterRow>
+
+            <S.MeterRow>
+              <S.MeterLabelRow>
+                <Typography variant="body2" color="text.secondary">
+                  Storage
+                </Typography>
+                <Typography variant="body2">
+                  {formatBytes(usage.storageUsedBytes)} / {formatBytes(usage.storageLimitBytes)}
+                </Typography>
+              </S.MeterLabelRow>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, ((usage.storageUsedBytes ?? 0) / (usage.storageLimitBytes || 1)) * 100)}
+                sx={{
+                  borderRadius: '2px',
+                  height: '6px',
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: meterColor(
+                      usage.storageUsedBytes ?? 0,
+                      usage.storageLimitBytes ?? 0,
+                      usage.storageWarningThresholdReached
+                    ),
+                  },
+                }}
+              />
+            </S.MeterRow>
+
+            <S.MeterRow>
+              <S.MeterLabelRow>
+                <Typography variant="body2" color="text.secondary">
+                  Worker seats
+                </Typography>
+                <Typography variant="body2">
+                  {usage.activeWorkers ?? 0} / {usage.seatsLimit ?? 0}
+                </Typography>
+              </S.MeterLabelRow>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, ((usage.activeWorkers ?? 0) / (usage.seatsLimit || 1)) * 100)}
+                sx={{
+                  borderRadius: '2px',
+                  height: '6px',
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: meterColor(usage.activeWorkers ?? 0, usage.seatsLimit ?? 0, usage.seatsWarningThresholdReached),
+                  },
+                }}
+              />
+            </S.MeterRow>
+          </S.UsageSection>
         )}
 
         <Divider />

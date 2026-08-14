@@ -29,7 +29,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
 import { AddJobWizard } from '../AddJobWizard';
-import { useFetch } from '../../../../hooks';
+import { useFetch, useCanMutate } from '../../../../hooks';
 import { JobFilterPanel } from './JobFilterPanel';
 import { FilterChip, ClearAllChip } from './JobsList.styles';
 import {
@@ -58,6 +58,7 @@ export const JobsList: React.FC = () => {
   const location = useLocation();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
+  const { canMutate, reason } = useCanMutate();
 
   // Read highlightJobId from localStorage
   useEffect(() => {
@@ -225,6 +226,11 @@ export const JobsList: React.FC = () => {
   ]);
 
   const handleAddJob = () => {
+    if (!canMutate) {
+      showError(reason ?? 'Your subscription is inactive.');
+      return;
+    }
+
     if (templates.length === 0) {
       setGlobalModalOuterProps({
         isOpen: true,

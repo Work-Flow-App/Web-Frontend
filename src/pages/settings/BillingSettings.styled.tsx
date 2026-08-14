@@ -38,3 +38,21 @@ export const ActionsRow = styled(Box)(({ theme }) => ({
   flexWrap: 'wrap',
   paddingTop: theme.spacing(1),
 }));
+
+export const UsageSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
+}));
+
+export const MeterRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+}));
+
+export const MeterLabelRow = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'baseline',
+}));

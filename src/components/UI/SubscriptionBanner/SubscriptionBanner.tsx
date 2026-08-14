@@ -15,6 +15,32 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({ classNam
     return null;
   }
 
+  if (status.status === SubscriptionStatusResponseStatusEnum.Trial) {
+    if (!status.trialEndsAt) return null;
+
+    const daysRemaining = Math.max(
+      0,
+      Math.ceil((new Date(status.trialEndsAt).getTime() - Date.now()) / 86_400_000)
+    );
+
+    return (
+      <S.BannerWrapper className={className}>
+        <S.StyledAlert
+          severity="info"
+          action={
+            <Button color="inherit" size="small" variant="outlined" onClick={() => navigate('/subscribe')}>
+              Upgrade
+            </Button>
+          }
+        >
+          {daysRemaining > 0
+            ? `${daysRemaining} day${daysRemaining === 1 ? '' : 's'} left in your trial`
+            : 'Your trial ends today'}
+        </S.StyledAlert>
+      </S.BannerWrapper>
+    );
+  }
+
   const config = BANNER_CONFIG[status.status];
   if (!config) return null;
 
