@@ -119,13 +119,23 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   // Selected location from the map search
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(
     initialData.address
-      ? {
-          address: initialData.address.fullAddress,
-          location: {
-            lat: initialData.address.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
-            lng: initialData.address.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
-          },
-        }
+      ? initialData.address.latitude != null && initialData.address.longitude != null
+        ? {
+            address: initialData.address.fullAddress,
+            location: {
+              lat: initialData.address.latitude,
+              lng: initialData.address.longitude,
+            },
+          }
+        : {
+            // No real coordinates were saved (a manual/ungeocoded address) — rebuild this
+            // as isManualAddressOnly rather than substituting the default center as if it
+            // were a real point, otherwise a Back-then-Next (or reopening this job in edit
+            // mode) would silently re-fabricate and re-save a fake "real" location.
+            address: initialData.address.fullAddress,
+            location: { lat: 0, lng: 0 },
+            isManualAddressOnly: true,
+          }
       : null
   );
 
