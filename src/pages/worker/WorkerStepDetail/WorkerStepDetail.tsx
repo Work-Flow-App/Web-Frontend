@@ -15,6 +15,7 @@ import { workerJobWorkflowService } from '../../../services/api';
 import type { JobWorkflowStepResponse, WorkerAssignedStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { formatAddress } from '../../../utils/googleGeocoding';
 import * as M from '../styles/WorkerMobile.styles';
 import { WorkerStepComments } from './WorkerStepComments';
 import { WorkerStepAttachments } from './WorkerStepAttachments';
@@ -50,12 +51,6 @@ const SECTION_THEMES: Record<
   },
 };
 
-const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.state, addr.postalCode, addr.country]
-    .filter(Boolean)
-    .join(', ');
-};
 
 const buildMapsUrl = (addr?: WorkerAssignedStepResponse['jobAddress']): string | null => {
   if (!addr) return null;

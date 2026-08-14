@@ -13,6 +13,7 @@ import { AssetDetailModal } from '../components/AssetDetailModal';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { useFetch } from '../../../hooks';
+import { formatAddress } from '../../../utils/googleGeocoding';
 import * as M from '../styles/WorkerMobile.styles';
 
 interface AssetRow {
@@ -26,11 +27,6 @@ interface AssetRow {
   slaBreached?: boolean;
   address?: AssetAssignmentResponse['address'];
 }
-
-const formatAddress = (addr?: AssetAssignmentResponse['address']): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
-};
 
 const mapToRow = (a: AssetAssignmentResponse): AssetRow => ({
   assignmentId: a.assignmentId ?? 0,
