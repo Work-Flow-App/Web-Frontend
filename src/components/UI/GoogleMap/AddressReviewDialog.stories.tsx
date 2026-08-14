@@ -37,12 +37,13 @@ export const EmptyFields: Story = {
 };
 
 export const Interactive: Story = {
-  render: () => {
-    const [open, setOpen] = useState(true);
+  args: { open: true, initialValue: SAMPLE_PLACE, onConfirm: () => {}, onCancel: () => {} },
+  render: (args) => {
+    const [open, setOpen] = useState(args.open);
     return (
       <AddressReviewDialog
         open={open}
-        initialValue={SAMPLE_PLACE}
+        initialValue={args.initialValue}
         onConfirm={(place) => {
           // eslint-disable-next-line no-console
           console.log('confirmed', place);
