@@ -3,24 +3,28 @@ import { floowColors } from '../../../theme/colors';
 
 interface CardWrapperProps {
   background?: string;
+  featured?: boolean;
 }
 
-export const CardWrapper = styled(Box)<CardWrapperProps>(({ background }) => {
+export const CardWrapper = styled(Box)<CardWrapperProps>(({ background, featured }) => {
   const bgGradient = background || floowColors.gradient.pricingCard;
 
   return {
     boxSizing: 'border-box',
+    position: 'relative',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
     padding: '32px 40px',
     gap: '40px',
-    width: '363px',
+    width: '100%',
+    maxWidth: '363px',
     minHeight: '658px',
     background: bgGradient,
     backdropFilter: 'blur(42px)',
     WebkitBackdropFilter: 'blur(42px)',
     borderRadius: '24px',
+    border: featured ? `2px solid ${floowColors.white}` : '2px solid transparent',
     transition: 'all 0.3s ease-in-out',
 
     '&:hover': {
@@ -29,6 +33,23 @@ export const CardWrapper = styled(Box)<CardWrapperProps>(({ background }) => {
     },
   };
 });
+
+export const FeaturedBadge = styled(Box)(() => ({
+  position: 'absolute',
+  top: '-14px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  padding: '4px 16px',
+  borderRadius: '100px',
+  background: floowColors.gradient.pricingButton,
+  fontFamily: "'Manrope', sans-serif",
+  fontStyle: 'normal',
+  fontWeight: 600,
+  fontSize: '12px',
+  lineHeight: '16px',
+  color: floowColors.black,
+  whiteSpace: 'nowrap',
+}));
 
 export const IconCircle = styled(Box)(() => ({
   position: 'relative',
@@ -137,6 +158,11 @@ export const StyledButton = styled(Button)(() => ({
   '&:hover': {
     background: floowColors.gradient.pricingButtonHover,
     boxShadow: `0px 4px 12px ${floowColors.shadow.card}`,
+  },
+
+  '&.Mui-disabled': {
+    background: floowColors.whiteAlpha[12],
+    color: floowColors.whiteAlpha[50],
   },
 }));
 

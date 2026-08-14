@@ -1,4 +1,6 @@
-export interface IPricingFeature {
+import type { ReactNode } from 'react';
+
+export interface PricingFeature {
   /**
    * The text of the feature
    */
@@ -10,7 +12,7 @@ export interface IPricingFeature {
   included?: boolean;
 }
 
-export interface IPricingCard {
+export interface PricingCardProps {
   /**
    * The plan name/title
    */
@@ -50,12 +52,12 @@ export interface IPricingCard {
   /**
    * List of features included in the plan
    */
-  features?: IPricingFeature[];
+  features?: PricingFeature[];
 
   /**
    * Optional icon to display at the top
    */
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 
   /**
    * Optional custom background
@@ -66,4 +68,19 @@ export interface IPricingCard {
    * Whether this is a highlighted/featured plan
    */
   featured?: boolean;
+
+  /**
+   * Disables the action button (e.g. for a non-actionable/informational plan)
+   */
+  disabled?: boolean;
+
+  /**
+   * Small badge label rendered on the card, e.g. "Most Popular"
+   */
+  badge?: string;
+
+  /**
+   * Optional slot rendered between the price and the button, e.g. add-on steppers
+   */
+  stepper?: ReactNode;
 }

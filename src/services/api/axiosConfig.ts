@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { env } from '../../config/env';
 import { apiClient } from './client';
+import { classifySubscriptionError, isOnSubscriptionPage, isPaymentRequiredError } from '../../utils/subscriptionErrors';
 
 /**
  * Configured Axios instance for OpenAPI generated clients
@@ -57,6 +58,15 @@ axiosInstance.interceptors.response.use(
         method: originalRequest.method,
         hasToken: !!originalRequest.headers.Authorization,
       });
+    }
+
+    // Handle 402 Payment Required — redirect only on a lapsed subscription;
+    // cap-reached / unclassified errors fall through to the caller's own
+    // error handling (inline upsell messaging).
+    if (isPaymentRequiredError(error) && typeof window !== 'undefined') {
+      if (classifySubscriptionError(error) === 'lapsed' && !isOnSubscriptionPage()) {
+        window.location.href = '/subscribe';
+      }
     }
 
     // If error is 401 and we haven't retried yet

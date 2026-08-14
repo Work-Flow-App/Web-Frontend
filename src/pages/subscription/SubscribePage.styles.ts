@@ -23,3 +23,27 @@ export const HeadingWrapper = styled(Box)(({ theme }) => ({
   maxWidth: rem(480),
   textAlign: 'center',
 }));
+
+export const CardsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  alignItems: 'stretch',
+  gap: theme.spacing(3),
+  width: '100%',
+}));
+
+export const StepperField = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+}));
+
+export const stepperInputSx = {
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+};

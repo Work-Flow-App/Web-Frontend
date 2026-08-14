@@ -1,6 +1,6 @@
 import React from 'react';
 import * as S from './PricingCard.styled';
-import type { PricingCardProps } from './PricingCard.types';
+import type { PricingCardProps, PricingFeature } from './PricingCard.types';
 
 function PricingCard({
   planName,
@@ -13,15 +13,21 @@ function PricingCard({
   features = [],
   icon,
   background,
+  featured = false,
+  disabled = false,
+  badge,
+  stepper,
 }: PricingCardProps): React.ReactElement {
   const handleButtonClick = () => {
-    if (onButtonClick) {
+    if (!disabled && onButtonClick) {
       onButtonClick();
     }
   };
 
   return (
-    <S.CardWrapper background={background}>
+    <S.CardWrapper background={background} featured={featured}>
+      {(badge || featured) && <S.FeaturedBadge>{badge ?? 'Most Popular'}</S.FeaturedBadge>}
+
       {/* Icon */}
       {icon ? icon : <S.IconCircle />}
 
@@ -38,14 +44,19 @@ function PricingCard({
         </S.PriceSection>
       </S.HeaderSection>
 
+      {/* Stepper (opt-in add-on controls) */}
+      {stepper}
+
       {/* Button */}
-      <S.StyledButton onClick={handleButtonClick}>{buttonText}</S.StyledButton>
+      <S.StyledButton onClick={handleButtonClick} disabled={disabled}>
+        {buttonText}
+      </S.StyledButton>
 
       {/* Features */}
       {features.length > 0 && (
         <S.FeaturesSection>
           <S.FeaturesSectionTitle>What you will get</S.FeaturesSectionTitle>
-          {features.map((feature, index) => (
+          {features.map((feature: PricingFeature, index: number) => (
             <S.FeatureItem key={index}>
               <S.RadioIcon />
               <S.FeatureText>{feature.text}</S.FeatureText>
