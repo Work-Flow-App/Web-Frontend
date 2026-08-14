@@ -247,7 +247,11 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
           if (assetIdsArray.length > 0) updatePayload.assetIds = assetIdsArray;
           if (hasAddress) updatePayload.address = addressObj;
 
-          await jobService.updateJob(jobId, updatePayload);
+          // PATCH: several of the fields above are only conditionally included
+          // (status/customerId/clientId/assignedWorkerId/assetIds/address) —
+          // PUT risks wiping whatever a previous save had for any field this
+          // particular submission happens to omit.
+          await jobService.patchJob(jobId, updatePayload);
           showSuccess('Job updated successfully');
         } else {
           // Create new job - only include fields that have values

@@ -226,7 +226,11 @@ export const Step4CustomFields: React.FC<Step4Props> = ({ wizardData, onSuccess,
               };
             }
 
-            await jobService.updateJob(jobId, updatePayload);
+            // PATCH: every field on this payload is conditionally included —
+            // PUT risks wiping whatever a previous save had for any field this
+            // particular submission happens to omit (e.g. fieldValues when the
+            // user didn't touch any custom fields this time).
+            await jobService.patchJob(jobId, updatePayload);
             showSuccess('Job updated successfully');
             resetActiveScreen();
             onSuccess?.();

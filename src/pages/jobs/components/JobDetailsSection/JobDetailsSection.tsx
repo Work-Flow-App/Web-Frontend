@@ -202,7 +202,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer(createReq);
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
@@ -225,7 +227,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             longitude: place.isManualAddressOnly ? undefined : place.location?.lng ?? job.address?.longitude,
           },
         };
-        const res = await jobService.updateJob(job.id, updateReq);
+        // PATCH: this body only ever carries `address`, unlike PUT which risks
+        // wiping fieldValues/assetIds/etc. that it omits.
+        const res = await jobService.patchJob(job.id, updateReq);
         onJobUpdate?.(res.data);
       }
       showSuccess('Updated address successfully');
@@ -276,7 +280,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer({ name: editValue });
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
@@ -296,7 +302,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await companyClientService.createClient({ name: editValue });
           const newClient = res.data;
           if (job.id && newClient.id) {
-            const jobRes = await jobService.updateJob(job.id, { clientId: newClient.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { clientId: newClient.id });
             onJobUpdate?.(jobRes.data);
           }
           onClientUpdate?.(newClient);
@@ -334,14 +342,18 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer(createReq);
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
         }
       } else if (field === 'status' && job.id) {
         const updateReq: JobUpdateRequest = { status: editValue as JobUpdateRequest['status'] };
-        const res = await jobService.updateJob(job.id, updateReq);
+        // PATCH: this body only ever carries `status`, unlike PUT which risks
+        // wiping fieldValues/assetIds/etc. that it omits.
+        const res = await jobService.patchJob(job.id, updateReq);
         onJobUpdate?.(res.data);
       }
       showSuccess('Updated successfully');
@@ -581,8 +593,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         }
         setSavingField(fieldKey);
         try {
-          const rebuilt = rebuildFieldValuesForResend(job.fieldValues, templateFields);
-          rebuilt[String(field.id)] = {
+          const addressValue = {
             street: place.streetLine || place.address || '',
             city: place.city || '',
             state: place.state || '',
@@ -591,7 +602,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             latitude: place.isManualAddressOnly ? null : place.location?.lat ?? null,
             longitude: place.isManualAddressOnly ? null : place.location?.lng ?? null,
           };
-          const res = await jobService.updateJob(job.id, { fieldValues: rebuilt });
+          // PATCH merges fieldValues by key on the backend — send only this one
+          // field instead of rebuilding and resending the job's whole fieldValues
+          // map (rebuildFieldValuesForResend exists for the PUT-based paths that
+          // still need it; this save no longer does).
+          const res = await jobService.patchJob(job.id, { fieldValues: { [String(field.id)]: addressValue } });
           onJobUpdate?.(res.data);
           showSuccess('Updated successfully');
           setEditingField(null);
@@ -648,16 +663,22 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       setSavingField(fieldKey);
       try {
         if (job.id && field.id !== undefined) {
-          // Resend every field, preserving any OTHER address-type field as its real
-          // structured object instead of flattening it to a string (see
-          // rebuildFieldValuesForResend's doc comment for why that matters).
-          const updatedFieldValues = rebuildFieldValuesForResend(job.fieldValues, templateFields);
+          let res;
           if (editValue === '') {
+            // Clearing a value still needs the full-map PUT path: PATCH merges
+            // whatever keys it's given, but has no way to signal "remove this
+            // key" the way replacing the whole map with it already `delete`d
+            // does. Preserve any OTHER address-type field as its real structured
+            // object instead of flattening it to a string (see
+            // rebuildFieldValuesForResend's doc comment for why that matters).
+            const updatedFieldValues = rebuildFieldValuesForResend(job.fieldValues, templateFields);
             delete updatedFieldValues[String(field.id)];
+            res = await jobService.updateJob(job.id, { fieldValues: updatedFieldValues });
           } else {
-            updatedFieldValues[String(field.id)] = editValue;
+            // PATCH merges fieldValues by key on the backend — send only this one
+            // field instead of resending the whole map.
+            res = await jobService.patchJob(job.id, { fieldValues: { [String(field.id)]: editValue } });
           }
-          const res = await jobService.updateJob(job.id, { fieldValues: updatedFieldValues });
           onJobUpdate?.(res.data);
         }
         showSuccess('Updated successfully');

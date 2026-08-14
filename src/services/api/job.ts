@@ -60,6 +60,14 @@ export const jobService = {
     return await getJobApi().jobUpdate(id, data);
   },
 
+  // PATCH (unlike updateJob's PUT) merges `fieldValues` by key on the backend
+  // instead of replacing the whole map — use this for a single-field save so
+  // the caller doesn't have to rebuild and resend every other custom field's
+  // value just to change one.
+  async patchJob(id: number, data: JobUpdateRequest) {
+    return await getJobApi().jobPatch(id, data);
+  },
+
   async archiveJob(id: number) {
     return await getJobApi().jobArchive(id);
   },
