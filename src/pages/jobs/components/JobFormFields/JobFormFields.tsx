@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import LocationMapField from './LocationMapField';
+import CustomAddressField from './CustomAddressField';
+import { isAddressField } from '../../../../utils/customAddressField';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { JobFormSchema } from '../../schema/JobFormSchema';
 import { useSchema } from '../../../../utils/validation';
@@ -242,6 +244,10 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
   const renderFieldInput = (field: JobTemplateFieldResponse) => {
     // Use field ID as the key, not field name
     const fieldName = `field_${field.id}`;
+
+    if (isAddressField(field)) {
+      return <CustomAddressField fieldId={field.id!} />;
+    }
 
     switch (field.jobFieldType) {
       case FieldType.TEXT:

@@ -9,6 +9,8 @@ import { workerService } from '../../../../services/api/worker';
 import { companyClientService } from '../../../../services/api/companyClient';
 import { customerService } from '../../../../services/api/customer';
 import { prepareWorkerJobMarkers, prepareJobLocationMarkers } from '../../../../utils/mapDataHelpers';
+import { geocodeAddress } from '../../../../utils/googleGeocoding';
+import { STATUS_COLORS } from '../../../../components/UI/GoogleMap/GoogleMapConst';
 import type { JobResponse, WorkerResponse, ClientResponse, CustomerResponse } from '../../../../services/api';
 import {
   CircularProgress,
@@ -22,13 +24,20 @@ import {
 } from '@mui/material';
 import * as S from './MapsList.styles';
 
-const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
-  NEW: { color: '#9c27b0', label: 'New' },
-  PENDING: { color: '#ff9800', label: 'Pending' },
-  IN_PROGRESS: { color: '#2196f3', label: 'In Progress' },
-  COMPLETED: { color: '#4caf50', label: 'Completed' },
-  CANCELLED: { color: '#f44336', label: 'Cancelled' },
+// Labels only — colors are sourced from STATUS_COLORS (GoogleMapConst.ts) so
+// the legend/filter chips here can never drift from the actual pin colors
+// rendered on the map itself.
+const STATUS_LABELS: Record<string, string> = {
+  NEW: 'New',
+  PENDING: 'Pending',
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
 };
+
+const STATUS_CONFIG: Record<string, { color: string; label: string }> = Object.fromEntries(
+  Object.entries(STATUS_LABELS).map(([status, label]) => [status, { color: STATUS_COLORS[status] ?? '#9e9e9e', label }])
+);
 
 const ALL_STATUSES = ['ALL', 'NEW', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
 
@@ -80,25 +89,13 @@ export const MapsList: React.FC = () => {
   }, []);
 
   // Step 2: prepare markers once BOTH raw data and Google Maps API are ready.
-  // Uses Google Maps Geocoder — far more reliable than Nominatim for addresses
-  // that don't already have stored lat/lng coordinates.
+  // Both jobs and workers now geocode through the same shared Google module
+  // (see src/utils/googleGeocoding.ts) — previously workers used a separate,
+  // less accurate Nominatim-based path here.
   useEffect(() => {
     if (!rawData || !mapsApiLoaded) return;
 
-    const googleGeocode = (address: string): Promise<{ lat: number; lng: number } | null> =>
-      new Promise((resolve) => {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === 'OK' && results?.[0]?.geometry?.location) {
-            resolve({
-              lat: results[0].geometry.location.lat(),
-              lng: results[0].geometry.location.lng(),
-            });
-          } else {
-            resolve(null);
-          }
-        });
-      });
+    const googleGeocode = (address: string) => geocodeAddress(address).then((r) => r?.location ?? null);
 
     const buildMarkers = async () => {
       try {

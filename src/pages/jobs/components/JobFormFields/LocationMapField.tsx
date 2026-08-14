@@ -67,7 +67,12 @@ const LocationMapField: React.FC<LocationMapFieldProps> = ({ namePrefix = 'addre
   }, [isLoaded, addressStreet, savedLat, savedLng, setValue, latitudeField, longitudeField]);
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setValue(streetField, place.address, { shouldDirty: true });
+    // Use just the street line (number + route) here, never the full
+    // formatted address — `place.address` already contains city/postcode/
+    // country, and saving it into the street field is what produced
+    // duplicated-looking addresses ("12 Main St, London SW1A 2AA, UK, London,
+    // SW1A 2AA, UK") when the parts were later joined back together for display.
+    setValue(streetField, place.streetLine || place.address, { shouldDirty: true });
     setValue(cityField, place.city ?? '', { shouldDirty: true });
     setValue(stateField, place.state ?? '', { shouldDirty: true });
     setValue(postalCodeField, place.postalCode ?? '', { shouldDirty: true });
@@ -103,6 +108,7 @@ const LocationMapField: React.FC<LocationMapFieldProps> = ({ namePrefix = 'addre
         markers={selectedLocation ? [selectedLocation] : []}
         selectedLocation={selectedLocation}
         onLocationSelect={handleLocationSelect}
+        confirmBeforeSelect
         showSearchBox
         searchInitialValue={addressStreet || undefined}
         height="300px"

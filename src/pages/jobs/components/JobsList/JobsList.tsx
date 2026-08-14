@@ -6,6 +6,7 @@ import { Search } from '../../../../components/UI/Search';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
+import { isAddressField, parseAddressFieldValue } from '../../../../utils/customAddressField';
 import {
   jobService,
   jobTemplateService,
@@ -141,10 +142,17 @@ export const JobsList: React.FC = () => {
   );
 
   const jobs = useMemo<JobTableRow[]>(() => {
+    const fieldsById = new Map(templateFields.filter((f) => f.id != null).map((f) => [String(f.id), f]));
     const mapped = (rawJobs ?? []).map((job: JobResponse) => {
-      const fieldValues: { [key: string]: string } = {};
+      const fieldValues: { [key: string]: unknown } = {};
       if (job.fieldValues) {
         Object.entries(job.fieldValues).forEach(([key, fieldValueResponse]) => {
+          // Preserve address fields as structured objects — String()-flattening here is what corrupted DataColumn's display before this fix.
+          if (isAddressField(fieldsById.get(key))) {
+            const parsed = parseAddressFieldValue(fieldValueResponse);
+            if (parsed) fieldValues[key] = parsed;
+            return;
+          }
           if (fieldValueResponse && typeof fieldValueResponse === 'object' && 'value' in fieldValueResponse) {
             fieldValues[key] = String(fieldValueResponse.value);
           } else if (fieldValueResponse) {
@@ -189,7 +197,7 @@ export const JobsList: React.FC = () => {
       return mapped.filter((job) => job.status !== 'COMPLETED');
     }
     return mapped;
-  }, [rawJobs, assets, templates, customers, clients, workflows, viewTab]);
+  }, [rawJobs, assets, templates, customers, clients, workflows, viewTab, templateFields]);
 
   // No-template modal on first load
   useEffect(() => {

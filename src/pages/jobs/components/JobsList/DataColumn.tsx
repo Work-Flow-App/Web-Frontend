@@ -1,6 +1,7 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
 import type { JobTemplateFieldResponse } from '../../../../services/api';
 import { StatusChip } from './JobsList.styles';
+import { isAddressField, formatAddressFieldValue } from '../../../../utils/customAddressField';
 
 const getStatusColor = (
   status: string
@@ -33,7 +34,7 @@ export interface JobTableRow {
   clientName?: string;
   status?: string;
   createdAt: string;
-  fieldValues?: { [key: string]: string };
+  fieldValues?: { [key: string]: unknown };
   assetIds?: number[];
   assetNames?: string;
   jobValue?: string;
@@ -136,18 +137,23 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       const value = row.fieldValues?.[field.id?.toString() || ''];
       if (!value) return '-';
 
+      if (isAddressField(field)) {
+        return formatAddressFieldValue(value) || '-';
+      }
+
       // Format based on field type
+      const stringValue = String(value);
       switch (field.jobFieldType) {
         case 'BOOLEAN':
-          return value === 'true' ? 'Yes' : 'No';
+          return stringValue === 'true' ? 'Yes' : 'No';
         case 'DATE':
           try {
-            return new Date(value).toLocaleDateString();
+            return new Date(stringValue).toLocaleDateString();
           } catch {
-            return value;
+            return stringValue;
           }
         default:
-          return value;
+          return stringValue;
       }
     },
   }));

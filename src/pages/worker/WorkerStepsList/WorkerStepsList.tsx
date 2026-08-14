@@ -11,6 +11,7 @@ import { workerJobWorkflowService } from '../../../services/api';
 import type { WorkerAssignedStepResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { formatAddress } from '../../../utils/googleGeocoding';
 import * as M from '../styles/WorkerMobile.styles';
 
 interface StepRow {
@@ -26,11 +27,6 @@ interface StepRow {
   startedAt?: string;
   completedAt?: string;
 }
-
-const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
-};
 
 const formatTimestamp = (iso?: string): string => {
   if (!iso) return '';

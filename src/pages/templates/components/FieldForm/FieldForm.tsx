@@ -7,6 +7,8 @@ import { jobTemplateService, JobTemplateFieldCreateRequestJobFieldTypeEnum } fro
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { FieldType } from '../../../../enums';
+import { isAddressField, ADDRESS_FIELD_MARKER } from '../../../../utils/customAddressField';
 
 export interface FieldFormProps {
   isModal?: boolean;
@@ -42,21 +44,28 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
           const response = await jobTemplateService.getFieldById(fieldId);
           const field = response.data;
 
-          // Convert jobFieldType to dropdown option format
+          // Convert jobFieldType to dropdown option format. An "Address" field is
+          // encoded on the backend as JSON + a marker in `options` (see
+          // src/utils/customAddressField.ts) — surface it as the ADDRESS tile instead
+          // of leaking that encoding into the UI.
           const FIELD_TYPES = [
             { label: 'Text', value: 'TEXT' },
             { label: 'Number', value: 'NUMBER' },
             { label: 'Date', value: 'DATE' },
             { label: 'Boolean', value: 'BOOLEAN' },
             { label: 'Dropdown', value: 'DROPDOWN' },
+            { label: 'Address', value: FieldType.ADDRESS },
           ];
-          const selectedFieldType = FIELD_TYPES.find(ft => ft.value === field.jobFieldType) || null;
+          const isAddress = isAddressField(field);
+          const selectedFieldType = isAddress
+            ? FIELD_TYPES.find((ft) => ft.value === FieldType.ADDRESS) || null
+            : FIELD_TYPES.find((ft) => ft.value === field.jobFieldType) || null;
 
           setFieldData({
             label: field.label || '',
             jobFieldType: selectedFieldType as any,
             required: field.required ?? false,
-            options: field.options || '',
+            options: isAddress ? '' : field.options || '',
           });
         } catch (error) {
           console.error('Error fetching field:', error);
@@ -76,9 +85,10 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
         const required = Boolean(data.required);
 
         // Extract value from dropdown option object if it's an object
-        const jobFieldType = typeof data.jobFieldType === 'object' && data.jobFieldType !== null
+        const jobFieldTypeValue = typeof data.jobFieldType === 'object' && data.jobFieldType !== null
           ? (data.jobFieldType as any).value
           : data.jobFieldType;
+        const isAddress = jobFieldTypeValue === FieldType.ADDRESS;
 
         // Auto-generate field name from label: lowercase, spaces → underscores, strip special chars
         const generatedName = data.label
@@ -91,9 +101,13 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = false, templateI
           templateId,
           name: generatedName,
           label: data.label,
-          jobFieldType: jobFieldType as JobTemplateFieldCreateRequestJobFieldTypeEnum,
+          // The backend has no ADDRESS enum value — encode it as JSON + a marker (see
+          // src/utils/customAddressField.ts).
+          jobFieldType: (isAddress
+            ? JobTemplateFieldCreateRequestJobFieldTypeEnum.Json
+            : jobFieldTypeValue) as JobTemplateFieldCreateRequestJobFieldTypeEnum,
           required,
-          options: data.options,
+          options: isAddress ? ADDRESS_FIELD_MARKER : data.options,
         };
 
         if (isEditMode) {
