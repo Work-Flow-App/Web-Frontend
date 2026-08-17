@@ -3,11 +3,16 @@ import {
   Tooltip,
   CircularProgress,
   Typography,
+  useTheme,
+  useMediaQuery,
+  ClickAwayListener,
 } from '@mui/material';
 import { StandaloneDropdown } from '../../../../../components/UI/Forms/Dropdown';
 import SendIcon from '@mui/icons-material/Send';
 import DownloadIcon from '@mui/icons-material/Download';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import { StepCommentCreateRequestTypeEnum } from '../../../../../../workflow-api';
 import type {
@@ -61,6 +66,10 @@ interface CombinedTimelineItem extends StepTimelineItemResponse {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+
   const { showSuccess, showError } = useSnackbar();
   const { accessToken } = useAuth();
   const { setGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -402,8 +411,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 <SS.MessageEditTextField
                   size="small"
                   value={editingContent}
-                  onChange={e => setEditingContent(e.target.value)}
-                  onKeyDown={e => {
+                  onChange={(e: any) => setEditingContent(e.target.value)}
+                  onKeyDown={(e: any) => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
                     if (e.key === 'Escape') cancelEdit();
                   }}
@@ -504,54 +513,89 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     <>
       <SS.StepActivityLayout>
         {/* ── Left: Steps panel ──────────────────────────────────────── */}
-        <SS.StepsSidebar>
-          <SS.StepsSidebarHeader>
-            <SS.StepsSidebarTitle>Steps</SS.StepsSidebarTitle>
-            <SS.StepsCountBadge>{steps.length}</SS.StepsCountBadge>
-          </SS.StepsSidebarHeader>
+        <ClickAwayListener onClickAway={() => {
+          if (isMobile && isSidebarExpanded) {
+            setIsSidebarExpanded(false);
+          }
+        }}>
+          <SS.StepsSidebar $expanded={isMobile ? isSidebarExpanded : undefined}>
+            <SS.StepsSidebarHeader>
+              <SS.StepsSidebarTitle>Steps</SS.StepsSidebarTitle>
+              <SS.StepsCountBadge>{steps.length}</SS.StepsCountBadge>
+            </SS.StepsSidebarHeader>
 
-          <SS.StepsScrollArea>
-            {/* All Steps row */}
-            <SS.StepRowItem isActive={viewFilter === 'all'} onClick={() => setViewFilter('all')}>
-              <SS.StepCircleIcon
-                circleColor={viewFilter === 'all' ? undefined : undefined}
+            <SS.StepsScrollArea>
+              {/* All Steps row */}
+              <SS.StepRowItem
+                isActive={viewFilter === 'all'}
+                onClick={() => {
+                  setViewFilter('all');
+                  if (isMobile) setIsSidebarExpanded(false);
+                }}
               >
-                <SS.SidebarEmptyIcon />
-              </SS.StepCircleIcon>
-              <SS.StepTextGroup>
-                <SS.StepNameText isActive={viewFilter === 'all'}>All Steps</SS.StepNameText>
-                <SS.StepStatusText>{allItems.length} messages</SS.StepStatusText>
-              </SS.StepTextGroup>
-            </SS.StepRowItem>
-
-            {/* Individual step rows */}
-            {steps.map((step, idx) => {
-              const isActive = viewFilter === step.id;
-              const cnt = countByStep[step.id!] || 0;
-              const status = (step as Record<string, unknown>).status as string | undefined;
-              return (
-                <SS.StepRowItem
-                  key={step.id}
-                  isActive={isActive}
-                  onClick={() => step.id && setViewFilter(step.id)}
-                >
-                  <SS.StepCircleIcon circleColor={getStepColor(idx)}>
-                    {idx + 1}
+                <Tooltip title="All Steps" placement="right" arrow={!isMobile}>
+                  <SS.StepCircleIcon
+                    circleColor={viewFilter === 'all' ? undefined : undefined}
+                  >
+                    <SS.SidebarEmptyIcon />
                   </SS.StepCircleIcon>
-                  <SS.StepTextGroup>
-                    <SS.StepNameText isActive={isActive}>
-                      {step.name || `Step ${idx + 1}`}
-                    </SS.StepNameText>
-                    {status && <SS.StepStatusText>{status}</SS.StepStatusText>}
-                  </SS.StepTextGroup>
-                  {cnt > 0 && (
-                    <SS.StepItemCountBadge isActive={isActive}>{cnt}</SS.StepItemCountBadge>
-                  )}
-                </SS.StepRowItem>
-              );
-            })}
-          </SS.StepsScrollArea>
-        </SS.StepsSidebar>
+                </Tooltip>
+                <SS.StepTextGroup>
+                  <SS.StepNameText isActive={viewFilter === 'all'}>All Steps</SS.StepNameText>
+                  <SS.StepStatusText>{allItems.length} messages</SS.StepStatusText>
+                </SS.StepTextGroup>
+              </SS.StepRowItem>
+
+              {/* Individual step rows */}
+              {(!isMobile || isSidebarExpanded) && steps.map((step, idx) => {
+                const isActive = viewFilter === step.id;
+                const cnt = countByStep[step.id!] || 0;
+                const status = (step as Record<string, unknown>).status as string | undefined;
+                return (
+                  <SS.StepRowItem
+                    key={step.id}
+                    isActive={isActive}
+                    onClick={() => {
+                      if (step.id) {
+                        setViewFilter(step.id);
+                        if (isMobile) setIsSidebarExpanded(false);
+                      }
+                    }}
+                  >
+                    <Tooltip
+                      title={`${idx + 1}. ${step.name || `Step ${idx + 1}`}`}
+                      placement="right"
+                      arrow={!isMobile}
+                    >
+                      <SS.StepCircleIcon circleColor={getStepColor(idx)}>
+                        {idx + 1}
+                      </SS.StepCircleIcon>
+                    </Tooltip>
+                    <SS.StepTextGroup>
+                      <SS.StepNameText isActive={isActive}>
+                        {step.name || `Step ${idx + 1}`}
+                      </SS.StepNameText>
+                      {status && <SS.StepStatusText>{status}</SS.StepStatusText>}
+                    </SS.StepTextGroup>
+                    {cnt > 0 && (
+                      <SS.StepItemCountBadge isActive={isActive}>{cnt}</SS.StepItemCountBadge>
+                    )}
+                  </SS.StepRowItem>
+                );
+              })}
+            </SS.StepsScrollArea>
+
+            {/* Mobile expand/collapse arrow */}
+            {isMobile && (
+              <SS.SidebarArrowButton
+                onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                aria-label={isSidebarExpanded ? 'Collapse steps' : 'Expand steps'}
+              >
+                {isSidebarExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              </SS.SidebarArrowButton>
+            )}
+          </SS.StepsSidebar>
+        </ClickAwayListener>
 
         {/* ── Right: Chat panel ──────────────────────────────────────── */}
         <SS.ChatPanel>
@@ -650,7 +694,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 size="small"
                 placeholder="Reply to the team..."
                 value={message}
-                onChange={e => setMessage(e.target.value)}
+                onChange={(e: any) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 multiline
                 maxRows={4}

@@ -36,4 +36,5 @@ export const IconWrapper = styled(Box)(({ theme }) => ({
 export const ContentSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   width: '100%',
+  minWidth: 0,
 }));

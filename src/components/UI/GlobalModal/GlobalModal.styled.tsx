@@ -29,9 +29,11 @@ export const ModalContainerWrapper = styled(Box, {
   backgroundColor: palette.background.paper,
   boxShadow: `0px 5px 55px ${floowColors.shadow.md}`,
   position: 'fixed',
-  left: '50%',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  margin: 'auto',
   zIndex: ZIndex,
 
   [breakpoints.up('sm')]: {

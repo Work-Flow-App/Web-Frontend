@@ -1,34 +1,16 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  Box,
-  Chip,
-  Collapse,
-  TableRow,
-  IconButton,
-  Tooltip,
   CircularProgress,
-  TextField,
   Autocomplete,
   Menu,
-  MenuItem,
-  Checkbox,
+  Tooltip,
   Typography,
   Divider,
-  Tabs,
   Tab,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import LinkOffIcon from '@mui/icons-material/LinkOff';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckIcon from '@mui/icons-material/Check';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import LockIcon from '@mui/icons-material/Lock';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import type {
   JobResponse,
   EstimateResponse,
@@ -58,20 +40,12 @@ import {
   StyledTableBody,
   StyledTableRow,
   StyledHeaderCell,
-  StyledTableCell,
-  ActionsCell,
 } from '../../../../../components/UI/Table/Table.styles';
 import { CreateInvoiceModal } from './CreateInvoiceModal';
 import { CreateEstimateDocumentModal } from './CreateEstimateDocumentModal';
 import * as S from '../../../JobDetailsPage.styles';
-import {
-  CC,
-  FIELD_SX,
-  QUICK_ACTIONS_CONTAINER_SX,
-  SUCCESS_ICON_BUTTON_SX,
-  ERROR_ICON_BUTTON_SX,
-  ICON_FONT_SIZE_SX,
-} from './JobEstimateTab.styles';
+import * as ES from './JobEstimateTab.styles';
+
 
 interface JobEstimateTabProps {
   job: JobResponse;
@@ -95,6 +69,9 @@ const STATUS_CHIP: Record<ItemStatus, { label: string; color: 'default' | 'succe
 };
 
 export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { showError } = useSnackbar();
   const { formatCurrency: fmt } = useCurrency();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -108,6 +85,8 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const [newItem, setNewItem] = useState(defaultNewItem);
   const [selectedExistingId, setSelectedExistingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const mobileAddCardRef = React.useRef<HTMLDivElement | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
@@ -173,6 +152,15 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   useEffect(() => { fetchEstimate(); }, [fetchEstimate]);
 
+  useEffect(() => {
+    if (showAddRow && isMobile) {
+      const timer = setTimeout(() => {
+        mobileAddCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showAddRow, isMobile]);
+
   // ── Derived ────────────────────────────────────────────────────
 
   const lineItemInvoiceMap = useMemo(() => {
@@ -191,7 +179,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   if (!estimate) {
     return (
       <S.EstimateEmptyState>
-        <ReceiptLongIcon />
+        <ES.ButtonStartIcon />
         <S.InfoValue>No estimate found for this job</S.InfoValue>
       </S.EstimateEmptyState>
     );
@@ -216,7 +204,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const toggleRow = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -232,7 +224,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const toggleDocExpand = (id: number) => {
     setExpandedDocIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -240,7 +236,11 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   const toggleInvoiceExpand = (id: number) => {
     setExpandedInvoiceIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -383,7 +383,30 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
     setSaving(true);
     try {
       if (selectedExistingId) {
-        await estimateService.linkExistingLineItem(estimate.id, selectedExistingId);
+        const originalItem = availableLineItems.find((item) => item.id === selectedExistingId);
+        const isModified = originalItem && (
+          newItem.productCode.trim() !== (originalItem.productCode || '').trim() ||
+          newItem.productDescription.trim() !== (originalItem.productDescription || '').trim() ||
+          (parseFloat(newItem.unitPrice) || 0) !== (originalItem.unitPrice || 0) ||
+          (parseFloat(newItem.quantity) || 1) !== (originalItem.quantity || 1) ||
+          (parseFloat(newItem.vatRate) || 0) !== (originalItem.vatRate || 0)
+        );
+
+        const res = await estimateService.linkExistingLineItem(estimate.id, selectedExistingId);
+
+        if (isModified) {
+          const newlyLinked = res.data?.lineItems?.find((li) => li.sourceLineItemId === selectedExistingId);
+          if (newlyLinked?.id) {
+            const payload: LineItemUpdateRequest = {
+              productCode: newItem.productCode.trim(),
+              productDescription: newItem.productDescription.trim(),
+              unitPrice: parseFloat(newItem.unitPrice) || 0,
+              quantity: parseFloat(newItem.quantity) || 1,
+              vatRate: parseFloat(newItem.vatRate) || 0,
+            };
+            await estimateService.updateLineItem(estimate.id, newlyLinked.id, payload);
+          }
+        }
       } else {
         const payload: LineItemCreateRequest = {
           productCode: newItem.productCode.trim(),
@@ -471,23 +494,23 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const renderEstimatesTable = () => (
     estimateDocs.length === 0 ? (
-      <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+      <ES.EmptyStateText variant="body2" color="text.secondary">
         No estimate PDFs generated yet
-      </Typography>
+      </ES.EmptyStateText>
     ) : (
       <StyledTableContainer>
         <StyledTable>
           <StyledTableHead>
-            <TableRow>
-              <StyledHeaderCell sx={{ ...CC, width: 36, px: '8px' }} />
-              <StyledHeaderCell sx={CC}>Document</StyledHeaderCell>
-              <StyledHeaderCell sx={CC}>Reference</StyledHeaderCell>
-              <StyledHeaderCell sx={CC}>Valid Until</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>Net</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>VAT</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>Total</StyledHeaderCell>
-              <ActionsCell as={StyledHeaderCell} sx={CC} />
-            </TableRow>
+            <StyledTableRow>
+              <ES.CheckboxHeaderCell />
+              <ES.CompactHeaderCell>Document</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell>Reference</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell>Valid Until</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">Net</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">VAT</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">Total</ES.CompactHeaderCell>
+              <ES.CompactActionsCell as={StyledHeaderCell} />
+            </StyledTableRow>
           </StyledTableHead>
           <StyledTableBody>
             {estimateDocs.map((doc) => {
@@ -495,91 +518,91 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
               const snapshots: EstimateDocumentLineItemSnapshotResponse[] = doc.lineItems || [];
               return (
                 <React.Fragment key={doc.id}>
-                  <StyledTableRow onClick={() => toggleDocExpand(doc.id!)} sx={{ cursor: 'pointer' }}>
-                    <StyledTableCell sx={{ ...CC, width: 36, px: '8px' }}>
-                      <IconButton size="small" sx={{ p: 0 }}>
+                  <ES.ClickableTableRow onClick={() => toggleDocExpand(doc.id!)}>
+                    <ES.CheckboxTableCell>
+                      <ES.ZeroPaddingIconButton size="small">
                         {isExpanded
-                          ? <KeyboardArrowDownIcon sx={{ fontSize: '1rem' }} />
-                          : <KeyboardArrowRightIcon sx={{ fontSize: '1rem' }} />}
-                      </IconButton>
-                    </StyledTableCell>
-                    <StyledTableCell sx={CC}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <PictureAsPdfIcon sx={{ fontSize: '0.9rem', color: 'text.secondary' }} />
-                        <Typography variant="body2" fontWeight={600} sx={{ fontSize: 'inherit' }}>
+                          ? <ES.SmallArrowDownIcon />
+                          : <ES.SmallArrowRightIcon />}
+                      </ES.ZeroPaddingIconButton>
+                    </ES.CheckboxTableCell>
+                    <ES.CompactTableCell>
+                      <ES.DocIconBox>
+                        <ES.PdfIcon />
+                        <ES.DocTitle variant="body2">
                           {doc.documentNumber || `#${doc.id}`}
-                        </Typography>
-                      </Box>
+                        </ES.DocTitle>
+                      </ES.DocIconBox>
                       {doc.createdAt && (
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        <ES.DocCaption variant="caption" color="text.secondary">
                           Created {new Date(doc.createdAt).toLocaleDateString()}
-                        </Typography>
+                        </ES.DocCaption>
                       )}
-                    </StyledTableCell>
-                    <StyledTableCell sx={CC}>{doc.reference || '—'}</StyledTableCell>
-                    <StyledTableCell sx={CC}>
+                    </ES.CompactTableCell>
+                    <ES.CompactTableCell>{doc.reference || '—'}</ES.CompactTableCell>
+                    <ES.CompactTableCell>
                       {doc.validUntil ? new Date(doc.validUntil).toLocaleDateString() : '—'}
-                    </StyledTableCell>
-                    <StyledTableCell align="right" sx={CC}>{fmt(doc.totalNet)}</StyledTableCell>
-                    <StyledTableCell align="right" sx={CC}>{fmt(doc.totalVat)}</StyledTableCell>
-                    <StyledTableCell align="right" sx={{ ...CC, fontWeight: 600 }}>{fmt(doc.grandTotal)}</StyledTableCell>
-                    <ActionsCell sx={CC} onClick={(e) => e.stopPropagation()}>
+                    </ES.CompactTableCell>
+                    <ES.CompactTableCell align="right">{fmt(doc.totalNet)}</ES.CompactTableCell>
+                    <ES.CompactTableCell align="right">{fmt(doc.totalVat)}</ES.CompactTableCell>
+                    <ES.TotalTableCell align="right">{fmt(doc.grandTotal)}</ES.TotalTableCell>
+                    <ES.CompactActionsCell onClick={(e) => e.stopPropagation()}>
                       <Tooltip title="Open PDF">
                         <span>
-                          <IconButton
+                          <ES.ZeroPaddingIconButton
                             size="small" color="primary"
                             disabled={openingDocId === doc.id}
                             onClick={() => handleOpenEstimateDoc(doc.id!)}
                           >
                             {openingDocId === doc.id
                               ? <CircularProgress size={14} />
-                              : <OpenInNewIcon sx={{ fontSize: '1rem' }} />}
-                          </IconButton>
+                              : <ES.SmallOpenInNewIcon />}
+                          </ES.ZeroPaddingIconButton>
                         </span>
                       </Tooltip>
-                    </ActionsCell>
-                  </StyledTableRow>
-                  <TableRow sx={{ p: 0 }}>
-                    <StyledTableCell colSpan={8} sx={{ p: 0, border: 0 }}>
-                      <Collapse in={isExpanded} unmountOnExit>
-                        <Box sx={{ backgroundColor: 'action.hover', px: 2, py: 1 }}>
-                          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ display: 'block', mb: 0.75 }}>
+                    </ES.CompactActionsCell>
+                  </ES.ClickableTableRow>
+                  <ES.EmptyTableRow style={{ padding: 0 }}>
+                    <ES.CollapseTableCell colSpan={8}>
+                      <ES.DocSubheader style={{ display: isExpanded ? 'block' : 'none' }}>
+                        <ES.CollapseBox>
+                          <ES.CollapseCaption variant="caption" color="text.secondary">
                             Line Items ({snapshots.length})
-                          </Typography>
+                          </ES.CollapseCaption>
                           <StyledTable size="small">
                             <StyledTableHead>
-                              <TableRow>
-                                <StyledHeaderCell sx={CC}>Product Code</StyledHeaderCell>
-                                <StyledHeaderCell sx={CC}>Description</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Unit</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Qty</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>VAT%</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Net</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Total</StyledHeaderCell>
-                              </TableRow>
+                              <StyledTableRow>
+                                <ES.CompactHeaderCell>Product Code</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell>Description</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Unit</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Qty</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">VAT%</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Net</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Total</ES.CompactHeaderCell>
+                              </StyledTableRow>
                             </StyledTableHead>
                             <StyledTableBody>
                               {snapshots.map((snap) => (
                                 <StyledTableRow key={snap.id}>
-                                  <StyledTableCell sx={CC}>{snap.productCode}</StyledTableCell>
-                                  <StyledTableCell sx={CC}>{snap.productDescription}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{fmt(snap.unitPrice)}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{snap.quantity}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>
+                                  <ES.CompactTableCell>{snap.productCode}</ES.CompactTableCell>
+                                  <ES.CompactTableCell>{snap.productDescription}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{fmt(snap.unitPrice)}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{snap.quantity}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">
                                     {snap.vatRate !== undefined ? `${snap.vatRate}%` : '—'}
-                                  </StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{fmt(snap.netAmount)}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={{ ...CC, fontWeight: 600 }}>
+                                  </ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{fmt(snap.netAmount)}</ES.CompactTableCell>
+                                  <ES.TotalTableCell align="right">
                                     {fmt(snap.totalAmount)}
-                                  </StyledTableCell>
+                                  </ES.TotalTableCell>
                                 </StyledTableRow>
                               ))}
                             </StyledTableBody>
                           </StyledTable>
-                        </Box>
-                      </Collapse>
-                    </StyledTableCell>
-                  </TableRow>
+                        </ES.CollapseBox>
+                      </ES.DocSubheader>
+                    </ES.CollapseTableCell>
+                  </ES.EmptyTableRow>
                 </React.Fragment>
               );
             })}
@@ -591,24 +614,24 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
 
   const renderInvoicesTable = () => (
     invoices.length === 0 ? (
-      <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+      <ES.EmptyStateText variant="body2" color="text.secondary">
         No invoices generated yet
-      </Typography>
+      </ES.EmptyStateText>
     ) : (
       <StyledTableContainer>
         <StyledTable>
           <StyledTableHead>
-            <TableRow>
-              <StyledHeaderCell sx={{ ...CC, width: 36, px: '8px' }} />
-              <StyledHeaderCell sx={CC}>Invoice #</StyledHeaderCell>
-              <StyledHeaderCell sx={CC}>Reference</StyledHeaderCell>
-              <StyledHeaderCell sx={CC}>Due Date</StyledHeaderCell>
-              <StyledHeaderCell sx={CC}>Created</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>Net</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>VAT</StyledHeaderCell>
-              <StyledHeaderCell align="right" sx={CC}>Total</StyledHeaderCell>
-              <ActionsCell as={StyledHeaderCell} sx={CC}>PDF</ActionsCell>
-            </TableRow>
+            <StyledTableRow>
+              <ES.CheckboxHeaderCell />
+              <ES.CompactHeaderCell>Invoice #</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell>Reference</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell>Due Date</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell>Created</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">Net</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">VAT</ES.CompactHeaderCell>
+              <ES.CompactHeaderCell align="right">Total</ES.CompactHeaderCell>
+              <ES.CompactActionsCell as={StyledHeaderCell}>PDF</ES.CompactActionsCell>
+            </StyledTableRow>
           </StyledTableHead>
           <StyledTableBody>
             {invoices.map((inv) => {
@@ -616,81 +639,81 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
               const invLineItems = inv.lineItems || [];
               return (
                 <React.Fragment key={inv.id}>
-                  <StyledTableRow onClick={() => toggleInvoiceExpand(inv.id!)} sx={{ cursor: 'pointer' }}>
-                    <StyledTableCell sx={{ ...CC, width: 36, px: '8px' }}>
-                      <IconButton size="small" sx={{ p: 0 }}>
+                  <ES.ClickableTableRow onClick={() => toggleInvoiceExpand(inv.id!)}>
+                    <ES.CheckboxTableCell>
+                      <ES.ZeroPaddingIconButton size="small">
                         {isExpanded
-                          ? <KeyboardArrowDownIcon sx={{ fontSize: '1rem' }} />
-                          : <KeyboardArrowRightIcon sx={{ fontSize: '1rem' }} />}
-                      </IconButton>
-                    </StyledTableCell>
-                    <StyledTableCell sx={CC}>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: 'inherit' }}>
+                          ? <ES.SmallArrowDownIcon />
+                          : <ES.SmallArrowRightIcon />}
+                      </ES.ZeroPaddingIconButton>
+                    </ES.CheckboxTableCell>
+                    <ES.CompactTableCell>
+                      <ES.DocTitle variant="body2">
                         {inv.invoiceNumber || `#${inv.id}`}
-                      </Typography>
-                    </StyledTableCell>
-                    <StyledTableCell sx={CC}>{inv.reference || '—'}</StyledTableCell>
-                    <StyledTableCell sx={CC}>
+                      </ES.DocTitle>
+                    </ES.CompactTableCell>
+                    <ES.CompactTableCell>{inv.reference || '—'}</ES.CompactTableCell>
+                    <ES.CompactTableCell>
                       {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
-                    </StyledTableCell>
-                    <StyledTableCell sx={CC}>
+                    </ES.CompactTableCell>
+                    <ES.CompactTableCell>
                       {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '—'}
-                    </StyledTableCell>
-                    <StyledTableCell align="right" sx={CC}>{fmt(inv.totalNet)}</StyledTableCell>
-                    <StyledTableCell align="right" sx={CC}>{fmt(inv.totalVat)}</StyledTableCell>
-                    <StyledTableCell align="right" sx={{ ...CC, fontWeight: 600 }}>{fmt(inv.grandTotal)}</StyledTableCell>
-                    <ActionsCell sx={CC} onClick={(e) => e.stopPropagation()}>
+                    </ES.CompactTableCell>
+                    <ES.CompactTableCell align="right">{fmt(inv.totalNet)}</ES.CompactTableCell>
+                    <ES.CompactTableCell align="right">{fmt(inv.totalVat)}</ES.CompactTableCell>
+                    <ES.TotalTableCell align="right">{fmt(inv.grandTotal)}</ES.TotalTableCell>
+                    <ES.CompactActionsCell onClick={(e) => e.stopPropagation()}>
                       <Tooltip title="View PDF">
                         <span>
-                          <IconButton
+                          <ES.ZeroPaddingIconButton
                             size="small" color="primary"
                             disabled={!inv.presignedUrl}
                             onClick={() => inv.presignedUrl && window.open(inv.presignedUrl, '_blank', 'noopener,noreferrer')}
                           >
-                            <OpenInNewIcon sx={{ fontSize: '1rem' }} />
-                          </IconButton>
+                            <ES.SmallOpenInNewIcon />
+                          </ES.ZeroPaddingIconButton>
                         </span>
                       </Tooltip>
-                    </ActionsCell>
-                  </StyledTableRow>
-                  <TableRow sx={{ p: 0 }}>
-                    <StyledTableCell colSpan={9} sx={{ p: 0, border: 0 }}>
-                      <Collapse in={isExpanded} unmountOnExit>
-                        <Box sx={{ backgroundColor: 'action.hover', px: 2, py: 1 }}>
+                    </ES.CompactActionsCell>
+                  </ES.ClickableTableRow>
+                  <ES.EmptyTableRow style={{ padding: 0 }}>
+                    <ES.CollapseTableCell colSpan={9}>
+                      <ES.DocSubheader style={{ display: isExpanded ? 'block' : 'none' }}>
+                        <ES.CollapseBox>
                           <StyledTable size="small">
                             <StyledTableHead>
-                              <TableRow>
-                                <StyledHeaderCell sx={CC}>Product Code</StyledHeaderCell>
-                                <StyledHeaderCell sx={CC}>Description</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Unit</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Qty</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>VAT%</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Net</StyledHeaderCell>
-                                <StyledHeaderCell align="right" sx={CC}>Total</StyledHeaderCell>
-                              </TableRow>
+                              <StyledTableRow>
+                                <ES.CompactHeaderCell>Product Code</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell>Description</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Unit</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Qty</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">VAT%</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Net</ES.CompactHeaderCell>
+                                <ES.CompactHeaderCell align="right">Total</ES.CompactHeaderCell>
+                              </StyledTableRow>
                             </StyledTableHead>
                             <StyledTableBody>
                               {invLineItems.map((li) => (
                                 <StyledTableRow key={li.id}>
-                                  <StyledTableCell sx={CC}>{li.productCode}</StyledTableCell>
-                                  <StyledTableCell sx={CC}>{li.productDescription}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{fmt(li.unitPrice)}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{li.quantity}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>
+                                  <ES.CompactTableCell>{li.productCode}</ES.CompactTableCell>
+                                  <ES.CompactTableCell>{li.productDescription}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{fmt(li.unitPrice)}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{li.quantity}</ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">
                                     {li.vatRate !== undefined ? `${li.vatRate}%` : '—'}
-                                  </StyledTableCell>
-                                  <StyledTableCell align="right" sx={CC}>{fmt(li.netAmount)}</StyledTableCell>
-                                  <StyledTableCell align="right" sx={{ ...CC, fontWeight: 600 }}>
+                                  </ES.CompactTableCell>
+                                  <ES.CompactTableCell align="right">{fmt(li.netAmount)}</ES.CompactTableCell>
+                                  <ES.TotalTableCell align="right">
                                     {fmt(li.totalAmount)}
-                                  </StyledTableCell>
+                                  </ES.TotalTableCell>
                                 </StyledTableRow>
                               ))}
                             </StyledTableBody>
                           </StyledTable>
-                        </Box>
-                      </Collapse>
-                    </StyledTableCell>
-                  </TableRow>
+                        </ES.CollapseBox>
+                      </ES.DocSubheader>
+                    </ES.CollapseTableCell>
+                  </ES.EmptyTableRow>
                 </React.Fragment>
               );
             })}
@@ -703,35 +726,31 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
   // ── Render ─────────────────────────────────────────────────────
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <ES.TabContainer>
 
       {/* ── Financial summary ── */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      <ES.SummaryCardsContainer>
         {[
           { label: 'Waiting Approval', value: estimate.waitingApprovalValue, color: '#F59E0B' },
           { label: 'Approved',         value: estimate.approvedValue,         color: '#10B981' },
           { label: 'Invoiced',         value: estimate.invoicedValue,         color: '#6366F1' },
         ].map(({ label, value, color }) => (
           <S.EstimateSummaryCard key={label} accentcolor={color}>
-            <Typography variant="caption" color="text.secondary" fontWeight={600}
-              sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.7rem' }}>
+            <ES.SummaryCardLabel variant="caption" color="text.secondary">
               {label}
-            </Typography>
-            <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5, color }}>
+            </ES.SummaryCardLabel>
+            <ES.SummaryCardValue variant="h6" color={color}>
               {fmt(value)}
-            </Typography>
+            </ES.SummaryCardValue>
           </S.EstimateSummaryCard>
         ))}
-      </Box>
+      </ES.SummaryCardsContainer>
 
       {/* ── Section 1: Line Items ── */}
       <S.CollapsibleSection>
         {/* Header */}
-        <Box sx={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap', gap: 1,
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+        <ES.SectionHeaderBox>
+          <ES.SectionHeaderLeft>
             <Typography variant="body1" fontWeight={600}>
               Line items ({lineItems.length})
             </Typography>
@@ -740,14 +759,14 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                 · {selectedIds.size} selected
               </Typography>
             )}
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          </ES.SectionHeaderLeft>
+          <ES.SectionHeaderRight>
             <Button
               variant="outlined" color="primary"
               onClick={handleGenerateEstimatePdf}
               disabled={selectedIds.size === 0}
             >
-              <ReceiptLongIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+              <ES.ButtonStartIcon />
               Generate estimate PDF
             </Button>
             <Button
@@ -757,356 +776,641 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
             >
               Create invoice
             </Button>
-          </Box>
-        </Box>
+          </ES.SectionHeaderRight>
+        </ES.SectionHeaderBox>
 
         {/* Table */}
-        <StyledTableContainer>
-          <StyledTable>
-            <StyledTableHead>
-              <TableRow>
-                <StyledHeaderCell sx={{ ...CC, width: 36, px: '8px' }}>
-                  <Checkbox
-                    size="small"
-                    checked={allSelected}
-                    indeterminate={someSelected && !allSelected}
-                    onChange={toggleAll}
-                    disabled={selectableItems.length === 0}
-                    sx={{ p: 0 }}
-                  />
-                </StyledHeaderCell>
-                <StyledHeaderCell sx={CC}>Product Code</StyledHeaderCell>
-                <StyledHeaderCell sx={CC}>Description</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>Unit</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>Qty</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>VAT%</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>Net</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>VAT</StyledHeaderCell>
-                <StyledHeaderCell align="right" sx={CC}>Total</StyledHeaderCell>
-                <StyledHeaderCell sx={CC}>Status</StyledHeaderCell>
-                <ActionsCell as={StyledHeaderCell} sx={CC} />
-              </TableRow>
-            </StyledTableHead>
+        {isMobile && (
+          <ES.MobileHeaderControls>
+            <ES.MobileHeaderLeftBox>
+              <ES.ZeroPaddingCheckbox
+                size="small"
+                checked={allSelected}
+                indeterminate={someSelected && !allSelected}
+                onChange={toggleAll}
+                disabled={selectableItems.length === 0}
+              />
+              <Typography variant="body2" fontWeight={500}>
+                Select All
+              </Typography>
+            </ES.MobileHeaderLeftBox>
+            {!showAddRow && (
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={handleOpenAddRow}
+              >
+                Add line item
+              </Button>
+            )}
+          </ES.MobileHeaderControls>
+        )}
 
-            <StyledTableBody>
-              {lineItems.length === 0 && !showAddRow ? (
-                <StyledTableRow sx={{ '&:hover': { background: 'inherit' } }}>
-                  <StyledTableCell colSpan={11} align="center" sx={{ ...CC, color: 'text.secondary', py: 3 }}>
-                    No line items yet. Add one to get started.
-                  </StyledTableCell>
-                </StyledTableRow>
-              ) : (
-                lineItems.map((item) => {
-                  const status = getStatus(item);
-                  const invoiced = status === 'INVOICED';
-                  const isEditing = editingItemId === item.id;
-                  const isSelected = selectedIds.has(item.id!);
-                  const linkedInvoice = invoiced ? lineItemInvoiceMap.get(item.id!) : undefined;
-                  const chipConfig = STATUS_CHIP[status];
-                  const isApproving = approvingIds.has(item.id!);
+        {isMobile ? (
+          <ES.MobileCardsContainer>
+            {lineItems.length === 0 && !showAddRow ? (
+              <ES.EmptyStateText variant="body2" color="text.secondary" align="center">
+                No line items yet. Add one to get started.
+              </ES.EmptyStateText>
+            ) : (
+              lineItems.map((item) => {
+                const status = getStatus(item);
+                const invoiced = status === 'INVOICED';
+                const isEditing = editingItemId === item.id;
+                const isSelected = selectedIds.has(item.id!);
+                const linkedInvoice = invoiced ? lineItemInvoiceMap.get(item.id!) : undefined;
+                const chipConfig = STATUS_CHIP[status];
+                const isApproving = approvingIds.has(item.id!);
 
-                  if (isEditing) {
-                    const eNet = (parseFloat(editItem.unitPrice) || 0) * (parseFloat(editItem.quantity) || 1);
-                    const eVat = eNet * ((parseFloat(editItem.vatRate) || 0) / 100);
-                    return (
-                      <StyledTableRow key={item.id}>
-                        <StyledTableCell sx={{ ...CC, width: 36 }} />
-                        <StyledTableCell sx={{ ...CC, minWidth: 130 }}>
-                          <TextField size="small" fullWidth placeholder="Product code" value={editItem.productCode}
-                            onChange={(e) => setEditItem((p) => ({ ...p, productCode: e.target.value }))} sx={FIELD_SX} />
-                        </StyledTableCell>
-                        <StyledTableCell sx={{ ...CC, minWidth: 160 }}>
-                          <TextField size="small" fullWidth placeholder="Description" value={editItem.productDescription}
-                            onChange={(e) => setEditItem((p) => ({ ...p, productDescription: e.target.value }))} sx={FIELD_SX} />
-                        </StyledTableCell>
-                        <StyledTableCell sx={{ ...CC, minWidth: 110 }}>
-                          <TextField size="small" type="number" placeholder="0.00" value={editItem.unitPrice}
-                            onChange={(e) => setEditItem((p) => ({ ...p, unitPrice: e.target.value }))}
-                            slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
-                            sx={{ ...FIELD_SX, width: 100, '& input': { textAlign: 'right' } }} />
-                        </StyledTableCell>
-                        <StyledTableCell sx={{ ...CC, minWidth: 80 }}>
-                          <TextField size="small" type="number" placeholder="1" value={editItem.quantity}
-                            onChange={(e) => setEditItem((p) => ({ ...p, quantity: e.target.value }))}
-                            slotProps={{ htmlInput: { min: 1 } }}
-                            sx={{ ...FIELD_SX, width: 70, '& input': { textAlign: 'right' } }} />
-                        </StyledTableCell>
-                        <StyledTableCell sx={{ ...CC, minWidth: 85 }}>
-                          <TextField size="small" type="number" placeholder="0" value={editItem.vatRate}
-                            onChange={(e) => setEditItem((p) => ({ ...p, vatRate: e.target.value }))}
-                            slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }}
-                            sx={{ ...FIELD_SX, width: 75, '& input': { textAlign: 'right' } }} />
-                        </StyledTableCell>
-                        <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(eNet)}</StyledTableCell>
-                        <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(eVat)}</StyledTableCell>
-                        <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(eNet + eVat)}</StyledTableCell>
-                        <StyledTableCell sx={CC} />
-                        <ActionsCell sx={CC}>
-                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="Save">
-                              <span>
-                                <IconButton size="small" color="primary" onClick={handleSaveEdit} disabled={editSaving} aria-label="Save line item edit">
-                                  {editSaving ? <CircularProgress size={12} /> : <CheckIcon sx={{ fontSize: '1rem' }} />}
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                            <Tooltip title="Cancel">
-                              <IconButton size="small" onClick={handleCancelEdit} disabled={editSaving} aria-label="Cancel line item edit">
-                                <CloseIcon sx={{ fontSize: '1rem' }} />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </ActionsCell>
-                      </StyledTableRow>
-                    );
-                  }
-
+                if (isEditing) {
+                  const eNet = (parseFloat(editItem.unitPrice) || 0) * (parseFloat(editItem.quantity) || 1);
+                  const eVat = eNet * ((parseFloat(editItem.vatRate) || 0) / 100);
                   return (
-                    <StyledTableRow
-                      key={item.id}
-                      onClick={() => !invoiced && toggleRow(item.id!)}
-                      sx={{
-                        cursor: invoiced ? 'default' : 'pointer',
-                        opacity: invoiced ? 0.7 : 1,
-                        ...(isSelected ? { backgroundColor: 'action.selected' } : {}),
-                      }}
-                    >
-                      <StyledTableCell sx={{ ...CC, width: 36, px: '8px' }}>
+                    <ES.EstimateMobileEditCard key={item.id}>
+                      <ES.MobileEditBox>
+                        <ES.StyledField size="small" fullWidth label="Product code" value={editItem.productCode}
+                          onChange={(e) => setEditItem((p) => ({ ...p, productCode: e.target.value }))} />
+                        <ES.StyledField size="small" fullWidth label="Description" value={editItem.productDescription}
+                          onChange={(e) => setEditItem((p) => ({ ...p, productDescription: e.target.value }))} />
+                        <ES.FlexGap1Box>
+                          <ES.FlexField size="small" type="number" label="Unit Price" value={editItem.unitPrice}
+                            onChange={(e) => setEditItem((p) => ({ ...p, unitPrice: e.target.value }))}
+                            slotProps={{ htmlInput: { min: 0, step: 0.01 } }} />
+                          <ES.FlexField size="small" type="number" label="Qty" value={editItem.quantity}
+                            onChange={(e) => setEditItem((p) => ({ ...p, quantity: e.target.value }))}
+                            slotProps={{ htmlInput: { min: 1 } }} />
+                          <ES.FlexField size="small" type="number" label="VAT%" value={editItem.vatRate}
+                            onChange={(e) => setEditItem((p) => ({ ...p, vatRate: e.target.value }))}
+                            slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }} />
+                        </ES.FlexGap1Box>
+                        <ES.EstimateCardGrid>
+                          <ES.EstimateGridItem>
+                            <ES.EstimateGridLabel>Net</ES.EstimateGridLabel>
+                            <ES.EstimateGridValue>{fmt(eNet)}</ES.EstimateGridValue>
+                          </ES.EstimateGridItem>
+                          <ES.EstimateGridItem>
+                            <ES.EstimateGridLabel>VAT</ES.EstimateGridLabel>
+                            <ES.EstimateGridValue>{fmt(eVat)}</ES.EstimateGridValue>
+                          </ES.EstimateGridItem>
+                          <ES.Span2GridItem>
+                            <ES.EstimateGridLabel>Total</ES.EstimateGridLabel>
+                            <ES.BoldGridValue>{fmt(eNet + eVat)}</ES.BoldGridValue>
+                          </ES.Span2GridItem>
+                        </ES.EstimateCardGrid>
+                        <ES.EstimateCardActions>
+                          <ES.ZeroPaddingIconButton size="small" color="primary" onClick={handleSaveEdit} disabled={editSaving} aria-label="Save">
+                            {editSaving ? <CircularProgress size={12} /> : <ES.SmallCheckIcon />}
+                          </ES.ZeroPaddingIconButton>
+                          <ES.ZeroPaddingIconButton size="small" onClick={handleCancelEdit} disabled={editSaving} aria-label="Cancel">
+                            <ES.SmallCloseIcon />
+                          </ES.ZeroPaddingIconButton>
+                        </ES.EstimateCardActions>
+                      </ES.MobileEditBox>
+                    </ES.EstimateMobileEditCard>
+                  );
+                }
+
+                return (
+                  <ES.SelectableEstimateMobileCard
+                    key={item.id}
+                    invoiced={invoiced}
+                    isSelected={isSelected}
+                    onClick={() => !invoiced && toggleRow(item.id!)}
+                  >
+                    <ES.EstimateCardHeader>
+                      <ES.EstimateCardHeaderLeft>
                         {invoiced ? (
-                          <Tooltip title={linkedInvoice
-                            ? `Part of ${linkedInvoice.invoiceNumber || `#${linkedInvoice.id}`}`
-                            : 'Already invoiced'
-                          }>
-                            <LockIcon sx={{ fontSize: '0.85rem', color: 'text.disabled' }} />
+                          <Tooltip title={linkedInvoice ? `Part of ${linkedInvoice.invoiceNumber || `#${linkedInvoice.id}`}` : 'Already invoiced'}>
+                            <ES.LockItemIcon />
                           </Tooltip>
                         ) : (
-                          <Checkbox
+                          <ES.ZeroPaddingCheckbox
                             size="small"
                             checked={isSelected}
                             onChange={() => toggleRow(item.id!)}
                             onClick={(e) => e.stopPropagation()}
-                            sx={{ p: 0 }}
                           />
                         )}
-                      </StyledTableCell>
-                      <StyledTableCell sx={CC}>{item.productCode}</StyledTableCell>
-                      <StyledTableCell sx={{ ...CC, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {item.productDescription}
-                      </StyledTableCell>
-                      <StyledTableCell align="right" sx={CC}>{fmt(item.unitPrice)}</StyledTableCell>
-                      <StyledTableCell align="right" sx={CC}>{item.quantity}</StyledTableCell>
-                      <StyledTableCell align="right" sx={CC}>
-                        {item.vatRate !== undefined ? `${item.vatRate}%` : '—'}
-                      </StyledTableCell>
-                      <StyledTableCell align="right" sx={CC}>{fmt(item.netAmount)}</StyledTableCell>
-                      <StyledTableCell align="right" sx={CC}>{fmt(item.vatAmount)}</StyledTableCell>
-                      <StyledTableCell align="right" sx={{ ...CC, fontWeight: 600 }}>
-                        {fmt(item.totalAmount)}
-                      </StyledTableCell>
-                      <StyledTableCell sx={CC}>
-                        <Chip
+                        <ES.MobileCardTitle variant="subtitle2">
+                          {item.productCode}
+                        </ES.MobileCardTitle>
+                      </ES.EstimateCardHeaderLeft>
+                      <ES.CardHeaderRight>
+                        <ES.StyledChip
                           label={chipConfig.label}
                           size="small"
                           color={chipConfig.color}
                           variant="filled"
-                          sx={{ height: 20, fontSize: '0.65rem', fontWeight: 600, ...chipConfig.sx }}
+                          style={chipConfig.sx}
                         />
-                      </StyledTableCell>
-                      <ActionsCell sx={CC} onClick={(e) => e.stopPropagation()}>
-                        <Box sx={QUICK_ACTIONS_CONTAINER_SX}>
-                          {status === 'WAITING_APPROVAL' && (
-                            isApproving ? (
-                              <CircularProgress size={14} />
-                            ) : (
-                              <>
-                                <Tooltip title="Approve">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleApproveItem(item.id!)}
-                                    aria-label="Approve line item"
-                                    sx={SUCCESS_ICON_BUTTON_SX}
-                                  >
-                                    <CheckIcon sx={ICON_FONT_SIZE_SX} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Reject">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleRejectItem(item.id!)}
-                                    aria-label="Reject line item"
-                                    sx={ERROR_ICON_BUTTON_SX}
-                                  >
-                                    <CloseIcon sx={ICON_FONT_SIZE_SX} />
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )
-                          )}
-                          {status === 'AVAILABLE' && (
-                            isApproving ? (
-                              <CircularProgress size={14} />
-                            ) : (
-                              <>
-                                <Tooltip title="Request approval">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleRequestApproval(item.id!)}
-                                    aria-label="Request approval for line item"
-                                    sx={SUCCESS_ICON_BUTTON_SX}
-                                  >
-                                    <CheckIcon sx={ICON_FONT_SIZE_SX} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Remove">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleUnlink(item)}
-                                    aria-label="Remove line item"
-                                    sx={ERROR_ICON_BUTTON_SX}
-                                  >
-                                    <CloseIcon sx={ICON_FONT_SIZE_SX} />
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )
-                          )}
-                          {!invoiced && (
-                            <IconButton size="small" onClick={(e) => handleMenuOpen(e, item.id!)} aria-label="Line item actions">
-                              <MoreVertIcon sx={{ fontSize: '1rem' }} />
-                            </IconButton>
-                          )}
-                        </Box>
-                      </ActionsCell>
-                    </StyledTableRow>
-                  );
-                })
-              )}
+                        {!invoiced && (
+                          <ES.ZeroPaddingIconButton size="small" onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, item.id!); }} aria-label="Line item actions">
+                            <ES.MoreVertSmallIcon />
+                          </ES.ZeroPaddingIconButton>
+                        )}
+                      </ES.CardHeaderRight>
+                    </ES.EstimateCardHeader>
 
-              {/* Add row */}
-              {showAddRow && (
-                <StyledTableRow>
-                  <StyledTableCell sx={{ ...CC, width: 36 }} />
-                  <StyledTableCell sx={{ ...CC, minWidth: 150 }}>
-                    <Autocomplete
-                      freeSolo size="small" options={availableLineItems} loading={pickerLoading}
-                      getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.productCode || ''}
-                      inputValue={newItem.productCode}
-                      onInputChange={(_, value, reason) => {
-                        setNewItem((prev) => ({ ...prev, productCode: value }));
-                        if (reason === 'input') setSelectedExistingId(null);
-                      }}
-                      onChange={(_, value) => {
-                        if (value && typeof value !== 'string') {
-                          setNewItem({
-                            productCode: value.productCode || '',
-                            productDescription: value.productDescription || '',
-                            unitPrice: String(value.unitPrice ?? ''),
-                            quantity: String(value.quantity ?? '1'),
-                            vatRate: String(value.vatRate ?? '0'),
-                          });
-                          setSelectedExistingId(value.id ?? null);
-                        }
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params} placeholder="Product code..." sx={FIELD_SX}
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {pickerLoading && <CircularProgress size={12} />}
-                                {params.InputProps.endAdornment}
-                              </>
-                            ),
-                          }}
-                        />
-                      )}
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ ...CC, minWidth: 160 }}>
-                    <TextField size="small" fullWidth placeholder="Description..."
-                      value={newItem.productDescription}
-                      onChange={(e) => setNewItem((prev) => ({ ...prev, productDescription: e.target.value }))}
-                      sx={FIELD_SX}
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ ...CC, minWidth: 120 }}>
-                    <TextField size="small" type="number" placeholder="0.00" value={newItem.unitPrice}
+                    <Typography variant="body2" color="text.secondary">
+                      {item.productDescription}
+                    </Typography>
+
+                    <ES.EstimateCardGrid>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>Unit Price</ES.EstimateGridLabel>
+                        <ES.EstimateGridValue>{fmt(item.unitPrice)}</ES.EstimateGridValue>
+                      </ES.EstimateGridItem>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>Qty</ES.EstimateGridLabel>
+                        <ES.EstimateGridValue>{item.quantity}</ES.EstimateGridValue>
+                      </ES.EstimateGridItem>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>VAT%</ES.EstimateGridLabel>
+                        <ES.EstimateGridValue>{item.vatRate !== undefined ? `${item.vatRate}%` : '—'}</ES.EstimateGridValue>
+                      </ES.EstimateGridItem>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>Net</ES.EstimateGridLabel>
+                        <ES.EstimateGridValue>{fmt(item.netAmount)}</ES.EstimateGridValue>
+                      </ES.EstimateGridItem>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>VAT</ES.EstimateGridLabel>
+                        <ES.EstimateGridValue>{fmt(item.vatAmount)}</ES.EstimateGridValue>
+                      </ES.EstimateGridItem>
+                      <ES.EstimateGridItem>
+                        <ES.EstimateGridLabel>Total</ES.EstimateGridLabel>
+                        <ES.BoldGridValue>{fmt(item.totalAmount)}</ES.BoldGridValue>
+                      </ES.EstimateGridItem>
+                    </ES.EstimateCardGrid>
+
+                    {/* Quick action buttons at the bottom of card */}
+                    {!invoiced && (status === 'WAITING_APPROVAL' || status === 'AVAILABLE') && (
+                      <ES.EstimateCardActions onClick={(e) => e.stopPropagation()}>
+                        {status === 'WAITING_APPROVAL' && (
+                          isApproving ? (
+                            <CircularProgress size={14} />
+                          ) : (
+                            <>
+                              <Tooltip title="Approve">
+                                <ES.SuccessIconButton
+                                  size="small"
+                                  onClick={() => handleApproveItem(item.id!)}
+                                  aria-label="Approve"
+                                >
+                                  <ES.ActionCheckIcon />
+                                </ES.SuccessIconButton>
+                              </Tooltip>
+                              <Tooltip title="Reject">
+                                <ES.ErrorIconButton
+                                  size="small"
+                                  onClick={() => handleRejectItem(item.id!)}
+                                  aria-label="Reject"
+                                >
+                                  <ES.ActionCloseIcon />
+                                </ES.ErrorIconButton>
+                              </Tooltip>
+                            </>
+                          )
+                        )}
+                        {status === 'AVAILABLE' && (
+                          isApproving ? (
+                            <CircularProgress size={14} />
+                          ) : (
+                            <>
+                              <Tooltip title="Request approval">
+                                <ES.SuccessIconButton
+                                  size="small"
+                                  onClick={() => handleRequestApproval(item.id!)}
+                                  aria-label="Request approval"
+                                >
+                                  <ES.ActionCheckIcon />
+                                </ES.SuccessIconButton>
+                              </Tooltip>
+                              <Tooltip title="Remove">
+                                <ES.ErrorIconButton
+                                  size="small"
+                                  onClick={() => handleUnlink(item)}
+                                  aria-label="Remove"
+                                >
+                                  <ES.ActionCloseIcon />
+                                </ES.ErrorIconButton>
+                              </Tooltip>
+                            </>
+                          )
+                        )}
+                      </ES.EstimateCardActions>
+                    )}
+                  </ES.SelectableEstimateMobileCard>
+                );
+              })
+            )}
+
+            {/* Add card on mobile */}
+            {showAddRow && (
+              <ES.EstimateMobileDashedCard ref={mobileAddCardRef}>
+                <ES.MobileAddCardBox>
+                  <ES.MobileCardTitle variant="subtitle2">
+                    New Line Item
+                  </ES.MobileCardTitle>
+                  <Autocomplete
+                    freeSolo size="small" options={availableLineItems} loading={pickerLoading}
+                    getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.productCode || ''}
+                    inputValue={newItem.productCode}
+                    onInputChange={(_, value, reason) => {
+                      setNewItem((prev) => ({ ...prev, productCode: value }));
+                      if (reason === 'input') setSelectedExistingId(null);
+                    }}
+                    onChange={(_, value) => {
+                      if (value && typeof value !== 'string') {
+                        setNewItem({
+                          productCode: value.productCode || '',
+                          productDescription: value.productDescription || '',
+                          unitPrice: String(value.unitPrice ?? ''),
+                          quantity: String(value.quantity ?? '1'),
+                          vatRate: String(value.vatRate ?? '0'),
+                        });
+                        setSelectedExistingId(value.id ?? null);
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <ES.StyledField
+                        {...params} placeholder="Product code..."
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: (
+                            <>
+                              {pickerLoading && <CircularProgress size={12} />}
+                              {params.InputProps.endAdornment}
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                  />
+                  <ES.StyledField size="small" fullWidth label="Description..."
+                    value={newItem.productDescription}
+                    onChange={(e) => setNewItem((prev) => ({ ...prev, productDescription: e.target.value }))}
+                  />
+                  <ES.FlexGap1Box>
+                    <ES.FlexField size="small" type="number" label="Price" value={newItem.unitPrice}
                       onChange={(e) => setNewItem((prev) => ({ ...prev, unitPrice: e.target.value }))}
                       slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
-                      sx={{ ...FIELD_SX, width: 110, '& input': { textAlign: 'right' } }}
                     />
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ ...CC, minWidth: 85 }}>
-                    <TextField size="small" type="number" placeholder="1" value={newItem.quantity}
+                    <ES.FlexField size="small" type="number" label="Qty" value={newItem.quantity}
                       onChange={(e) => setNewItem((prev) => ({ ...prev, quantity: e.target.value }))}
                       slotProps={{ htmlInput: { min: 1 } }}
-                      sx={{ ...FIELD_SX, width: 75, '& input': { textAlign: 'right' } }}
                     />
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ ...CC, minWidth: 90 }}>
-                    <TextField size="small" type="number" placeholder="0" value={newItem.vatRate}
+                    <ES.FlexField size="small" type="number" label="VAT%" value={newItem.vatRate}
                       onChange={(e) => setNewItem((prev) => ({ ...prev, vatRate: e.target.value }))}
                       slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }}
-                      sx={{ ...FIELD_SX, width: 80, '& input': { textAlign: 'right' } }}
                     />
-                  </StyledTableCell>
-                  <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(calcNet)}</StyledTableCell>
-                  <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(calcVat)}</StyledTableCell>
-                  <StyledTableCell align="right" sx={{ ...CC, color: 'text.secondary' }}>{fmt(calcTotal)}</StyledTableCell>
-                  <StyledTableCell sx={CC} />
-                  <ActionsCell sx={CC}>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Tooltip title="Save">
-                        <span>
-                          <IconButton size="small" color="primary" onClick={handleSave} disabled={saving} aria-label="Save new line item">
-                            {saving ? <CircularProgress size={12} /> : <CheckIcon sx={{ fontSize: '1rem' }} />}
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title="Cancel">
-                        <IconButton size="small" onClick={handleCloseAddRow} disabled={saving} aria-label="Cancel new line item">
-                          <CloseIcon sx={{ fontSize: '1rem' }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </ActionsCell>
+                  </ES.FlexGap1Box>
+                  <ES.EstimateCardGrid>
+                    <ES.EstimateGridItem>
+                      <ES.EstimateGridLabel>Net</ES.EstimateGridLabel>
+                      <ES.EstimateGridValue>{fmt(calcNet)}</ES.EstimateGridValue>
+                    </ES.EstimateGridItem>
+                    <ES.EstimateGridItem>
+                      <ES.EstimateGridLabel>VAT</ES.EstimateGridLabel>
+                      <ES.EstimateGridValue>{fmt(calcVat)}</ES.EstimateGridValue>
+                    </ES.EstimateGridItem>
+                    <ES.Span2GridItem>
+                      <ES.EstimateGridLabel>Total</ES.EstimateGridLabel>
+                      <ES.BoldGridValue>{fmt(calcTotal)}</ES.BoldGridValue>
+                    </ES.Span2GridItem>
+                  </ES.EstimateCardGrid>
+                  <ES.EstimateCardActions>
+                    <ES.ZeroPaddingIconButton size="small" color="primary" onClick={handleSave} disabled={saving} aria-label="Save">
+                      {saving ? <CircularProgress size={12} /> : <ES.SmallCheckIcon />}
+                    </ES.ZeroPaddingIconButton>
+                    <ES.ZeroPaddingIconButton size="small" onClick={handleCloseAddRow} disabled={saving} aria-label="Cancel">
+                      <ES.SmallCloseIcon />
+                    </ES.ZeroPaddingIconButton>
+                  </ES.EstimateCardActions>
+                </ES.MobileAddCardBox>
+              </ES.EstimateMobileDashedCard>
+            )}
+          </ES.MobileCardsContainer>
+        ) : (
+          <StyledTableContainer>
+            <StyledTable>
+              <StyledTableHead>
+                <StyledTableRow>
+                  <ES.CheckboxHeaderCell>
+                    <ES.ZeroPaddingCheckbox
+                      size="small"
+                      checked={allSelected}
+                      indeterminate={someSelected && !allSelected}
+                      onChange={toggleAll}
+                      disabled={selectableItems.length === 0}
+                    />
+                  </ES.CheckboxHeaderCell>
+                  <ES.CompactHeaderCell>Product Code</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell>Description</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">Unit</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">Qty</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">VAT%</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">Net</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">VAT</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell align="right">Total</ES.CompactHeaderCell>
+                  <ES.CompactHeaderCell>Status</ES.CompactHeaderCell>
+                  <ES.CompactActionsCell as={StyledHeaderCell} />
                 </StyledTableRow>
-              )}
-              {/* Add line item row */}
-              {!showAddRow && (
-                <StyledTableRow
-                  onClick={handleOpenAddRow}
-                  sx={{
-                    cursor: 'pointer',
-                    '&:hover td': { backgroundColor: 'action.hover' },
-                  }}
-                >
-                  <StyledTableCell colSpan={11} sx={{ ...CC, py: 1 }}>
-                    <Box sx={{
-                      display: 'inline-flex', alignItems: 'center', gap: 0.5,
-                      px: 1.5, py: 0.5, borderRadius: 1,
-                      backgroundColor: 'primary.main',
-                      color: 'primary.contrastText',
-                    }}>
-                      <AddIcon sx={{ fontSize: '0.9rem' }} />
-                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'inherit' }}>
-                        Add line item
-                      </Typography>
-                    </Box>
-                  </StyledTableCell>
-                </StyledTableRow>
-              )}
-            </StyledTableBody>
-          </StyledTable>
-        </StyledTableContainer>
+              </StyledTableHead>
+
+              <StyledTableBody>
+                {lineItems.length === 0 && !showAddRow ? (
+                  <ES.EmptyTableRow>
+                    <ES.EmptyTableCell colSpan={11} align="center">
+                      No line items yet. Add one to get started.
+                    </ES.EmptyTableCell>
+                  </ES.EmptyTableRow>
+                ) : (
+                  lineItems.map((item) => {
+                    const status = getStatus(item);
+                    const invoiced = status === 'INVOICED';
+                    const isEditing = editingItemId === item.id;
+                    const isSelected = selectedIds.has(item.id!);
+                    const linkedInvoice = invoiced ? lineItemInvoiceMap.get(item.id!) : undefined;
+                    const chipConfig = STATUS_CHIP[status];
+                    const isApproving = approvingIds.has(item.id!);
+
+                    if (isEditing) {
+                      const eNet = (parseFloat(editItem.unitPrice) || 0) * (parseFloat(editItem.quantity) || 1);
+                      const eVat = eNet * ((parseFloat(editItem.vatRate) || 0) / 100);
+                      return (
+                        <StyledTableRow key={item.id}>
+                          <ES.CheckboxTableCellWidth36 />
+                          <ES.CellMin130>
+                            <ES.StyledField size="small" fullWidth placeholder="Product code" value={editItem.productCode}
+                              onChange={(e) => setEditItem((p) => ({ ...p, productCode: e.target.value }))} />
+                          </ES.CellMin130>
+                          <ES.CellMin160>
+                            <ES.StyledField size="small" fullWidth placeholder="Description" value={editItem.productDescription}
+                              onChange={(e) => setEditItem((p) => ({ ...p, productDescription: e.target.value }))} />
+                          </ES.CellMin160>
+                          <ES.CellMin110>
+                            <ES.EditPriceInput size="small" type="number" placeholder="0.00" value={editItem.unitPrice}
+                              onChange={(e) => setEditItem((p) => ({ ...p, unitPrice: e.target.value }))}
+                              slotProps={{ htmlInput: { min: 0, step: 0.01 } }} />
+                          </ES.CellMin110>
+                          <ES.CellMin80>
+                            <ES.EditQtyInput size="small" type="number" placeholder="1" value={editItem.quantity}
+                              onChange={(e) => setEditItem((p) => ({ ...p, quantity: e.target.value }))}
+                              slotProps={{ htmlInput: { min: 1 } }} />
+                          </ES.CellMin80>
+                          <ES.CellMin85>
+                            <ES.EditVatInput size="small" type="number" placeholder="0" value={editItem.vatRate}
+                              onChange={(e) => setEditItem((p) => ({ ...p, vatRate: e.target.value }))}
+                              slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }} />
+                          </ES.CellMin85>
+                          <ES.MutedTableCell align="right">{fmt(eNet)}</ES.MutedTableCell>
+                          <ES.MutedTableCell align="right">{fmt(eVat)}</ES.MutedTableCell>
+                          <ES.MutedTableCell align="right">{fmt(eNet + eVat)}</ES.MutedTableCell>
+                          <ES.CompactTableCell />
+                          <ES.CompactActionsCell>
+                            <ES.ActionsBoxGap05>
+                              <Tooltip title="Save">
+                                <span>
+                                  <ES.ZeroPaddingIconButton size="small" color="primary" onClick={handleSaveEdit} disabled={editSaving} aria-label="Save line item edit">
+                                    {editSaving ? <CircularProgress size={12} /> : <ES.SmallCheckIcon />}
+                                  </ES.ZeroPaddingIconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title="Cancel">
+                                <ES.ZeroPaddingIconButton size="small" onClick={handleCancelEdit} disabled={editSaving} aria-label="Cancel line item edit">
+                                  <ES.SmallCloseIcon />
+                                </ES.ZeroPaddingIconButton>
+                              </Tooltip>
+                            </ES.ActionsBoxGap05>
+                          </ES.CompactActionsCell>
+                        </StyledTableRow>
+                      );
+                    }
+
+                    return (
+                      <ES.SelectableTableRow
+                        key={item.id}
+                        invoiced={invoiced}
+                        isSelected={isSelected}
+                        onClick={() => !invoiced && toggleRow(item.id!)}
+                      >
+                        <ES.CheckboxTableCell>
+                          {invoiced ? (
+                            <Tooltip title={linkedInvoice
+                              ? `Part of ${linkedInvoice.invoiceNumber || `#${linkedInvoice.id}`}`
+                              : 'Already invoiced'
+                            }>
+                              <ES.LockItemIcon />
+                            </Tooltip>
+                          ) : (
+                            <ES.ZeroPaddingCheckbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => toggleRow(item.id!)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
+                        </ES.CheckboxTableCell>
+                        <ES.CompactTableCell>{item.productCode}</ES.CompactTableCell>
+                        <ES.TruncatedDescTableCell>
+                          {item.productDescription}
+                        </ES.TruncatedDescTableCell>
+                        <ES.CompactTableCell align="right">{fmt(item.unitPrice)}</ES.CompactTableCell>
+                        <ES.CompactTableCell align="right">{item.quantity}</ES.CompactTableCell>
+                        <ES.CompactTableCell align="right">
+                          {item.vatRate !== undefined ? `${item.vatRate}%` : '—'}
+                        </ES.CompactTableCell>
+                        <ES.CompactTableCell align="right">{fmt(item.netAmount)}</ES.CompactTableCell>
+                        <ES.CompactTableCell align="right">{fmt(item.vatAmount)}</ES.CompactTableCell>
+                        <ES.TotalTableCell align="right">
+                          {fmt(item.totalAmount)}
+                        </ES.TotalTableCell>
+                        <ES.CompactTableCell>
+                          <ES.StyledChip
+                            label={chipConfig.label}
+                            size="small"
+                            color={chipConfig.color}
+                            variant="filled"
+                            style={chipConfig.sx}
+                          />
+                        </ES.CompactTableCell>
+                        <ES.CompactActionsCell onClick={(e) => e.stopPropagation()}>
+                          <ES.QuickActionsContainer>
+                            {status === 'WAITING_APPROVAL' && (
+                              isApproving ? (
+                                <CircularProgress size={14} />
+                              ) : (
+                                <>
+                                  <Tooltip title="Approve">
+                                    <ES.SuccessIconButton
+                                      size="small"
+                                      onClick={() => handleApproveItem(item.id!)}
+                                      aria-label="Approve line item"
+                                    >
+                                      <ES.QuickActionCheckIcon />
+                                    </ES.SuccessIconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Reject">
+                                    <ES.ErrorIconButton
+                                      size="small"
+                                      onClick={() => handleRejectItem(item.id!)}
+                                      aria-label="Reject line item"
+                                    >
+                                      <ES.QuickActionCloseIcon />
+                                    </ES.ErrorIconButton>
+                                  </Tooltip>
+                                </>
+                              )
+                            )}
+                            {status === 'AVAILABLE' && (
+                              isApproving ? (
+                                <CircularProgress size={14} />
+                              ) : (
+                                <>
+                                  <Tooltip title="Request approval">
+                                    <ES.SuccessIconButton
+                                      size="small"
+                                      onClick={() => handleRequestApproval(item.id!)}
+                                      aria-label="Request approval for line item"
+                                    >
+                                      <ES.QuickActionCheckIcon />
+                                    </ES.SuccessIconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Remove">
+                                    <ES.ErrorIconButton
+                                      size="small"
+                                      onClick={() => handleUnlink(item)}
+                                      aria-label="Remove line item"
+                                    >
+                                      <ES.QuickActionCloseIcon />
+                                    </ES.ErrorIconButton>
+                                  </Tooltip>
+                                </>
+                              )
+                            )}
+                            {!invoiced && (
+                              <ES.ZeroPaddingIconButton size="small" onClick={(e) => handleMenuOpen(e, item.id!)} aria-label="Line item actions">
+                                <ES.MoreVertSmallIcon />
+                              </ES.ZeroPaddingIconButton>
+                            )}
+                          </ES.QuickActionsContainer>
+                        </ES.CompactActionsCell>
+                      </ES.SelectableTableRow>
+                    );
+                  })
+                )}
+
+                {/* Add row */}
+                {showAddRow && (
+                  <StyledTableRow>
+                    <ES.CheckboxTableCellWidth36 />
+                    <ES.CellMin150>
+                      <Autocomplete
+                        freeSolo size="small" options={availableLineItems} loading={pickerLoading}
+                        getOptionLabel={(opt) => typeof opt === 'string' ? opt : opt.productCode || ''}
+                        inputValue={newItem.productCode}
+                        onInputChange={(_, value, reason) => {
+                          setNewItem((prev) => ({ ...prev, productCode: value }));
+                          if (reason === 'input') setSelectedExistingId(null);
+                        }}
+                        onChange={(_, value) => {
+                          if (value && typeof value !== 'string') {
+                            setNewItem({
+                              productCode: value.productCode || '',
+                              productDescription: value.productDescription || '',
+                              unitPrice: String(value.unitPrice ?? ''),
+                              quantity: String(value.quantity ?? '1'),
+                              vatRate: String(value.vatRate ?? '0'),
+                            });
+                            setSelectedExistingId(value.id ?? null);
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <ES.StyledField
+                            {...params} placeholder="Product code..."
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {pickerLoading && <CircularProgress size={12} />}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </ES.CellMin150>
+                    <ES.CellMin160>
+                      <ES.StyledField size="small" fullWidth placeholder="Description..."
+                        value={newItem.productDescription}
+                        onChange={(e) => setNewItem((prev) => ({ ...prev, productDescription: e.target.value }))}
+                      />
+                    </ES.CellMin160>
+                    <ES.CellMin120>
+                      <ES.AddPriceInput size="small" type="number" placeholder="0.00" value={newItem.unitPrice}
+                        onChange={(e) => setNewItem((prev) => ({ ...prev, unitPrice: e.target.value }))}
+                        slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                      />
+                    </ES.CellMin120>
+                    <ES.CellMin85>
+                      <ES.AddQtyInput size="small" type="number" placeholder="1" value={newItem.quantity}
+                        onChange={(e) => setNewItem((prev) => ({ ...prev, quantity: e.target.value }))}
+                        slotProps={{ htmlInput: { min: 1 } }}
+                      />
+                    </ES.CellMin85>
+                    <ES.CellMin90>
+                      <ES.AddVatInput size="small" type="number" placeholder="0" value={newItem.vatRate}
+                        onChange={(e) => setNewItem((prev) => ({ ...prev, vatRate: e.target.value }))}
+                        slotProps={{ htmlInput: { min: 0, max: 100, step: 0.1 } }}
+                      />
+                    </ES.CellMin90>
+                    <ES.MutedTableCell align="right">{fmt(calcNet)}</ES.MutedTableCell>
+                    <ES.MutedTableCell align="right">{fmt(calcVat)}</ES.MutedTableCell>
+                    <ES.MutedTableCell align="right">{fmt(calcTotal)}</ES.MutedTableCell>
+                    <ES.CompactTableCell />
+                    <ES.CompactActionsCell>
+                      <ES.ActionsBoxGap05>
+                        <Tooltip title="Save">
+                          <span>
+                            <ES.ZeroPaddingIconButton size="small" color="primary" onClick={handleSave} disabled={saving} aria-label="Save new line item">
+                              {saving ? <CircularProgress size={12} /> : <ES.SmallCheckIcon />}
+                            </ES.ZeroPaddingIconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title="Cancel">
+                          <ES.ZeroPaddingIconButton size="small" onClick={handleCloseAddRow} disabled={saving} aria-label="Cancel new line item">
+                            <ES.SmallCloseIcon />
+                          </ES.ZeroPaddingIconButton>
+                        </Tooltip>
+                      </ES.ActionsBoxGap05>
+                    </ES.CompactActionsCell>
+                  </StyledTableRow>
+                )}
+                {/* Add line item row */}
+                {!showAddRow && (
+                  <ES.AddRowClickableTableRow
+                    onClick={handleOpenAddRow}
+                  >
+                    <ES.AddRowCell colSpan={11}>
+                      <ES.AddRowButtonBox>
+                        <ES.AddIconSmall />
+                        <ES.AddRowButtonText>
+                          Add line item
+                        </ES.AddRowButtonText>
+                      </ES.AddRowButtonBox>
+                    </ES.AddRowCell>
+                  </ES.AddRowClickableTableRow>
+                )}
+              </StyledTableBody>
+            </StyledTable>
+          </StyledTableContainer>
+        )}
 
         {/* Totals row */}
-        <Box sx={{
-          display: 'flex', justifyContent: 'flex-end', gap: 3,
-          px: 2, py: 1, borderTop: '1px solid', borderColor: 'divider',
-          backgroundColor: 'action.hover',
-        }}>
+        <ES.TotalsFooterBox>
           <Typography variant="body2" color="text.secondary">
             Net: <strong>{fmt(estimate.totalNet)}</strong>
           </Typography>
@@ -1117,79 +1421,74 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
           <Typography variant="body2" fontWeight={700}>
             Total: {fmt(estimate.grandTotal)}
           </Typography>
-        </Box>
+        </ES.TotalsFooterBox>
       </S.CollapsibleSection>
 
       {/* Row context menu */}
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-        <MenuItem
+        <ES.StyledMenuItem
           onClick={() => {
             const item = lineItems.find((li) => li.id === menuLineItemId);
             if (item) handleStartEdit(item);
           }}
-          sx={{ fontSize: '0.8125rem' }}
         >
-          <EditIcon sx={{ fontSize: '1rem', mr: 1 }} />
+          <ES.MenuItemIcon />
           Edit
-        </MenuItem>
-        <MenuItem
+        </ES.StyledMenuItem>
+        <ES.StyledDeleteMenuItem
           onClick={() => {
             const item = lineItems.find((li) => li.id === menuLineItemId);
             if (item) handleUnlink(item);
           }}
-          sx={{ color: 'error.main', fontSize: '0.8125rem' }}
         >
-          <LinkOffIcon sx={{ fontSize: '1rem', mr: 1 }} />
+          <ES.MenuItemLinkOffIcon />
           Remove from estimate
-        </MenuItem>
+        </ES.StyledDeleteMenuItem>
       </Menu>
 
       {/* ── Section 2: Documents ── */}
       <S.CollapsibleSection>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs
+        <ES.DocTabsHeader>
+          <ES.StyledTabs
             value={docTab}
             onChange={(_, v) => setDocTab(v)}
-            sx={{ minHeight: 40, '& .MuiTab-root': { minHeight: 40, fontSize: '0.8125rem', py: 0.5 } }}
           >
             <Tab label={`Estimates (${estimateDocs.length})`} />
             <Tab label={`Invoices (${invoices.length})`} />
             <Tab label="All documents" />
-          </Tabs>
-        </Box>
-        <Box sx={{ p: 2 }}>
+          </ES.StyledTabs>
+        </ES.DocTabsHeader>
+        <ES.DocTabBody>
           {docTab === 0 && renderEstimatesTable()}
           {docTab === 1 && renderInvoicesTable()}
           {docTab === 2 && (
             <>
               {estimateDocs.length > 0 && (
                 <>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}
-                    sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <ES.DocSubheader variant="caption" color="text.secondary">
                     Estimate PDFs
-                  </Typography>
+                  </ES.DocSubheader>
                   {renderEstimatesTable()}
-                  <Box sx={{ mb: 2 }} />
+                  <ES.Mb2Box />
                 </>
               )}
               {invoices.length > 0 && (
                 <>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}
-                    sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <ES.DocSubheader variant="caption" color="text.secondary">
                     Invoices
-                  </Typography>
+                  </ES.DocSubheader>
                   {renderInvoicesTable()}
                 </>
               )}
               {estimateDocs.length === 0 && invoices.length === 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+                <ES.EmptyStateText variant="body2" color="text.secondary">
                   No documents generated yet
-                </Typography>
+                </ES.EmptyStateText>
               )}
             </>
           )}
-        </Box>
+        </ES.DocTabBody>
       </S.CollapsibleSection>
-    </Box>
+    </ES.TabContainer>
   );
 };

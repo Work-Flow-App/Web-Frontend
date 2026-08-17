@@ -1,4 +1,4 @@
-import { Box, Typography, TextField, styled, IconButton } from '@mui/material';
+import { Box, styled, Typography, IconButton, TextField } from '@mui/material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -20,16 +20,22 @@ export const StepActivityLayout = styled(Box)(({ theme }) => ({
   borderRadius: rem(12),
   overflow: 'hidden',
   backgroundColor: theme.palette.colors.white,
+  position: 'relative',
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
-    height: 'auto',
-    minHeight: rem(580),
+    height: rem(580),
+    minHeight: rem(480),
+    border: 'none',
+    borderRadius: 0,
+    overflow: 'visible',
   },
 }));
 
 // ─── Steps sidebar ────────────────────────────────────────────────────────────
 
-export const StepsSidebar = styled(Box)(({ theme }) => ({
+export const StepsSidebar = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$expanded',
+})<{ $expanded?: boolean }>(({ theme, $expanded }) => ({
   width: rem(270),
   flexShrink: 0,
   borderRight: `1px solid ${theme.palette.colors.grey_200}`,
@@ -38,10 +44,19 @@ export const StepsSidebar = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   overflow: 'hidden',
   [theme.breakpoints.down('md')]: {
-    width: '100%',
+    position: 'absolute',
+    left: `calc(-1 * (${theme.spacing(2)} + ${theme.spacing(2.5)}))`,
+    top: rem(8),
+    width: rem(56),
+    borderRadius: rem(28),
+    border: `1px solid ${theme.palette.colors.grey_200}`,
+    boxShadow: `0 4px 16px rgba(0,0,0,0.12)`,
+    zIndex: 100,
+    transition: 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    height: $expanded ? `calc(80% - ${rem(16)})` : rem(96),
+    maxHeight: $expanded ? '80vh' : rem(96),
     borderRight: 'none',
-    borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
-    maxHeight: rem(200),
+    borderBottom: 'none',
   },
 }));
 
@@ -51,6 +66,9 @@ export const StepsSidebarHeader = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   borderBottom: `1px solid ${theme.palette.colors.grey_100}`,
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 }));
 
 export const StepsSidebarTitle = styled(Typography)(({ theme }) => ({
@@ -73,9 +91,16 @@ export const StepsCountBadge = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-export const StepsScrollArea = styled(Box)(() => ({
+export const StepsScrollArea = styled(Box)(({ theme }) => ({
   overflowY: 'auto',
   flex: 1,
+  [theme.breakpoints.down('md')]: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: theme.spacing(1, 0),
+    gap: theme.spacing(1.5),
+  },
 }));
 
 interface ActiveProps {
@@ -100,6 +125,23 @@ export const StepRowItem = styled(Box, {
   '&:last-child': {
     borderBottom: 'none',
   },
+  [theme.breakpoints.down('md')]: {
+    padding: 0,
+    width: rem(44),
+    height: rem(44),
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `2px solid ${isActive ? theme.palette.primary.main : 'transparent'}`,
+    backgroundColor: isActive ? floowColors.blue[50] : 'transparent',
+    borderLeft: 'none',
+    borderBottom: 'none',
+    flexShrink: 0,
+    '&:hover': {
+      backgroundColor: isActive ? floowColors.blue[50] : 'transparent',
+    },
+  },
 }));
 
 export const StepCircleIcon = styled(Box, {
@@ -118,9 +160,12 @@ export const StepCircleIcon = styled(Box, {
   flexShrink: 0,
 }));
 
-export const StepTextGroup = styled(Box)(() => ({
+export const StepTextGroup = styled(Box)(({ theme }) => ({
   flex: 1,
   minWidth: 0,
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 }));
 
 export const StepNameText = styled(Typography, {
@@ -137,6 +182,9 @@ export const StepNameText = styled(Typography, {
 export const StepStatusText = styled(Typography)(({ theme }) => ({
   fontSize: rem(11),
   color: theme.palette.text.secondary,
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 }));
 
 export const StepItemCountBadge = styled(Box, {
@@ -154,6 +202,9 @@ export const StepItemCountBadge = styled(Box, {
   justifyContent: 'center',
   padding: `0 ${rem(6)}`,
   flexShrink: 0,
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
 }));
 
 // ─── Chat panel ───────────────────────────────────────────────────────────────
@@ -174,12 +225,18 @@ export const ChatPanelHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1.25, 1.5),
+  },
 }));
 
 export const ChatPanelHeaderLeft = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
+  [theme.breakpoints.down('md')]: {
+    marginLeft: rem(28),
+  },
 }));
 
 export const ChatPanelHeaderRight = styled(Box)(({ theme }) => ({
@@ -244,6 +301,9 @@ export const MessagesArea = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1, 1.25),
+  },
 }));
 
 export const EmptyFeedBox = styled(Box)(({ theme }) => ({
@@ -408,11 +468,17 @@ export const MessageAvatarCircle = styled(Box, {
 
 export const MessageContentBox = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isMine',
-})<MessageProps>(({ isMine }) => ({
+})<MessageProps>(({ theme, isMine }) => ({
   maxWidth: '65%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: isMine ? 'flex-end' : 'flex-start',
+  [theme.breakpoints.down('md')]: {
+    maxWidth: '100%',
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'stretch',
+  },
 }));
 
 export const MessageMetaRow = styled(Box, {
@@ -476,6 +542,10 @@ export const MessageBubble = styled(Box, {
   whiteSpace: 'pre-wrap',
   '& p': { margin: 0 },
   '& strong': { fontWeight: Bold._700 },
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    maxWidth: '100%',
+  },
 }));
 
 export const AttachmentRow = styled(Box)(({ theme }) => ({
@@ -502,6 +572,9 @@ export const InputAreaWrapper = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.colors.grey_200}`,
   backgroundColor: theme.palette.colors.white,
   padding: theme.spacing(1.25, 2.5, 2),
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1, 1.5, 1.5),
+  },
 }));
 
 export const InputToolbar = styled(Box)(({ theme }) => ({
@@ -539,6 +612,18 @@ export const ToolbarSelectGroup = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1),
   alignItems: 'center',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    marginLeft: 0,
+    marginTop: theme.spacing(1.25),
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1.25),
+    '& > *': {
+      width: '100%',
+      flex: 'none',
+    },
+  },
 }));
 
 export const InputRow = styled(Box)(({ theme }) => ({
@@ -549,10 +634,15 @@ export const InputRow = styled(Box)(({ theme }) => ({
 
 
 export const MessageTextField = styled(TextField)(({ theme }) => ({
+  flex: 1,
+  minWidth: 0,
   '& .MuiOutlinedInput-root': {
     fontSize: rem(14),
     borderRadius: rem(10),
     backgroundColor: theme.palette.colors.grey_50,
+    [theme.breakpoints.down('md')]: {
+      fontSize: rem(16),
+    },
   },
 }));
 
@@ -636,4 +726,14 @@ export const SendButton = styled(Button)(({ theme }) => ({
   height: rem(40),
   paddingLeft: theme.spacing(2.5),
   paddingRight: theme.spacing(2.5),
+}));
+
+export const SidebarArrowButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  padding: rem(2),
+  marginTop: rem(4),
+  alignSelf: 'center',
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_100,
+  },
 }));

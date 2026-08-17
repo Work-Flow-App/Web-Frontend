@@ -51,11 +51,17 @@ export const WorkLogsOuterLayout = styled(Box)(({ theme }) => ({
   border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   overflow: 'hidden',
   position: 'relative',
+  [theme.breakpoints.down('sm')]: {
+    overflow: 'visible',
+    border: 'none',
+  },
 }));
 
 // ─── Left Steps Rail (max 2rem wide) ──────────────────────────────────────────
 
-export const StepsRail = styled(Box)(({ theme }) => ({
+export const StepsRail = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$expanded',
+})<{ $expanded?: boolean }>(({ theme, $expanded }) => ({
   width: rem(56),
   maxWidth: rem(56),
   flexShrink: 0,
@@ -67,6 +73,19 @@ export const StepsRail = styled(Box)(({ theme }) => ({
   paddingTop: rem(10),
   paddingBottom: rem(10),
   zIndex: 2,
+  [theme.breakpoints.down('sm')]: {
+    position: 'absolute',
+    left: `calc(-1 * (${theme.spacing(2)} + ${theme.spacing(2.5)}))`,
+    top: rem(8),
+    borderRadius: rem(28),
+    border: `1px solid ${theme.palette.colors.grey_200}`,
+    boxShadow: `0 4px 16px rgba(0,0,0,0.12)`,
+    zIndex: 100,
+    overflow: 'visible',
+    transition: 'max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    height: $expanded ? `calc(80% - ${rem(16)})` : rem(152),
+    maxHeight: $expanded ? '80vh' : rem(152),
+  },
 }));
 
 export const StepsRailHeader = styled(Box)(() => ({
@@ -215,6 +234,9 @@ export const SummarySection = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('lg')]: {
     flexDirection: 'column',
   },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1.5, 0.5),
+  },
 }));
 
 export const TrackingBox = styled(Box)(({ theme }) => ({
@@ -274,7 +296,8 @@ export const StatsGrid = styled(Box)(({ theme }) => ({
     width: '100%',
   },
   [theme.breakpoints.down('sm')]: {
-    gridTemplateColumns: '1fr',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: theme.spacing(1),
   },
 }));
 
@@ -287,11 +310,23 @@ export const StatBox = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'center',
   gap: rem(8),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1.25, 1.5),
+    gap: rem(4),
+    borderRadius: rem(8),
+  },
 }));
 
-export const AddLogBox = styled(StatBox)(() => ({
+export const AddLogBox = styled(StatBox)(({ theme }) => ({
   justifyContent: 'center',
   alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    boxShadow: 'none',
+    padding: 0,
+    marginTop: theme.spacing(0.5),
+  },
 }));
 
 export const StatLabel = styled(Typography)(({ theme }) => ({
@@ -318,9 +353,12 @@ export const TableSectionTitle = styled(Typography)(({ theme }) => ({
   letterSpacing: rem(0.5),
   textTransform: 'uppercase',
   padding: theme.spacing(3, 3, 2, 3),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2, 0.5, 1, 0.5),
+  },
 }));
 
-export const TableContainer = styled(Box)(() => ({
+export const TableContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   overflowX: 'auto',
   minHeight: rem(200),
@@ -330,6 +368,10 @@ export const TableContainer = styled(Box)(() => ({
   '&::-webkit-scrollbar-thumb': {
     backgroundColor: floowColors.tailwind.gray[300],
     borderRadius: rem(2),
+  },
+  [theme.breakpoints.down('sm')]: {
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5),
   },
 }));
 
@@ -469,8 +511,8 @@ export const NotePopupCard = styled(Box)(({ theme }) => ({
   gap: rem(6),
   border: `${rem(1)} solid ${theme.palette.colors.grey_200}`,
   [theme.breakpoints.down('sm')]: {
+    width: '80vw',
     maxWidth: '80vw',
-    width: 'fit-content',
   },
 }));
 
@@ -540,11 +582,125 @@ export const StepNameText = styled(DurationText)(() => ({
 
 export const StepSelectDropdown = styled('select')(({ theme }) => ({
   width: '100%',
-  height: '40px',
-  borderRadius: '8px',
+  maxWidth: '100%',
+  minWidth: 0,
+  height: rem(40),
+  borderRadius: rem(8),
   borderColor: theme.palette.colors.grey_200,
-  padding: '0 12px',
+  padding: `0 ${rem(12)}`,
   outline: 'none',
-  fontSize: '14px',
+  fontSize: rem(14),
   backgroundColor: theme.palette.colors.white,
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  boxSizing: 'border-box',
+}));
+
+// ─── Mobile Work Log Cards & Floating Rail ────────────────────────────────────
+
+export const RailArrowButton = styled(IconButton)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  padding: rem(2),
+  marginTop: rem(4),
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_100,
+  },
+}));
+
+export const WorkLogMobileCard = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.colors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: rem(8),
+  padding: theme.spacing(1.5, 2),
+  marginBottom: theme.spacing(1.25),
+  boxShadow: `0 1px 3px rgba(0, 0, 0, 0.04)`,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  position: 'relative',
+  cursor: 'pointer',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+  },
+}));
+
+export const WorkLogCardHeader = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+}));
+
+export const WorkLogCardHeaderLeft = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+}));
+
+export const WorkLogCardBody = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.75),
+  fontSize: rem(13),
+}));
+
+export const WorkLogCardRow = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  gap: rem(8),
+}));
+
+export const WorkLogCardDescription = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  fontStyle: 'italic',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  display: 'block',
+  width: '100%',
+}));
+
+export const SearchSlideOut = styled(Box, {
+  shouldForwardProp: (prop) => prop !== '$open',
+})<{ $open?: boolean }>(({ theme, $open }) => ({
+  position: 'absolute',
+  left: rem(48),
+  top: rem(2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(4),
+  backgroundColor: theme.palette.colors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  boxShadow: `0 2px 8px rgba(0,0,0,0.1)`,
+  borderRadius: rem(20),
+  padding: rem(2),
+  paddingLeft: rem(10),
+  zIndex: 101,
+  opacity: $open ? 1 : 0,
+  transform: $open ? 'translateX(0)' : 'translateX(-10px)',
+  pointerEvents: $open ? 'auto' : 'none',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+}));
+
+export const SearchSlideOutInput = styled('input')(({ theme }) => ({
+  width: rem(80),
+  height: rem(28),
+  border: 'none',
+  outline: 'none',
+  fontSize: rem(13),
+  padding: 0,
+  backgroundColor: 'transparent',
+  color: theme.palette.text.primary,
+}));
+
+export const SearchCheckButton = styled(IconButton)(({ theme }) => ({
+  padding: rem(4),
+  color: theme.palette.success.main,
+  '&:hover': {
+    backgroundColor: theme.palette.colors.grey_100,
+  },
 }));
