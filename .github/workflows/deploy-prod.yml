@@ -19,6 +19,7 @@ jobs:
   build-and-deploy:
     name: Build & Deploy to Production
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -56,9 +57,18 @@ jobs:
         continue-on-error: true
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        timeout-minutes: 10
+        run: |
+          for attempt in 1 2 3; do
+            npx playwright install chromium --with-deps && exit 0
+            echo "Playwright install failed (attempt $attempt/3), retrying in 15s..."
+            sleep 15
+          done
+          echo "Playwright install failed after 3 attempts" >&2
+          exit 1
 
       - name: Run integration tests (prod — deployment blocked on failure)
+        timeout-minutes: 10
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: 'https://app.workfloow.app'
