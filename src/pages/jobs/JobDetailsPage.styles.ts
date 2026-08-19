@@ -26,10 +26,16 @@ export const DetailsSection = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors.white,
   borderRadius: theme.spacing(1),
   border: `1px solid ${theme.palette.colors.grey_200}`,
-  boxShadow: '0 1px 3px ${floowColors.shadow.md}',
+  boxShadow: `0 1px 3px ${floowColors.shadow.md}`,
   height: '100%',
   minWidth: 0,
   overflowX: 'auto',
+  [theme.breakpoints.down('md')]: {
+    overflow: 'visible',
+    overflowX: 'visible',
+    position: 'relative',
+    zIndex: 100,
+  },
 }));
 
 export const SectionTitle = styled(Typography)(({ theme }) => ({
@@ -395,6 +401,15 @@ export const TabsContainer = styled(Box)(({ theme }) => ({
   margin: `0 -${theme.spacing(2.5)} ${rem(32)} -${theme.spacing(2.5)}`,
   paddingLeft: theme.spacing(2.5),
   paddingRight: theme.spacing(2.5),
+  [theme.breakpoints.down('sm')]: {
+    flexWrap: 'wrap',
+    gap: rem(8),
+    rowGap: rem(12),
+    marginBottom: rem(16),
+    margin: `0 -${theme.spacing(2)} ${rem(16)} -${theme.spacing(2)}`,
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+  },
 }));
 
 interface TabButtonProps {
@@ -760,6 +775,9 @@ export const MainContentPanel = styled(Box)(({ theme }) => ({
   gap: theme.spacing(2),
   minWidth: 0,
   overflow: 'hidden',
+  [theme.breakpoints.down('md')]: {
+    overflow: 'visible',
+  },
 }));
 
 // Collapsible Section
@@ -2804,7 +2822,15 @@ export const ModalFormContainer = styled(Box)(({ theme }) => ({
 
 export const ModalFormRow = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: theme.spacing(2),
+  gap: '1rem',
+  '& > *': {
+    flex: 1,
+    width: '100%',
+  },
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: '0.75rem',
+  },
 }));
 
 // ============================================

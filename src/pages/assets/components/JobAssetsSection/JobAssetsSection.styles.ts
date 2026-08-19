@@ -134,6 +134,11 @@ export const AssetCard = styled(Box)(({ theme }) => ({
   border: `1px solid ${theme.palette.colors.grey_200}`,
   borderRadius: theme.spacing(1),
   backgroundColor: theme.palette.background.paper,
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: theme.spacing(1.5),
+  },
 }));
 
 export const AssetIconBox = styled(Box)(({ theme }) => ({
@@ -186,6 +191,14 @@ export const CardRight = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1.5),
   flexShrink: 0,
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    paddingTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.palette.colors.grey_100}`,
+    marginTop: theme.spacing(0.5),
+  },
 }));
 
 export const StatusChip = styled(Chip)(({ theme }) => ({

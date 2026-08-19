@@ -1,10 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useForm, FormProvider, useController } from 'react-hook-form';
+import type { FieldError } from 'react-hook-form';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
+import type { TimePickerToolbarProps } from '@mui/x-date-pickers/TimePicker';
+import { usePickerContext } from '@mui/x-date-pickers/hooks';
 import { useGlobalModalInnerContext } from '../../../../../components/UI/GlobalModal/context';
 import { FormField } from '../../../../../components/UI/FormComponents';
 import { Input } from '../../../../../components/UI/Forms/Input';
@@ -13,8 +16,8 @@ import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { visitLogService } from '../../../../../services/api';
 import type { StepVisitLogResponse } from '../../../../../services/api';
 import type { JobWorkflowStepResponse } from '../../../../../services/api';
-import { StepSelectDropdown } from './JobWorkLogsTab.styles';
-import * as S from '../../../JobDetailsPage.styles';
+import { Dropdown } from '../../../../../components/UI/Forms/Dropdown';
+import * as S from './AddWorkLogModal.styles';
 
 export interface AddWorkLogModalProps {
   stepId?: number | null;
@@ -28,7 +31,7 @@ type FormValues = {
   timeIn: string;
   timeOut: string;
   description: string;
-  stepId?: string;
+  stepId?: { label: string; value: string } | null;
 };
 
 const parseTime = (value?: string): Dayjs | null => {
@@ -41,127 +44,121 @@ const formatTime = (value: Dayjs | null): string => {
   return value.format('HH:mm');
 };
 
-const timePickerDialogSx = {
-  zIndex: 9000,
-  '& .MuiDialog-paper': {
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 24px 48px rgba(0, 0, 0, 0.16)',
-  },
-  '& .MuiPickersLayout-root': {
-    backgroundColor: '#FFFFFF',
-  },
-  '& .MuiPickersToolbar-root': {
-    backgroundColor: '#101a32',
-    padding: '20px 24px 16px',
-    '& .MuiTypography-overline': {
-      color: 'rgba(255, 255, 255, 0.7)',
-      fontSize: '0.7rem',
-      letterSpacing: '1.5px',
-      fontWeight: 600,
-    },
-  },
-  '& .MuiTimePickerToolbar-hourMinuteLabel': {
-    alignItems: 'center',
-    '& .MuiPickersToolbarText-root': {
-      color: 'rgba(255, 255, 255, 0.5)',
-      fontSize: '3rem',
-      fontWeight: 300,
-      lineHeight: 1,
-      padding: '4px 2px',
-      borderRadius: '8px',
-      minWidth: '64px',
-      textAlign: 'center',
-      '&.Mui-selected': {
-        color: '#FFFFFF',
-        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-        fontWeight: 400,
-      },
-    },
-    '& .MuiPickersToolbarText-root.MuiPickersToolbarText-root[aria-live]': {
-      fontSize: '3rem',
-      alignSelf: 'center',
-      color: 'rgba(255, 255, 255, 0.5)',
-    },
-    '& .MuiTimePickerToolbar-separator': {
-      fontSize: '3rem',
-      color: 'rgba(255, 255, 255, 0.5)',
-      fontWeight: 300,
-      lineHeight: 1,
-      margin: '0 2px',
-      alignSelf: 'center',
-    },
-  },
-  '& .MuiTimePickerToolbar-ampmSelection': {
-    marginLeft: '12px',
-    '& .MuiPickersToolbarText-root': {
-      fontSize: '0.875rem',
-      fontWeight: 500,
-      color: 'rgba(255, 255, 255, 0.4)',
-      padding: '4px 6px',
-      minWidth: 'auto',
-      '&.Mui-selected': {
-        color: '#FFFFFF',
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        fontWeight: 600,
-      },
-    },
-  },
-  '& .MuiClock-root': {
-    margin: '24px auto',
-  },
-  '& .MuiClock-clock': {
-    backgroundColor: '#F5F5F5',
-  },
-  '& .MuiClockPointer-root': {
-    backgroundColor: '#101a32',
-  },
-  '& .MuiClockPointer-thumb': {
-    backgroundColor: '#101a32',
-    borderColor: '#101a32',
-  },
-  '& .MuiClock-pin': {
-    backgroundColor: '#101a32',
-  },
-  '& .MuiClockNumber-root': {
-    color: '#404040',
-    fontWeight: 500,
-    fontSize: '0.875rem',
-    '&.Mui-selected': {
-      color: '#FFFFFF',
-      backgroundColor: '#101a32',
-    },
-  },
-  '& .MuiPickersArrowSwitcher-root': {
-    '& .MuiIconButton-root': {
-      color: '#525252',
-    },
-  },
-  '& .MuiDialogActions-root': {
-    padding: '12px 24px 16px',
-    '& .MuiButton-root': {
-      fontWeight: 600,
-      fontSize: '0.875rem',
-      letterSpacing: '0.5px',
-      textTransform: 'none',
-      borderRadius: '8px',
-      padding: '6px 16px',
-    },
-    '& .MuiButton-root:first-of-type': {
-      color: '#737373',
-    },
-    '& .MuiButton-root:last-of-type': {
-      color: '#101a32',
-    },
-  },
+interface CustomToolbarExtraProps {
+  is24Hour: boolean;
+  onToggle24Hour: (is24: boolean) => void;
+}
+
+const CustomTimePickerToolbar: React.FC<TimePickerToolbarProps & CustomToolbarExtraProps> = ({
+  value: propValue,
+  view,
+  onViewChange,
+  onAmPmChange,
+  is24Hour,
+  onToggle24Hour,
+}) => {
+  const pickerContext = usePickerContext<Dayjs>();
+  const activeValue = pickerContext?.value || propValue;
+  const currentVal = activeValue && dayjs(activeValue).isValid() ? dayjs(activeValue) : dayjs();
+
+  const hourStr = is24Hour
+    ? currentVal.format('HH')
+    : currentVal.format('hh');
+  const minuteStr = currentVal.format('mm');
+  const isPm = currentVal.hour() >= 12;
+
+  const handleAmPmClick = (targetMeridiem: 'am' | 'pm') => {
+    if (!currentVal) return;
+    const currentHour = currentVal.hour();
+    let newHour = currentHour;
+    if (targetMeridiem === 'am' && currentHour >= 12) {
+      newHour = currentHour - 12;
+    } else if (targetMeridiem === 'pm' && currentHour < 12) {
+      newHour = currentHour + 12;
+    }
+    const updatedVal = currentVal.hour(newHour);
+    if (pickerContext?.setValue) {
+      pickerContext.setValue(updatedVal, { changeImportance: 'set', source: 'view' });
+    }
+    if (onAmPmChange) {
+      onAmPmChange(targetMeridiem);
+    }
+  };
+
+  return (
+    <S.ToolbarContainer>
+      <S.ToolbarTopRow>
+        <S.SelectTimeTitle>SELECT TIME</S.SelectTimeTitle>
+        <S.FormatToggleGroup>
+          <S.FormatToggleButton
+            active={!is24Hour}
+            onClick={() => onToggle24Hour(false)}
+            type="button"
+          >
+            12H
+          </S.FormatToggleButton>
+          <S.FormatToggleButton
+            active={is24Hour}
+            onClick={() => onToggle24Hour(true)}
+            type="button"
+          >
+            24H
+          </S.FormatToggleButton>
+        </S.FormatToggleGroup>
+      </S.ToolbarTopRow>
+
+      <S.ToolbarTimeRow>
+        <S.HourMinuteDisplay>
+          <S.TimeDigitText
+            selected={view === 'hours'}
+            onClick={() => onViewChange('hours')}
+          >
+            {hourStr}
+          </S.TimeDigitText>
+          <S.TimeSeparatorText>:</S.TimeSeparatorText>
+          <S.TimeDigitText
+            selected={view === 'minutes'}
+            onClick={() => onViewChange('minutes')}
+          >
+            {minuteStr}
+          </S.TimeDigitText>
+        </S.HourMinuteDisplay>
+
+        <S.AmPmOr24HWrapper>
+          {!is24Hour ? (
+            <>
+              <S.AmPmButton
+                selected={!isPm}
+                onClick={() => handleAmPmClick('am')}
+                type="button"
+              >
+                AM
+              </S.AmPmButton>
+              <S.AmPmButton
+                selected={isPm}
+                onClick={() => handleAmPmClick('pm')}
+                type="button"
+              >
+                PM
+              </S.AmPmButton>
+            </>
+          ) : (
+            <S.Label24H>24H</S.Label24H>
+          )}
+        </S.AmPmOr24HWrapper>
+      </S.ToolbarTimeRow>
+    </S.ToolbarContainer>
+  );
 };
 
 interface TimeFieldProps {
   name: 'timeIn' | 'timeOut';
   label: string;
+  is24Hour: boolean;
+  onToggle24Hour: (is24: boolean) => void;
 }
 
-const TimeField: React.FC<TimeFieldProps> = ({ name, label }) => {
+const TimeField: React.FC<TimeFieldProps> = ({ name, label, is24Hour, onToggle24Hour }) => {
   const { field } = useController({ name });
   const currentTime = dayjs();
   const [value, setValue] = useState<Dayjs | null>(parseTime(field.value) || currentTime);
@@ -170,6 +167,7 @@ const TimeField: React.FC<TimeFieldProps> = ({ name, label }) => {
     if (!field.value) {
       field.onChange(formatTime(currentTime));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (newValue: Dayjs | null) => {
@@ -179,20 +177,37 @@ const TimeField: React.FC<TimeFieldProps> = ({ name, label }) => {
 
   return (
     <FormField label={label}>
-      <MobileTimePicker
-        value={value}
-        onChange={handleChange}
-        slotProps={{
-          textField: {
-            size: 'small',
-            fullWidth: true,
-            placeholder: label,
-          },
-          dialog: {
-            sx: timePickerDialogSx,
-          },
-        }}
-      />
+      <S.TimePickerWrapper>
+        <MobileTimePicker
+          orientation="portrait"
+          value={value}
+          onChange={handleChange}
+          ampm={!is24Hour}
+          slots={{
+            toolbar: CustomTimePickerToolbar,
+          }}
+          slotProps={{
+            textField: {
+              size: 'small',
+              fullWidth: true,
+            },
+            dialog: {
+              sx: S.timePickerDialogSx,
+            },
+            layout: {
+              sx: {
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+              },
+            },
+            toolbar: {
+              is24Hour,
+              onToggle24Hour,
+            } as any,
+          }}
+        />
+      </S.TimePickerWrapper>
     </FormField>
   );
 };
@@ -200,13 +215,15 @@ const TimeField: React.FC<TimeFieldProps> = ({ name, label }) => {
 export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps, editLog, onSuccess }) => {
   const isEdit = !!editLog;
   const now = dayjs();
+  const [is24Hour, setIs24Hour] = useState(false);
+
   const methods = useForm<FormValues>({
     defaultValues: {
       visitDate: editLog?.visitDate || now.format('YYYY-MM-DD'),
       timeIn: editLog?.timeIn || now.format('HH:mm'),
       timeOut: editLog?.timeOut || now.format('HH:mm'),
       description: editLog?.description || '',
-      stepId: '',
+      stepId: null,
     },
   });
   const { showError } = useSnackbar();
@@ -215,6 +232,14 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps,
 
   const formRef = useRef(methods);
   formRef.current = methods;
+
+  const stepOptions = useMemo(() => {
+    if (!steps) return [];
+    return steps.map((s, idx) => ({
+      value: String(s.id),
+      label: `${idx + 1}. ${s.name || `Step ${idx + 1}`}`,
+    }));
+  }, [steps]);
 
   useEffect(() => {
     updateModalTitle(isEdit ? 'Edit Work Log' : 'Add Work Log');
@@ -231,7 +256,7 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps,
         return;
       }
 
-      const targetStepId = stepId || (values.stepId ? Number(values.stepId) : null);
+      const targetStepId = stepId || (values.stepId?.value ? Number(values.stepId.value) : null);
       if (!isEdit && !targetStepId) {
         showError('Step selection is required');
         return;
@@ -260,16 +285,14 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps,
         <S.ModalFormContainer>
           {!stepId && !isEdit && steps && steps.length > 0 && (
             <FormField label="Select Step" required>
-              <StepSelectDropdown
-                {...methods.register('stepId', { required: 'Step is required' })}
-              >
-                <option value="">Select Step</option>
-                {steps.map((s, idx) => (
-                  <option key={s.id} value={s.id}>
-                    {idx + 1}. {s.name || `Step ${idx + 1}`}
-                  </option>
-                ))}
-              </StepSelectDropdown>
+              <Dropdown
+                name="stepId"
+                preFetchedOptions={stepOptions}
+                placeHolder="Select Step"
+                disablePortal={true}
+                fullWidth={true}
+                error={methods.formState.errors.stepId as FieldError}
+              />
             </FormField>
           )}
 
@@ -278,8 +301,18 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps,
           </FormField>
 
           <S.ModalFormRow>
-            <TimeField name="timeIn" label="Start Time" />
-            <TimeField name="timeOut" label="End Time" />
+            <TimeField
+              name="timeIn"
+              label="Start Time"
+              is24Hour={is24Hour}
+              onToggle24Hour={setIs24Hour}
+            />
+            <TimeField
+              name="timeOut"
+              label="End Time"
+              is24Hour={is24Hour}
+              onToggle24Hour={setIs24Hour}
+            />
           </S.ModalFormRow>
 
           <FormField label="Description">
@@ -287,7 +320,6 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, steps,
           </FormField>
         </S.ModalFormContainer>
       </LocalizationProvider>
-
     </FormProvider>
   );
 };
