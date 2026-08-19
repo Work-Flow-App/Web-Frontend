@@ -52,6 +52,14 @@ const SUBSCRIBE_STATUSES: SubscriptionStatusResponseStatusEnum[] = [
   SubscriptionStatusResponseStatusEnum.Cancelled,
 ];
 
+// Statuses where the company already has access and can move to a higher tier
+// (as opposed to SUBSCRIBE_STATUSES, which need a brand new subscription).
+const UPGRADE_STATUSES: SubscriptionStatusResponseStatusEnum[] = [
+  SubscriptionStatusResponseStatusEnum.Trial,
+  SubscriptionStatusResponseStatusEnum.Active,
+  SubscriptionStatusResponseStatusEnum.PastDue,
+];
+
 const formatBytes = (bytes?: number): string => {
   if (!bytes) return '0 MB';
   const gb = bytes / 1_000_000_000;
@@ -118,6 +126,8 @@ export const BillingSettings: React.FC = () => {
   const canCancel = currentStatus === SubscriptionStatusResponseStatusEnum.Active;
 
   const needsSubscription = currentStatus ? SUBSCRIBE_STATUSES.includes(currentStatus) : false;
+
+  const canUpgrade = currentStatus ? UPGRADE_STATUSES.includes(currentStatus) : false;
 
   const handleManageBilling = async () => {
     setLoadingPortal(true);
@@ -276,6 +286,11 @@ export const BillingSettings: React.FC = () => {
           {needsSubscription && (
             <Button variant="contained" onClick={() => navigate('/subscribe')}>
               Subscribe
+            </Button>
+          )}
+          {canUpgrade && (
+            <Button variant="contained" size="small" onClick={() => navigate('/subscribe')}>
+              Upgrade Plan
             </Button>
           )}
           {canManageBilling && (
