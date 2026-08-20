@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
-import { Typography, TextField, Stack, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Typography, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import CheckIcon from '@mui/icons-material/Check';
 import RemoveIcon from '@mui/icons-material/Remove';
+import CheckIcon from '@mui/icons-material/Check';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@paddle/paddle-js';
 import { PricingCard } from '../../components/UI/PricingCard';
 import type { PricingFeature } from '../../components/UI/PricingCard';
 import { subscriptionService } from '../../services/api/subscription';
-import { CreateCheckoutSessionRequestPlanTypeEnum } from '../../../workflow-api';
+import { CreateCheckoutSessionRequestPlanTypeEnum, SubscriptionStatusResponseStatusEnum } from '../../../workflow-api';
 import type { CreateCheckoutSessionRequestPlanTypeEnum as PlanType } from '../../../workflow-api';
 import { companyService } from '../../services/api/company';
 import { getAffiliateTid } from '../../utils/tracking';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
-import { computeExtraSeatsFromHeadcount, computePlanMonthlyTotal, computeTotalStorageGB } from '../../utils/subscriptionPricing';
+import { computeExtraSeatsFromHeadcount, computePlanMonthlyTotal, PLAN_TIERS } from '../../utils/subscriptionPricing';
 import { floowColors } from '../../theme/colors';
 import * as S from './SubscribePage.styles';
 
@@ -24,126 +24,133 @@ interface PlanConfig {
   description: string;
   basePrice: number;
   baseSeats: number;
+  maxSeats: number;
   extraSeatPrice: number;
-  baseStorageGB: number;
-  extraStorageBlockGB: number;
-  extraStorageBlockPrice: number;
   jobsLimit: number;
   features: PricingFeature[];
 }
 
-type PlanKey = 'STARTER' | 'PROFESSIONAL';
+type PlanKey = 'FREE_TRIAL' | 'STARTER' | 'PROFESSIONAL';
+type PaidPlanKey = 'STARTER' | 'PROFESSIONAL';
 
+// Numeric fields (price, seats, jobs limit) come from the shared PLAN_TIERS source of
+// truth in subscriptionPricing.ts; only label/description/features are page-specific.
 const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
+  FREE_TRIAL: {
+    label: 'Free Trial',
+    description: 'Try full access risk-free before choosing a plan',
+    basePrice: 0,
+    baseSeats: 1,
+    maxSeats: 1,
+    extraSeatPrice: 0,
+    jobsLimit: 10,
+    features: [
+      { text: '1 User Access Included', included: true },
+      { text: 'Up to 10 Jobs Included', included: true },
+      { text: 'Full Feature Access During Trial', included: true },
+      { text: 'Mobile App & Web App Access for Field Workers', included: true },
+      { text: 'Instant Upgrade to Starter or Professional Anytime', included: true },
+      { text: 'No Credit Card Required', included: true },
+    ],
+  },
   STARTER: {
     label: 'Starter',
-    description: 'For small teams getting started',
-    basePrice: 39,
-    baseSeats: 3,
-    extraSeatPrice: 10,
-    baseStorageGB: 10,
-    extraStorageBlockGB: 3,
-    extraStorageBlockPrice: 10,
-    jobsLimit: 150,
+    description: 'Essential tools to manage and grow your business operations',
+    basePrice: PLAN_TIERS.STARTER.basePrice,
+    baseSeats: PLAN_TIERS.STARTER.baseSeats,
+    maxSeats: 30,
+    extraSeatPrice: PLAN_TIERS.STARTER.extraSeatPrice,
+    jobsLimit: PLAN_TIERS.STARTER.jobsLimit,
     features: [
-      { text: '3 worker seats (+$10/extra seat)', included: true },
-      { text: '150 jobs/month', included: true },
-      { text: '10GB storage (+$10/3GB block)', included: true },
-      { text: 'Job management', included: true },
-      { text: 'Customer management', included: true },
+      { text: '3 Team Members Included (+$10/mo per additional user)', included: true },
+      { text: 'Up to 70 Jobs per Month (resets monthly)', included: true },
+      { text: 'Staff Profile Management', included: true },
+      { text: 'Mobile App & Web App Access for Field Workers', included: true },
+      { text: 'Real-Time Job Tracking & Site Visit Management', included: true },
+      { text: 'No Contract — Cancel Anytime', included: true },
     ],
   },
   PROFESSIONAL: {
     label: 'Professional',
-    description: 'Everything you need to run your field operations',
-    basePrice: 79,
-    baseSeats: 8,
-    extraSeatPrice: 8,
-    baseStorageGB: 30,
-    extraStorageBlockGB: 5,
-    extraStorageBlockPrice: 10,
-    jobsLimit: 200,
+    description: 'Complete automation for scaling companies',
+    basePrice: PLAN_TIERS.PROFESSIONAL.basePrice,
+    baseSeats: PLAN_TIERS.PROFESSIONAL.baseSeats,
+    maxSeats: 100,
+    extraSeatPrice: PLAN_TIERS.PROFESSIONAL.extraSeatPrice,
+    jobsLimit: PLAN_TIERS.PROFESSIONAL.jobsLimit,
     features: [
-      { text: '8 worker seats (+$8/extra seat)', included: true },
-      { text: '200 jobs/month', included: true },
-      { text: '30GB storage (+$10/5GB block)', included: true },
-      { text: 'Workflow builder', included: true },
-      { text: 'Asset tracking', included: true },
-      { text: 'Priority support', included: true },
-      { text: 'Company profile', included: true },
+      { text: '8 Team Members Included (+$8/mo per additional user)', included: true },
+      { text: 'Up to 200 Jobs per Month (resets monthly)', included: true },
+      { text: 'Up to 500 Estimates & Invoices per Month', included: true },
+      { text: 'Full Company & Staff Profile Management', included: true },
+      { text: 'Share Case Studies with public to win more jobs/contract', included: true },
+      { text: 'Mobile App & Web App Access for Field Workers', included: true },
+      { text: 'Real-Time Job Tracking & Site Visit Management', included: true },
+      { text: 'No Contract — Cancel Anytime', included: true },
     ],
   },
 };
 
-const PAID_PLAN_TYPES = [
-  CreateCheckoutSessionRequestPlanTypeEnum.Starter,
-  CreateCheckoutSessionRequestPlanTypeEnum.Professional,
-] as const;
+const PLAN_TYPE_BY_KEY: Record<PaidPlanKey, PlanType> = {
+  STARTER: CreateCheckoutSessionRequestPlanTypeEnum.Starter,
+  PROFESSIONAL: CreateCheckoutSessionRequestPlanTypeEnum.Professional,
+};
+
+const CARD_ORDER: PlanKey[] = ['FREE_TRIAL', 'STARTER', 'PROFESSIONAL'];
+
+// One shared "how many users" value drives every card's price at once — each plan
+// applies it against its own base seats/extra-seat price, so all three stay in sync.
+const MIN_HEADCOUNT = 1;
+const MAX_HEADCOUNT = Math.max(...Object.values(PLAN_CONFIG).map((c) => c.maxSeats));
 
 // Feature checklist shown in the "Compare features" table below the cards.
-// Each higher tier is a superset of the one below it.
 const FEATURE_MATRIX: { label: string; values: Record<PlanKey, boolean> }[] = [
-  { label: 'Job management', values: { STARTER: true, PROFESSIONAL: true } },
-  { label: 'Customer management', values: { STARTER: true, PROFESSIONAL: true } },
-  { label: 'Workflow builder', values: { STARTER: false, PROFESSIONAL: true } },
-  { label: 'Asset tracking', values: { STARTER: false, PROFESSIONAL: true } },
-  { label: 'Priority support', values: { STARTER: false, PROFESSIONAL: true } },
-  // Starter only gets worker/staff profiles; the company profile is Professional-only.
-  { label: 'Company profile', values: { STARTER: false, PROFESSIONAL: true } },
+  { label: 'Staff Profile Management', values: { FREE_TRIAL: true, STARTER: true, PROFESSIONAL: true } },
+  { label: 'Company Profile Management', values: { FREE_TRIAL: false, STARTER: false, PROFESSIONAL: true } },
+  { label: 'Estimates & Invoices (500/mo)', values: { FREE_TRIAL: false, STARTER: false, PROFESSIONAL: true } },
+  { label: 'Real-Time Job Tracking & Site Visits', values: { FREE_TRIAL: false, STARTER: true, PROFESSIONAL: true } },
+  { label: 'Public Case Studies', values: { FREE_TRIAL: false, STARTER: false, PROFESSIONAL: true } },
+  { label: 'No Contract — Cancel Anytime', values: { FREE_TRIAL: false, STARTER: true, PROFESSIONAL: true } },
 ];
 
 export const SubscribePage: React.FC = () => {
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
-  const [headcount, setHeadcount] = useState<number>(1);
-  const [storageExtras, setStorageExtras] = useState<Record<string, number>>({
-    STARTER: 0,
-    PROFESSIONAL: 0,
-  });
+  const [selectedPlan, setSelectedPlan] = useState<PlanKey>('PROFESSIONAL');
+  const [headcount, setHeadcount] = useState<number>(PLAN_CONFIG.PROFESSIONAL.baseSeats);
   const navigate = useNavigate();
-  const { refresh } = useSubscription();
+  const { status, refresh } = useSubscription();
   const { showError } = useSnackbar();
 
-  // Single "how many people?" input drives extra-seat pricing on every paid card at
-  // once, instead of setting seats per plan - each card only charges for the seats
-  // beyond what it already includes.
-  const getPricingInfo = (planKey: PlanKey) => {
+  const isOnTrial = status?.status === SubscriptionStatusResponseStatusEnum.Trial;
+  const isPaidPlanKey = (key: PlanKey): key is PaidPlanKey => key === 'STARTER' || key === 'PROFESSIONAL';
+
+  // The slider's single headcount value is shared across every card — each plan just
+  // applies it against its own base seats and extra-seat price, so moving the slider
+  // updates all three prices at once, each according to its own plan's rules.
+  const getPricingInfo = (planKey: PaidPlanKey) => {
     const config = PLAN_CONFIG[planKey];
-    const storageBlocks = storageExtras[planKey] ?? 0;
     const extraSeats = computeExtraSeatsFromHeadcount(headcount, config.baseSeats);
     const monthlyTotal = computePlanMonthlyTotal({
       basePrice: config.basePrice,
       extraSeats,
       extraSeatPrice: config.extraSeatPrice,
-      storageBlocks,
-      extraStorageBlockPrice: config.extraStorageBlockPrice,
+      storageBlocks: 0,
+      extraStorageBlockPrice: 0,
     });
-    const totalSeats = config.baseSeats + extraSeats;
-    const totalStorageGB = computeTotalStorageGB({
-      baseStorageGB: config.baseStorageGB,
-      storageBlocks,
-      extraStorageBlockGB: config.extraStorageBlockGB,
-    });
+    const totalSeats = Math.max(config.baseSeats, headcount);
 
-    return { extraSeats, storageBlocks, totalSeats, totalStorageGB, monthlyTotal };
+    return { extraSeats, totalSeats, monthlyTotal };
   };
 
-  const handleHeadcountChange = (value: number) => {
-    setHeadcount(Number.isFinite(value) && value >= 1 ? Math.floor(value) : 1);
-  };
-
-  const updateStorageBlocks = (planKey: string, value: number) => {
-    const clamped = Number.isFinite(value) && value >= 0 ? value : 0;
-    setStorageExtras((prev) => ({ ...prev, [planKey]: clamped }));
-  };
-
-  const handleSubscribe = async (planType: PlanType) => {
-    const info = getPricingInfo(planType as PlanKey);
+  const handleSubscribe = async () => {
+    if (!isPaidPlanKey(selectedPlan)) return;
+    const planType = PLAN_TYPE_BY_KEY[selectedPlan];
+    const info = getPricingInfo(selectedPlan);
     setLoadingPlan(planType);
     try {
       const { data } = await subscriptionService.createCheckout({
         planType,
         extraSeats: info.extraSeats,
-        extraStorageBlocks: info.storageBlocks,
       });
       const { transactionId } = data as Record<string, string>;
 
@@ -183,9 +190,25 @@ export const SubscribePage: React.FC = () => {
     }
   };
 
+  const selectedConfig = PLAN_CONFIG[selectedPlan];
+  const isLoadingSelected = isPaidPlanKey(selectedPlan) && loadingPlan === PLAN_TYPE_BY_KEY[selectedPlan];
+  const orderDisabled = !isPaidPlanKey(selectedPlan) || isLoadingSelected;
+  const orderButtonText = !isPaidPlanKey(selectedPlan)
+    ? isOnTrial
+      ? 'Current Plan'
+      : 'Included at Signup'
+    : isLoadingSelected
+      ? 'Loading...'
+      : 'Order';
+
   return (
     <S.PageWrapper>
       <S.HeadingWrapper>
+        <S.Eyebrow>
+          <S.EyebrowLine />
+          <span>Price</span>
+          <S.EyebrowLine />
+        </S.Eyebrow>
         <Typography variant="h4" fontWeight={700}>
           Upgrade Your Plan
         </Typography>
@@ -194,63 +217,56 @@ export const SubscribePage: React.FC = () => {
         </Typography>
       </S.HeadingWrapper>
 
-      <S.ControlsRow>
-        <S.HeadcountField>
-          <Typography variant="caption" color="text.secondary">
-            How many people?
-          </Typography>
-          <TextField
-            type="number"
-            size="small"
-            value={headcount}
-            onChange={(e) => handleHeadcountChange(Number(e.target.value))}
-            slotProps={{ htmlInput: { min: 1 } }}
-            sx={{ width: 100 }}
-          />
-        </S.HeadcountField>
-      </S.ControlsRow>
+      <S.UniversalControlBar>
+        <S.UsersInfo>
+          <S.UsersIconCircle>
+            <PersonOutlineIcon fontSize="small" sx={{ color: floowColors.text.heading }} />
+          </S.UsersIconCircle>
+          <S.UsersTextGroup>
+            <Typography variant="body2" fontWeight={600}>
+              Users
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Starting at {selectedConfig.baseSeats} users
+            </Typography>
+          </S.UsersTextGroup>
+        </S.UsersInfo>
 
-      <S.CardsRow>
-        {PAID_PLAN_TYPES.map((planType) => {
-          const planKey = planType as PlanKey;
+        <S.SliderWrapper>
+          <S.SeatSlider
+            value={headcount}
+            min={MIN_HEADCOUNT}
+            max={MAX_HEADCOUNT}
+            step={1}
+            valueLabelDisplay="on"
+            onChange={(_, value) => setHeadcount(value as number)}
+            aria-label="Number of users"
+          />
+        </S.SliderWrapper>
+
+        <S.OrderButton onClick={handleSubscribe} disabled={orderDisabled}>
+          {orderButtonText}
+        </S.OrderButton>
+      </S.UniversalControlBar>
+
+      <S.CardsRow role="radiogroup" aria-label="Choose a plan">
+        {CARD_ORDER.map((planKey) => {
           const config = PLAN_CONFIG[planKey];
-          const info = getPricingInfo(planKey);
+          const price = isPaidPlanKey(planKey) ? getPricingInfo(planKey).monthlyTotal : 0;
 
           return (
             <PricingCard
-              key={planType}
+              key={planKey}
               planName={config.label}
               planDescription={config.description}
-              price={info.monthlyTotal}
+              price={price}
               currency="$"
               pricePeriod="per month"
-              buttonText={loadingPlan === planType ? 'Loading...' : 'Subscribe Now'}
-              onButtonClick={() => handleSubscribe(planType)}
-              icon={<CreditCardIcon sx={{ fontSize: 40, color: '#fff' }} />}
-              featured={planType === CreateCheckoutSessionRequestPlanTypeEnum.Professional}
+              featured={planKey === 'PROFESSIONAL'}
               features={config.features}
-              background="linear-gradient(135deg, #101a32 0%, #1a2a4a 100%)"
-              stepper={
-                <Stack spacing={1.5} sx={{ width: '100%' }}>
-                  <S.StepperField>
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                      Extra storage blocks ({config.extraStorageBlockGB}GB each)
-                    </Typography>
-                    <TextField
-                      type="number"
-                      size="small"
-                      fullWidth
-                      value={info.storageBlocks}
-                      onChange={(e) => updateStorageBlocks(planKey, Number(e.target.value))}
-                      slotProps={{ htmlInput: { min: 0 } }}
-                      sx={S.stepperInputSx}
-                    />
-                  </S.StepperField>
-                  <Typography variant="caption" color="rgba(255,255,255,0.7)">
-                    {info.totalSeats} seats total, {info.totalStorageGB}GB total
-                  </Typography>
-                </Stack>
-              }
+              selectable
+              selected={selectedPlan === planKey}
+              onSelect={() => setSelectedPlan(planKey)}
             />
           );
         })}
@@ -260,48 +276,55 @@ export const SubscribePage: React.FC = () => {
         <Typography variant="h6" fontWeight={700}>
           Compare features
         </Typography>
-        <TableContainer>
-          <S.ComparisonTable>
-            <TableHead>
-              <TableRow>
-                <TableCell />
-                <TableCell>{PLAN_CONFIG.STARTER.label}</TableCell>
-                <TableCell>{PLAN_CONFIG.PROFESSIONAL.label}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell>Seats</TableCell>
-                <TableCell>{getPricingInfo('STARTER').totalSeats}</TableCell>
-                <TableCell>{getPricingInfo('PROFESSIONAL').totalSeats}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Jobs/month</TableCell>
-                <TableCell>{PLAN_CONFIG.STARTER.jobsLimit}</TableCell>
-                <TableCell>{PLAN_CONFIG.PROFESSIONAL.jobsLimit}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Storage</TableCell>
-                <TableCell>{getPricingInfo('STARTER').totalStorageGB}GB</TableCell>
-                <TableCell>{getPricingInfo('PROFESSIONAL').totalStorageGB}GB</TableCell>
-              </TableRow>
-              {FEATURE_MATRIX.map((row) => (
-                <TableRow key={row.label}>
-                  <TableCell>{row.label}</TableCell>
-                  {(['STARTER', 'PROFESSIONAL'] as PlanKey[]).map((planKey) => (
-                    <TableCell key={planKey}>
-                      {row.values[planKey] ? (
-                        <CheckIcon fontSize="small" sx={{ color: floowColors.success.main }} />
-                      ) : (
-                        <RemoveIcon fontSize="small" sx={{ color: floowColors.blackAlpha[30] }} />
-                      )}
-                    </TableCell>
-                  ))}
+        <S.ComparisonCard>
+          <TableContainer>
+            <S.ComparisonTable>
+              <TableHead>
+                <TableRow>
+                  <TableCell />
+                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.label}</TableCell>
+                  <TableCell>{PLAN_CONFIG.STARTER.label}</TableCell>
+                  <TableCell>
+                    <S.FeaturedColumnHeader>
+                      {PLAN_CONFIG.PROFESSIONAL.label}
+                      <S.FeaturedChip>Most Popular</S.FeaturedChip>
+                    </S.FeaturedColumnHeader>
+                  </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </S.ComparisonTable>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Seats</TableCell>
+                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.baseSeats}</TableCell>
+                  <TableCell>{getPricingInfo('STARTER').totalSeats}</TableCell>
+                  <TableCell>{getPricingInfo('PROFESSIONAL').totalSeats}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Jobs/month</TableCell>
+                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.jobsLimit}</TableCell>
+                  <TableCell>{PLAN_CONFIG.STARTER.jobsLimit}</TableCell>
+                  <TableCell>{PLAN_CONFIG.PROFESSIONAL.jobsLimit}</TableCell>
+                </TableRow>
+                {FEATURE_MATRIX.map((row) => (
+                  <TableRow key={row.label}>
+                    <TableCell>{row.label}</TableCell>
+                    {(['FREE_TRIAL', 'STARTER', 'PROFESSIONAL'] as PlanKey[]).map((planKey) => (
+                      <TableCell key={planKey}>
+                        <S.FeatureBadge included={row.values[planKey]}>
+                          {row.values[planKey] ? (
+                            <CheckIcon fontSize="small" sx={{ color: floowColors.success.main }} />
+                          ) : (
+                            <RemoveIcon fontSize="small" sx={{ color: floowColors.text.secondary }} />
+                          )}
+                        </S.FeatureBadge>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </S.ComparisonTable>
+          </TableContainer>
+        </S.ComparisonCard>
       </S.ComparisonSection>
     </S.PageWrapper>
   );
