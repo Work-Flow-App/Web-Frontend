@@ -11,8 +11,12 @@ import {
   DialogActions,
   CircularProgress,
   LinearProgress,
+  IconButton,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
+import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@paddle/paddle-js';
 import { SubscriptionStatusResponseStatusEnum } from '../../../workflow-api';
 import type { UsageSummaryResponse } from '../../../workflow-api';
 import { subscriptionService } from '../../services/api/subscription';
@@ -20,6 +24,12 @@ import { companyService } from '../../services/api/company';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
+import { getAffiliateTid } from '../../utils/tracking';
+import {
+  inferPlanTierFromJobsLimit,
+  computeCurrentStorageBlocks,
+  computeCurrentExtraSeats,
+} from '../../utils/subscriptionPricing';
 import { floowColors } from '../../theme/colors';
 import * as S from './BillingSettings.styled';
 
@@ -81,12 +91,19 @@ export const BillingSettings: React.FC = () => {
   const [cancelling, setCancelling] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [usage, setUsage] = useState<UsageSummaryResponse | null>(null);
+  const [storageDialogOpen, setStorageDialogOpen] = useState(false);
+  const [blocksToAdd, setBlocksToAdd] = useState(1);
+  const [purchasingStorage, setPurchasingStorage] = useState(false);
 
-  useEffect(() => {
+  const loadUsage = () => {
     companyService
       .getUsage()
       .then((res) => setUsage(res.data))
       .catch((error) => showError(extractErrorMessage(error, 'Failed to load usage data')));
+  };
+
+  useEffect(() => {
+    loadUsage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,6 +145,68 @@ export const BillingSettings: React.FC = () => {
   const needsSubscription = currentStatus ? SUBSCRIBE_STATUSES.includes(currentStatus) : false;
 
   const canUpgrade = currentStatus ? UPGRADE_STATUSES.includes(currentStatus) : false;
+
+  // The API doesn't expose which paid tier a company is on directly, but each tier has
+  // a distinct jobs limit, so it can be identified from the usage summary.
+  const currentTier = inferPlanTierFromJobsLimit(usage?.jobsLimit);
+  const canBuyStorage = currentStatus === SubscriptionStatusResponseStatusEnum.Active && currentTier !== null;
+  const storageFull = Boolean(
+    usage?.storageLimitBytes && (usage.storageUsedBytes ?? 0) >= usage.storageLimitBytes
+  );
+
+  const openStorageDialog = () => {
+    setBlocksToAdd(1);
+    setStorageDialogOpen(true);
+  };
+
+  const handleBuyStorage = async () => {
+    if (!currentTier) return;
+    setPurchasingStorage(true);
+    try {
+      const currentBlocks = computeCurrentStorageBlocks(currentTier, usage?.storageLimitBytes);
+      const currentExtraSeats = computeCurrentExtraSeats(currentTier, usage?.seatsLimit);
+
+      const { data } = await subscriptionService.createCheckout({
+        planType: currentTier.key,
+        extraSeats: currentExtraSeats,
+        extraStorageBlocks: currentBlocks + blocksToAdd,
+      });
+      const { transactionId } = data as Record<string, string>;
+
+      const profile = await companyService.getProfile().then((r) => r.data).catch(() => null);
+
+      const paddle = getPaddleInstance();
+      if (!paddle) {
+        showError('Payment system not available. Please refresh the page and try again.');
+        return;
+      }
+
+      paddle.Checkout.open({
+        transactionId,
+        customData: {
+          companyId: profile?.id ?? null,
+          email: profile?.email ?? null,
+          fp_tid: getAffiliateTid(),
+        },
+        settings: {
+          successUrl: window.location.href,
+        },
+        // @ts-expect-error eventCallback is not in Paddle's CheckoutOpenOptions types but is supported at runtime
+        eventCallback: (event: PaddleEventData) => {
+          if (event.name === CheckoutEventNames.CHECKOUT_COMPLETED) {
+            showSuccess('Storage purchase complete.');
+            setStorageDialogOpen(false);
+            refresh();
+            loadUsage();
+          }
+        },
+      });
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to start storage checkout. Please try again.'));
+    } finally {
+      setPurchasingStorage(false);
+    }
+  };
 
   const handleManageBilling = async () => {
     setLoadingPortal(true);
@@ -235,9 +314,21 @@ export const BillingSettings: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   Storage
                 </Typography>
-                <Typography variant="body2">
-                  {formatBytes(usage.storageUsedBytes)} / {formatBytes(usage.storageLimitBytes)}
-                </Typography>
+                <S.MeterValueGroup>
+                  <Typography variant="body2" color={storageFull ? 'error' : undefined}>
+                    {formatBytes(usage.storageUsedBytes)} / {formatBytes(usage.storageLimitBytes)}
+                  </Typography>
+                  {canBuyStorage && (
+                    <Button
+                      variant={storageFull ? 'contained' : 'text'}
+                      color={storageFull ? 'error' : 'primary'}
+                      size="small"
+                      onClick={openStorageDialog}
+                    >
+                      Buy Storage
+                    </Button>
+                  )}
+                </S.MeterValueGroup>
               </S.MeterLabelRow>
               <LinearProgress
                 variant="determinate"
@@ -331,6 +422,48 @@ export const BillingSettings: React.FC = () => {
             startIcon={cancelling ? <CircularProgress size={16} /> : undefined}
           >
             Cancel Subscription
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={storageDialogOpen} onClose={() => !purchasingStorage && setStorageDialogOpen(false)}>
+        <DialogTitle>Buy Extra Storage</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 1 }}>
+            {currentTier &&
+              `Each block adds ${currentTier.extraStorageBlockGB}GB for $${currentTier.extraStorageBlockPrice}/mo.`}
+          </DialogContentText>
+          <S.StepperControl>
+            <IconButton
+              size="small"
+              onClick={() => setBlocksToAdd((n) => Math.max(1, n - 1))}
+              disabled={blocksToAdd <= 1}
+              aria-label="Decrease storage blocks"
+            >
+              <RemoveIcon />
+            </IconButton>
+            <S.StepperCount>{blocksToAdd}</S.StepperCount>
+            <IconButton size="small" onClick={() => setBlocksToAdd((n) => n + 1)} aria-label="Increase storage blocks">
+              <AddIcon />
+            </IconButton>
+          </S.StepperControl>
+          {currentTier && (
+            <DialogContentText sx={{ textAlign: 'center' }}>
+              +{blocksToAdd * currentTier.extraStorageBlockGB}GB for +${blocksToAdd * currentTier.extraStorageBlockPrice}/mo
+            </DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStorageDialogOpen(false)} disabled={purchasingStorage}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleBuyStorage}
+            disabled={purchasingStorage}
+            startIcon={purchasingStorage ? <CircularProgress size={16} /> : undefined}
+          >
+            Purchase
           </Button>
         </DialogActions>
       </Dialog>

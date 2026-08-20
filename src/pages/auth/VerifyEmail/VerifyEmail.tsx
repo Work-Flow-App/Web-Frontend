@@ -27,6 +27,7 @@ export const VerifyEmail: React.FC = () => {
 
   const [status, setStatus] = useState<VerifyStatus>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isCompanyRole, setIsCompanyRole] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -46,11 +47,15 @@ export const VerifyEmail: React.FC = () => {
           if (userRole) localStorage.setItem('user_role', userRole);
         }
 
+        const isCompany = userRole === 'ROLE_COMPANY' || userRole === 'COMPANY';
+        setIsCompanyRole(isCompany);
         setStatus('success');
 
         setTimeout(() => {
-          if (userRole === 'ROLE_COMPANY' || userRole === 'COMPANY') {
-            navigate('/company');
+          if (isCompany) {
+            // New company accounts start on a Free Trial — send them straight to the
+            // pricing page so they can see plans and upgrade whenever they're ready.
+            navigate('/subscribe');
           } else if (userRole === 'ROLE_WORKER' || userRole === 'WORKER') {
             navigate('/worker');
           } else {
@@ -92,7 +97,8 @@ export const VerifyEmail: React.FC = () => {
               <>
                 <Title>Email Verified!</Title>
                 <Subtitle>
-                  Your email has been verified successfully. Redirecting you to the dashboard...
+                  Your email has been verified successfully.{' '}
+                  {isCompanyRole ? 'Redirecting you to your plan options...' : 'Redirecting you to your dashboard...'}
                 </Subtitle>
               </>
             )}

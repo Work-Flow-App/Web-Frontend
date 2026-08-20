@@ -83,4 +83,22 @@ export interface PricingCardProps {
    * Optional slot rendered between the price and the button, e.g. add-on steppers
    */
   stepper?: ReactNode;
+
+  /**
+   * Renders a radio-style indicator next to the plan name and makes the whole card
+   * clickable, for a "pick one of these plans" card group (the plan-level button/stepper
+   * lives outside the group in that case — see SubscribePage).
+   */
+  selectable?: boolean;
+
+  /**
+   * Whether this card is the currently-selected one in a selectable card group.
+   * Drives the radio indicator and the card's emphasized border.
+   */
+  selected?: boolean;
+
+  /**
+   * Called when a selectable card is clicked (or activated via keyboard).
+   */
+  onSelect?: () => void;
 }

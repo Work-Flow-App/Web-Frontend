@@ -7,11 +7,11 @@ const meta: Meta<typeof PricingCard> = {
   parameters: {
     layout: 'centered',
     backgrounds: {
-      default: 'dark',
+      default: 'light',
       values: [
+        { name: 'light', value: '#f5f5f5' },
+        { name: 'white', value: '#ffffff' },
         { name: 'dark', value: '#0a0a0a' },
-        { name: 'black', value: '#000000' },
-        { name: 'blue', value: '#1e3a8a' },
       ],
     },
   },
@@ -63,7 +63,6 @@ export const Standard: Story = {
     pricePeriod: 'per month',
     currency: '$',
     buttonText: 'Get Started',
-    background: 'linear-gradient(180deg, rgba(60, 60, 60, 0.8) 0%, rgba(40, 40, 40, 0.7) 50%, rgba(50, 50, 50, 0.75) 100%)',
     features: [
       { text: 'Clients directory', included: true },
       { text: 'Jobs management', included: true },
@@ -153,7 +152,5 @@ export const CustomBackground: Story = {
       { text: 'Custom SLA', included: true },
       { text: 'On-premise deployment', included: true },
     ],
-    background:
-      'linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 50%, rgba(29, 78, 216, 0.15) 100%)',
   },
 };

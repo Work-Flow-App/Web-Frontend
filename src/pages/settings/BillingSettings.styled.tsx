@@ -56,3 +56,25 @@ export const MeterLabelRow = styled(Box)(() => ({
   justifyContent: 'space-between',
   alignItems: 'baseline',
 }));
+
+export const MeterValueGroup = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+export const StepperControl = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing(2),
+  padding: theme.spacing(1, 0),
+}));
+
+export const StepperCount = styled(Box)(() => ({
+  fontFamily: "'Manrope', sans-serif",
+  fontWeight: 700,
+  fontSize: rem(24),
+  minWidth: rem(32),
+  textAlign: 'center',
+}));
