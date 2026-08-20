@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { CircularProgress, Box, LinearProgress, Typography, Menu, MenuItem } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
@@ -232,8 +232,6 @@ function StatBoxesRow({
 
 // ─── Pipeline Bar ─────────────────────────────────────────────────────────────
 
-const PIPELINE_MAX_VISIBLE = 6;
-
 function PipelineBar({
   groups,
   activeStep,
@@ -245,6 +243,19 @@ function PipelineBar({
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isOpen = Boolean(anchorEl);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(800); // Default fallback
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -257,7 +268,11 @@ function PipelineBar({
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleScroll = () => {
+    const handleScroll = (event: Event) => {
+      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
+      if (paper && paper.contains(event.target as Node)) {
+        return;
+      }
       handleClose();
     };
 
@@ -277,11 +292,48 @@ function PipelineBar({
     };
   }, [isOpen, anchorEl]);
 
-  const visible = groups.slice(0, PIPELINE_MAX_VISIBLE);
-  const hidden = groups.length - PIPELINE_MAX_VISIBLE;
+  // Dynamically calculate visible count based on containerWidth and estimated item widths:
+  let maxVisible = 0;
+  let currentWidth = 0;
+  const moreButtonWidth = 50; // Width of "···" chip plus arrow
+  const horizontalPadding = 32; // Horizontal padding of PipelineBar (16px left + 16px right)
+  const availableWidth = containerWidth - horizontalPadding;
+
+  // Let's first check if ALL steps fit:
+  let totalEstimatedWidth = 0;
+  for (let i = 0; i < groups.length; i++) {
+    const textLength = groups[i].stepName.length;
+    // Estimated width of the chip: badge (24px) + padding/margins (28px) + gap (6px) + text (char * 7) + arrow (20px)
+    // Modified to make the width estimation more precise (releasing unused empty space on the right)
+    const chipWidth = 43 + textLength * 6.5 + (i > 0 ? 16 : 0);
+    totalEstimatedWidth += chipWidth;
+  }
+
+  if (totalEstimatedWidth <= availableWidth) {
+    maxVisible = groups.length;
+  } else {
+    // If they don't all fit, calculate how many can fit next to the "···" button
+    for (let i = 0; i < groups.length; i++) {
+      const textLength = groups[i].stepName.length;
+      const chipWidth = 43 + textLength * 6.5 + (i > 0 ? 16 : 0);
+      if (currentWidth + chipWidth + moreButtonWidth <= availableWidth) {
+        currentWidth += chipWidth;
+        maxVisible++;
+      } else {
+        break;
+      }
+    }
+    // Always show at least 1 step if any exist
+    if (maxVisible === 0 && groups.length > 0) {
+      maxVisible = 1;
+    }
+  }
+
+  const visible = groups.slice(0, maxVisible);
+  const hidden = groups.length - maxVisible;
 
   return (
-    <S.PipelineBar>
+    <S.PipelineBar ref={containerRef}>
       {visible.map((group, index) => (
         <React.Fragment key={group.stepName}>
           {index > 0 && <S.PipelineArrow>›</S.PipelineArrow>}
@@ -305,7 +357,7 @@ function PipelineBar({
             onClose={handleClose}
             disableScrollLock
           >
-            {groups.slice(PIPELINE_MAX_VISIBLE).map((group) => (
+            {groups.slice(maxVisible).map((group) => (
               <S.DropdownMenuItem
                 key={group.stepName}
                 onClick={() => {

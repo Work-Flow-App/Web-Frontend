@@ -14,6 +14,9 @@ export const PageContainer = styled(Box)(({ theme }) => ({
   '@media (max-width: 1366px)': {
     padding: rem(24),
   },
+  '@media (max-width: 600px)': {
+    padding: rem(16),
+  },
 }));
 
 export const DashboardHeader = styled(Box)(() => ({
@@ -127,6 +130,9 @@ export const SummaryCard = styled(Box, {
   border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
   backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
   borderLeft: `4px solid ${accentcolor || theme.palette.primary.main}`,
+  '@media (max-width: 600px)': {
+    padding: `${rem(12)} ${rem(10)}`,
+  },
 }));
 
 export const Title = styled(Typography)(({ theme }) => ({
@@ -147,6 +153,11 @@ export const SummaryCardsContainer = styled(Box)(() => ({
   gap: rem(16),
   marginBottom: rem(24),
   flexWrap: 'wrap',
+  '@media (max-width: 600px)': {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: rem(12),
+  },
 }));
 
 export const SummaryLoadingContainer = styled(Box)(() => ({
@@ -155,6 +166,9 @@ export const SummaryLoadingContainer = styled(Box)(() => ({
   gap: rem(8),
   paddingTop: rem(16),
   paddingBottom: rem(16),
+  '@media (max-width: 600px)': {
+    gridColumn: 'span 2',
+  },
 }));
 
 export const SummaryHeader = styled(Box)(() => ({
@@ -169,6 +183,9 @@ export const SummaryLabelText = styled(Typography)(({ theme }) => ({
   fontSize: '0.7rem',
   fontWeight: 600,
   color: theme.palette.text.secondary,
+  '@media (max-width: 600px)': {
+    fontSize: '0.6rem',
+  },
 }));
 
 interface SummaryValueTextProps {
@@ -181,4 +198,7 @@ export const SummaryValueText = styled(Typography, {
   marginTop: rem(4),
   fontWeight: 700,
   color: stylecolor,
+  '@media (max-width: 600px)': {
+    fontSize: rem(18),
+  },
 }));
