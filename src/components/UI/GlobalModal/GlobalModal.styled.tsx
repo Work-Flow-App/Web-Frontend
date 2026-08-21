@@ -14,7 +14,7 @@ export const ModalContainerWrapper = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'size',
 })<IModalSize>(({ theme: { palette, breakpoints }, size }) => ({
   display: 'flex',
-  height: 'auto',
+  height: 'fit-content',
   maxHeight: '90vh',
   width: '90vw',
   maxWidth: rem(600),

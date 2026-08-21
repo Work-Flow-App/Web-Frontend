@@ -19,7 +19,8 @@ export const MapSection = styled(Box)(({ theme }) => ({
   height: '100%',
 
   [theme.breakpoints.down('lg')]: {
-    minHeight: rem(500),
+    height: rem(500),
+    flex: 'none',
   },
 }));
 
@@ -31,7 +32,8 @@ export const SidePanel = styled(Box)(({ theme }) => ({
 
   [theme.breakpoints.down('lg')]: {
     width: '100%',
-    height: 'auto',
+    height: rem(500),
+    flex: 'none',
   },
 }));
 

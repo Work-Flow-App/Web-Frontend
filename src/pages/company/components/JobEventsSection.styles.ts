@@ -1,4 +1,6 @@
+import React from 'react';
 import { Box, Typography, Button, FormControl, Select, MenuItem as MuiMenuItem, Menu as MuiMenu, styled } from '@mui/material';
+import type { SelectProps } from '@mui/material';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
@@ -17,6 +19,12 @@ export const SectionHeader = styled(Box)(() => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   marginBottom: rem(4),
+  '@media (max-width: 600px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: rem(12),
+    marginBottom: rem(12),
+  },
 }));
 
 export const SectionTitle = styled(Typography)(({ theme }) => ({
@@ -45,14 +53,12 @@ export const PipelineBar = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: 0,
-  overflowX: 'auto',
+  overflowX: 'hidden',
   backgroundColor: theme.palette.colors?.white || theme.palette.background.paper,
   border: `1px solid ${theme.palette.colors?.grey_200 || '#e5e7eb'}`,
   borderRadius: rem(12),
   padding: `${rem(10)} ${rem(16)}`,
   boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-  '&::-webkit-scrollbar': { height: rem(3) },
-  '&::-webkit-scrollbar-thumb': { background: 'rgba(0,0,0,0.12)', borderRadius: rem(2) },
 }));
 
 export const PipelineChip = styled(Box, {
@@ -108,7 +114,7 @@ export const DropdownMenu = styled(MuiMenu)(() => ({
   pointerEvents: 'none',
   '& .MuiPaper-root': {
     pointerEvents: 'auto',
-    maxHeight: 300,
+    maxHeight: rem(300),
     width: '240px',
     borderRadius: rem(12),
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
@@ -390,13 +396,36 @@ export const HeaderRow = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',
   gap: rem(12),
+  '@media (max-width: 600px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: rem(8),
+    width: '100%',
+  },
 }));
 
 export const WorkflowFormControl = styled(FormControl)(() => ({
   minWidth: 180,
+  '@media (max-width: 600px)': {
+    width: '100%',
+  },
 }));
 
-export const WorkflowSelect = styled(Select)(() => ({
+export const WorkflowSelect = styled((props: SelectProps) =>
+  React.createElement(Select, {
+    ...props,
+    MenuProps: {
+      ...props.MenuProps,
+      PaperProps: {
+        ...props.MenuProps?.PaperProps,
+        sx: {
+          maxHeight: '25rem',
+          ...props.MenuProps?.PaperProps?.sx,
+        },
+      },
+    },
+  })
+)(() => ({
   fontSize: rem(13),
   fontWeight: 500,
   color: floowColors.text.primary,
