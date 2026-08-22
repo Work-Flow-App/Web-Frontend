@@ -63,7 +63,7 @@ export const ModalOverlay = styled(Box)(({ theme: { palette } }) => ({
 
 export const ModalContentWrapper = styled(Box)(() => ({
   display: 'flex',
-  height: '100%',
+  height: 'auto',
   width: '100%',
   flexDirection: 'column',
 }));
