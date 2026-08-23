@@ -7,7 +7,7 @@ import { DataTableBody } from './components/DataTableBody';
 import { Footer } from './components/Footer';
 import { MobileResponsive } from './components/MobileResponsive';
 import { Loader } from '../Loader';
-import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer, MobileResponsiveCardsContainer } from './Table.styles';
+import { TableWrapper, StyledTableContainer, StyledTable, StyledTableHead, StyledTableBody, HeaderActionsContainer, IndependentActionsContainer, MobileResponsiveCardsContainer, ToggleViewWrapper, ToggleSwitchTrack, ToggleSwitchThumb, ToggleSwitchText } from './Table.styles';
 
 /**
  * Enhanced Table component with context-based architecture
@@ -81,7 +81,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
   loading = false,
   emptyMessage = 'No data available',
   showPagination = true,
-  showTopPagination = true,
+  showTopPagination = false,
   maxPageButtons = 5,
   showPrevNext = true,
   showFirstLast = false,
@@ -93,10 +93,12 @@ const TableInner = <T extends ITableRow = ITableRow>({
   allColumnLabels,
   onVisibleColumnsChange,
   highlightedRowId,
+  view = true,
 }: Omit<IEnhancedTable<T>, 'columns' | 'data'> & {
   allColumnLabels?: string[];
   onVisibleColumnsChange?: (visible: string[]) => void;
 }) => {
+  const [currentView, setCurrentView] = useState<'card' | 'table'>('card');
   const hasTitleHeader = Boolean(title || titleActions);
 
   const { filteredRows } = useDataRow();
@@ -125,6 +127,15 @@ const TableInner = <T extends ITableRow = ITableRow>({
         />
       )}
 
+      <ToggleViewWrapper>
+        <ToggleSwitchTrack onClick={() => setCurrentView((v) => (v === 'card' ? 'table' : 'card'))}>
+          <ToggleSwitchText $active={currentView === 'table'}>
+            {currentView === 'card' ? 'Table' : 'Card'}
+          </ToggleSwitchText>
+          <ToggleSwitchThumb $active={currentView === 'table'} />
+        </ToggleSwitchTrack>
+      </ToggleViewWrapper>
+
 
       {/* Top Pagination */}
       {showTopPagination && (
@@ -136,7 +147,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
         />
       )}
 
-      <StyledTableContainer>
+      <StyledTableContainer className={`table-main-container ${currentView === 'table' ? 'mobile-show-table' : ''}`}>
         <StyledTable>
           {/* Column Headers */}
           <StyledTableHead>
@@ -171,8 +182,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
         </StyledTable>
       </StyledTableContainer>
 
-      {/* Mobile Responsive Cards View */}
-      <MobileResponsiveCardsContainer>
+      <MobileResponsiveCardsContainer className={currentView === 'card' ? 'mobile-show-card' : ''}>
         {loading && paginatedRows.length === 0 ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
             <Loader size={40} centered={false} />
@@ -194,6 +204,7 @@ const TableInner = <T extends ITableRow = ITableRow>({
               onActionClick={onActionClick}
               onRowClick={onRowClick}
               highlightedRowId={highlightedRowId}
+              showViewButton={view}
             />
           ))
         )}
@@ -220,8 +231,9 @@ const Table = <T extends ITableRow = ITableRow>({
   customiseColumns = false,
   onSelectionChange,
   selectedRows,
+  view = true,
   ...props
-}: IEnhancedTable<T>) => {
+}: IEnhancedTable<T> & { view?: boolean }) => {
   const allColumnLabels = useMemo(() => columns.map((c) => c.label), [columns]);
   const [visibleColumnLabels, setVisibleColumnLabels] = useState<string[]>(allColumnLabels);
 
@@ -242,6 +254,7 @@ const Table = <T extends ITableRow = ITableRow>({
         customiseColumns={customiseColumns}
         allColumnLabels={allColumnLabels}
         onVisibleColumnsChange={setVisibleColumnLabels}
+        view={view}
         {...props} 
       />
     </DataTableContextProvider>

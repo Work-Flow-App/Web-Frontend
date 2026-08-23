@@ -63,14 +63,19 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
   const isEditMode = !!editAssignment;
   const isCustomLocation = locationType === AssetAssignmentCreateRequestExplicitLocationTypeEnum.Custom;
 
-  // Prefill the custom address fields once, when editing an assignment that already has one
+  // Prefill the custom address fields once, when editing an assignment that already has one.
+  // Was only ever setting `customAddressStreet` (to a composed street+city+state+
+  // postcode+country string, which then got resaved as "street" verbatim — the
+  // duplicated-address bug) while leaving customAddressCity/State/PostalCode/Country
+  // blank, so re-saving without touching the map silently dropped the postal code.
   useEffect(() => {
     const addr = editAssignment?.address;
     if (!addr) return;
-    methods.setValue(
-      'customAddressStreet',
-      [addr.street, addr.city, addr.state, addr.postalCode, addr.country].filter(Boolean).join(', ')
-    );
+    methods.setValue('customAddressStreet', addr.street || '');
+    methods.setValue('customAddressCity', addr.city || '');
+    methods.setValue('customAddressState', addr.state || '');
+    methods.setValue('customAddressPostalCode', addr.postalCode || '');
+    methods.setValue('customAddressCountry', addr.country || '');
     methods.setValue('customAddressLatitude', addr.latitude ?? null);
     methods.setValue('customAddressLongitude', addr.longitude ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps

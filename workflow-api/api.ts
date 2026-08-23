@@ -67,6 +67,7 @@ export interface AssetAssignmentResponse {
     'assignmentId'?: number;
     'assetId'?: number;
     'jobId'?: number;
+    'jobRef'?: number;
     'assignedWorkerId'?: number;
     'assetName'?: string;
     'description'?: string;
@@ -261,6 +262,7 @@ export interface CompanyDashboardResponse {
     'totalClients'?: number;
     'activeWorkers'?: number;
     'archivedWorkers'?: number;
+    'usageSummary'?: UsageSummaryResponse;
 }
 export interface CompanyDocumentResponse {
     'id'?: number;
@@ -387,6 +389,20 @@ export const CompanyProfileUpdateRequestCurrencyEnum = {
 } as const;
 
 export type CompanyProfileUpdateRequestCurrencyEnum = typeof CompanyProfileUpdateRequestCurrencyEnum[keyof typeof CompanyProfileUpdateRequestCurrencyEnum];
+
+export interface CreateCheckoutSessionRequest {
+    'planType': CreateCheckoutSessionRequestPlanTypeEnum;
+    'extraSeats'?: number;
+    'extraStorageBlocks'?: number;
+}
+
+export const CreateCheckoutSessionRequestPlanTypeEnum = {
+    Free: 'FREE',
+    Starter: 'STARTER',
+    Professional: 'PROFESSIONAL'
+} as const;
+
+export type CreateCheckoutSessionRequestPlanTypeEnum = typeof CreateCheckoutSessionRequestPlanTypeEnum[keyof typeof CreateCheckoutSessionRequestPlanTypeEnum];
 
 export interface CustomerAddressDto {
     'houseNumber'?: string;
@@ -1393,6 +1409,17 @@ export const SubscriptionStatusResponseStatusEnum = {
 
 export type SubscriptionStatusResponseStatusEnum = typeof SubscriptionStatusResponseStatusEnum[keyof typeof SubscriptionStatusResponseStatusEnum];
 
+export interface UsageSummaryResponse {
+    'jobsUsedThisMonth'?: number;
+    'jobsLimit'?: number;
+    'jobsWarningThresholdReached'?: boolean;
+    'storageUsedBytes'?: number;
+    'storageLimitBytes'?: number;
+    'storageWarningThresholdReached'?: boolean;
+    'activeWorkers'?: number;
+    'seatsLimit'?: number;
+    'seatsWarningThresholdReached'?: boolean;
+}
 export interface VerifyEmailRequest {
     'token': string;
     'tid'?: string;
@@ -4262,6 +4289,39 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetUsage: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/usage`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {number} documentId 
          * @param {string} [title] 
          * @param {string} [description] 
@@ -4663,6 +4723,17 @@ export const CompanyApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async companyGetUsage(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UsageSummaryResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyGetUsage(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.companyGetUsage']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {number} documentId 
          * @param {string} [title] 
          * @param {string} [description] 
@@ -4815,6 +4886,14 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        companyGetUsage(options?: RawAxiosRequestConfig): AxiosPromise<UsageSummaryResponse> {
+            return localVarFp.companyGetUsage(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {number} documentId 
          * @param {string} [title] 
          * @param {string} [description] 
@@ -4954,6 +5033,15 @@ export class CompanyApi extends BaseAPI {
      */
     public companyGetProfile(options?: RawAxiosRequestConfig) {
         return CompanyApiFp(this.configuration).companyGetProfile(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public companyGetUsage(options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).companyGetUsage(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10500,6 +10588,49 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        jobPatch: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('jobPatch', 'id', id)
+            // verify required parameter 'jobUpdateRequest' is not null or undefined
+            assertParamExists('jobPatch', 'jobUpdateRequest', jobUpdateRequest)
+            const localVarPath = `/api/v1/jobs/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(jobUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         jobUpdate: async (id: number, jobUpdateRequest: JobUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('jobUpdate', 'id', id)
@@ -10646,6 +10777,19 @@ export const JobsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
+        async jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.jobPatch(id, jobUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
         async jobUpdate(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<JobResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.jobUpdate(id, jobUpdateRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -10733,6 +10877,16 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
          */
         jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<JobResponse>> {
             return localVarFp.jobGetJobsByTemplate(templateId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {JobUpdateRequest} jobUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<JobResponse> {
+            return localVarFp.jobPatch(id, jobUpdateRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -10829,6 +10983,17 @@ export class JobsApi extends BaseAPI {
      */
     public jobGetJobsByTemplate(templateId: number, options?: RawAxiosRequestConfig) {
         return JobsApiFp(this.configuration).jobGetJobsByTemplate(templateId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {JobUpdateRequest} jobUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public jobPatch(id: number, jobUpdateRequest: JobUpdateRequest, options?: RawAxiosRequestConfig) {
+        return JobsApiFp(this.configuration).jobPatch(id, jobUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -11619,10 +11784,13 @@ export const SubscriptionApiAxiosParamCreator = function (configuration?: Config
         },
         /**
          * 
+         * @param {CreateCheckoutSessionRequest} createCheckoutSessionRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        subscriptionCreateCheckoutSession: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        subscriptionCreateCheckoutSession: async (createCheckoutSessionRequest: CreateCheckoutSessionRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'createCheckoutSessionRequest' is not null or undefined
+            assertParamExists('subscriptionCreateCheckoutSession', 'createCheckoutSessionRequest', createCheckoutSessionRequest)
             const localVarPath = `/api/v1/companies/subscription/checkout`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -11641,9 +11809,12 @@ export const SubscriptionApiAxiosParamCreator = function (configuration?: Config
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createCheckoutSessionRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -11738,11 +11909,12 @@ export const SubscriptionApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {CreateCheckoutSessionRequest} createCheckoutSessionRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: string; }>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionCreateCheckoutSession(options);
+        async subscriptionCreateCheckoutSession(createCheckoutSessionRequest: CreateCheckoutSessionRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: string; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionCreateCheckoutSession(createCheckoutSessionRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionCreateCheckoutSession']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -11788,11 +11960,12 @@ export const SubscriptionApiFactory = function (configuration?: Configuration, b
         },
         /**
          * 
+         * @param {CreateCheckoutSessionRequest} createCheckoutSessionRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: string; }> {
-            return localVarFp.subscriptionCreateCheckoutSession(options).then((request) => request(axios, basePath));
+        subscriptionCreateCheckoutSession(createCheckoutSessionRequest: CreateCheckoutSessionRequest, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: string; }> {
+            return localVarFp.subscriptionCreateCheckoutSession(createCheckoutSessionRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -11828,11 +12001,12 @@ export class SubscriptionApi extends BaseAPI {
 
     /**
      * 
+     * @param {CreateCheckoutSessionRequest} createCheckoutSessionRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public subscriptionCreateCheckoutSession(options?: RawAxiosRequestConfig) {
-        return SubscriptionApiFp(this.configuration).subscriptionCreateCheckoutSession(options).then((request) => request(this.axios, this.basePath));
+    public subscriptionCreateCheckoutSession(createCheckoutSessionRequest: CreateCheckoutSessionRequest, options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionCreateCheckoutSession(createCheckoutSessionRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

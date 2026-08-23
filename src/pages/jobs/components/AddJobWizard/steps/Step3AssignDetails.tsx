@@ -119,18 +119,35 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
   // Selected location from the map search
   const [selectedLocation, setSelectedLocation] = useState<PlaceDetails | null>(
     initialData.address
-      ? {
-          address: initialData.address.fullAddress,
-          location: {
-            lat: initialData.address.latitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lat,
-            lng: initialData.address.longitude ?? GOOGLE_MAPS_CONFIG.defaultCenter.lng,
-          },
-        }
+      ? initialData.address.latitude != null && initialData.address.longitude != null
+        ? {
+            address: initialData.address.fullAddress,
+            location: {
+              lat: initialData.address.latitude,
+              lng: initialData.address.longitude,
+            },
+          }
+        : {
+            // No real coordinates were saved (a manual/ungeocoded address) — rebuild this
+            // as isManualAddressOnly rather than substituting the default center as if it
+            // were a real point, otherwise a Back-then-Next (or reopening this job in edit
+            // mode) would silently re-fabricate and re-save a fake "real" location.
+            address: initialData.address.fullAddress,
+            location: { lat: 0, lng: 0 },
+            isManualAddressOnly: true,
+          }
       : null
   );
 
-  const mapCenter = selectedLocation?.location ?? GOOGLE_MAPS_CONFIG.defaultCenter;
-  const mapZoom = selectedLocation ? 15 : GOOGLE_MAPS_CONFIG.defaultZoom;
+  // When Google can't geocode a typed/pasted address, `isManualAddressOnly` is true and
+  // `location` is a placeholder {lat: 0, lng: 0} — not a real point. Keep the full place
+  // (including the typed address text) in `selectedLocation` since it's also the source
+  // for the address payload below, but derive a separate "real point to show a pin for"
+  // value so the map never centers/markers on that fake point (mirrors LocationMapField.tsx
+  // / CustomAddressField.tsx).
+  const mapPin = selectedLocation && !selectedLocation.isManualAddressOnly ? selectedLocation : null;
+  const mapCenter = mapPin?.location ?? GOOGLE_MAPS_CONFIG.defaultCenter;
+  const mapZoom = mapPin ? 15 : GOOGLE_MAPS_CONFIG.defaultZoom;
 
   const handleLocationSelect = (place: PlaceDetails) => {
     setSelectedLocation(place);
@@ -194,8 +211,10 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
               state: selectedLocation.state,
               postalCode: selectedLocation.postalCode,
               country: selectedLocation.country,
-              latitude: selectedLocation.location.lat,
-              longitude: selectedLocation.location.lng,
+              // Never write the {0,0} placeholder as if it were a real geocoded point —
+              // see the isManualAddressOnly comment on mapCenter/mapZoom above.
+              latitude: selectedLocation.isManualAddressOnly ? null : selectedLocation.location.lat,
+              longitude: selectedLocation.isManualAddressOnly ? null : selectedLocation.location.lng,
             }
           : undefined,
       });
@@ -273,9 +292,10 @@ export const Step3AssignDetails: React.FC<Step3Props> = ({ onStepComplete, initi
             <GoogleMap
               center={mapCenter}
               zoom={mapZoom}
-              markers={selectedLocation ? [selectedLocation] : []}
-              selectedLocation={selectedLocation}
+              markers={mapPin ? [mapPin] : []}
+              selectedLocation={mapPin}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox
               searchInitialValue={selectedLocation?.address}
               height="300px"

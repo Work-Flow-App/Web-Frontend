@@ -6,6 +6,7 @@ import { assetService } from '../../../../services/api';
 import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import { formatAddress } from '../../../../utils/googleGeocoding';
 import * as M from '../../styles/WorkerMobile.styles';
 import * as S from './AssetDetailModal.styles';
 
@@ -13,11 +14,6 @@ export interface AssetDetailModalProps {
   assetId: number;
   assetName?: string;
 }
-
-const formatAddress = (addr?: AssetResponse['address']): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.state, addr.postalCode, addr.country].filter(Boolean).join(', ');
-};
 
 /**
  * Worker self-service: read-only full detail of an asset assigned to them

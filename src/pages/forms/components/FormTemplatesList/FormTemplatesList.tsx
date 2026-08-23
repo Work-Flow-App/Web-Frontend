@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
@@ -8,6 +7,8 @@ import type { FormTemplateRequest } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { FormTemplateMetaForm } from '../FormTemplateMetaForm';
+import { CreateFormTemplateForm } from '../CreateFormTemplateForm';
+import { EditFormTemplateFieldsForm } from '../EditFormTemplateFieldsForm';
 import { VersionHistoryModal } from '../VersionHistoryModal';
 import { formTemplateColumns, mapTemplateToRow, type FormTemplateTableRow } from './DataColumn';
 
@@ -17,7 +18,6 @@ export interface FormTemplatesListHandle {
 
 /** Ref-exposed so FormsPage can drive "Create Template" from the shared PageWrapper header action. */
 export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, ref) => {
-  const navigate = useNavigate();
   const { showSuccess, showError } = useSnackbar();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const [templates, setTemplates] = useState<FormTemplateRequest[]>([]);
@@ -49,22 +49,16 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
       size: ModalSizes.MEDIUM,
       fieldName: 'createFormTemplate',
       children: (
-        <FormTemplateMetaForm
+        <CreateFormTemplateForm
           isModal
-          deferCreate
-          onSuccess={(draft) => {
+          onSuccess={() => {
             resetGlobalModalOuterProps();
-            // Nothing is persisted yet - the builder page creates the template once fields are
-            // added, so the first version already has real fields instead of an empty one that
-            // immediately gets archived and replaced.
-            navigate('/company/forms/templates/new/builder', {
-              state: { name: draft.name, description: draft.description },
-            });
+            fetchTemplates();
           }}
         />
       ),
     });
-  }, [navigate, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+  }, [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates]);
 
   useImperativeHandle(ref, () => ({ openCreate: handleCreate }), [handleCreate]);
 
@@ -123,9 +117,28 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
     [showSuccess, showError, fetchTemplates, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
-  const handleRowClick = useCallback(
-    (row: FormTemplateTableRow) => navigate(`/company/forms/templates/${row.id}/builder`),
-    [navigate]
+  const handleEditFields = useCallback(
+    (row: FormTemplateTableRow) => {
+      const template = templates.find((t) => t.id === row.id);
+      if (!template) return;
+
+      setGlobalModalOuterProps({
+        isOpen: true,
+        size: ModalSizes.MEDIUM,
+        fieldName: 'editFormTemplateFields',
+        children: (
+          <EditFormTemplateFieldsForm
+            isModal
+            template={template}
+            onSuccess={() => {
+              resetGlobalModalOuterProps();
+              fetchTemplates();
+            }}
+          />
+        ),
+      });
+    },
+    [templates, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchTemplates]
   );
 
   const handleViewHistory = useCallback(
@@ -142,12 +155,12 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
 
   const actions: ITableAction<FormTemplateTableRow>[] = useMemo(
     () => [
-      { id: 'edit', label: 'Edit Fields', onClick: handleRowClick },
+      { id: 'edit', label: 'Edit Fields', onClick: handleEditFields },
       { id: 'rename', label: 'Rename', onClick: handleRename },
       { id: 'history', label: 'Version History', onClick: handleViewHistory },
       { id: 'delete', label: 'Delete', onClick: handleDelete, color: 'error' as const },
     ],
-    [handleRowClick, handleRename, handleViewHistory, handleDelete]
+    [handleEditFields, handleRename, handleViewHistory, handleDelete]
   );
 
   return (
@@ -158,7 +171,7 @@ export const FormTemplatesList = forwardRef<FormTemplatesListHandle>((_props, re
       enableStickyLeft
       showActions
       actions={actions}
-      onRowClick={handleRowClick}
+      onRowClick={handleEditFields}
       loading={loading}
       emptyMessage="No form templates yet. Create your first template to get started."
       rowsPerPage={10}

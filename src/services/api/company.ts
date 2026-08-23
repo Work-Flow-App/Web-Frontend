@@ -19,6 +19,7 @@ export type {
   CompanyPostUpdateRequest,
   CompanyPostAttachmentResponse,
   PublicCompanyProfileResponse,
+  UsageSummaryResponse,
 } from '../../../workflow-api';
 
 export interface CompanyDocumentUploadPayload {
@@ -62,6 +63,10 @@ export const companyService = {
 
   async getDashboard() {
     return await getCompanyApi().companyGetDashboard();
+  },
+
+  async getUsage() {
+    return await getCompanyApi().companyGetUsage();
   },
 
   /**

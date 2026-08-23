@@ -1,4 +1,5 @@
 import type { ITableColumn } from '../../../../components/UI/Table/ITable';
+import { FIELD_TYPE_OPTIONS } from '../../../../enums';
 
 export interface FieldTableRow {
   id: number;
@@ -32,6 +33,7 @@ export const fieldColumns: ITableColumn<FieldTableRow>[] = [
     accessor: 'jobFieldType',
     sortable: true,
     width: 'auto',
+    render: (row) => FIELD_TYPE_OPTIONS.find((o) => o.value === row.jobFieldType)?.label || row.jobFieldType,
   },
   {
     id: 'required',

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { JobResponse, JobTemplateFieldResponse } from '../../../../../services/api';
 import { extractFieldValue } from '../../../../../utils/fieldValueHelper';
+import { isAddressField, formatAddressFieldValue } from '../../../../../utils/customAddressField';
 import * as S from '../../../JobDetailsPage.styles';
 
 interface JobCustomFieldsTabProps {
@@ -43,10 +44,11 @@ export const JobCustomFieldsTab: React.FC<JobCustomFieldsTabProps> = ({ job, tem
                       <S.FieldsGroupTitle>Required Fields</S.FieldsGroupTitle>
                       {requiredFields.map(([key, fieldValueResponse]) => {
                         const fieldDef = fieldDefinitionMap.get(key);
-                        const value = extractFieldValue(fieldValueResponse);
+                        const isAddress = isAddressField(fieldDef);
+                        const value = isAddress ? formatAddressFieldValue(fieldValueResponse) : extractFieldValue(fieldValueResponse);
 
                         const label = fieldDef?.label || key;
-                        const fieldType = fieldDef?.jobFieldType || 'TEXT';
+                        const fieldType = isAddress ? 'ADDRESS' : fieldDef?.jobFieldType || 'TEXT';
 
                         return (
                           <S.DetailRow key={key}>
@@ -70,10 +72,11 @@ export const JobCustomFieldsTab: React.FC<JobCustomFieldsTabProps> = ({ job, tem
                       )}
                       {optionalFields.map(([key, fieldValueResponse]) => {
                         const fieldDef = fieldDefinitionMap.get(key);
-                        const value = extractFieldValue(fieldValueResponse);
+                        const isAddress = isAddressField(fieldDef);
+                        const value = isAddress ? formatAddressFieldValue(fieldValueResponse) : extractFieldValue(fieldValueResponse);
 
                         const label = fieldDef?.label || key;
-                        const fieldType = fieldDef?.jobFieldType || 'TEXT';
+                        const fieldType = isAddress ? 'ADDRESS' : fieldDef?.jobFieldType || 'TEXT';
 
                         return (
                           <S.DetailRow key={key}>

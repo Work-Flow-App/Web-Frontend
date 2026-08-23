@@ -8,6 +8,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { fieldColumns, type FieldTableRow } from './FieldsDataColumn';
 import { FieldForm } from '../FieldForm/FieldForm';
+import { isAddressField } from '../../../../utils/customAddressField';
 
 interface TemplateFieldsProps {
   templateId: number;
@@ -38,9 +39,10 @@ export const TemplateFields = forwardRef<TemplateFieldsRef, TemplateFieldsProps>
         templateId: field.templateId,
         name: field.name || '',
         label: field.label || '',
-        jobFieldType: field.jobFieldType || 'TEXT',
+        jobFieldType: isAddressField(field) ? 'ADDRESS' : field.jobFieldType || 'TEXT',
         required: field.required || false,
-        options: field.options,
+        // Don't leak the internal ADDRESS_FIELD_MARKER sentinel into the Options column.
+        options: isAddressField(field) ? undefined : field.options,
         orderIndex: field.orderIndex,
       }));
 

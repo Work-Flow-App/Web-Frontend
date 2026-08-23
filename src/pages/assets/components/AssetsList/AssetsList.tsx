@@ -5,17 +5,13 @@ import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
 import { assetService, AssetResponseLocationTypeEnum } from '../../../../services/api';
-import type { AssetResponse, AddressResponse } from '../../../../services/api';
+import type { AssetResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateAssetColumns, type AssetTableRow } from './DataColumn';
 import { AssetForm } from '../AssetForm';
-
-const formatAddress = (addr?: AddressResponse): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
-};
+import { formatAddress } from '../../../../utils/googleGeocoding';
 
 const formatAssetLocation = (asset: AssetResponse): string => {
   switch (asset.locationType) {

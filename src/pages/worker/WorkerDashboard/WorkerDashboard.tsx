@@ -19,6 +19,7 @@ import { workerJobWorkflowService } from '../../../services/api';
 import type { WorkerAssignedStepResponse } from '../../../services/api';
 import { JobWorkflowStepResponseStatusEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { formatAddress } from '../../../utils/googleGeocoding';
 import * as M from '../styles/WorkerMobile.styles';
 
 type StatusKey =
@@ -126,11 +127,6 @@ interface LocationItem {
   stepId?: number;
   jobRef?: number;
 }
-
-const formatAddress = (addr?: WorkerAssignedStepResponse['jobAddress']): string => {
-  if (!addr) return '';
-  return [addr.street, addr.city, addr.postalCode, addr.country].filter(Boolean).join(', ');
-};
 
 // Map worker status → marker color bucket used by the shared GoogleMap component
 const toMarkerStatus = (status: StatusKey): string => {

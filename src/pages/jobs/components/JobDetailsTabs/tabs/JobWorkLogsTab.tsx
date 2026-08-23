@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { CircularProgress, Tooltip, IconButton } from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { CircularProgress, Tooltip, IconButton, useMediaQuery, useTheme, Box, Typography, ClickAwayListener } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import type {
   JobResponse,
   JobWorkflowStepResponse,
@@ -17,7 +16,6 @@ import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
 import { AddWorkLogModal } from './AddWorkLogModal';
 import { getStepColor } from './StepActivityTab.utils';
-import { rem } from '../../../../../components/UI/Typography/utility';
 import * as WS from './JobWorkLogsTab.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -58,6 +56,10 @@ const formatTime = (timeString?: string): string => {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isPipelineExpanded, setIsPipelineExpanded] = useState(false);
+
   const { showSuccess, showError } = useSnackbar();
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
 
@@ -73,8 +75,6 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [popupLog, setPopupLog] = useState<StepVisitLogResponse | null>(null);
-  // Vertical centre (px from viewport top) of the row that was clicked
-  const [popupY, setPopupY] = useState<number>(0);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -209,23 +209,12 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
     }
   }, [searchOpen]);
 
-  const handleSearchBlur = useCallback(() => {
-    // Small delay so that Enter-key submit can clear state before blur fires
-    setTimeout(() => {
-      setSearchOpen(false);
-      setSearchValue('');
-    }, 120);
-  }, []);
+
 
   // ── Modal helpers ────────────────────────────────────────────────────────────
 
   const handleRowClick = useCallback(
-    (log: StepVisitLogResponse, e: React.MouseEvent<HTMLTableRowElement>) => {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const rawY = rect.top + rect.height / 2;
-      // Clamp so the popup card (est. ~100px tall) never overflows the viewport
-      const clampedY = Math.max(60, Math.min(rawY, window.innerHeight - 60));
-      setPopupY(clampedY);
+    (log: StepVisitLogResponse) => {
       setPopupLog(log);
     },
     []
@@ -269,10 +258,10 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
 
   if (!steps.length) {
     return (
-      <WS.EmptyFeedBox sx={{ minHeight: 300 }}>
-        <AccessTimeIcon sx={{ fontSize: rem(48), color: 'grey.200' }} />
+      <WS.WorkLogsEmptyFeedBox>
+        <WS.EmptyFeedIcon />
         <span>No workflow steps found for this job.</span>
-      </WS.EmptyFeedBox>
+      </WS.WorkLogsEmptyFeedBox>
     );
   }
 
@@ -281,85 +270,123 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
   return (
     <WS.WorkLogsOuterLayout>
 
-      {/* ── Left Steps Rail ───────────────────────────────────────────────── */}
-      <WS.StepsRail>
-        <WS.StepsRailHeader>
-          <WS.StepsRailTitle>STEPS</WS.StepsRailTitle>
-
-          {/* Search icon + expanding input */}
-          <WS.StepSearchWrapper>
-            <Tooltip title={searchOpen ? 'Close' : 'Jump to step'} placement="right">
-              <IconButton
-                size="medium"
-                onClick={handleSearchIconClick}
-                sx={{ width: rem(32), height: rem(32), padding: 0 }}
-              >
-                <SearchIcon sx={{ fontSize: rem(20) }} />
-              </IconButton>
-            </Tooltip>
-
-            {searchOpen && (
-              <WS.StepSearchInput
-                ref={searchInputRef}
-                type="number"
-                value={searchValue}
-                placeholder="#"
-                min={1}
-                max={steps.length}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSearchSubmit();
-                  if (e.key === 'Escape') {
-                    setSearchOpen(false);
-                    setSearchValue('');
-                  }
-                }}
-                onBlur={handleSearchBlur}
-              />
-            )}
-          </WS.StepSearchWrapper>
-        </WS.StepsRailHeader>
-
-        {/* Step circles with connectors */}
-        <WS.StepsBubbleList>
-          {/* ALL Bubble */}
-          <WS.StepBubbleItem>
-            <Tooltip title="All Work Logs" placement="right" arrow>
-              <WS.AllStepCircle
-                isActive={selectedStepId === 'all'}
-                stepColor="#101a32"
-                onClick={() => setSelectedStepId('all')}
-              >
-                ALL
-              </WS.AllStepCircle>
-            </Tooltip>
-            {steps.length > 0 && <WS.StepConnector />}
-          </WS.StepBubbleItem>
-
-          {/* Individual steps */}
-          {steps.map((step, idx) => {
-            const isActive = selectedStepId === step.id;
-            return (
-              <WS.StepBubbleItem key={step.id}>
-                <Tooltip
-                  title={`${idx + 1}. ${step.name || `Step ${idx + 1}`}`}
-                  placement="right"
-                  arrow
-                >
-                  <WS.StepCircle
-                    isActive={isActive}
-                    stepColor={getStepColor(idx)}
-                    onClick={() => step.id && setSelectedStepId(step.id)}
+      <ClickAwayListener onClickAway={() => {
+        if (isMobile && isPipelineExpanded) {
+          setIsPipelineExpanded(false);
+        }
+      }}>
+        <WS.StepsRail $expanded={isMobile ? isPipelineExpanded : undefined}>
+          <WS.StepsRailHeader>
+            <WS.StepsRailTitle>STEPS</WS.StepsRailTitle>
+   
+            {/* Search icon + expanding input */}
+            <ClickAwayListener onClickAway={() => {
+              if (searchOpen) {
+                setSearchOpen(false);
+                setSearchValue('');
+              }
+            }}>
+              <WS.StepSearchWrapper>
+                <Tooltip title={searchOpen ? 'Close' : 'Jump to step'} placement="right">
+                  <WS.JumpToStepButton
+                    size="medium"
+                    onClick={handleSearchIconClick}
                   >
-                    {idx + 1}
-                  </WS.StepCircle>
+                    <WS.SearchStepIcon />
+                  </WS.JumpToStepButton>
                 </Tooltip>
-                {idx < steps.length - 1 && <WS.StepConnector />}
-              </WS.StepBubbleItem>
-            );
-          })}
-        </WS.StepsBubbleList>
-      </WS.StepsRail>
+   
+                <WS.SearchSlideOut $open={searchOpen}>
+                  <WS.SearchSlideOutInput
+                    ref={searchInputRef}
+                    type="number"
+                    value={searchValue}
+                    placeholder="#"
+                    min={1}
+                    max={steps.length}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearchSubmit();
+                      if (e.key === 'Escape') {
+                        setSearchOpen(false);
+                        setSearchValue('');
+                      }
+                    }}
+                  />
+                  <WS.SearchCheckButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSearchSubmit();
+                    }}
+                    aria-label="Confirm search"
+                  >
+                    <CheckIcon sx={{ fontSize: '1.1rem' }} />
+                  </WS.SearchCheckButton>
+                </WS.SearchSlideOut>
+              </WS.StepSearchWrapper>
+            </ClickAwayListener>
+          </WS.StepsRailHeader>
+   
+          {/* Step circles with connectors */}
+          <WS.StepsBubbleList>
+            {/* ALL Bubble */}
+            <WS.StepBubbleItem>
+              <Tooltip title="All Work Logs" placement="right" arrow>
+                <WS.AllStepCircle
+                  isActive={selectedStepId === 'all'}
+                  stepColor="#101a32"
+                  onClick={() => {
+                    setSelectedStepId('all');
+                    if (isMobile) setIsPipelineExpanded(false);
+                  }}
+                >
+                  ALL
+                </WS.AllStepCircle>
+              </Tooltip>
+              {(!isMobile || isPipelineExpanded) && steps.length > 0 && <WS.StepConnector />}
+            </WS.StepBubbleItem>
+   
+            {/* Individual steps */}
+            {(!isMobile || isPipelineExpanded) && steps.map((step, idx) => {
+              const isActive = selectedStepId === step.id;
+              return (
+                <WS.StepBubbleItem key={step.id}>
+                  <Tooltip
+                    title={`${idx + 1}. ${step.name || `Step ${idx + 1}`}`}
+                    placement="right"
+                    arrow
+                  >
+                    <WS.StepCircle
+                      isActive={isActive}
+                      stepColor={getStepColor(idx)}
+                      onClick={() => {
+                        if (step.id) {
+                          setSelectedStepId(step.id);
+                          if (isMobile) setIsPipelineExpanded(false);
+                        }
+                      }}
+                    >
+                      {idx + 1}
+                    </WS.StepCircle>
+                  </Tooltip>
+                  {idx < steps.length - 1 && <WS.StepConnector />}
+                </WS.StepBubbleItem>
+              );
+            })}
+          </WS.StepsBubbleList>
+   
+          {/* Mobile expand/collapse arrow */}
+          {isMobile && (
+            <WS.RailArrowButton
+              onClick={() => setIsPipelineExpanded(!isPipelineExpanded)}
+              aria-label={isPipelineExpanded ? 'Collapse steps' : 'Expand steps'}
+            >
+              {isPipelineExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </WS.RailArrowButton>
+          )}
+        </WS.StepsRail>
+      </ClickAwayListener>
 
       {/* ── Right Content Column ──────────────────────────────────────────── */}
       <WS.WorkLogsLayout>
@@ -368,7 +395,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         <WS.SummarySection>
           <WS.TrackingBox>
             <WS.TimerIconBox>
-              <AccessTimeIcon sx={{ fontSize: rem(32), color: 'white' }} />
+              <WS.TimerIcon />
             </WS.TimerIconBox>
             <WS.TrackingInfo>
               <WS.TrackingLabel>
@@ -385,7 +412,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
               <WS.StatLabel>Total Hours</WS.StatLabel>
               <WS.StatValue>{summary.totalHours.toFixed(1)}h</WS.StatValue>
             </WS.StatBox>
-            <WS.AddLogBox>
+            <WS.AddLogBox sx={{ gridColumn: isMobile ? 'span 3' : 'auto', order: isMobile ? 4 : 0 }}>
               <Button
                 size="medium"
                 startIcon={<AddIcon />}
@@ -410,103 +437,186 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         {/* ── Table Section ────────────────────────────────────────────────── */}
         <WS.TableSectionTitle>Recent Entries</WS.TableSectionTitle>
         <WS.TableContainer>
-          <WS.Table>
-            <thead>
-              {/* Header row — not clickable */}
-              <WS.Tr>
-                <WS.Th>Date</WS.Th>
-                <WS.Th>Who</WS.Th>
-                <WS.Th>Start → End</WS.Th>
-                <WS.Th>Duration</WS.Th>
-                {selectedStepId === 'all' && <WS.Th>Step</WS.Th>}
-                <WS.Th>Notes</WS.Th>
-                <WS.Th>Action</WS.Th>
-              </WS.Tr>
-            </thead>
-            <tbody>
-              {loadingLogs ? (
-                <tr>
-                  <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
-                    <CircularProgress size={20} />
-                  </WS.EmptyStateRow>
-                </tr>
-              ) : visitLogs.length === 0 ? (
-                <tr>
-                  <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
-                    No WorkLog Available
-                  </WS.EmptyStateRow>
-                </tr>
-              ) : (
-                visitLogs.map((log) => {
-                  const username = (log as Record<string, any>).loggedByUsername || '-';
-                  const initials = username !== '-'
-                    ? username.substring(0, 2).toUpperCase()
-                    : '?';
+          {isMobile ? (
+            loadingLogs ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4, width: '100%' }}>
+                <CircularProgress size={20} />
+              </Box>
+            ) : visitLogs.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4, width: '100%', display: 'block' }}>
+                No WorkLog Available
+              </Typography>
+            ) : (
+              visitLogs.map((log) => {
+                const username = (log as Record<string, any>).loggedByUsername || '-';
+                const initials = username !== '-'
+                  ? username.substring(0, 2).toUpperCase()
+                  : '?';
 
-                  return (
-                    /* Data row — clicking anywhere opens the popup */
-                    <WS.DataTr
-                      key={log.id}
-                      onClick={(e) => handleRowClick(log, e)}
-                    >
-                      <WS.Td>{formatDate(log.visitDate)}</WS.Td>
-
-                      <WS.Td>
-                        <WS.UserBadge>
-                          <WS.UserAvatar>{initials}</WS.UserAvatar>
+                return (
+                  <WS.WorkLogMobileCard
+                    key={log.id}
+                    onClick={() => handleRowClick(log)}
+                  >
+                    <WS.WorkLogCardHeader>
+                      <WS.WorkLogCardHeaderLeft>
+                        <WS.UserAvatar>{initials}</WS.UserAvatar>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                           {username}
-                        </WS.UserBadge>
-                      </WS.Td>
+                        </Typography>
+                      </WS.WorkLogCardHeaderLeft>
+                      <Box sx={{ display: 'flex', gap: 0.5 }} onClick={(e) => e.stopPropagation()}>
+                        <IconButton size="small" onClick={() => openModal(log)} aria-label="Edit">
+                          <WS.ActionEditIcon />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => log.id && handleDelete(log.id)} aria-label="Delete">
+                          <WS.ActionDeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </WS.WorkLogCardHeader>
 
-                      <WS.Td>
-                        {formatTime(log.timeIn)} → {formatTime(log.timeOut)}
-                      </WS.Td>
-
-                      <WS.Td>
+                    <WS.WorkLogCardBody>
+                      <WS.WorkLogCardRow>
+                        <Typography variant="body2" color="text.secondary">
+                          Date:
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {formatDate(log.visitDate)}
+                        </Typography>
+                      </WS.WorkLogCardRow>
+                      <WS.WorkLogCardRow>
+                        <Typography variant="body2" color="text.secondary">
+                          Time:
+                        </Typography>
+                        <Typography variant="body2">
+                          {formatTime(log.timeIn)} → {formatTime(log.timeOut)}
+                        </Typography>
+                      </WS.WorkLogCardRow>
+                      <WS.WorkLogCardRow>
+                        <Typography variant="body2" color="text.secondary">
+                          Duration:
+                        </Typography>
                         <WS.DurationText>{formatMinutes(log.workedMinutes)}</WS.DurationText>
-                      </WS.Td>
-
+                      </WS.WorkLogCardRow>
                       {selectedStepId === 'all' && (
-                        <WS.Td>
-                          <WS.StepNameText>
-                            {(log as any).stepName || '-'}
-                          </WS.StepNameText>
-                        </WS.Td>
+                        <WS.WorkLogCardRow>
+                          <Typography variant="body2" color="text.secondary">
+                            Step:
+                          </Typography>
+                          <WS.StepNameText>{(log as any).stepName || '-'}</WS.StepNameText>
+                        </WS.WorkLogCardRow>
                       )}
+                      {log.description && (
+                        <Box sx={{ mt: 0.5, pt: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
+                          <WS.WorkLogCardDescription>
+                            {log.description}
+                          </WS.WorkLogCardDescription>
+                        </Box>
+                      )}
+                    </WS.WorkLogCardBody>
+                  </WS.WorkLogMobileCard>
+                );
+              })
+            )
+          ) : (
+            <WS.Table>
+              <thead>
+                {/* Header row — not clickable */}
+                <WS.Tr>
+                  <WS.Th>Date</WS.Th>
+                  <WS.Th>Who</WS.Th>
+                  <WS.Th>Start → End</WS.Th>
+                  <WS.Th>Duration</WS.Th>
+                  {selectedStepId === 'all' && <WS.Th>Step</WS.Th>}
+                  <WS.Th>Notes</WS.Th>
+                  <WS.Th>Action</WS.Th>
+                </WS.Tr>
+              </thead>
+              <tbody>
+                {loadingLogs ? (
+                  <tr>
+                    <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
+                      <CircularProgress size={20} />
+                    </WS.EmptyStateRow>
+                  </tr>
+                ) : visitLogs.length === 0 ? (
+                  <tr>
+                    <WS.EmptyStateRow colSpan={selectedStepId === 'all' ? 7 : 6}>
+                      No WorkLog Available
+                    </WS.EmptyStateRow>
+                  </tr>
+                ) : (
+                  visitLogs.map((log) => {
+                    const username = (log as Record<string, any>).loggedByUsername || '-';
+                    const initials = username !== '-'
+                      ? username.substring(0, 2).toUpperCase()
+                      : '?';
 
-                      {/* Notes — truncated, full text in title attr for native tooltip */}
-                      <WS.NotesTd title={log.description || undefined}>
-                        {log.description || '-'}
-                      </WS.NotesTd>
+                    return (
+                      /* Data row — clicking anywhere opens the popup */
+                      <WS.DataTr
+                        key={log.id}
+                        onClick={() => handleRowClick(log)}
+                      >
+                        <WS.Td>{formatDate(log.visitDate)}</WS.Td>
 
-                      {/* Action buttons — stop propagation so row click doesn't fire */}
-                      <WS.Td onClick={(e) => e.stopPropagation()}>
-                        <WS.ActionCell>
-                          <Tooltip title="Edit">
-                            <IconButton
-                              size="small"
-                              onClick={() => openModal(log)}
-                            >
-                              <EditIcon sx={{ fontSize: rem(16) }} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => log.id && handleDelete(log.id)}
-                            >
-                              <DeleteIcon sx={{ fontSize: rem(16) }} />
-                            </IconButton>
-                          </Tooltip>
-                        </WS.ActionCell>
-                      </WS.Td>
-                    </WS.DataTr>
-                  );
-                })
-              )}
-            </tbody>
-          </WS.Table>
+                        <WS.Td>
+                          <WS.UserBadge>
+                            <WS.UserAvatar>{initials}</WS.UserAvatar>
+                            {username}
+                          </WS.UserBadge>
+                        </WS.Td>
+
+                        <WS.Td>
+                          {formatTime(log.timeIn)} → {formatTime(log.timeOut)}
+                        </WS.Td>
+
+                        <WS.Td>
+                          <WS.DurationText>{formatMinutes(log.workedMinutes)}</WS.DurationText>
+                        </WS.Td>
+
+                        {selectedStepId === 'all' && (
+                          <WS.Td>
+                            <WS.StepNameText>
+                              {(log as any).stepName || '-'}
+                            </WS.StepNameText>
+                          </WS.Td>
+                        )}
+
+                        {/* Notes — truncated, full text in title attr for native tooltip */}
+                        <WS.NotesTd title={log.description || undefined}>
+                          {log.description || '-'}
+                        </WS.NotesTd>
+
+                        {/* Action buttons — stop propagation so row click doesn't fire */}
+                        <WS.Td onClick={(e) => e.stopPropagation()}>
+                          <WS.ActionCell>
+                            <Tooltip title="Edit">
+                              <IconButton
+                                size="small"
+                                onClick={() => openModal(log)}
+                              >
+                                <WS.ActionEditIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => log.id && handleDelete(log.id)}
+                              >
+                                <WS.ActionDeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </WS.ActionCell>
+                        </WS.Td>
+                      </WS.DataTr>
+                    );
+                  })
+                )}
+              </tbody>
+            </WS.Table>
+          )}
         </WS.TableContainer>
       </WS.WorkLogsLayout>
 
@@ -515,7 +625,7 @@ export const JobWorkLogsTab: React.FC<JobWorkLogsTabProps> = ({ job }) => {
         /* Backdrop — click outside to close */
         <WS.NotePopupBackdrop onClick={() => setPopupLog(null)}>
           {/* Card — stop propagation so clicking inside doesn't close */}
-          <WS.NotePopupCard yOffset={popupY} onClick={(e) => e.stopPropagation()}>
+          <WS.NotePopupCard onClick={(e) => e.stopPropagation()}>
 
             {/* Line 1: start→end time + ✕ close button */}
             <WS.NotePopupHeader>

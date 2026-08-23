@@ -31,7 +31,10 @@ export interface JobLocationMarkerData {
 }
 
 export interface PlaceDetails {
+  /** Google's full one-line formatted address — display/search-box use only, never a "street" field value. */
   address: string;
+  /** Just the number + street name, e.g. "10 Downing Street". Use this (falling back to `address`) for a street field. */
+  streetLine?: string;
   name?: string;
   location: Location;
   placeId?: string;
@@ -59,10 +62,21 @@ export interface GoogleMapProps {
   searchInitialValue?: string;
   className?: string;
   showDirections?: boolean;
+  /** When true, every pick (search, manual entry, map click) opens AddressReviewDialog
+   * first — onLocationSelect only fires once the user confirms. Defaults to false, which
+   * keeps existing consumers (e.g. MapsList's search-to-pan usage) unchanged. */
+  confirmBeforeSelect?: boolean;
 }
 
 export interface PlacesAutocompleteProps {
   onPlaceSelect: (place: PlaceDetails) => void;
   placeholder?: string;
   defaultValue?: string;
+}
+
+export interface AddressReviewDialogProps {
+  open: boolean;
+  initialValue: PlaceDetails | null;
+  onConfirm: (place: PlaceDetails) => void;
+  onCancel: () => void;
 }

@@ -158,6 +158,7 @@ export const LeaveRequests: React.FC = () => {
             actions={actions}
             loading={loading}
             emptyMessage="No leave requests found."
+            view={false}
           />
           {totalPages > 1 && (
             <S.PaginationWrapper>

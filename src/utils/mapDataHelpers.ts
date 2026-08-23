@@ -1,47 +1,20 @@
-import type { JobResponse, WorkerResponse, ClientResponse, CustomerResponse } from '../../workflow-api';
+import type { JobResponse, WorkerResponse, ClientResponse, CustomerResponse, FieldValueResponse } from '../../workflow-api';
 import type { PlaceDetails, WorkerMarkerData, JobMarkerData, JobLocationMarkerData } from '../components/UI/GoogleMap/GoogleMap.types';
-import { NOMINATIM_CONFIG } from '../config/googleMaps';
+import { geocodeAddress as googleGeocodeAddress } from './googleGeocoding';
+import { extractFieldValue } from './fieldValueHelper';
 
-/**
- * Geocode an address to get lat/lng coordinates using Nominatim
- */
+// Kept as a re-export so existing imports of `geocodeAddress` from this file
+// keep working — the implementation itself lives in the single shared
+// geocoding module (Google only; the previous Nominatim-based version here
+// was a second, less accurate, unrelated geocoding backend).
 export async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
-  if (!address || address.trim() === '') {
-    return null;
-  }
-
-  try {
-    const params = new URLSearchParams({
-      q: address,
-      format: 'json',
-      limit: '1',
-    });
-
-    const response = await fetch(`${NOMINATIM_CONFIG.baseUrl}/search?${params}`, {
-      headers: {
-        'User-Agent': 'WorkFlow App',
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.length > 0) {
-        return {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
-        };
-      }
-    }
-  } catch (error) {
-    console.error('Error geocoding address:', error);
-  }
-
-  return null;
+  const result = await googleGeocodeAddress(address);
+  return result?.location ?? null;
 }
 
 /**
- * Prepare map markers from jobs, workers, and clients data
- * Groups jobs by worker and uses client address for location
+ * Prepare map markers from jobs, workers, and clients data.
+ * Groups jobs by worker and places one pin per worker.
  */
 export async function prepareWorkerJobMarkers(
   jobs: JobResponse[],
@@ -61,21 +34,65 @@ export async function prepareWorkerJobMarkers(
     });
   });
 
-  // For each worker with jobs, create a marker
+  // For each worker with jobs, create a single marker at their most relevant
+  // job's location — preferring an in-progress job (where they most likely
+  // are right now), then falling back to whichever assigned job resolves to
+  // a location first. A worker with several jobs still only gets one pin;
+  // all of their jobs are listed in that pin's info window.
   for (const [workerId, workerJobs] of jobsByWorker.entries()) {
     const worker = workers.find((w) => w.id === workerId);
     if (!worker) continue;
 
-    // Get the first job's client address as the worker's location
-    // You could also aggregate multiple addresses or use worker's home address if available
-    const firstJob = workerJobs[0];
-    const client = clients.find((c) => c.id === firstJob.clientId);
+    const orderedJobs = [...workerJobs].sort((a, b) =>
+      a.status === 'IN_PROGRESS' && b.status !== 'IN_PROGRESS' ? -1 : 0
+    );
 
-    if (!client?.address) continue;
+    let location: { lat: number; lng: number } | null = null;
+    let locatedJob: JobResponse | null = null;
 
-    // Geocode the client address
-    const location = await geocodeAddress(client.address);
-    if (!location) continue;
+    for (const job of orderedJobs) {
+      // Prefer the job's own site address (structured, has stored coordinates)
+      // over the client's address string — a job's actual work location can
+      // differ from the client's billing/contact address.
+      if (job.address?.latitude != null && job.address?.longitude != null) {
+        location = { lat: job.address.latitude, lng: job.address.longitude };
+        locatedJob = job;
+        break;
+      }
+
+      const jobAddressParts = [
+        job.address?.street,
+        job.address?.city,
+        job.address?.state,
+        job.address?.postalCode,
+        job.address?.country,
+      ].filter(Boolean);
+
+      if (jobAddressParts.length > 0) {
+        location = await googleGeocodeAddress(jobAddressParts.join(', ')).then((r) => r?.location ?? null);
+        if (location) {
+          locatedJob = job;
+          break;
+        }
+      }
+
+      const client = clients.find((c) => c.id === job.clientId);
+      if (client?.address) {
+        location = await googleGeocodeAddress(client.address).then((r) => r?.location ?? null);
+        if (location) {
+          locatedJob = job;
+          break;
+        }
+      }
+    }
+
+    if (!location || !locatedJob) continue;
+
+    const client = clients.find((c) => c.id === locatedJob!.clientId);
+    const displayAddress =
+      [locatedJob.address?.street, locatedJob.address?.city, locatedJob.address?.state, locatedJob.address?.postalCode, locatedJob.address?.country]
+        .filter(Boolean)
+        .join(', ') || client?.address || '';
 
     // Prepare job data for this worker
     const jobMarkers: JobMarkerData[] = workerJobs.map((job) => {
@@ -87,7 +104,7 @@ export async function prepareWorkerJobMarkers(
         scheduledTime: getScheduledTime(job),
         duration: getDuration(job),
         clientName: jobClient?.name,
-        templateName: '', // You can add template name if needed
+        templateName: job.templateName,
       };
     });
 
@@ -103,7 +120,7 @@ export async function prepareWorkerJobMarkers(
     // Create the marker
     markers.push({
       name: worker.name || 'Unknown Worker',
-      address: client.address,
+      address: displayAddress,
       location,
       workerData,
     });
@@ -168,7 +185,7 @@ export async function prepareJobLocationMarkers(
       customerName: customer?.name,
       workerName: worker?.name,
       scheduledTime: getScheduledTime(job),
-      templateName: undefined,
+      templateName: job.templateName,
     };
 
     markers.push({
@@ -182,42 +199,30 @@ export async function prepareJobLocationMarkers(
   return markers;
 }
 
-/**
- * Extract scheduled time from job field values
- * Looks for common time-related field names
- */
-function getScheduledTime(job: JobResponse): string | undefined {
+/** A job's fieldValues map is keyed by field ID, and each entry carries the
+ * template field's own `name`/`label` — never the outer map key — so any
+ * lookup by a literal field name (e.g. "scheduledTime") must scan the
+ * FieldValueResponse metadata, not the map's keys. */
+function findFieldValueByName(job: JobResponse, candidateNames: string[]): string | undefined {
   if (!job.fieldValues) return undefined;
 
-  // Look for common time field names
-  const timeFields = ['scheduledTime', 'startTime', 'time', 'appointment', 'schedule'];
-
-  for (const fieldName of timeFields) {
-    const value = job.fieldValues[fieldName];
-    if (value) {
-      return String(value);
+  const wanted = candidateNames.map((n) => n.toLowerCase());
+  for (const fv of Object.values(job.fieldValues) as FieldValueResponse[]) {
+    const fieldName = (fv?.name || fv?.label || '').toLowerCase();
+    if (fieldName && wanted.some((w) => fieldName.includes(w))) {
+      const value = extractFieldValue(fv);
+      if (value) return value;
     }
   }
-
   return undefined;
 }
 
-/**
- * Extract duration from job field values
- * Looks for common duration-related field names
- */
+/** Extract scheduled time from a job's custom field values, matching by field name/label. */
+function getScheduledTime(job: JobResponse): string | undefined {
+  return findFieldValueByName(job, ['scheduledTime', 'startTime', 'time', 'appointment', 'schedule']);
+}
+
+/** Extract duration from a job's custom field values, matching by field name/label. */
 function getDuration(job: JobResponse): string | undefined {
-  if (!job.fieldValues) return undefined;
-
-  // Look for common duration field names
-  const durationFields = ['duration', 'estimatedDuration', 'timeEstimate', 'hours'];
-
-  for (const fieldName of durationFields) {
-    const value = job.fieldValues[fieldName];
-    if (value) {
-      return String(value);
-    }
-  }
-
-  return undefined;
+  return findFieldValueByName(job, ['duration', 'estimatedDuration', 'timeEstimate', 'hours']);
 }

@@ -6,16 +6,10 @@ export const MIN_SEARCH_LENGTH = 2;
 
 export const PLACE_DETAIL_FIELDS = ['name', 'formatted_address', 'geometry', 'place_id', 'address_components'] as const;
 
-export function extractAddressComponents(components: google.maps.GeocoderAddressComponent[] | undefined) {
-  const get = (type: string) =>
-    components?.find((c) => c.types.includes(type));
-  return {
-    city: get('locality')?.long_name ?? get('postal_town')?.long_name ?? get('sublocality_level_1')?.long_name ?? '',
-    state: get('administrative_area_level_1')?.long_name ?? '',
-    postalCode: get('postal_code')?.long_name ?? get('postal_code_prefix')?.long_name ?? '',
-    country: get('country')?.long_name ?? '',
-  };
-}
+// Address component extraction and all geocoding live in the single shared
+// module — see src/utils/googleGeocoding.ts — so every consumer parses
+// Google results the same way.
+export { extractAddressComponents } from '../../../utils/googleGeocoding';
 
 export const getNoOptionsText = (inputValue: string): string => {
   return inputValue.length < MIN_SEARCH_LENGTH

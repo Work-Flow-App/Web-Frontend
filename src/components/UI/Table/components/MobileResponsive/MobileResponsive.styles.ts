@@ -121,6 +121,7 @@ export const CardFooter = styled(Box)(({ theme }) => {
     borderTop: `1px solid ${isDark ? theme.palette.colors.grey_200 : theme.palette.colors.grey_100}`,
     paddingTop: rem(16),
     marginTop: rem(4),
+    gap: rem(16),
   };
 });
 

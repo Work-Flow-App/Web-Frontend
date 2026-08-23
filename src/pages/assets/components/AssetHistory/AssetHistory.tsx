@@ -59,6 +59,7 @@ export const AssetHistory: React.FC = () => {
         id: assignment.assignmentId || 0,
         assignmentId: assignment.assignmentId || 0,
         jobId: assignment.jobId,
+        jobRef: assignment.jobRef,
         assignedWorkerId: assignment.assignedWorkerId,
         assignedAt: assignment.assignedAt || '',
         returnedAt: assignment.returnedAt,

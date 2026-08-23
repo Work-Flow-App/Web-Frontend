@@ -32,7 +32,7 @@ export interface WizardData {
   assignedWorkerIds?: number[];
   workflowId?: number;
   assetIds?: number[];
-  fieldValues?: { [key: string]: string | number | boolean };
+  fieldValues?: { [key: string]: unknown };
   address?: {
     fullAddress: string;
     street?: string;
@@ -40,8 +40,11 @@ export interface WizardData {
     state?: string;
     postalCode?: string;
     country?: string;
-    latitude?: number;
-    longitude?: number;
+    // null (not just absent) specifically means "Google couldn't geocode this address" —
+    // see Step3AssignDetails' handleLocationSelect / isManualAddressOnly guard. Downstream
+    // consumers (Step4CustomFields) already treat null the same as absent via `!= null`.
+    latitude?: number | null;
+    longitude?: number | null;
   };
 }
 
@@ -65,11 +68,11 @@ export const AddJobWizard: React.FC<AddJobWizardProps> = ({ onSuccess, jobId }) 
       .getJobById(jobId)
       .then((res) => {
         const job = res.data;
-        const fieldValues: { [key: string]: string | number | boolean } = {};
+        const fieldValues: { [key: string]: unknown } = {};
         if (job.fieldValues) {
           Object.entries(job.fieldValues).forEach(([key, fv]) => {
             if (fv && typeof fv === 'object' && 'value' in fv) {
-              fieldValues[key] = fv.value as string | number | boolean;
+              fieldValues[key] = fv.value;
             }
           });
         }

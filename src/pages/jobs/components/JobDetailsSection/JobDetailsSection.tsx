@@ -34,8 +34,15 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { AssignAssetModal } from '../../../assets/components';
 import type { PlaceDetails } from '../../../../components/UI/GoogleMap/GoogleMap.types';
 import { GOOGLE_MAPS_CONFIG } from '../../../../config/googleMaps';
-import { geocodeAddress } from '../../../../utils/mapDataHelpers';
+import { geocodeAddress, formatAddress } from '../../../../utils/googleGeocoding';
 import { extractFieldValue } from '../../../../utils/fieldValueHelper';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
+import {
+  isAddressField,
+  parseAddressFieldValue,
+  formatAddressFieldValue,
+  rebuildFieldValuesForResend,
+} from '../../../../utils/customAddressField';
 import * as S from './JobDetailsSection.styles';
 
 interface JobDetailsSectionProps {
@@ -65,12 +72,6 @@ const formatStatus = (status?: string) => {
     .split('_')
     .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
     .join(' ');
-};
-
-const formatJobAddress = (address?: JobResponse['address']) => {
-  if (!address) return '';
-  const parts = [address.street, address.city, address.state, address.postalCode, address.country].filter(Boolean);
-  return parts.join(', ');
 };
 
 const toDateInputValue = (value: string): string => {
@@ -109,8 +110,17 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const contactEmail = customer?.email || client?.email;
   const contactTelephone = customer?.telephone || client?.telephone;
   const contactMobile = customer?.mobile || client?.mobile;
-  const contactAddress = hasCustomer ? customer?.address?.street : client?.address;
-  const canEditContact = !!(customer || client);
+  // Was showing only customer.address.street (no city/postcode/country) — the
+  // Address row never actually included the postcode for customers.
+  const contactAddress = hasCustomer
+    ? formatAddress({
+        street: customer?.address?.street,
+        city: customer?.address?.city,
+        state: customer?.address?.county,
+        postalCode: customer?.address?.postalCode,
+        country: customer?.address?.country,
+      })
+    : client?.address;
 
   const handleAddressEditClick = async (target: 'address' | 'siteAddress') => {
     setEditingField(target);
@@ -119,17 +129,18 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     setEditValue(street);
 
     if (street) {
-      const loc = await geocodeAddress(street);
-      if (loc) {
+      const structured = await geocodeAddress(street);
+      if (structured) {
         setSelectedMapAddress({
           address: street,
-          location: loc,
+          streetLine: structured.streetLine,
+          location: structured.location,
           city: source?.city,
           state: target === 'address' ? customer?.address?.county : job.address?.state,
           postalCode: source?.postalCode,
           country: source?.country,
         });
-        setMapCenter(loc);
+        setMapCenter(structured.location);
         setMapZoom(15);
         return;
       }
@@ -141,23 +152,36 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   const handleLocationSelect = (place: PlaceDetails) => {
-    setSelectedMapAddress(place);
     setEditValue(place.address);
-    setMapCenter(place.location);
-    setMapZoom(15);
+    // Google couldn't geocode this address — place.location is a {0,0} placeholder, not a
+    // real point. Don't drop a marker there or recenter the map on it (mirrors
+    // CustomAddressField.tsx / LocationMapField.tsx). handleSaveAddress still gets the raw
+    // `place` so it can apply the same guard to the lat/lng it persists.
+    if (place.isManualAddressOnly) {
+      setSelectedMapAddress(null);
+    } else {
+      setSelectedMapAddress(place);
+      setMapCenter(place.location);
+      setMapZoom(15);
+    }
+    handleSaveAddress(place);
   };
 
-  const handleSaveAddress = async () => {
+  const handleSaveAddress = async (place: PlaceDetails) => {
     const target = editingField as 'address' | 'siteAddress';
     setSavingField(target);
     try {
       if (target === 'address') {
         const addressObj = {
-          street: selectedMapAddress?.address || editValue || '',
-          city: selectedMapAddress?.city || customer?.address?.city || '',
-          county: selectedMapAddress?.state || customer?.address?.county || '',
-          postalCode: selectedMapAddress?.postalCode || customer?.address?.postalCode || '',
-          country: selectedMapAddress?.country || customer?.address?.country || '',
+          // Prefer the parsed street line over the full formatted address —
+          // `.address` includes city/postcode/country, and saving that into
+          // "street" is what produced duplicated-looking addresses once city/
+          // postcode/country were also stored and later joined back together.
+          street: place.streetLine || place.address || '',
+          city: place.city || customer?.address?.city || '',
+          county: place.state || customer?.address?.county || '',
+          postalCode: place.postalCode || customer?.address?.postalCode || '',
+          country: place.country || customer?.address?.country || '',
         };
         if (customer?.id) {
           const updateReq: CustomerUpdateRequest = {
@@ -178,7 +202,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer(createReq);
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
@@ -186,23 +212,30 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       } else if (target === 'siteAddress' && job.id) {
         const updateReq: JobUpdateRequest = {
           address: {
-            street: selectedMapAddress?.address || editValue || '',
-            city: selectedMapAddress?.city || job.address?.city || '',
-            state: selectedMapAddress?.state || job.address?.state || '',
-            postalCode: selectedMapAddress?.postalCode || job.address?.postalCode || '',
-            country: selectedMapAddress?.country || job.address?.country || '',
+            street: place.streetLine || place.address || '',
+            city: place.city || job.address?.city || '',
+            state: place.state || job.address?.state || '',
+            postalCode: place.postalCode || job.address?.postalCode || '',
+            country: place.country || job.address?.country || '',
             additionalInfo: job.address?.additionalInfo,
-            latitude: selectedMapAddress?.location?.lat ?? job.address?.latitude,
-            longitude: selectedMapAddress?.location?.lng ?? job.address?.longitude,
+            // Never persist the {0,0} manual-address placeholder as a real geocoded point.
+            // AddressRequest's latitude/longitude are typed `number | undefined` (no null),
+            // so `undefined` here (which JSON.stringify then omits entirely) is this
+            // branch's equivalent of the `null` guard used elsewhere in this file where the
+            // target slot is loosely typed.
+            latitude: place.isManualAddressOnly ? undefined : place.location?.lat ?? job.address?.latitude,
+            longitude: place.isManualAddressOnly ? undefined : place.location?.lng ?? job.address?.longitude,
           },
         };
-        const res = await jobService.updateJob(job.id, updateReq);
+        // PATCH: this body only ever carries `address`, unlike PUT which risks
+        // wiping fieldValues/assetIds/etc. that it omits.
+        const res = await jobService.patchJob(job.id, updateReq);
         onJobUpdate?.(res.data);
       }
       showSuccess('Updated address successfully');
       setEditingField(null);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to update address';
+    } catch (err) {
+      const msg = extractErrorMessage(err, 'Failed to update address');
       console.error('[handleSaveAddress] Failed:', err);
       showError(msg);
     } finally {
@@ -247,7 +280,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer({ name: editValue });
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
@@ -267,7 +302,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await companyClientService.createClient({ name: editValue });
           const newClient = res.data;
           if (job.id && newClient.id) {
-            const jobRes = await jobService.updateJob(job.id, { clientId: newClient.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { clientId: newClient.id });
             onJobUpdate?.(jobRes.data);
           }
           onClientUpdate?.(newClient);
@@ -305,20 +342,24 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.createCustomer(createReq);
           const newCust = res.data;
           if (job.id && newCust.id) {
-            const jobRes = await jobService.updateJob(job.id, { customerId: newCust.id });
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { customerId: newCust.id });
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
         }
       } else if (field === 'status' && job.id) {
         const updateReq: JobUpdateRequest = { status: editValue as JobUpdateRequest['status'] };
-        const res = await jobService.updateJob(job.id, updateReq);
+        // PATCH: this body only ever carries `status`, unlike PUT which risks
+        // wiping fieldValues/assetIds/etc. that it omits.
+        const res = await jobService.patchJob(job.id, updateReq);
         onJobUpdate?.(res.data);
       }
       showSuccess('Updated successfully');
       setEditingField(null);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+    } catch (err) {
+      const msg = extractErrorMessage(err, 'Failed to update');
       console.error('[handleSaveField] Failed:', err);
       showError(msg);
     } finally {
@@ -417,13 +458,15 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldIconContainer>{icon}</S.FieldIconContainer>
           <S.FieldLabel>{label}</S.FieldLabel>
           <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
-          {allowEdit && !isEditing && (
+          {allowEdit && (
             <S.FieldAction>
               <S.ActionButton
                 variant="text"
-                onClick={() => handleAddressEditClick(fieldKey as 'address' | 'siteAddress')}
+                onClick={() =>
+                  isEditing ? handleCancelEdit() : handleAddressEditClick(fieldKey as 'address' | 'siteAddress')
+                }
               >
-                {notSet ? 'Add' : 'Edit'}
+                {isEditing ? 'Cancel' : notSet ? 'Add' : 'Edit'}
               </S.ActionButton>
             </S.FieldAction>
           )}
@@ -490,6 +533,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   const getDisplayFieldValue = (field: JobTemplateFieldResponse): string => {
+    if (isAddressField(field)) {
+      return formatAddressFieldValue(job.fieldValues?.[String(field.id)]);
+    }
     const raw = getRawFieldValue(field.id!);
     if (!raw) return '';
     if (field.jobFieldType === 'DATE') return formatDate(raw);
@@ -506,6 +552,108 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const notSet = !rawValue;
     const label = `${field.required ? '* ' : ''}${field.label || field.name || ''}`;
 
+    if (isAddressField(field)) {
+      const handleCustomAddressEditClick = () => {
+        setEditingField(fieldKey);
+        const parsed = parseAddressFieldValue(job.fieldValues?.[String(field.id)]);
+        // Only build a marker when the saved value has real coordinates. Falling back to
+        // GOOGLE_MAPS_CONFIG.defaultCenter here would draw a marker at a fabricated
+        // location for any address saved without coordinates — mirrors
+        // CustomAddressField.tsx's toPlaceDetails helper, which returns null (no marker)
+        // in that same situation instead of a fake default-center pin.
+        if (parsed && parsed.latitude != null && parsed.longitude != null) {
+          const location = { lat: parsed.latitude, lng: parsed.longitude };
+          setSelectedMapAddress({
+            address: displayValue,
+            streetLine: parsed.street,
+            city: parsed.city,
+            state: parsed.state,
+            postalCode: parsed.postalCode,
+            country: parsed.country,
+            location,
+          });
+          setMapCenter(location);
+          setMapZoom(15);
+          return;
+        }
+        setSelectedMapAddress(null);
+        setMapCenter(GOOGLE_MAPS_CONFIG.defaultCenter);
+        setMapZoom(GOOGLE_MAPS_CONFIG.defaultZoom);
+      };
+
+      const handleCustomAddressSelect = async (place: PlaceDetails) => {
+        if (!job.id || field.id === undefined) return;
+        // Google couldn't geocode this address — place.location is a {0,0} placeholder,
+        // not a real point. Don't drop a marker there (mirrors handleLocationSelect above /
+        // CustomAddressField.tsx), and persist null instead of the fake point below.
+        if (place.isManualAddressOnly) {
+          setSelectedMapAddress(null);
+        } else {
+          setSelectedMapAddress(place);
+        }
+        setSavingField(fieldKey);
+        try {
+          const addressValue = {
+            street: place.streetLine || place.address || '',
+            city: place.city || '',
+            state: place.state || '',
+            postalCode: place.postalCode || '',
+            country: place.country || '',
+            latitude: place.isManualAddressOnly ? null : place.location?.lat ?? null,
+            longitude: place.isManualAddressOnly ? null : place.location?.lng ?? null,
+          };
+          // PATCH merges fieldValues by key on the backend — send only this one
+          // field instead of rebuilding and resending the job's whole fieldValues
+          // map (rebuildFieldValuesForResend exists for the PUT-based paths that
+          // still need it; this save no longer does).
+          const res = await jobService.patchJob(job.id, { fieldValues: { [String(field.id)]: addressValue } });
+          onJobUpdate?.(res.data);
+          showSuccess('Updated successfully');
+          setEditingField(null);
+        } catch (err) {
+          const msg = extractErrorMessage(err, 'Failed to update');
+          console.error('[handleCustomAddressSelect] Failed:', err);
+          showError(msg);
+        } finally {
+          setSavingField(null);
+        }
+      };
+
+      return (
+        <React.Fragment key={fieldKey}>
+          <S.FieldRow>
+            <S.FieldIconContainer><LabelIcon /></S.FieldIconContainer>
+            <S.FieldLabel>{label}</S.FieldLabel>
+            <S.FieldValue $notSet={notSet}>{notSet ? 'Not set' : displayValue}</S.FieldValue>
+            <S.FieldAction>
+              <S.ActionButton
+                variant="text"
+                onClick={() => (isEditing ? handleCancelEdit() : handleCustomAddressEditClick())}
+              >
+                {isEditing ? 'Cancel' : notSet ? 'Add' : 'Edit'}
+              </S.ActionButton>
+            </S.FieldAction>
+          </S.FieldRow>
+          {isEditing && (
+            <S.MapEditWrapper>
+              <S.StyledGoogleMap
+                height="15rem"
+                center={mapCenter}
+                zoom={mapZoom}
+                markers={selectedMapAddress ? [selectedMapAddress] : []}
+                selectedLocation={selectedMapAddress}
+                onLocationSelect={handleCustomAddressSelect}
+                confirmBeforeSelect
+                showSearchBox
+                searchInitialValue={displayValue || undefined}
+              />
+              {isSaving && <CircularProgress size={16} />}
+            </S.MapEditWrapper>
+          )}
+        </React.Fragment>
+      );
+    }
+
     const handleFieldEditClick = () => {
       setEditingField(fieldKey);
       setEditValue(field.jobFieldType === 'DATE' ? toDateInputValue(rawValue) : rawValue);
@@ -515,23 +663,28 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       setSavingField(fieldKey);
       try {
         if (job.id && field.id !== undefined) {
-          // Clean ALL existing field values before re-sending (backend may reject nested objects)
-          const updatedFieldValues: Record<string, unknown> = {};
-          Object.entries(job.fieldValues || {}).forEach(([k, v]) => {
-            updatedFieldValues[k] = extractFieldValue(v);
-          });
+          let res;
           if (editValue === '') {
+            // Clearing a value still needs the full-map PUT path: PATCH merges
+            // whatever keys it's given, but has no way to signal "remove this
+            // key" the way replacing the whole map with it already `delete`d
+            // does. Preserve any OTHER address-type field as its real structured
+            // object instead of flattening it to a string (see
+            // rebuildFieldValuesForResend's doc comment for why that matters).
+            const updatedFieldValues = rebuildFieldValuesForResend(job.fieldValues, templateFields);
             delete updatedFieldValues[String(field.id)];
+            res = await jobService.updateJob(job.id, { fieldValues: updatedFieldValues });
           } else {
-            updatedFieldValues[String(field.id)] = editValue;
+            // PATCH merges fieldValues by key on the backend — send only this one
+            // field instead of resending the whole map.
+            res = await jobService.patchJob(job.id, { fieldValues: { [String(field.id)]: editValue } });
           }
-          const res = await jobService.updateJob(job.id, { fieldValues: updatedFieldValues });
           onJobUpdate?.(res.data);
         }
         showSuccess('Updated successfully');
         setEditingField(null);
-      } catch (err: any) {
-        const msg = err?.response?.data?.message || err?.message || 'Failed to update';
+      } catch (err) {
+        const msg = extractErrorMessage(err, 'Failed to update');
         console.error('[handleFieldSave] Failed:', err);
         showError(msg);
       } finally {
@@ -641,7 +794,12 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, true)}
         {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, true)}
 
-        {editingField === 'address' && (
+        {/* Only the "Address" row's isMapAddressField branch (fieldKey === 'address' && hasCustomer)
+            offers a map editor in the first place — without this same hasCustomer guard here, a
+            client-only job (no customer) would render this map ALONGSIDE the plain-text editor
+            for the same row, and confirming a pick would silently create a new
+            `Customer for Job #N` and reassign the job, with no warning. */}
+        {editingField === 'address' && hasCustomer && (
           <S.MapEditWrapper>
             <S.StyledGoogleMap
               height="15rem"
@@ -650,27 +808,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               markers={selectedMapAddress ? [selectedMapAddress] : []}
               selectedLocation={selectedMapAddress}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox={true}
               searchInitialValue={customer?.address?.street || undefined}
             />
-            <S.MapActionButtons>
-              <S.MapCancelButton
-                variant="outlined"
-                size="small"
-                onClick={handleCancelEdit}
-                disabled={savingField === 'address'}
-              >
-                Cancel
-              </S.MapCancelButton>
-              <S.MapSaveButton
-                variant="contained"
-                size="small"
-                onClick={handleSaveAddress}
-                disabled={savingField === 'address'}
-              >
-                {savingField === 'address' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
-              </S.MapSaveButton>
-            </S.MapActionButtons>
+            {savingField === 'address' && <CircularProgress size={16} />}
           </S.MapEditWrapper>
         )}
 
@@ -731,7 +873,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           <S.FieldValue>#{job.jobRef ?? job.id}</S.FieldValue>
         </S.FieldRow>
 
-        {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatJobAddress(job.address))}
+        {renderEditableRow(<PlaceIcon />, 'Site Address', 'siteAddress', formatAddress(job.address))}
 
         {editingField === 'siteAddress' && (
           <S.MapEditWrapper>
@@ -742,27 +884,11 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
               markers={selectedMapAddress ? [selectedMapAddress] : []}
               selectedLocation={selectedMapAddress}
               onLocationSelect={handleLocationSelect}
+              confirmBeforeSelect
               showSearchBox={true}
               searchInitialValue={job.address?.street || undefined}
             />
-            <S.MapActionButtons>
-              <S.MapCancelButton
-                variant="outlined"
-                size="small"
-                onClick={handleCancelEdit}
-                disabled={savingField === 'siteAddress'}
-              >
-                Cancel
-              </S.MapCancelButton>
-              <S.MapSaveButton
-                variant="contained"
-                size="small"
-                onClick={handleSaveAddress}
-                disabled={savingField === 'siteAddress'}
-              >
-                {savingField === 'siteAddress' ? <CircularProgress size={16} color="inherit" /> : 'Save'}
-              </S.MapSaveButton>
-            </S.MapActionButtons>
+            {savingField === 'siteAddress' && <CircularProgress size={16} />}
           </S.MapEditWrapper>
         )}
 

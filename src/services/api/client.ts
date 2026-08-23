@@ -1,5 +1,6 @@
 import { env } from '../../config/env';
 import { decodeJWT } from '../../utils/jwt';
+import { classifySubscriptionError, isOnSubscriptionPage } from '../../utils/subscriptionErrors';
 
 /**
  * API Client for making HTTP requests to the backend
@@ -338,13 +339,12 @@ class ApiClient {
         return this.handle401Error(error, retryRequest);
       }
 
-      // Handle 402 Payment Required - redirect to subscribe page
+      // Handle 402 Payment Required - redirect only on a lapsed subscription;
+      // cap-reached / unclassified errors fall through to the caller's own
+      // error handling (inline upsell messaging).
       if (response.status === 402 && typeof window !== 'undefined') {
-        const subscriptionPaths = ['/subscribe', '/subscription/'];
-        const onSubscriptionPage = subscriptionPaths.some((p) =>
-          window.location.pathname.startsWith(p)
-        );
-        if (!onSubscriptionPage) {
+        const shimError = { response: { status: 402, data: { message: error.message } } };
+        if (classifySubscriptionError(shimError) === 'lapsed' && !isOnSubscriptionPage()) {
           window.location.href = '/subscribe';
         }
       }
