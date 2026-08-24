@@ -94,6 +94,9 @@ export const BillingSettings: React.FC = () => {
   const [storageDialogOpen, setStorageDialogOpen] = useState(false);
   const [blocksToAdd, setBlocksToAdd] = useState(1);
   const [purchasingStorage, setPurchasingStorage] = useState(false);
+  const [seatDialogOpen, setSeatDialogOpen] = useState(false);
+  const [seatsToAdd, setSeatsToAdd] = useState(1);
+  const [purchasingSeats, setPurchasingSeats] = useState(false);
 
   const loadUsage = () => {
     companyService
@@ -153,6 +156,8 @@ export const BillingSettings: React.FC = () => {
   const storageFull = Boolean(
     usage?.storageLimitBytes && (usage.storageUsedBytes ?? 0) >= usage.storageLimitBytes
   );
+  const canBuySeats = canBuyStorage;
+  const seatsFull = Boolean(usage?.seatsLimit && (usage.activeWorkers ?? 0) >= usage.seatsLimit);
 
   const openStorageDialog = () => {
     setBlocksToAdd(1);
@@ -205,6 +210,60 @@ export const BillingSettings: React.FC = () => {
       showError(extractErrorMessage(error, 'Failed to start storage checkout. Please try again.'));
     } finally {
       setPurchasingStorage(false);
+    }
+  };
+
+  const openSeatDialog = () => {
+    setSeatsToAdd(1);
+    setSeatDialogOpen(true);
+  };
+
+  const handleBuySeat = async () => {
+    if (!currentTier) return;
+    setPurchasingSeats(true);
+    try {
+      const currentExtraSeats = computeCurrentExtraSeats(currentTier, usage?.seatsLimit);
+      const currentBlocks = computeCurrentStorageBlocks(currentTier, usage?.storageLimitBytes);
+
+      const { data } = await subscriptionService.createCheckout({
+        planType: currentTier.key,
+        extraSeats: currentExtraSeats + seatsToAdd,
+        extraStorageBlocks: currentBlocks,
+      });
+      const { transactionId } = data as Record<string, string>;
+
+      const profile = await companyService.getProfile().then((r) => r.data).catch(() => null);
+
+      const paddle = getPaddleInstance();
+      if (!paddle) {
+        showError('Payment system not available. Please refresh the page and try again.');
+        return;
+      }
+
+      paddle.Checkout.open({
+        transactionId,
+        customData: {
+          companyId: profile?.id ?? null,
+          email: profile?.email ?? null,
+          fp_tid: getAffiliateTid(),
+        },
+        settings: {
+          successUrl: window.location.href,
+        },
+        // @ts-expect-error eventCallback is not in Paddle's CheckoutOpenOptions types but is supported at runtime
+        eventCallback: (event: PaddleEventData) => {
+          if (event.name === CheckoutEventNames.CHECKOUT_COMPLETED) {
+            showSuccess('Seat purchase complete.');
+            setSeatDialogOpen(false);
+            refresh();
+            loadUsage();
+          }
+        },
+      });
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to start seat checkout. Please try again.'));
+    } finally {
+      setPurchasingSeats(false);
     }
   };
 
@@ -352,9 +411,21 @@ export const BillingSettings: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   Worker seats
                 </Typography>
-                <Typography variant="body2">
-                  {usage.activeWorkers ?? 0} / {usage.seatsLimit ?? 0}
-                </Typography>
+                <S.MeterValueGroup>
+                  <Typography variant="body2" color={seatsFull ? 'error' : undefined}>
+                    {usage.activeWorkers ?? 0} / {usage.seatsLimit ?? 0}
+                  </Typography>
+                  {canBuySeats && (
+                    <Button
+                      variant={seatsFull ? 'contained' : 'text'}
+                      color={seatsFull ? 'error' : 'primary'}
+                      size="small"
+                      onClick={openSeatDialog}
+                    >
+                      Buy Extra Seat
+                    </Button>
+                  )}
+                </S.MeterValueGroup>
               </S.MeterLabelRow>
               <LinearProgress
                 variant="determinate"
@@ -462,6 +533,47 @@ export const BillingSettings: React.FC = () => {
             onClick={handleBuyStorage}
             disabled={purchasingStorage}
             startIcon={purchasingStorage ? <CircularProgress size={16} /> : undefined}
+          >
+            Purchase
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={seatDialogOpen} onClose={() => !purchasingSeats && setSeatDialogOpen(false)}>
+        <DialogTitle>Buy Extra Seats</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 1 }}>
+            {currentTier && `Each extra seat is $${currentTier.extraSeatPrice}/mo.`}
+          </DialogContentText>
+          <S.StepperControl>
+            <IconButton
+              size="small"
+              onClick={() => setSeatsToAdd((n) => Math.max(1, n - 1))}
+              disabled={seatsToAdd <= 1}
+              aria-label="Decrease seats"
+            >
+              <RemoveIcon />
+            </IconButton>
+            <S.StepperCount>{seatsToAdd}</S.StepperCount>
+            <IconButton size="small" onClick={() => setSeatsToAdd((n) => n + 1)} aria-label="Increase seats">
+              <AddIcon />
+            </IconButton>
+          </S.StepperControl>
+          {currentTier && (
+            <DialogContentText sx={{ textAlign: 'center' }}>
+              +{seatsToAdd} seat{seatsToAdd !== 1 ? 's' : ''} for +${seatsToAdd * currentTier.extraSeatPrice}/mo
+            </DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSeatDialogOpen(false)} disabled={purchasingSeats}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleBuySeat}
+            disabled={purchasingSeats}
+            startIcon={purchasingSeats ? <CircularProgress size={16} /> : undefined}
           >
             Purchase
           </Button>
