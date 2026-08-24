@@ -162,7 +162,6 @@ const NotificationBell = () => {
       notifications={recent.map(mapNotificationToItem)}
       showClearAll
       onClearAll={() => markAllAsRead()}
-      onNotificationClick={handleItemAction}
       onViewClick={handleItemAction}
       onMailClick={(id) => {
         const source = findSource(id);
