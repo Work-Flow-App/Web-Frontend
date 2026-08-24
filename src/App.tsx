@@ -50,6 +50,7 @@ import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { GlobalSnackbarProvider } from './contexts/SnackbarContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { CompanyRoleProvider } from './contexts/CompanyRoleContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import env from './config/env';
@@ -71,73 +72,75 @@ function App() {
           <Router>
             <CurrencyProvider>
               <SubscriptionProvider>
-                <CompanyRoleProvider>
-                  <AppConfiguration />
-                  <ErrorBoundary>
-                    <Routes>
-                      {/* Public routes - No layout */}
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/signup/worker" element={<WorkerSignup />} />
-                      <Route path="/signup/company-member" element={<CompanyMemberSignup />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/signin" element={<Login />} />
-                      <Route path="/forgot-password" element={<ForgotPassword />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/verify-email" element={<VerifyEmail />} />
-                      <Route path="/resend-verification" element={<ResendVerification />} />
-                      <Route path="/public/company/:companyId" element={<PublicCompanyProfile />} />
-                      <Route path="/public/company/:companyId/:companySlug" element={<PublicCompanyProfile />} />
+                <NotificationProvider>
+                  <CompanyRoleProvider>
+                    <AppConfiguration />
+                    <ErrorBoundary>
+                      <Routes>
+                        {/* Public routes - No layout */}
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/signup/worker" element={<WorkerSignup />} />
+                        <Route path="/signup/company-member" element={<CompanyMemberSignup />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signin" element={<Login />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/verify-email" element={<VerifyEmail />} />
+                        <Route path="/resend-verification" element={<ResendVerification />} />
+                        <Route path="/public/company/:companyId" element={<PublicCompanyProfile />} />
+                        <Route path="/public/company/:companyId/:companySlug" element={<PublicCompanyProfile />} />
 
-                      {/* Protected routes - With Layout (Sidebar + TopNav) */}
-                      <Route element={<Layout />}>
-                        <Route path="/company" element={<CompanyPage />} />
-                        <Route path="/company/profile" element={<CompanyProfile />} />
-                        <Route path="/company/workers" element={<WorkerPage />} />
-                        <Route path="/company/workers/:workerId" element={<WorkerDetail />} />
-                        <Route path="/company/compliance" element={<Compliance />} />
-                        <Route path="/company/leave-requests" element={<LeaveRequests />} />
-                        <Route path="/company/invitations" element={<InvitationsPage />} />
-                        <Route path="/company/clients" element={<ClientPage />} />
-                        <Route path="/company/equipments" element={<EquipmentPage />} />
-                        <Route path="/company/customers" element={<CustomersPage />} />
-                        <Route path="/company/settings" element={<SettingsPage />} />
-                        <Route path="/company/jobs" element={<JobsPage />} />
-                        <Route path="/company/jobs/:jobId/details" element={<JobDetailsPage />} />
-                        <Route path="/company/jobs/templates" element={<TemplatesPage />} />
-                        <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
-                        <Route path="/company/workflows" element={<WorkflowsPage />} />
-                        <Route path="/company/workflows/:workflowId/builder" element={<WorkflowBuilderPage />} />
-                        <Route path="/company/assets" element={<AssetsPage />} />
-                        <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
-                        <Route path="/company/assets/maps" element={<MapsPage />} />
-                        <Route path="/company/forms" element={<FormsPage />} />
-                        <Route path="/company/forms/templates/:templateId/builder" element={<FormTemplateBuilderPage />} />
-                        <Route path="/company/forms/submissions/:submissionId" element={<FormSubmissionDetailPage />} />
-                        <Route path="/company/line-items" element={<LineItemsPage />} />
-                        <Route path="/subscribe" element={<SubscribePage />} />
-                        <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
-                        <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
+                        {/* Protected routes - With Layout (Sidebar + TopNav) */}
+                        <Route element={<Layout />}>
+                          <Route path="/company" element={<CompanyPage />} />
+                          <Route path="/company/profile" element={<CompanyProfile />} />
+                          <Route path="/company/workers" element={<WorkerPage />} />
+                          <Route path="/company/workers/:workerId" element={<WorkerDetail />} />
+                          <Route path="/company/compliance" element={<Compliance />} />
+                          <Route path="/company/leave-requests" element={<LeaveRequests />} />
+                          <Route path="/company/invitations" element={<InvitationsPage />} />
+                          <Route path="/company/clients" element={<ClientPage />} />
+                          <Route path="/company/equipments" element={<EquipmentPage />} />
+                          <Route path="/company/customers" element={<CustomersPage />} />
+                          <Route path="/company/settings" element={<SettingsPage />} />
+                          <Route path="/company/jobs" element={<JobsPage />} />
+                          <Route path="/company/jobs/:jobId/details" element={<JobDetailsPage />} />
+                          <Route path="/company/jobs/templates" element={<TemplatesPage />} />
+                          <Route path="/company/jobs/templates/:templateId/fields" element={<TemplateFieldsPage />} />
+                          <Route path="/company/workflows" element={<WorkflowsPage />} />
+                          <Route path="/company/workflows/:workflowId/builder" element={<WorkflowBuilderPage />} />
+                          <Route path="/company/assets" element={<AssetsPage />} />
+                          <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
+                          <Route path="/company/assets/maps" element={<MapsPage />} />
+                          <Route path="/company/forms" element={<FormsPage />} />
+                          <Route path="/company/forms/templates/:templateId/builder" element={<FormTemplateBuilderPage />} />
+                          <Route path="/company/forms/submissions/:submissionId" element={<FormSubmissionDetailPage />} />
+                          <Route path="/company/line-items" element={<LineItemsPage />} />
+                          <Route path="/subscribe" element={<SubscribePage />} />
+                          <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+                          <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
 
-                        {/* Worker routes */}
-                        <Route path="/worker" element={<WorkerDashboard />} />
-                        <Route path="/worker/profile" element={<WorkerProfile />} />
-                        <Route path="/worker/job-workflows" element={<WorkerJobWorkflowsList />} />
-                        <Route path="/worker/job-workflows/:jobWorkflowId" element={<WorkerJobWorkflowDetail />} />
-                        <Route path="/worker/steps" element={<WorkerStepsList />} />
-                        <Route path="/worker/steps/:stepId" element={<WorkerStepDetail />} />
-                        <Route path="/worker/assets" element={<WorkerAssets />} />
-                        <Route path="/worker/forms" element={<WorkerForms />} />
-                        <Route path="/worker/forms/:formId" element={<WorkerFormDetail />} />
+                          {/* Worker routes */}
+                          <Route path="/worker" element={<WorkerDashboard />} />
+                          <Route path="/worker/profile" element={<WorkerProfile />} />
+                          <Route path="/worker/job-workflows" element={<WorkerJobWorkflowsList />} />
+                          <Route path="/worker/job-workflows/:jobWorkflowId" element={<WorkerJobWorkflowDetail />} />
+                          <Route path="/worker/steps" element={<WorkerStepsList />} />
+                          <Route path="/worker/steps/:stepId" element={<WorkerStepDetail />} />
+                          <Route path="/worker/assets" element={<WorkerAssets />} />
+                          <Route path="/worker/forms" element={<WorkerForms />} />
+                          <Route path="/worker/forms/:formId" element={<WorkerFormDetail />} />
 
-                        {/* Catch all route - 404 with Layout */}
-                        <Route path="*" element={<NotFound />} />
-                      </Route>
+                          {/* Catch all route - 404 with Layout */}
+                          <Route path="*" element={<NotFound />} />
+                        </Route>
 
-                      <Route path="/" element={<Navigate to="/login" replace />} />
-                    </Routes>
-                  </ErrorBoundary>
-                  <GlobalModal />
-                </CompanyRoleProvider>
+                        <Route path="/" element={<Navigate to="/login" replace />} />
+                      </Routes>
+                    </ErrorBoundary>
+                    <GlobalModal />
+                  </CompanyRoleProvider>
+                </NotificationProvider>
               </SubscriptionProvider>
             </CurrencyProvider>
           </Router>
