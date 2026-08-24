@@ -80,7 +80,20 @@ describe('notificationReducer', () => {
 
     expect(next.recent).toHaveLength(20);
     expect(next.recent[0]).toEqual(pushed);
-    expect(next.recent.find((n) => n.id === 1)).toBeUndefined();
+    expect(next.recent.find((n) => n.id === 20)).toBeUndefined();
+    expect(next.recent.find((n) => n.id === 1)).toBeDefined();
+  });
+
+  it('PUSHED evicts the oldest item first across repeated overflow, not the newest', () => {
+    let state: NotificationState = { unreadCount: 0, recent: [] };
+    for (let id = 1; id <= 25; id++) {
+      state = notificationReducer(state, { type: 'PUSHED', notification: makeNotification({ id }) });
+    }
+    // Most recent 20 pushes (ids 6..25) should remain, newest (25) first, oldest of the batch (6) last.
+    expect(state.recent).toHaveLength(20);
+    expect(state.recent[0].id).toBe(25);
+    expect(state.recent[19].id).toBe(6);
+    expect(state.recent.find((n) => n.id === 1)).toBeUndefined();
   });
 
   it('MARK_READ marks the matching item read and decrements the count once', () => {

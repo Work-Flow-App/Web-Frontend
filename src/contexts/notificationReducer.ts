@@ -39,11 +39,7 @@ export function notificationReducer(
       if (state.recent.some((n) => n.id === action.notification.id)) {
         return state;
       }
-      let recent = state.recent;
-      if (recent.length >= MAX_RECENT) {
-        recent = recent.slice(1);
-      }
-      recent = [action.notification, ...recent];
+      const recent = [action.notification, ...state.recent].slice(0, MAX_RECENT);
       const unreadCount = action.notification.read ? state.unreadCount : state.unreadCount + 1;
       return { unreadCount, recent };
     }
