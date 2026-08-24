@@ -41,6 +41,7 @@ import { SettingsPage } from './pages/settings/SettingsPage';
 import { MapsPage, AssetsPage, AssetHistory } from './pages/assets';
 import { FormsPage, FormTemplateBuilderPage, FormSubmissionDetailPage } from './pages/forms';
 import { LineItemsPage } from './pages/lineItems';
+import { NotificationsPage } from './pages/notifications/NotificationsPage';
 import { SubscribePage, SubscriptionSuccessPage, SubscriptionCancelPage } from './pages/subscription';
 import { NotFound } from './pages/NotFound';
 import { Layout } from './layouts/Layout';
@@ -116,6 +117,7 @@ function App() {
                           <Route path="/company/forms/templates/:templateId/builder" element={<FormTemplateBuilderPage />} />
                           <Route path="/company/forms/submissions/:submissionId" element={<FormSubmissionDetailPage />} />
                           <Route path="/company/line-items" element={<LineItemsPage />} />
+                          <Route path="/notifications" element={<NotificationsPage />} />
                           <Route path="/subscribe" element={<SubscribePage />} />
                           <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
                           <Route path="/subscription/cancel" element={<SubscriptionCancelPage />} />
