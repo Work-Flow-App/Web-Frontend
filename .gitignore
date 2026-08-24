@@ -41,3 +41,6 @@ nul
 # Ignore all markdown files except main README.md
 *.md
 !README.md
+
+# Superpowers SDD workspaces (scratch — not part of the repo)
+.superpowers/
