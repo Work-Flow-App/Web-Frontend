@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
-import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Menu, MenuItem, ListItemIcon, ListItemText, Badge } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar, BottomTab } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
@@ -22,12 +22,17 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
+import { NotificationDropdown } from '../components/UI/NotificationList';
+import type { INotification } from '../components/UI/NotificationList';
+import { mapNotificationToItem } from '../components/UI/NotificationList/mapNotification';
 import { companyService } from '../services/api/company';
 import { useSessionRestore } from '../hooks/useSessionRestore';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { SubscriptionStatusResponseStatusEnum } from '../../workflow-api';
 import * as S from './Layout.styles';
 import { Place } from '@mui/icons-material';
@@ -125,6 +130,54 @@ const RightActions = ({
         </MenuItem>
       </Menu>
     </S.RightActionsContainer>
+  );
+};
+
+/**
+ * Notification bell with unread badge and dropdown, wired to NotificationContext.
+ */
+const NotificationBell = () => {
+  const { unreadCount, recent, markAsRead, markAllAsRead } = useNotifications();
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const findSource = (id: string) => recent.find((n) => String(n.id) === id);
+
+  const handleItemAction = (item: INotification) => {
+    const source = findSource(item.id);
+    if (source?.id !== undefined) {
+      markAsRead(source.id);
+    }
+    setOpen(false);
+    if (source?.targetUrl) {
+      navigate(source.targetUrl);
+    }
+  };
+
+  return (
+    <NotificationDropdown
+      open={open}
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      notifications={recent.map(mapNotificationToItem)}
+      showClearAll
+      onClearAll={() => markAllAsRead()}
+      onNotificationClick={handleItemAction}
+      onViewClick={handleItemAction}
+      onMailClick={(id) => {
+        const source = findSource(id);
+        if (source?.id !== undefined) {
+          markAsRead(source.id);
+        }
+      }}
+      trigger={
+        <S.ActionButton role="button" aria-label="Notifications">
+          <Badge badgeContent={unreadCount} color="error" max={99}>
+            <NotificationsOutlinedIcon fontSize="small" />
+          </Badge>
+        </S.ActionButton>
+      }
+    />
   );
 };
 
@@ -309,6 +362,7 @@ export const Layout: React.FC = () => {
           isCollapsed={isSidebarCollapsed}
           rightContent={
             <>
+              <NotificationBell />
               {trialDaysLeft !== null && (
                 <S.TrialBadge>
                   <S.TrialBadgeIcon>!</S.TrialBadgeIcon>
