@@ -159,7 +159,7 @@ const NotificationBell = () => {
       open={open}
       onOpen={() => setOpen(true)}
       onClose={() => setOpen(false)}
-      notifications={recent.map(mapNotificationToItem)}
+      notifications={recent.filter((n) => !n.read).map(mapNotificationToItem)}
       showClearAll
       onClearAll={() => markAllAsRead()}
       onViewClick={handleItemAction}
@@ -287,6 +287,7 @@ export const Layout: React.FC = () => {
    */
   const companySidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
+    { id: 'notifications', label: 'Notifications', icon: <NotificationsOutlinedIcon />, href: '/notifications' },
     {
       id: 'workers',
       label: 'Workers',
@@ -318,6 +319,7 @@ export const Layout: React.FC = () => {
 
   const workerSidebarItems: SidebarItem[] = [
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
+    { id: 'notifications', label: 'Notifications', icon: <NotificationsOutlinedIcon />, href: '/notifications' },
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
     { id: 'worker-assets', label: 'My Assets', icon: <BuildOutlinedIcon />, href: '/worker/assets' },

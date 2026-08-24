@@ -19,7 +19,7 @@ type Filter = 'all' | 'unread';
 export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { showError } = useSnackbar();
-  const { markAsRead, markAllAsRead } = useNotifications();
+  const { markAsRead, markAllAsRead, refresh } = useNotifications();
 
   const [filter, setFilter] = useState<Filter>('all');
   const [items, setItems] = useState<NotificationResponse[]>([]);
@@ -75,6 +75,7 @@ export const NotificationsPage: React.FC = () => {
     if (source?.id === undefined) return;
     markAsRead(source.id);
     markLocalRead(source.id);
+    refresh();
     if (source.targetUrl) {
       navigate(source.targetUrl);
     }
@@ -83,6 +84,7 @@ export const NotificationsPage: React.FC = () => {
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    refresh();
   };
 
   return (
@@ -105,6 +107,7 @@ export const NotificationsPage: React.FC = () => {
           if (source?.id === undefined) return;
           markAsRead(source.id);
           markLocalRead(source.id);
+          refresh();
         }}
       />
       {hasNext && (

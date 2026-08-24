@@ -116,6 +116,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       window.removeEventListener('focus', handleFocus);
       socket.deactivate();
       socketRef.current = null;
+      dispatch({ type: 'SET_INITIAL', unreadCount: 0, recent: [] });
     };
   }, [accessToken, refresh, forceLogout]);
 

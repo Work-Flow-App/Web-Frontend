@@ -26,6 +26,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/ws-notifications': {
+        target: 'https://api.dev2.workfloow.app',
+        changeOrigin: true,
+        ws: true,
+        secure: false,
+      },
     },
   },
   test: {
