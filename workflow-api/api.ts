@@ -404,6 +404,11 @@ export const CreateCheckoutSessionRequestPlanTypeEnum = {
 
 export type CreateCheckoutSessionRequestPlanTypeEnum = typeof CreateCheckoutSessionRequestPlanTypeEnum[keyof typeof CreateCheckoutSessionRequestPlanTypeEnum];
 
+export interface CursorPagedResponseNotificationResponse {
+    'data'?: Array<NotificationResponse>;
+    'nextCursor'?: number;
+    'hasNext'?: boolean;
+}
 export interface CustomerAddressDto {
     'houseNumber'?: string;
     'street'?: string;
@@ -1190,6 +1195,33 @@ export const MemberSignupResponseCompanyRoleEnum = {
 } as const;
 
 export type MemberSignupResponseCompanyRoleEnum = typeof MemberSignupResponseCompanyRoleEnum[keyof typeof MemberSignupResponseCompanyRoleEnum];
+
+export interface NotificationResponse {
+    'id'?: number;
+    'type'?: NotificationResponseTypeEnum;
+    'title'?: string;
+    'message'?: string;
+    'targetUrl'?: string;
+    'priority'?: NotificationResponsePriorityEnum;
+    'metadata'?: { [key: string]: any; };
+    'createdAt'?: string;
+    'read'?: boolean;
+}
+
+export const NotificationResponseTypeEnum = {
+    ForceLogout: 'FORCE_LOGOUT',
+    VisitLogAdded: 'VISIT_LOG_ADDED'
+} as const;
+
+export type NotificationResponseTypeEnum = typeof NotificationResponseTypeEnum[keyof typeof NotificationResponseTypeEnum];
+export const NotificationResponsePriorityEnum = {
+    Low: 'LOW',
+    Medium: 'MEDIUM',
+    High: 'HIGH',
+    Urgent: 'URGENT'
+} as const;
+
+export type NotificationResponsePriorityEnum = typeof NotificationResponsePriorityEnum[keyof typeof NotificationResponsePriorityEnum];
 
 export interface PageMetadata {
     'size'?: number;
@@ -11390,6 +11422,330 @@ export class LineItemsApi extends BaseAPI {
      */
     public lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
         return LineItemsApiFp(this.configuration).lineItemUpdate(id, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * NotificationsApi - axios parameter creator
+ */
+export const NotificationsApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @summary Get user notifications via Cursor Pagination
+         * @param {boolean} [unreadOnly] 
+         * @param {number} [cursor] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetNotifications: async (unreadOnly?: boolean, cursor?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/notifications`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (unreadOnly !== undefined) {
+                localVarQueryParameter['unreadOnly'] = unreadOnly;
+            }
+
+            if (cursor !== undefined) {
+                localVarQueryParameter['cursor'] = cursor;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Get unread notification count
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetUnreadCount: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/notifications/unread-count`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Mark all notifications as read
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationMarkAllAsRead: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/notifications/read-all`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Mark single notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationMarkAsRead: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('notificationMarkAsRead', 'id', id)
+            const localVarPath = `/api/v1/notifications/{id}/read`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * NotificationsApi - functional programming interface
+ */
+export const NotificationsApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = NotificationsApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @summary Get user notifications via Cursor Pagination
+         * @param {boolean} [unreadOnly] 
+         * @param {number} [cursor] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CursorPagedResponseNotificationResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetNotifications(unreadOnly, cursor, size, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetNotifications']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get unread notification count
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationGetUnreadCount(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: number; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetUnreadCount(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetUnreadCount']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Mark all notifications as read
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationMarkAllAsRead(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationMarkAllAsRead(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationMarkAllAsRead']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Mark single notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationMarkAsRead(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationMarkAsRead']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * NotificationsApi - factory interface
+ */
+export const NotificationsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = NotificationsApiFp(configuration)
+    return {
+        /**
+         * 
+         * @summary Get user notifications via Cursor Pagination
+         * @param {boolean} [unreadOnly] 
+         * @param {number} [cursor] 
+         * @param {number} [size] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<CursorPagedResponseNotificationResponse> {
+            return localVarFp.notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get unread notification count
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetUnreadCount(options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: number; }> {
+            return localVarFp.notificationGetUnreadCount(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Mark all notifications as read
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationMarkAllAsRead(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.notificationMarkAllAsRead(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Mark single notification as read
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.notificationMarkAsRead(id, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * NotificationsApi - object-oriented interface
+ */
+export class NotificationsApi extends BaseAPI {
+    /**
+     * 
+     * @summary Get user notifications via Cursor Pagination
+     * @param {boolean} [unreadOnly] 
+     * @param {number} [cursor] 
+     * @param {number} [size] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get unread notification count
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationGetUnreadCount(options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationGetUnreadCount(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Mark all notifications as read
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationMarkAllAsRead(options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationMarkAllAsRead(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Mark single notification as read
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationMarkAsRead(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

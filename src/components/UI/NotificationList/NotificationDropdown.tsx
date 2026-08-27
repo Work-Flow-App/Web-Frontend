@@ -112,7 +112,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       <Backdrop open={isOpen} onClick={handleClose} />
       <DropdownContainer ref={containerRef}>
         {triggerWithClick}
-        <DropdownContent open={isOpen} position={position}>
+        <DropdownContent open={isOpen} dropdownPosition={position}>
           <NotificationList
             notifications={notifications}
             {...notificationListProps}
