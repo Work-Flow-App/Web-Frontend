@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -30,6 +30,8 @@ const formatAssetLocation = (asset: AssetResponse): string => {
 
 export const AssetsList: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const hasAutoOpened = useRef(false);
   const [assets, setAssets] = useState<AssetTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -100,7 +102,7 @@ export const AssetsList: React.FC = () => {
   }, [fetchAssets]);
 
   // Handle add asset
-  const handleAddAsset = () => {
+  const handleAddAsset = useCallback(() => {
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
@@ -115,7 +117,17 @@ export const AssetsList: React.FC = () => {
         />
       ),
     });
-  };
+  }, [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchAssets]);
+
+  // Automatically trigger asset creation modal if ?openAddModal=true query parameter is present in URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('openAddModal') === 'true' && !loading && !hasAutoOpened.current) {
+      hasAutoOpened.current = true;
+      navigate('/company/assets', { replace: true });
+      handleAddAsset();
+    }
+  }, [location.search, loading, navigate, handleAddAsset]);
 
   // Handle edit asset
   const handleEditAsset = useCallback(
