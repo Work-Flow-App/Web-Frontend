@@ -101,25 +101,15 @@ export const CompanyProfile: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
 
-  const [activeTab, setActiveTab] = useState(() => {
+  const activeTab = (() => {
     if (tabParam) {
       const idx = TABS.indexOf(tabParam as any);
       if (idx !== -1) return idx;
     }
     return 0;
-  });
-
-  useEffect(() => {
-    if (tabParam) {
-      const idx = TABS.indexOf(tabParam as any);
-      if (idx !== -1 && idx !== activeTab) {
-        setActiveTab(idx);
-      }
-    }
-  }, [tabParam, activeTab]);
+  })();
 
   const handleTabChange = (_: SyntheticEvent, val: number) => {
-    setActiveTab(val);
     setSearchParams({ tab: TABS[val] }, { replace: true });
   };
   const [isEditing, setIsEditing] = useState(false);
