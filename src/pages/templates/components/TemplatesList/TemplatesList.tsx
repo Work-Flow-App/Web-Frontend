@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
@@ -20,6 +20,7 @@ export const TemplatesList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const hasAutoOpened = useRef(false);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps} = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -108,7 +109,8 @@ export const TemplatesList: React.FC = () => {
   // Check if we should auto-open the add template modal
   useEffect(() => {
     const shouldOpenModal = searchParams.get('openAddModal') === 'true';
-    if (shouldOpenModal && !loading) {
+    if (shouldOpenModal && !loading && !hasAutoOpened.current) {
+      hasAutoOpened.current = true;
       // Remove the parameter from URL
       searchParams.delete('openAddModal');
       setSearchParams(searchParams, { replace: true });

@@ -237,6 +237,9 @@ export const CopyTooltip = styled(Box, {
 export const TabsWrapper = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.colors?.grey_100 || theme.palette.divider}`,
   padding: `0 ${rem(28)}`,
+  '@media (max-width: 600px)': {
+    padding: `0 ${rem(16)}`,
+  },
 }));
 
 export const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -245,6 +248,18 @@ export const StyledTabs = styled(Tabs)(({ theme }) => ({
     backgroundColor: theme.palette.success.main,
     height: rem(3),
     borderRadius: `${rem(3)} ${rem(3)} 0 0`,
+    '@media (max-width: 600px)': {
+      display: 'none',
+    },
+  },
+  '@media (max-width: 600px)': {
+    minHeight: 'auto',
+    '& .MuiTabs-flexContainer': {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: rem(8),
+      padding: `${rem(12)} 0`,
+    },
   },
 }));
 
@@ -259,6 +274,18 @@ export const StyledTab = styled(Tab)(({ theme }) => ({
   color: theme.palette.colors?.grey_400 || theme.palette.text.secondary,
   '&.Mui-selected': {
     color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
+  },
+  '@media (max-width: 600px)': {
+    marginRight: 0,
+    maxWidth: 'none',
+    minWidth: 0,
+    width: '100%',
+    padding: `${rem(12)} ${rem(8)}`,
+    minHeight: 'auto',
+    borderBottom: `${rem(2)} solid ${theme.palette.colors?.grey_100 || theme.palette.divider}`,
+    '&.Mui-selected': {
+      borderBottom: `${rem(2)} solid ${theme.palette.success.main}`,
+    },
   },
 }));
 

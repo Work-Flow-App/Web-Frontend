@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { FormTemplatesList, type FormTemplatesListHandle } from './components/FormTemplatesList';
@@ -15,6 +15,7 @@ export const FormsPage: React.FC = () => {
   const activeTab = searchParams.get('tab') === SUBMISSIONS_TAB ? 1 : 0;
   const templatesRef = useRef<FormTemplatesListHandle>(null);
   const submissionsRef = useRef<FormSubmissionsListHandle>(null);
+  const hasAutoOpened = useRef(false);
 
   const handleTabChange = useCallback(
     (_: React.SyntheticEvent, value: number) => {
@@ -22,6 +23,27 @@ export const FormsPage: React.FC = () => {
     },
     [setSearchParams]
   );
+
+  useEffect(() => {
+    if (hasAutoOpened.current) return;
+
+    const openAddModal = searchParams.get('openAddModal') === 'true';
+    const openAddSubmission = searchParams.get('openAddSubmission') === 'true';
+
+    if (openAddModal && activeTab === 0) {
+      if (templatesRef.current) {
+        hasAutoOpened.current = true;
+        setSearchParams({}, { replace: true });
+        templatesRef.current.openCreate();
+      }
+    } else if (openAddSubmission && activeTab === 1) {
+      if (submissionsRef.current) {
+        hasAutoOpened.current = true;
+        setSearchParams({ tab: SUBMISSIONS_TAB }, { replace: true });
+        submissionsRef.current.openCreate();
+      }
+    }
+  }, [searchParams, activeTab, setSearchParams]);
 
   const actions = useMemo(
     () => [

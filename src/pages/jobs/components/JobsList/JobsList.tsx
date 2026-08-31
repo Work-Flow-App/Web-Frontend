@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { ViewTab } from './JobFilterPanel';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import { Search } from '../../../../components/UI/Search';
@@ -46,7 +46,25 @@ import { JOB_STATUS_OPTIONS } from '../../../../enums';
 
 export const JobsList: React.FC = () => {
   const navigate = useNavigate();
-  const [viewTab, setViewTab] = useState<ViewTab>('active');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [viewTab, setViewTab] = useState<ViewTab>(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'completed' || tabParam === 'archived') {
+      return tabParam;
+    }
+    return 'active';
+  });
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'completed' || tabParam === 'archived') {
+      setViewTab(tabParam);
+      // Clean query parameter
+      searchParams.delete('tab');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const [hasShownNoTemplateModal, setHasShownNoTemplateModal] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,6 +75,7 @@ export const JobsList: React.FC = () => {
   const [highlightedJobId, setHighlightedJobId] = useState<string | number | undefined>(undefined);
 
   const location = useLocation();
+  const hasAutoOpened = useRef(false);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
   const { canMutate, reason } = useCanMutate();
@@ -233,7 +252,7 @@ export const JobsList: React.FC = () => {
     navigate,
   ]);
 
-  const handleAddJob = () => {
+  const handleAddJob = useCallback(() => {
     if (!canMutate) {
       showError(reason ?? 'Your subscription is inactive.');
       return;
@@ -275,7 +294,23 @@ export const JobsList: React.FC = () => {
         />
       ),
     });
-  };
+  }, [canMutate, reason, templates, navigate, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchJobs, showError]);
+
+  // Automatically trigger job creation modal if ?openAddModal=true query parameter is present in URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (
+      queryParams.get('openAddModal') === 'true' &&
+      !loadingTemplates &&
+      templatesData !== undefined &&
+      !hasAutoOpened.current
+    ) {
+      hasAutoOpened.current = true;
+      // Clear the query parameter immediately to avoid duplicate popups on reload
+      navigate('/company/jobs', { replace: true });
+      handleAddJob();
+    }
+  }, [location.search, loadingTemplates, templatesData, navigate, handleAddJob]);
 
   const handleRowClick = useCallback((job: JobTableRow) => navigate(`/company/jobs/${job.id}/details`), [navigate]);
 
