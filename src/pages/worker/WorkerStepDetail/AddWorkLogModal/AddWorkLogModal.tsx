@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Box } from '@mui/material';
 import dayjs from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -11,6 +10,7 @@ import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { workerJobWorkflowService } from '../../../../services/api';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
+import * as S from './AddWorkLogModal.styles';
 
 export interface AddWorkLogModalProps {
   stepId: number;
@@ -76,37 +76,20 @@ export const AddWorkLogModal: React.FC<AddWorkLogModalProps> = ({ stepId, onSucc
   return (
     <FormProvider {...methods}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            width: '100%',
-            minWidth: 0,
-          }}
-        >
+        <S.ModalFormContainer>
           <FormField label="Visit Date" required>
             <Input name="visitDate" type="date" placeHolder="Select date" fullWidth />
           </FormField>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-              gap: 2,
-              width: '100%',
-              minWidth: 0,
-              '& > *': { minWidth: 0 },
-            }}
-          >
+          <S.ModalFormRow>
             <TimeField name="timeIn" label="Start Time" />
             <TimeField name="timeOut" label="End Time" />
-          </Box>
+          </S.ModalFormRow>
 
           <FormField label="Description">
             <TextArea name="description" placeHolder="What was done during this visit..." rows={3} fullWidth />
           </FormField>
-        </Box>
+        </S.ModalFormContainer>
       </LocalizationProvider>
     </FormProvider>
   );
