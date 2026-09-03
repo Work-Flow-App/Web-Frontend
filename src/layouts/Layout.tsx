@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
-import { Menu, MenuItem, ListItemIcon, ListItemText, Badge } from '@mui/material';
+import { Menu, MenuItem, ListItemIcon, ListItemText, Badge, Box } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar, BottomTab } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
@@ -25,7 +25,7 @@ import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlin
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
-import { NotificationDropdown } from '../components/UI/NotificationList';
+import { NotificationDropdown, resolveNotificationTargetUrl } from '../components/UI/NotificationList';
 import type { INotification } from '../components/UI/NotificationList';
 import { mapNotificationToItem } from '../components/UI/NotificationList/mapNotification';
 import { companyService } from '../services/api/company';
@@ -33,6 +33,8 @@ import { useSessionRestore } from '../hooks/useSessionRestore';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import { isWorkerRole } from '../utils/roles';
 import { SubscriptionStatusResponseStatusEnum } from '../../workflow-api';
 import * as S from './Layout.styles';
 import { Place } from '@mui/icons-material';
@@ -138,8 +140,11 @@ const RightActions = ({
  */
 const NotificationBell = () => {
   const { unreadCount, recent, markAsRead, markAllAsRead } = useNotifications();
+  const { userRole } = useAuth();
+  const { showInfo } = useSnackbar();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const isWorker = isWorkerRole(userRole);
 
   const findSource = (id: string) => recent.find((n) => String(n.id) === id);
 
@@ -149,8 +154,12 @@ const NotificationBell = () => {
       markAsRead(source.id);
     }
     setOpen(false);
-    if (source?.targetUrl) {
-      navigate(source.targetUrl);
+
+    const { url, unresolved } = resolveNotificationTargetUrl(source ?? {}, isWorker);
+    if (url) {
+      navigate(url);
+    } else if (unresolved) {
+      showInfo("Marked as read — a direct link to this isn't available yet.");
     }
   };
 
@@ -159,16 +168,39 @@ const NotificationBell = () => {
       open={open}
       onOpen={() => setOpen(true)}
       onClose={() => setOpen(false)}
-      notifications={recent.filter((n) => !n.read).map(mapNotificationToItem)}
-      showClearAll
-      onClearAll={() => markAllAsRead()}
+      notifications={recent.map(mapNotificationToItem)}
+      showMarkAllRead
+      onMarkAllRead={() => markAllAsRead()}
       onViewClick={handleItemAction}
-      onMailClick={(id) => {
+      onMarkAsRead={(id) => {
         const source = findSource(id);
         if (source?.id !== undefined) {
           markAsRead(source.id);
         }
       }}
+      footer={
+        <Box
+          component="button"
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            navigate('/notifications');
+          }}
+          sx={{
+            border: 'none',
+            background: 'transparent',
+            padding: 0,
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            fontFamily: 'Manrope, sans-serif',
+            color: 'primary.main',
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' },
+          }}
+        >
+          View all notifications
+        </Box>
+      }
       trigger={
         <S.ActionButton role="button" aria-label="Notifications">
           <Badge badgeContent={unreadCount} color="error" max={99}>
@@ -230,7 +262,7 @@ export const Layout: React.FC = () => {
     return userRole.replace('ROLE_', '').substring(0, 2).toUpperCase();
   }, [userRole]);
 
-  const isWorker = userRole === 'ROLE_WORKER' || userRole === 'WORKER';
+  const isWorker = isWorkerRole(userRole);
 
   const [userInitials, setUserInitials] = useState(roleInitials);
 
@@ -287,7 +319,6 @@ export const Layout: React.FC = () => {
    */
   const companySidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/company' },
-    { id: 'notifications', label: 'Notifications', icon: <NotificationsOutlinedIcon />, href: '/notifications' },
     {
       id: 'workers',
       label: 'Workers',
@@ -319,7 +350,6 @@ export const Layout: React.FC = () => {
 
   const workerSidebarItems: SidebarItem[] = [
     { id: 'worker-dashboard', label: 'Task Overview', icon: <DashboardIcon />, href: '/worker' },
-    { id: 'notifications', label: 'Notifications', icon: <NotificationsOutlinedIcon />, href: '/notifications' },
     { id: 'worker-job-workflows', label: 'My Workflows', icon: <AccountTreeIcon />, href: '/worker/job-workflows' },
     { id: 'worker-steps', label: 'My Tasks', icon: <AssignmentIcon />, href: '/worker/steps' },
     { id: 'worker-assets', label: 'My Assets', icon: <BuildOutlinedIcon />, href: '/worker/assets' },

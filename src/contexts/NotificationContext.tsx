@@ -74,9 +74,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const refresh = useCallback(async (): Promise<void> => {
     if (!accessToken) return;
     try {
+      // Fetch recent activity regardless of read state (not just unread) so the bell
+      // dropdown reads like a normal recent-activity feed — unread items are still
+      // highlighted via NotificationItem, matching the unread badge/count below.
       const [countRes, listRes] = await Promise.all([
         notificationService.getUnreadCount(),
-        notificationService.list({ unreadOnly: true, size: INITIAL_FETCH_SIZE }),
+        notificationService.list({ size: INITIAL_FETCH_SIZE }),
       ]);
       dispatch({
         type: 'SET_INITIAL',
