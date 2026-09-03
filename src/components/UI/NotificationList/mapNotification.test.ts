@@ -21,6 +21,8 @@ describe('mapNotificationToItem', () => {
       subtitle: 'A worker added a visit log',
       isRead: false,
       timestamp: new Date('2026-08-24T10:00:00.000Z'),
+      type: 'VISIT_LOG_ADDED',
+      priority: 'MEDIUM',
     });
   });
 
@@ -33,6 +35,8 @@ describe('mapNotificationToItem', () => {
       subtitle: undefined,
       isRead: false,
       timestamp: undefined,
+      type: undefined,
+      priority: undefined,
     });
   });
 });

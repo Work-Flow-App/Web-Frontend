@@ -42,7 +42,7 @@ export interface NotificationDropdownProps extends INotificationList {
  * <NotificationDropdown
  *   trigger={<IconButton><NotificationIcon /></IconButton>}
  *   notifications={notifications}
- *   onMailClick={(id) => console.log(id)}
+ *   onMarkAsRead={(id) => console.log(id)}
  *   onViewClick={(notif) => console.log(notif)}
  * />
  * ```
