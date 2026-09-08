@@ -13,6 +13,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import { rem } from '../../../../components/UI/Typography/utility';
 
 // ─── Containers & Layout ───────────────────────────────────────────────────
 
@@ -398,10 +399,27 @@ export const DateValueText = styled('span')(({ theme }) => ({
 
 // ─── Header Controls & Buttons (White Background) ──────────────────────────
 
+export const WorkflowTitleText = styled('span')(() => ({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0,
+}));
+
 export const HeaderActionsBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
+  flexShrink: 0,
+  '@media (max-width: 600px)': {
+    gap: theme.spacing(0.5),
+    '& .MuiIconButton-root': {
+      padding: rem(3),
+      '& .MuiSvgIcon-root': {
+        fontSize: rem(18),
+      },
+    },
+  },
 }));
 
 export const ReOrderWhiteButton = styled(Button)<{ isreordering?: string }>(({ theme, isreordering }) => ({
@@ -414,9 +432,17 @@ export const ReOrderWhiteButton = styled(Button)<{ isreordering?: string }>(({ t
   borderColor: isreordering === 'true' ? theme.palette.primary.main : theme.palette.grey[300],
   color: isreordering === 'true' ? theme.palette.primary.main : theme.palette.text.primary,
   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
   '&:hover': {
     backgroundColor: '#FAFAFA',
     borderColor: theme.palette.primary.main,
+  },
+  '@media (max-width: 600px)': {
+    fontSize: rem(11),
+    padding: `${rem(2)} ${rem(8)}`,
+    minWidth: 'auto',
+    height: rem(26),
   },
 }));
 
@@ -460,12 +486,21 @@ export const WorkerAvatarBox = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   fontSize: 10,
   fontWeight: 600,
+  '@media (max-width: 600px)': {
+    width: rem(20),
+    height: rem(20),
+    fontSize: rem(9),
+  },
 }));
 
 export const WorkerAvatarsRow = styled('span')(({ theme }) => ({
   display: 'inline-flex',
   gap: theme.spacing(0.5),
   marginLeft: theme.spacing(1),
+  flexShrink: 0,
+  '@media (max-width: 600px)': {
+    marginLeft: theme.spacing(0.5),
+  },
 }));
 
 export const HeaderButtonsRow = styled(Box)(({ theme }) => ({

@@ -52,7 +52,7 @@ export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
                   <S.DayText variant="h4">{day}</S.DayText>
                 </S.DateBlock>
                 <S.TaskDetails>
-                  <S.TaskNameText variant="subtitle2">{job.name}</S.TaskNameText>
+                  <S.TaskNameText variant="subtitle2" title={job.name}>{job.name}</S.TaskNameText>
                   <S.SubRow>
                     <S.PriorityLabel priority={job.priority}>
                       {job.priority} Priority

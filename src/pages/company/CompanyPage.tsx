@@ -424,7 +424,7 @@ export const CompanyPage: React.FC = () => {
       return dateB - dateA;
     });
 
-    return sorted.slice(0, 5).map((job) => ({
+    return sorted.slice(0, 10).map((job) => ({
       id: job.id || 0,
       name: `Job #${job.jobRef || job.id} - ${job.templateName || 'Job'}`,
       priority: 'Medium',
