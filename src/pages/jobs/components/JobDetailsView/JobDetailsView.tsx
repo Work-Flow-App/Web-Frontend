@@ -27,6 +27,7 @@ import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
 import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
 import { JobEstimateTab } from '../JobDetailsTabs/tabs/JobEstimateTab';
 import { JobWorkLogsTab } from '../JobDetailsTabs/tabs/JobWorkLogsTab';
+import { JobFormsTab } from '../JobDetailsTabs/tabs/JobFormsTab';
 import { CustomerName, JobValue, Status, Progress, Created, OverviewContainer } from '../OverviewField';
 
 export const JobDetailsView: React.FC = () => {
@@ -178,9 +179,9 @@ export const JobDetailsView: React.FC = () => {
           {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
             History
           </S.TabButton> */}
-          {/* <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
-            Form
-          </S.TabButton> */}
+          <S.TabButton active={activeTab === 'forms'} onClick={() => setActiveTab('forms')}>
+            Forms
+          </S.TabButton>
         </S.TabsContainer>
 
         {/* Overview Fields */}
@@ -226,6 +227,10 @@ export const JobDetailsView: React.FC = () => {
             ) : activeTab === 'estimate' ? (
               <S.DetailsSection>
                 <JobEstimateTab job={job} />
+              </S.DetailsSection>
+            ) : activeTab === 'forms' ? (
+              <S.DetailsSection>
+                <JobFormsTab job={job} />
               </S.DetailsSection>
             ) : (
               <>
