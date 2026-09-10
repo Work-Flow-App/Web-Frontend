@@ -39,6 +39,7 @@ import { EquipmentPage } from './pages/equipment/EquipmentPage';
 import { CustomersPage } from './pages/customers/CustomersPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { MapsPage, AssetsPage, AssetHistory } from './pages/assets';
+import { AssetGroupsPage } from './pages/assetGroups';
 import { FormsPage, FormTemplateBuilderPage, FormSubmissionDetailPage } from './pages/forms';
 import { LineItemsPage } from './pages/lineItems';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
@@ -111,6 +112,7 @@ function App() {
                           <Route path="/company/workflows" element={<WorkflowsPage />} />
                           <Route path="/company/workflows/:workflowId/builder" element={<WorkflowBuilderPage />} />
                           <Route path="/company/assets" element={<AssetsPage />} />
+                          <Route path="/company/assets/groups" element={<AssetGroupsPage />} />
                           <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
                           <Route path="/company/assets/maps" element={<MapsPage />} />
                           <Route path="/company/forms" element={<FormsPage />} />
