@@ -8,6 +8,7 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { extractDropdownValue } from '../../../../utils/dropdownValue';
 
 export interface AssetFormProps {
   isModal?: boolean;
@@ -53,6 +54,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
             purchaseDate: asset.purchaseDate || '',
             depreciationRate: asset.depreciationRate || 0,
             salvageValue: asset.salvageValue || 0,
+            groupId: asset.groupId ?? null,
             warehouseAddressStreet: [
               asset.warehouseAddress?.street,
               asset.warehouseAddress?.city,
@@ -94,6 +96,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           ...(data.warehouseAddressLongitude != null && { longitude: data.warehouseAddressLongitude }),
         };
         const hasWarehouseAddress = Object.keys(warehouseAddress).length > 0;
+        const groupId = extractDropdownValue<number>(data.groupId);
 
         if (isEditMode) {
           // Update existing asset - only updatable fields
@@ -108,6 +111,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           if (data.depreciationRate !== undefined) updatePayload.depreciationRate = data.depreciationRate;
           if (data.salvageValue !== undefined) updatePayload.salvageValue = data.salvageValue;
           if (hasWarehouseAddress) updatePayload.warehouseAddress = warehouseAddress;
+          updatePayload.groupId = groupId;
 
           const response = await assetService.updateAsset(assetId!, updatePayload);
           showSuccess(response.data.name ? `${response.data.name} updated successfully` : 'Asset updated successfully');
@@ -124,6 +128,7 @@ export const AssetForm: React.FC<AssetFormProps> = ({ isModal = false, assetId, 
           if (data.assetTag) createPayload.assetTag = data.assetTag;
           if (data.salvageValue !== undefined) createPayload.salvageValue = data.salvageValue;
           if (hasWarehouseAddress) createPayload.warehouseAddress = warehouseAddress;
+          if (groupId !== undefined) createPayload.groupId = groupId;
 
           const response = await assetService.createAsset(createPayload);
           showSuccess(response.data.name ? `${response.data.name} added successfully` : 'Asset added successfully');

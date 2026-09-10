@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
+import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../../components/UI/GlobalModal';
-import { assetService, AssetResponseLocationTypeEnum } from '../../../../services/api';
-import type { AssetResponse } from '../../../../services/api';
+import { assetService, assetGroupService, AssetResponseLocationTypeEnum } from '../../../../services/api';
+import type { AssetResponse, AssetGroupResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
@@ -35,9 +36,25 @@ export const AssetsList: React.FC = () => {
   const [assets, setAssets] = useState<AssetTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [groupFilter, setGroupFilter] = useState<number | ''>('');
+  const [groups, setGroups] = useState<AssetGroupResponse[]>([]);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
   const { formatCurrency } = useCurrency();
+
+  // Fetch groups for the group filter dropdown
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await assetGroupService.getAllAssetGroups();
+        setGroups(response.data.content || []);
+      } catch (error) {
+        console.error('Error fetching asset groups:', error);
+      }
+    };
+
+    fetchGroups();
+  }, []);
 
   // Fetch assets
   const fetchAssets = useCallback(async () => {
@@ -58,7 +75,7 @@ export const AssetsList: React.FC = () => {
         archived = true;
       }
 
-      const response = await assetService.getAllAssets(0, 100, archived, available);
+      const response = await assetService.getAllAssets(0, 100, archived, available, groupFilter || undefined);
       const assetsData = response.data.content ? Array.isArray(response.data.content) ? response.data.content : [] : [];
 
       // Transform API response to table format
@@ -82,6 +99,7 @@ export const AssetsList: React.FC = () => {
           currentValue: undefined, // Will fetch separately if needed
           status,
           currentLocation: formatAssetLocation(asset),
+          groupName: asset.groupName,
           available: asset.available || false,
           archived: asset.archived || false,
           createdAt: asset.createdAt,
@@ -94,9 +112,9 @@ export const AssetsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, showError]);
+  }, [statusFilter, groupFilter, showError]);
 
-  // Load assets on mount and when filter changes
+  // Load assets on mount and when filters change
   useEffect(() => {
     fetchAssets();
   }, [fetchAssets]);
@@ -248,6 +266,15 @@ export const AssetsList: React.FC = () => {
     { label: 'Archived', value: 'archived' },
   ];
 
+  // Group filter options for the header's group dropdown
+  const groupFilterOptions = useMemo(
+    () => [
+      { label: 'All Groups', value: '' },
+      ...groups.map((group) => ({ label: group.name || '', value: group.id || 0 })),
+    ],
+    [groups]
+  );
+
   return (
     <PageWrapper
       title="All Assets"
@@ -260,6 +287,17 @@ export const AssetsList: React.FC = () => {
           color: 'primary',
         },
       ]}
+      headerExtra={
+        <StandaloneDropdown
+          name="assetGroupFilter"
+          placeHolder="All Groups"
+          preFetchedOptions={groupFilterOptions}
+          defaultValue=""
+          onChange={(value) => setGroupFilter((value as number | '') || '')}
+          disableClearable
+          hideErrorMessage
+        />
+      }
       dropdownOptions={statusFilterOptions}
       dropdownValue={statusFilter}
       onDropdownChange={(value) => setStatusFilter(value as string)}

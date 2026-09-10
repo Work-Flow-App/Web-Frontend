@@ -12,6 +12,7 @@ export interface AssetTableRow {
   currentValue?: number;
   status: 'available' | 'in-use' | 'archived';
   currentLocation?: string;
+  groupName?: string;
   available: boolean;
   archived: boolean;
   createdAt?: string;
@@ -59,6 +60,14 @@ export const generateAssetColumns = (fmt: (val?: number | null) => string): ITab
     sortable: true,
     width: 'auto',
     render: (row) => row.currentLocation || '-',
+  },
+  {
+    id: 'groupName',
+    label: 'Group',
+    accessor: 'groupName',
+    sortable: true,
+    width: 'auto',
+    render: (row) => row.groupName || '-',
   },
   {
     id: 'status',
