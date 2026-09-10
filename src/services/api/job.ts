@@ -5,6 +5,7 @@ import type {
   JobUpdateRequest,
   PagedModelJobResponse,
   JobGetAllStatusEnum,
+  FormSubmissionResponse,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
@@ -50,6 +51,11 @@ export const jobService = {
 
   async getJobById(id: number) {
     return await getJobApi().jobGet(id);
+  },
+
+  async getJobForms(id: number): Promise<{ data: FormSubmissionResponse[] }> {
+    const res = await getJobApi().jobGetJobForms(id);
+    return { ...res, data: Array.isArray(res.data) ? res.data : [] };
   },
 
   async createJob(data: JobCreateRequest) {

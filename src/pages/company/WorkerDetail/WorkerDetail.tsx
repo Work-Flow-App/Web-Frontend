@@ -61,33 +61,45 @@ export const WorkerDetail: React.FC = () => {
 
   const [isEditingRate, setIsEditingRate] = useState(false);
   const [rateInput, setRateInput] = useState('');
+  const [overtimeRateInput, setOvertimeRateInput] = useState('');
   const [savingRate, setSavingRate] = useState(false);
 
   const handleRateEditStart = useCallback(() => {
     setRateInput(worker?.hourlyRate != null ? String(worker.hourlyRate) : '');
+    setOvertimeRateInput(worker?.overtimeRate != null ? String(worker.overtimeRate) : '');
     setIsEditingRate(true);
-  }, [worker?.hourlyRate]);
+  }, [worker?.hourlyRate, worker?.overtimeRate]);
 
   const handleRateCancel = useCallback(() => setIsEditingRate(false), []);
 
   const handleRateSave = useCallback(async () => {
-    const parsed = Number(rateInput);
-    if (rateInput.trim() === '' || Number.isNaN(parsed) || parsed < 0) {
+    const parsedRate = Number(rateInput);
+    if (rateInput.trim() === '' || Number.isNaN(parsedRate) || parsedRate < 0) {
       showError('Enter a valid hourly rate.');
       return;
     }
+
+    let parsedOvertimeRate: number | undefined;
+    if (overtimeRateInput.trim() !== '') {
+      parsedOvertimeRate = Number(overtimeRateInput);
+      if (Number.isNaN(parsedOvertimeRate) || parsedOvertimeRate < 0) {
+        showError('Enter a valid overtime rate.');
+        return;
+      }
+    }
+
     setSavingRate(true);
     try {
-      await workerService.updateWorkerRate(numericWorkerId, parsed);
+      await workerService.updateWorkerRate(numericWorkerId, parsedRate, parsedOvertimeRate);
       refetchWorker();
       setIsEditingRate(false);
-      showSuccess('Hourly rate updated.');
+      showSuccess('Rates updated.');
     } catch (error) {
-      showError(extractErrorMessage(error, 'Failed to update hourly rate'));
+      showError(extractErrorMessage(error, 'Failed to update rates'));
     } finally {
       setSavingRate(false);
     }
-  }, [rateInput, numericWorkerId, refetchWorker, showSuccess, showError]);
+  }, [rateInput, overtimeRateInput, numericWorkerId, refetchWorker, showSuccess, showError]);
 
   const {
     data: rawCertificates,
@@ -221,10 +233,10 @@ export const WorkerDetail: React.FC = () => {
         <WeeklyHoursCard fetchHours={fetchWorkerWeeklyHours} />
 
         <S.RateCard>
-          <S.RateMainCol>
-            <S.RateLabel>Hourly Rate</S.RateLabel>
-            {isEditingRate ? (
-              <S.RateEditRow>
+          <S.RateColsRow>
+            <S.RateMainCol>
+              <S.RateLabel>Hourly Rate</S.RateLabel>
+              {isEditingRate ? (
                 <TextField
                   type="number"
                   size="small"
@@ -235,15 +247,7 @@ export const WorkerDetail: React.FC = () => {
                   slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                   sx={{ width: 120 }}
                 />
-                <IconButton size="small" color="success" onClick={handleRateSave} disabled={savingRate} aria-label="Save rate">
-                  <CheckIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" color="secondary" onClick={handleRateCancel} disabled={savingRate} aria-label="Cancel">
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </S.RateEditRow>
-            ) : (
-              <S.RateEditRow>
+              ) : (
                 <S.RateValue $empty={worker?.hourlyRate == null}>
                   {worker?.hourlyRate != null ? (
                     <>
@@ -254,14 +258,55 @@ export const WorkerDetail: React.FC = () => {
                     'Not set'
                   )}
                 </S.RateValue>
-                {canManageWorkers && (
-                  <IconButton size="small" variant="text" color="secondary" onClick={handleRateEditStart} aria-label="Edit rate">
-                    <EditOutlinedIcon fontSize="small" />
+              )}
+            </S.RateMainCol>
+
+            <S.RateMainCol>
+              <S.RateLabel>Overtime Rate</S.RateLabel>
+              {isEditingRate ? (
+                <TextField
+                  type="number"
+                  size="small"
+                  value={overtimeRateInput}
+                  onChange={(e) => setOvertimeRateInput(e.target.value)}
+                  disabled={savingRate}
+                  placeholder="Optional"
+                  slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                  sx={{ width: 120 }}
+                />
+              ) : (
+                <S.RateValue $empty={worker?.overtimeRate == null}>
+                  {worker?.overtimeRate != null ? (
+                    <>
+                      {worker.overtimeRate}
+                      <span>/hr</span>
+                    </>
+                  ) : (
+                    'Not set'
+                  )}
+                </S.RateValue>
+              )}
+            </S.RateMainCol>
+          </S.RateColsRow>
+
+          {canManageWorkers && (
+            <S.RateEditRow>
+              {isEditingRate ? (
+                <>
+                  <IconButton size="small" color="success" onClick={handleRateSave} disabled={savingRate} aria-label="Save rates">
+                    <CheckIcon fontSize="small" />
                   </IconButton>
-                )}
-              </S.RateEditRow>
-            )}
-          </S.RateMainCol>
+                  <IconButton size="small" color="secondary" onClick={handleRateCancel} disabled={savingRate} aria-label="Cancel">
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </>
+              ) : (
+                <IconButton size="small" variant="text" color="secondary" onClick={handleRateEditStart} aria-label="Edit rates">
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              )}
+            </S.RateEditRow>
+          )}
         </S.RateCard>
       </S.StatsRow>
 

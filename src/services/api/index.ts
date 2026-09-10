@@ -75,6 +75,9 @@ export type {
   PagedModelAssetResponse,
 } from './asset';
 
+export { assetGroupService } from './assetGroup';
+export type { AssetGroupResponse, AssetGroupCreateRequest, PagedModelAssetGroupResponse } from './assetGroup';
+
 export { workflowService } from './workflow';
 export type {
   WorkflowResponse,
