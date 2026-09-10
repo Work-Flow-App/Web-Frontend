@@ -12,6 +12,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
+import CategoryIcon from '@mui/icons-material/Category';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -343,6 +344,7 @@ export const Layout: React.FC = () => {
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
+    { id: 'asset-groups', label: 'Asset Groups', icon: <CategoryIcon />, href: '/company/assets/groups' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'forms', label: 'Forms', icon: <DescriptionOutlinedIcon />, href: '/company/forms' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },

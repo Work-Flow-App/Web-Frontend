@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { Loader } from '../../components/UI';
 import { Button } from '../../components/UI/Button';
@@ -234,6 +235,20 @@ export const FormSubmissionDetailPage: React.FC = () => {
                   <span className={submission.workerName ? 'value' : 'value muted'}>{submission.workerName || 'Unassigned'}</span>
                 </S.MetaText>
               </S.MetaItem>
+              {submission.jobRef != null && (
+                <S.MetaItem
+                  onClick={() => navigate(`/company/jobs/${submission.jobRef}/details`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <S.MetaIconBadge tint={floowColors.chart.tertiary}>
+                    <WorkOutlineIcon />
+                  </S.MetaIconBadge>
+                  <S.MetaText>
+                    <span className="label">Job</span>
+                    <span className="value">Job #{submission.jobRef}</span>
+                  </S.MetaText>
+                </S.MetaItem>
+              )}
             </S.MetaRow>
 
             <S.SendToWorkerPanel>

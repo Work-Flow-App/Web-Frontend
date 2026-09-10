@@ -46,6 +46,25 @@ export const HoursValue = styled(Typography)(({ theme }) => ({
   },
 }));
 
+export const BreakdownRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: rem(6),
+  fontSize: rem(13),
+  color: theme.palette.colors?.grey_600 || theme.palette.text.secondary,
+}));
+
+export const BreakdownDot = styled('span')(({ theme }) => ({
+  color: theme.palette.colors?.grey_200 || theme.palette.grey[300],
+}));
+
+export const PayValue = styled(Typography)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: 600,
+  color: theme.palette.text.primary,
+}));
+
 export const WeekRangeRow = styled(Box)({
   display: 'flex',
   alignItems: 'center',
