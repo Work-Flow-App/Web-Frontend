@@ -60,19 +60,46 @@ export const TimelineContainer = styled(Box)(() => ({
   },
 }));
 
-export const TimelineItem = styled(Box)(() => ({
+export const TimelineItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'flex-start',
   gap: rem(12),
   position: 'relative',
+  cursor: 'pointer',
+  padding: `${rem(6)} ${rem(8)}`,
+  borderRadius: rem(8),
+  transition: 'background-color 0.15s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
 }));
 
 export const IconWrapper = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'statusType',
-})<{ statusType?: string }>(({ statusType }) => {
+  shouldForwardProp: (prop) => prop !== 'statusType' && prop !== 'activityType',
+})<{ statusType?: string; activityType?: string }>(({ statusType, activityType }) => {
+  const type = activityType?.toUpperCase();
   let bg = '#E0F2FE';
   let fg = '#0284C7';
-  if (statusType === 'completed') {
+
+  if (type === 'COMMENT' || type === 'COMMENT_ADDED') {
+    bg = '#EEF2FF';
+    fg = '#6366F1';
+  } else if (type === 'ATTACHMENT_ADDED') {
+    bg = '#FDF2F8';
+    fg = '#EC4899';
+  } else if (type === 'ATTACHMENT_REMOVED' || type === 'ATTACHMENT_DELETED') {
+    bg = '#FEE2E2';
+    fg = '#EF4444';
+  } else if (type === 'WORKER_ASSIGNED' || type === 'WORKER_UNASSIGNED') {
+    bg = '#EFF6FF';
+    fg = '#3B82F6';
+  } else if (type === 'STATUS_CHANGED') {
+    bg = '#F5F3FF';
+    fg = '#8B5CF6';
+  } else if (type === 'STEP_CREATED') {
+    bg = '#ECFDF5';
+    fg = '#10B981';
+  } else if (statusType === 'completed') {
     bg = '#D1FAE5';
     fg = '#059669';
   } else if (statusType === 'ongoing' || statusType === 'started') {
@@ -105,6 +132,7 @@ export const ContentWrapper = styled(Box)(() => ({
   flexDirection: 'column',
   gap: rem(2),
   flex: 1,
+  minWidth: 0,
 }));
 
 export const ActivityLine = styled(Box)(() => ({
@@ -133,20 +161,33 @@ export const StepNameText = styled(Typography)(({ theme }) => ({
 }));
 
 export const StatusBadge = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'status',
-})<{ status: string }>(({ theme, status }) => {
+  shouldForwardProp: (prop) => prop !== 'status' && prop !== 'badgeType',
+})<{ status?: string; badgeType?: string }>(({ theme, status, badgeType }) => {
   let bg = theme.palette.grey[100];
   let fg = theme.palette.text.secondary;
 
-  if (status === 'completed') {
+  const t = (badgeType || status)?.toLowerCase();
+  if (t === 'comment') {
+    bg = '#EEF2FF';
+    fg = '#4F46E5';
+  } else if (t === 'attachment') {
+    bg = '#FDF2F8';
+    fg = '#DB2777';
+  } else if (t === 'assigned' || t === 'worker') {
+    bg = '#EFF6FF';
+    fg = '#2563EB';
+  } else if (t === 'completed' || t === 'created') {
     bg = '#E6F4EA';
     fg = '#137333';
-  } else if (status === 'ongoing' || status === 'started') {
+  } else if (t === 'ongoing' || t === 'started') {
     bg = '#FEF7E0';
     fg = '#B06000';
-  } else if (status === 'pending' || status === 'initiated') {
+  } else if (t === 'pending' || t === 'initiated') {
     bg = '#E8F0FE';
     fg = '#1A73E8';
+  } else if (t === 'alert' || t === 'failed') {
+    bg = '#FEE2E2';
+    fg = '#DC2626';
   }
 
   return {
@@ -159,6 +200,19 @@ export const StatusBadge = styled(Box, {
     color: fg,
   };
 });
+
+export const MessageText = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  color: theme.palette.text.secondary,
+  lineHeight: 1.35,
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  wordBreak: 'break-word',
+  marginTop: rem(2),
+}));
 
 export const MetaText = styled(Typography)(({ theme }) => ({
   fontSize: rem(11),

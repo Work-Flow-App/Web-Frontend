@@ -104,6 +104,7 @@ export type {
   StepCommentCreateRequest,
   StepCommentResponse,
   StepTimelineItemResponse,
+  StepActivityResponse,
   StepAttachmentResponse,
 } from './stepActivity';
 

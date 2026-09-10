@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
 import type { TaskData } from '../types';
 import * as S from './JobsDueSoonWidget.styles';
@@ -7,13 +8,26 @@ interface JobsDueSoonWidgetProps {
   onViewJobs: () => void;
   jobs?: TaskData[];
   loading?: boolean;
+  onJobClick?: (jobId: number) => void;
 }
 
 export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
   onViewJobs,
   jobs = [],
   loading = false,
+  onJobClick,
 }) => {
+  const navigate = useNavigate();
+
+  const handleJobClick = (jobId?: number) => {
+    if (!jobId) return;
+    if (onJobClick) {
+      onJobClick(jobId);
+    } else {
+      navigate(`/company/jobs/${jobId}/details?tab=overview`);
+    }
+  };
+
   return (
     <S.Container>
       <S.Header>
@@ -44,15 +58,27 @@ export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
             const parts = job.dueDate.split(' ');
             const month = parts[0] || 'MAY';
             const day = parts[1] || '00';
+            const jobId = job.jobId || job.id;
 
             return (
-              <S.TaskItem key={job.id}>
+              <S.TaskItem
+                key={job.id}
+                onClick={() => handleJobClick(jobId)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleJobClick(jobId);
+                  }
+                }}
+              >
                 <S.DateBlock>
                   <S.MonthText variant="caption">{month}</S.MonthText>
                   <S.DayText variant="h4">{day}</S.DayText>
                 </S.DateBlock>
                 <S.TaskDetails>
-                  <S.TaskNameText variant="subtitle2">{job.name}</S.TaskNameText>
+                  <S.TaskNameText variant="subtitle2" title={job.name}>{job.name}</S.TaskNameText>
                   <S.SubRow>
                     <S.PriorityLabel priority={job.priority}>
                       {job.priority} Priority

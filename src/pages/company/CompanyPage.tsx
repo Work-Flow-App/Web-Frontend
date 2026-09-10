@@ -34,12 +34,17 @@ import {
   workerService,
   companyClientService,
   customerService,
+  dashboardService,
+  stepActivityService,
 } from '../../services/api';
 import type {
   CompanyProfileResponse,
   CompanyPostResponse,
   JobResponse,
   WorkerAssignedStepResponse,
+  FinancialSummaryResponse,
+  StepActivityResponse,
+  JobWorkflowStepResponse,
 } from '../../services/api';
 import { prepareJobLocationMarkers } from '../../utils/mapDataHelpers';
 
@@ -157,6 +162,7 @@ export const CompanyPage: React.FC = () => {
   const [assignedSteps, setAssignedSteps] = useState<WorkerAssignedStepResponse[]>([]);
   const [mapMarkers, setMapMarkers] = useState<PlaceDetails[]>([]);
   const [workflowActivities, setWorkflowActivities] = useState<RecentWorkflowActivityData[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<FinancialSummaryResponse | null>(null);
 
   // Loading States
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -164,6 +170,7 @@ export const CompanyPage: React.FC = () => {
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
   const [loadingSteps, setLoadingSteps] = useState(true);
   const [loadingWorkflows, setLoadingWorkflows] = useState(true);
+  const [loadingFinancial, setLoadingFinancial] = useState(true);
 
   // Sync widget layouts to local storage
   useEffect(() => {
@@ -213,7 +220,7 @@ export const CompanyPage: React.FC = () => {
         );
         setMapMarkers(markers);
 
-        // Fetch Workflows for the top 10 most recently updated jobs
+        // Fetch Workflows and step activities for the top 10 most recently updated jobs
         const sortedJobs = [...activeJobs].sort((a, b) => {
           const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
           const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
@@ -227,32 +234,95 @@ export const CompanyPage: React.FC = () => {
           );
           const workflowResults = await Promise.all(promises);
 
-          const activities: RecentWorkflowActivityData[] = [];
+          // For each workflow, gather active/non-skipped steps and fetch their activity timelines
+          const stepTimelinePromises: Promise<{
+            job: JobResponse;
+            workflowName: string;
+            step: JobWorkflowStepResponse;
+            timeline: StepActivityResponse[];
+          }>[] = [];
+
           workflowResults.forEach((result, idx) => {
             if (!result || !result.data) return;
             const jw = result.data;
             const job = targetJobs[idx];
+            const activeSteps = (jw.steps || []).filter(
+              (s: JobWorkflowStepResponse) => s.id && s.status?.toUpperCase() !== 'SKIPPED'
+            );
+
+            activeSteps.forEach((step: JobWorkflowStepResponse) => {
+              stepTimelinePromises.push(
+                stepActivityService
+                  .getTimeline(step.id!)
+                  .then((res) => ({
+                    job,
+                    workflowName: job.workflowName || job.templateName || 'Workflow',
+                    step,
+                    timeline: (res.data || []) as StepActivityResponse[],
+                  }))
+                  .catch(() => ({
+                    job,
+                    workflowName: job.workflowName || job.templateName || 'Workflow',
+                    step,
+                    timeline: [],
+                  }))
+              );
+            });
+          });
+
+          const stepTimelineResults = await Promise.all(stepTimelinePromises);
+
+          const activities: RecentWorkflowActivityData[] = [];
+          const jobsWithActivities = new Set<number>();
+
+          stepTimelineResults.forEach(({ job, workflowName, step, timeline }) => {
+            timeline.forEach((act) => {
+              jobsWithActivities.add(job.id || 0);
+              activities.push({
+                id: act.id,
+                jobId: job.id || 0,
+                jobRef: job.jobRef || job.id || 0,
+                workflowName,
+                stepId: step.id,
+                stepName: step.name || 'Step',
+                activityType: act.type,
+                message: act.message,
+                actorUsername: act.actorUsername,
+                status: step.status?.toLowerCase() || 'pending',
+                updatedAt: act.createdAt || step.updatedAt || job.updatedAt || job.createdAt || '',
+              });
+            });
+          });
+
+          // Fallback: If any target job produced 0 timeline activities from its steps, add its active step
+          targetJobs.forEach((job, idx) => {
+            if (jobsWithActivities.has(job.id || 0)) return;
+            const result = workflowResults[idx];
+            if (!result || !result.data) return;
+            const jw = result.data;
             if (!jw.steps || jw.steps.length === 0) return;
 
-            // Find the active step: look for STARTED or ONGOING, fallback to NOT_STARTED, fallback to last step
             const activeStep =
-              jw.steps.find((s) => s.status === 'STARTED' || s.status === 'ONGOING') ||
-              jw.steps.find((s) => s.status === 'NOT_STARTED') ||
+              jw.steps.find((s: JobWorkflowStepResponse) => s.status === 'STARTED' || s.status === 'ONGOING') ||
+              jw.steps.find((s: JobWorkflowStepResponse) => s.status === 'NOT_STARTED') ||
               jw.steps[jw.steps.length - 1];
 
             activities.push({
               jobId: job.id || 0,
               jobRef: job.jobRef || job.id || 0,
               workflowName: job.workflowName || job.templateName || 'Workflow',
+              stepId: activeStep?.id,
               stepName: activeStep?.name || 'Start',
+              activityType: 'STATUS_CHANGED',
+              message: `Status: ${activeStep?.status || 'Pending'}`,
               status: activeStep?.status?.toLowerCase() || 'pending',
               updatedAt: job.updatedAt || job.createdAt || '',
             });
           });
 
-          // Sort final activities desc by date
+          // Sort final activities desc by date and keep top 10
           activities.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-          setWorkflowActivities(activities);
+          setWorkflowActivities(activities.slice(0, 10));
         } catch (wfErr) {
           console.error('Failed to load job workflows details:', wfErr);
         } finally {
@@ -295,6 +365,18 @@ export const CompanyPage: React.FC = () => {
       setAssignedSteps([]);
       setLoadingSteps(false);
     }
+
+    // 5. Fetch Financial Summary
+    dashboardService.getFinancialSummary()
+      .then((res) => {
+        setFinancialSummary(res.data);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch financial summary:', err);
+      })
+      .finally(() => {
+        setLoadingFinancial(false);
+      });
   }, [isWorker]);
 
   // Widget Preferences Toggles
@@ -377,7 +459,7 @@ export const CompanyPage: React.FC = () => {
       return dateB - dateA;
     });
 
-    return sortedJobs.slice(0, 5).map((job) => {
+    return sortedJobs.slice(0, 10).map((job) => {
       const timeAgo = getTimeAgo(job.updatedAt || job.createdAt);
       let action = 'was updated';
       let type: 'status_change' | 'comment' | 'creation' | 'update' = 'update';
@@ -395,6 +477,7 @@ export const CompanyPage: React.FC = () => {
 
       return {
         id: job.id || 0,
+        jobId: job.id,
         jobRef: `Job #${job.jobRef || job.id}`,
         action,
         user: job.clientName || 'Staff',
@@ -424,8 +507,9 @@ export const CompanyPage: React.FC = () => {
       return dateB - dateA;
     });
 
-    return sorted.slice(0, 5).map((job) => ({
+    return sorted.slice(0, 10).map((job) => ({
       id: job.id || 0,
+      jobId: job.id,
       name: `Job #${job.jobRef || job.id} - ${job.templateName || 'Job'}`,
       priority: 'Medium',
       status: 'In Progress',
@@ -490,12 +574,23 @@ export const CompanyPage: React.FC = () => {
     navigate('/company/profile?tab=posts');
   };
 
+  const handleJobClickActivityLog = (jobId: number) => {
+    navigate(`/company/jobs/${jobId}/details?tab=activity-log`);
+  };
+
+  const handleJobClickOverview = (jobId: number) => {
+    navigate(`/company/jobs/${jobId}/details?tab=overview`);
+  };
+
   const handleMetricCardClick = (metricId: string) => {
     if (metricId === 'total_jobs') navigate('/company/jobs');
     else if (metricId === 'in_progress') navigate('/company/jobs?status=IN_PROGRESS');
     else if (metricId === 'completed') navigate('/company/jobs?tab=completed');
     else if (metricId === 'new_jobs') navigate('/company/jobs?status=NEW');
     else if (metricId === 'archived') navigate('/company/jobs?tab=archived');
+    else if (metricId === 'waiting_approval' || metricId === 'approved' || metricId === 'invoiced') {
+      navigate('/company/jobs');
+    }
   };
 
   const isVisible = (id: WidgetId) => {
@@ -525,6 +620,10 @@ export const CompanyPage: React.FC = () => {
         totalJobsCount={totalJobsCount}
         loading={loadingJobs}
         onCardClick={handleMetricCardClick}
+        waitingApprovalValue={financialSummary?.waitingApprovalValue}
+        approvedValue={financialSummary?.approvedValue}
+        invoicedValue={financialSummary?.invoicedValue}
+        loadingFinancial={loadingFinancial}
       />
 
       {/* 3. Customizable Widget Grid Matrix */}
@@ -545,6 +644,7 @@ export const CompanyPage: React.FC = () => {
               activities={workflowActivities}
               loading={loadingWorkflows}
               onViewAll={handleViewActivity}
+              onJobClick={handleJobClickActivityLog}
             />
           </S.GridItem>
         )}
@@ -555,6 +655,7 @@ export const CompanyPage: React.FC = () => {
               activities={getRecentActivityData()}
               loading={loadingJobs}
               onViewAll={handleViewActivity}
+              onJobClick={handleJobClickOverview}
             />
           </S.GridItem>
         )}
@@ -582,8 +683,9 @@ export const CompanyPage: React.FC = () => {
           <S.GridItem lgSpan={3} mdSpan={6} smSpan={12}>
             <JobsDueSoonWidget
               jobs={getDueSoonTasksData()}
-              loading={loadingSteps}
+              loading={loadingJobs}
               onViewJobs={handleViewJobs}
+              onJobClick={handleJobClickOverview}
             />
           </S.GridItem>
         )}

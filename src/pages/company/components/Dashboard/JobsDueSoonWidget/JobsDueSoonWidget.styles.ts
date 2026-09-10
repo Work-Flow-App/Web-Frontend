@@ -2,14 +2,16 @@ import { Box, Typography, styled } from '@mui/material';
 import { rem } from '../../../../../components/UI/Typography/utility';
 
 export const Container = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
   backgroundColor: theme.palette.background.paper,
   borderRadius: rem(16),
-  padding: rem(24),
   border: `${rem(1)} solid ${theme.palette.divider}`,
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  padding: rem(20),
+  display: 'flex',
+  flexDirection: 'column',
+  height: rem(380),
+  maxHeight: rem(380),
+  width: '100%',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
   boxSizing: 'border-box',
 }));
 
@@ -17,41 +19,68 @@ export const Header = styled(Box)(() => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  marginBottom: rem(20),
+  marginBottom: rem(16),
+  flexShrink: 0,
 }));
 
 export const TitleText = styled(Typography)(({ theme }) => ({
-  fontSize: rem(15),
+  fontSize: rem(16),
   fontWeight: 700,
   color: theme.palette.text.primary,
 }));
 
-export const ActionLink = styled(Box)(({ theme }) => ({
+export const ActionLink = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
   fontWeight: 600,
   color: theme.palette.primary.main,
   cursor: 'pointer',
   userSelect: 'none',
+  transition: 'color 0.15s ease',
   '&:hover': {
+    color: theme.palette.primary.dark,
     textDecoration: 'underline',
   },
 }));
 
 export const ListContainer = styled(Box)(() => ({
+  width: '100%',
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  overflowX: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  gap: rem(16),
-  flex: 1,
+  gap: rem(14),
+  paddingRight: rem(6),
+  '&::-webkit-scrollbar': {
+    width: rem(4),
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: '#e4e4e7',
+    borderRadius: rem(4),
+  },
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: '#d4d4d8',
+  },
 }));
 
 export const TaskItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: rem(16),
-  paddingBottom: rem(16),
+  padding: `${rem(8)} ${rem(8)}`,
+  borderRadius: rem(8),
   borderBottom: `${rem(1)} solid ${theme.palette.divider}`,
+  flexShrink: 0,
+  cursor: 'pointer',
+  transition: 'background-color 0.15s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
   '&:last-child': {
-    paddingBottom: 0,
     borderBottom: 'none',
   },
 }));
@@ -90,12 +119,16 @@ export const TaskDetails = styled(Box)(() => ({
   flexDirection: 'column',
   gap: rem(2),
   flex: 1,
+  minWidth: 0,
 }));
 
 export const TaskNameText = styled(Typography)(({ theme }) => ({
   fontSize: rem(13),
   fontWeight: 600,
   color: theme.palette.text.primary,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 }));
 
 export const SubRow = styled(Box)(() => ({

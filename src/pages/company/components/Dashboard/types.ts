@@ -24,6 +24,7 @@ export interface MetricData {
 
 export interface TaskData {
   id: number;
+  jobId?: number;
   name: string;
   priority: 'High' | 'Medium' | 'Low';
   status: 'In Progress' | 'Pending' | 'Completed';
@@ -32,6 +33,7 @@ export interface TaskData {
 
 export interface ActivityLog {
   id: number;
+  jobId?: number;
   jobRef: string;
   action: string;
   user: string;
