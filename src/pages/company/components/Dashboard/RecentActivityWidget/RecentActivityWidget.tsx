@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
 import CachedIcon from '@mui/icons-material/Cached';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -12,6 +13,7 @@ interface RecentActivityWidgetProps {
   onViewAll: () => void;
   activities?: ActivityLog[];
   loading?: boolean;
+  onJobClick?: (jobId: number) => void;
 }
 
 const getActivityIcon = (type: string) => {
@@ -33,7 +35,18 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
   onViewAll,
   activities = [],
   loading = false,
+  onJobClick,
 }) => {
+  const navigate = useNavigate();
+
+  const handleItemClick = (jobId?: number) => {
+    if (!jobId) return;
+    if (onJobClick) {
+      onJobClick(jobId);
+    } else {
+      navigate(`/company/jobs/${jobId}/details?tab=overview`);
+    }
+  };
   return (
     <S.Container>
       <S.Header>
@@ -57,21 +70,35 @@ export const RecentActivityWidget: React.FC<RecentActivityWidgetProps> = ({
             <S.ActivityText style={{ textAlign: 'center', color: '#9CA3AF' }}>No recent activities</S.ActivityText>
           </S.TimelineItem>
         ) : (
-          activities.map((item) => (
-            <S.TimelineItem key={item.id}>
-              <S.IconWrapper type={item.type}>
-                {getActivityIcon(item.type)}
-              </S.IconWrapper>
-              <S.ContentWrapper>
-                <S.ActivityText variant="body2">
-                  <strong>{item.jobRef}</strong> {item.action}
-                </S.ActivityText>
-                <S.MetaText variant="caption">
-                  By {item.user} • {item.timeAgo}
-                </S.MetaText>
-              </S.ContentWrapper>
-            </S.TimelineItem>
-          ))
+          activities.map((item) => {
+            const jobId = item.jobId || item.id;
+            return (
+              <S.TimelineItem
+                key={item.id}
+                onClick={() => handleItemClick(jobId)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleItemClick(jobId);
+                  }
+                }}
+              >
+                <S.IconWrapper type={item.type}>
+                  {getActivityIcon(item.type)}
+                </S.IconWrapper>
+                <S.ContentWrapper>
+                  <S.ActivityText variant="body2">
+                    <strong>{item.jobRef}</strong> {item.action}
+                  </S.ActivityText>
+                  <S.MetaText variant="caption">
+                    By {item.user} • {item.timeAgo}
+                  </S.MetaText>
+                </S.ContentWrapper>
+              </S.TimelineItem>
+            );
+          })
         )}
       </S.TimelineContainer>
     </S.Container>

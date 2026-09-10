@@ -1,16 +1,18 @@
 import React from 'react';
-import { Skeleton } from '@mui/material';
+import { TollTip } from '../../../../../components/UI/TollTip/TollTip';
 import * as S from './MetricsRow.styles';
 
 interface MetricCardProps {
   label: string;
   value: string | number;
+  tooltip?: string;
+  valueColor?: string;
   changeText?: string;
   isPositive?: boolean;
   accentColor: string;
   bgColor: string;
   iconColor: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   loading?: boolean;
   onClick?: () => void;
 }
@@ -18,6 +20,8 @@ interface MetricCardProps {
 export const MetricCard: React.FC<MetricCardProps> = ({
   label,
   value,
+  tooltip,
+  valueColor,
   changeText,
   isPositive,
   accentColor,
@@ -31,18 +35,23 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     <S.CardContainer accentColor={accentColor} onClick={loading ? undefined : onClick}>
       {loading ? (
         <>
-          <S.InfoSection style={{ width: '60%' }}>
-            <Skeleton variant="text" width="50%" height={14} animation="wave" />
-            <Skeleton variant="text" width="80%" height={38} animation="wave" style={{ marginTop: '4px' }} />
-            <Skeleton variant="text" width="60%" height={14} animation="wave" style={{ marginTop: '6px' }} />
-          </S.InfoSection>
-          <Skeleton variant="circular" width={44} height={44} animation="wave" />
+          <S.LoadingInfoSection>
+            <S.MetricSkeletonTitle variant="text" animation="wave" />
+            <S.MetricSkeletonValue variant="text" animation="wave" />
+            {changeText && <S.MetricSkeletonTrend variant="text" animation="wave" />}
+          </S.LoadingInfoSection>
+          {icon && <S.MetricSkeletonCircle variant="circular" animation="wave" />}
         </>
       ) : (
         <>
           <S.InfoSection>
-            <S.LabelText>{label}</S.LabelText>
-            <S.ValueText variant="h2">{value}</S.ValueText>
+            <S.LabelWrapper>
+              <S.LabelText>{label}</S.LabelText>
+              {tooltip && <TollTip message={tooltip} />}
+            </S.LabelWrapper>
+            <S.ValueText variant="h3" valueColor={valueColor}>
+              {value}
+            </S.ValueText>
             {changeText && (
               <S.TrendSection>
                 <S.TrendText variant="caption" isPositive={isPositive}>
@@ -51,11 +60,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               </S.TrendSection>
             )}
           </S.InfoSection>
-          <S.IconSection bgColor={bgColor} iconColor={iconColor}>
-            {icon}
-          </S.IconSection>
+          {icon && (
+            <S.IconSection bgColor={bgColor} iconColor={iconColor}>
+              {icon}
+            </S.IconSection>
+          )}
         </>
       )}
     </S.CardContainer>
   );
 };
+

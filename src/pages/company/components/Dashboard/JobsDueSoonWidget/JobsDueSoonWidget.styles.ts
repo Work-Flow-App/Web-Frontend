@@ -71,11 +71,16 @@ export const TaskItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: rem(16),
-  paddingBottom: rem(14),
+  padding: `${rem(8)} ${rem(8)}`,
+  borderRadius: rem(8),
   borderBottom: `${rem(1)} solid ${theme.palette.divider}`,
   flexShrink: 0,
+  cursor: 'pointer',
+  transition: 'background-color 0.15s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
   '&:last-child': {
-    paddingBottom: 0,
     borderBottom: 'none',
   },
 }));

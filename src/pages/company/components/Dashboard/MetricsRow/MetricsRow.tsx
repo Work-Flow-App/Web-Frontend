@@ -4,6 +4,10 @@ import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import { useCurrency } from '../../../../../contexts/CurrencyContext';
+import { TOOLTIP_MESSAGES } from '../../../const/ToolTipConst';
 import { MetricCard } from './MetricCard';
 import * as S from './MetricsRow.styles';
 
@@ -15,6 +19,11 @@ interface MetricsRowProps {
   totalJobsCount?: number;
   loading?: boolean;
   onCardClick?: (metricId: string) => void;
+
+  waitingApprovalValue?: number;
+  approvedValue?: number;
+  invoicedValue?: number;
+  loadingFinancial?: boolean;
 }
 
 export const MetricsRow: React.FC<MetricsRowProps> = ({
@@ -25,10 +34,72 @@ export const MetricsRow: React.FC<MetricsRowProps> = ({
   totalJobsCount = 0,
   loading = false,
   onCardClick,
+  waitingApprovalValue,
+  approvedValue,
+  invoicedValue,
+  loadingFinancial = false,
 }) => {
+  const { formatCurrency } = useCurrency();
+
   return (
-    <S.MetricsContainer>
-      {/* 1. New Jobs */}
+    <S.MetricsGrid>
+      {/* ── Row 1: High-Level Macro & Financial Summary (4 Cards) ── */}
+      {/* 1. Waiting Approval (WIP) */}
+      <MetricCard
+        label="Waiting Approval (WIP)"
+        tooltip={TOOLTIP_MESSAGES.WAITING_APPROVAL}
+        value={formatCurrency(waitingApprovalValue ?? 0)}
+        valueColor="#F59E0B"
+        accentColor="#F59E0B"
+        bgColor="#FEF3C7"
+        iconColor="#D97706"
+        icon={<PendingActionsIcon />}
+        loading={loadingFinancial}
+        onClick={() => onCardClick?.('waiting_approval')}
+      />
+
+      {/* 2. Approved (WIP) */}
+      <MetricCard
+        label="Approved (WIP)"
+        tooltip={TOOLTIP_MESSAGES.APPROVED}
+        value={formatCurrency(approvedValue ?? 0)}
+        valueColor="#10B981"
+        accentColor="#10B981"
+        bgColor="#D1FAE5"
+        iconColor="#059669"
+        icon={<CheckCircleOutlineIcon />}
+        loading={loadingFinancial}
+        onClick={() => onCardClick?.('approved')}
+      />
+
+      {/* 3. Invoiced (WIP) */}
+      <MetricCard
+        label="Invoiced (WIP)"
+        tooltip={TOOLTIP_MESSAGES.INVOICED}
+        value={formatCurrency(invoicedValue ?? 0)}
+        valueColor="#6366F1"
+        accentColor="#6366F1"
+        bgColor="#E0E7FF"
+        iconColor="#4F46E5"
+        icon={<ReceiptLongOutlinedIcon />}
+        loading={loadingFinancial}
+        onClick={() => onCardClick?.('invoiced')}
+      />
+
+      {/* 4. Total Jobs */}
+      <MetricCard
+        label="Total Jobs"
+        value={totalJobsCount}
+        accentColor="#8B5CF6"
+        bgColor="#EDE9FE"
+        iconColor="#7C3AED"
+        icon={<WorkOutlineIcon />}
+        loading={loading}
+        onClick={() => onCardClick?.('total_jobs')}
+      />
+
+      {/* ── Row 2: Job Lifecycle Status Pipeline (4 Cards) ── */}
+      {/* 5. New Jobs */}
       <MetricCard
         label="New Jobs"
         value={newJobsCount}
@@ -40,7 +111,7 @@ export const MetricsRow: React.FC<MetricsRowProps> = ({
         onClick={() => onCardClick?.('new_jobs')}
       />
 
-      {/* 2. Jobs In Progress */}
+      {/* 6. Jobs In Progress */}
       <MetricCard
         label="Jobs In Progress"
         value={inProgressCount}
@@ -52,7 +123,7 @@ export const MetricsRow: React.FC<MetricsRowProps> = ({
         onClick={() => onCardClick?.('in_progress')}
       />
 
-      {/* 3. Jobs Completed */}
+      {/* 7. Jobs Completed */}
       <MetricCard
         label="Jobs Completed"
         value={completedCount}
@@ -64,7 +135,7 @@ export const MetricsRow: React.FC<MetricsRowProps> = ({
         onClick={() => onCardClick?.('completed')}
       />
 
-      {/* 4. Archived Jobs */}
+      {/* 8. Archived Jobs */}
       <MetricCard
         label="Archived Jobs"
         value={archivedCount}
@@ -75,18 +146,6 @@ export const MetricsRow: React.FC<MetricsRowProps> = ({
         loading={loading}
         onClick={() => onCardClick?.('archived')}
       />
-
-      {/* 5. Total Jobs */}
-      <MetricCard
-        label="Total Jobs"
-        value={totalJobsCount}
-        accentColor="#6366F1"
-        bgColor="#E0E7FF"
-        iconColor="#4F46E5"
-        icon={<WorkOutlineIcon />}
-        loading={loading}
-        onClick={() => onCardClick?.('total_jobs')}
-      />
-    </S.MetricsContainer>
+    </S.MetricsGrid>
   );
 };

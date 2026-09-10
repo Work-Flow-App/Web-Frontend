@@ -47,15 +47,35 @@ export const TimelineContainer = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
+  paddingRight: rem(4),
+  '&::-webkit-scrollbar': {
+    width: rem(4),
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: '#e4e4e7',
+    borderRadius: rem(4),
+  },
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: '#d4d4d8',
+  },
 }));
 
-export const TimelineItem = styled(Box)(() => ({
+export const TimelineItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: rem(16),
-  paddingBottom: rem(20),
+  padding: `${rem(6)} ${rem(8)} ${rem(14)} ${rem(8)}`,
   position: 'relative',
+  cursor: 'pointer',
+  borderRadius: rem(8),
+  transition: 'background-color 0.15s ease',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
   '&:last-child': {
-    paddingBottom: 0,
+    paddingBottom: rem(6),
     '&::after': {
       display: 'none',
     },
@@ -63,8 +83,8 @@ export const TimelineItem = styled(Box)(() => ({
   '&::after': {
     content: '""',
     position: 'absolute',
-    left: rem(15), // Align with center of the 30px icon circle
-    top: rem(30),
+    left: `calc(${rem(8)} + ${rem(15)})`, // Align with center of the 30px icon circle + padding
+    top: `calc(${rem(6)} + ${rem(30)})`,
     bottom: 0,
     width: rem(2),
     backgroundColor: '#F3F4F6',

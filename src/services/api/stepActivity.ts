@@ -3,6 +3,7 @@ import type {
   StepCommentCreateRequest,
   StepCommentResponse,
   StepTimelineItemResponse,
+  StepActivityResponse,
   StepAttachmentResponse,
   StepAttachmentUpdateRequest,
 } from '../../../workflow-api';
@@ -14,6 +15,7 @@ export type {
   StepCommentCreateRequest,
   StepCommentResponse,
   StepTimelineItemResponse,
+  StepActivityResponse,
   StepAttachmentResponse,
   StepAttachmentUpdateRequest,
 };

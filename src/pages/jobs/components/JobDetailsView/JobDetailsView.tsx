@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import IconButton from '@mui/material/IconButton';
@@ -32,6 +32,7 @@ import { CustomerName, JobValue, Status, Progress, Created, OverviewContainer } 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showError } = useSnackbar();
 
   const [job, setJob] = useState<JobResponse | null>(null);
@@ -40,8 +41,25 @@ export const JobDetailsView: React.FC = () => {
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [customer, setCustomer] = useState<CustomerResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || 'overview');
   const [workflowUpdateTrigger, setWorkflowUpdateTrigger] = useState(0);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab') || 'overview';
+    setActiveTab(tab);
+  }, [searchParams]);
+
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('tab', newTab);
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
   const handleWorkflowUpdate = useCallback(() => {
     setWorkflowUpdateTrigger((prev) => prev + 1);
@@ -148,37 +166,37 @@ export const JobDetailsView: React.FC = () => {
 
         {/* Tabs Navigation */}
         <S.TabsContainer>
-          <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+          <S.TabButton active={activeTab === 'overview'} onClick={() => handleTabChange('overview')}>
             Overview
           </S.TabButton>
-          <S.TabButton active={activeTab === 'activity-log'} onClick={() => setActiveTab('activity-log')}>
+          <S.TabButton active={activeTab === 'activity-log'} onClick={() => handleTabChange('activity-log')}>
             Activity Log
           </S.TabButton>
-          <S.TabButton active={activeTab === 'estimate'} onClick={() => setActiveTab('estimate')}>
+          <S.TabButton active={activeTab === 'estimate'} onClick={() => handleTabChange('estimate')}>
             Estimate
           </S.TabButton>
-          {/* <S.TabButton active={activeTab === 'financials'} onClick={() => setActiveTab('financials')}>
+          {/* <S.TabButton active={activeTab === 'financials'} onClick={() => handleTabChange('financials')}>
             Financials
           </S.TabButton> */}
-          <S.TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
+          <S.TabButton active={activeTab === 'documents'} onClick={() => handleTabChange('documents')}>
             Documents
           </S.TabButton>
-          <S.TabButton active={activeTab === 'complaints'} onClick={() => setActiveTab('complaints')}>
+          <S.TabButton active={activeTab === 'complaints'} onClick={() => handleTabChange('complaints')}>
             Complaints
           </S.TabButton>
-          <S.TabButton active={activeTab === 'step-activity'} onClick={() => setActiveTab('step-activity')}>
+          <S.TabButton active={activeTab === 'step-activity'} onClick={() => handleTabChange('step-activity')}>
             Step Activity
           </S.TabButton>
-          <S.TabButton active={activeTab === 'work-logs'} onClick={() => setActiveTab('work-logs')}>
+          <S.TabButton active={activeTab === 'work-logs'} onClick={() => handleTabChange('work-logs')}>
             Work Logs
           </S.TabButton>
-          <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
+          <S.TabButton active={activeTab === 'assets'} onClick={() => handleTabChange('assets')}>
             Assets
           </S.TabButton>
-          {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
+          {/* <S.TabButton active={activeTab === 'history'} onClick={() => handleTabChange('history')}>
             History
           </S.TabButton> */}
-          {/* <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
+          {/* <S.TabButton active={activeTab === 'form'} onClick={() => handleTabChange('form')}>
             Form
           </S.TabButton> */}
         </S.TabsContainer>
