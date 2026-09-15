@@ -129,19 +129,6 @@ export interface AssetCreateRequest {
     'depreciationRate': number;
     'salvageValue'?: number;
     'warehouseAddress'?: AddressRequest;
-    'groupId'?: number;
-}
-export interface AssetGroupCreateRequest {
-    'name': string;
-    'description'?: string;
-}
-export interface AssetGroupResponse {
-    'id'?: number;
-    'companyId'?: number;
-    'name'?: string;
-    'description'?: string;
-    'createdAt'?: string;
-    'updatedAt'?: string;
 }
 export interface AssetResponse {
     'id'?: number;
@@ -157,8 +144,6 @@ export interface AssetResponse {
     'salvageValue'?: number;
     'available'?: boolean;
     'archived'?: boolean;
-    'groupId'?: number;
-    'groupName'?: string;
     'locationType'?: AssetResponseLocationTypeEnum;
     'address'?: AddressResponse;
     'warehouseAddress'?: AddressResponse;
@@ -195,7 +180,6 @@ export interface AssetUpdateRequest {
     'depreciationRate'?: number;
     'salvageValue'?: number;
     'warehouseAddress'?: AddressRequest;
-    'groupId'?: number;
 }
 export interface AssetValueResponse {
     'assetId'?: number;
@@ -420,11 +404,6 @@ export const CreateCheckoutSessionRequestPlanTypeEnum = {
 
 export type CreateCheckoutSessionRequestPlanTypeEnum = typeof CreateCheckoutSessionRequestPlanTypeEnum[keyof typeof CreateCheckoutSessionRequestPlanTypeEnum];
 
-export interface CursorPagedResponseNotificationResponse {
-    'data'?: Array<NotificationResponse>;
-    'nextCursor'?: number;
-    'hasNext'?: boolean;
-}
 export interface CustomerAddressDto {
     'houseNumber'?: string;
     'street'?: string;
@@ -638,7 +617,6 @@ export interface FormSubmissionCreateRequest {
     'templateId'?: number;
     'title'?: string;
     'workerId'?: number;
-    'jobRef'?: number;
 }
 export interface FormSubmissionResponse {
     'id'?: number;
@@ -648,7 +626,6 @@ export interface FormSubmissionResponse {
     'templateName'?: string;
     'workerId'?: number;
     'workerName'?: string;
-    'jobRef'?: number;
     'values'?: Array<FormFieldValueResponse>;
 }
 export interface FormTemplateRequest {
@@ -1214,33 +1191,6 @@ export const MemberSignupResponseCompanyRoleEnum = {
 
 export type MemberSignupResponseCompanyRoleEnum = typeof MemberSignupResponseCompanyRoleEnum[keyof typeof MemberSignupResponseCompanyRoleEnum];
 
-export interface NotificationResponse {
-    'id'?: number;
-    'type'?: NotificationResponseTypeEnum;
-    'title'?: string;
-    'message'?: string;
-    'targetUrl'?: string;
-    'priority'?: NotificationResponsePriorityEnum;
-    'metadata'?: { [key: string]: any; };
-    'createdAt'?: string;
-    'read'?: boolean;
-}
-
-export const NotificationResponseTypeEnum = {
-    ForceLogout: 'FORCE_LOGOUT',
-    VisitLogAdded: 'VISIT_LOG_ADDED'
-} as const;
-
-export type NotificationResponseTypeEnum = typeof NotificationResponseTypeEnum[keyof typeof NotificationResponseTypeEnum];
-export const NotificationResponsePriorityEnum = {
-    Low: 'LOW',
-    Medium: 'MEDIUM',
-    High: 'HIGH',
-    Urgent: 'URGENT'
-} as const;
-
-export type NotificationResponsePriorityEnum = typeof NotificationResponsePriorityEnum[keyof typeof NotificationResponsePriorityEnum];
-
 export interface PageMetadata {
     'size'?: number;
     'number'?: number;
@@ -1251,10 +1201,6 @@ export interface Pageable {
     'page'?: number;
     'size'?: number;
     'sort'?: Array<string>;
-}
-export interface PagedModelAssetGroupResponse {
-    'content'?: Array<AssetGroupResponse>;
-    'page'?: PageMetadata;
 }
 export interface PagedModelAssetResponse {
     'content'?: Array<AssetResponse>;
@@ -1491,7 +1437,6 @@ export interface WorkerCertificateResponse {
     'workerId'?: number;
     'workerName'?: string;
     'type'?: WorkerCertificateResponseTypeEnum;
-    'customTypeLabel'?: string;
     'name'?: string;
     'issuingAuthority'?: string;
     'issueDate'?: string;
@@ -1590,7 +1535,6 @@ export interface WorkerProfileResponse {
 }
 export interface WorkerRateUpdateRequest {
     'hourlyRate': number;
-    'overtimeRate'?: number;
 }
 export interface WorkerResponse {
     'id'?: number;
@@ -1603,7 +1547,6 @@ export interface WorkerResponse {
     'username'?: string;
     'photoUrl'?: string;
     'hourlyRate'?: number;
-    'overtimeRate'?: number;
     'loginLocked'?: boolean;
     'archived'?: boolean;
     'createdAt'?: string;
@@ -1636,11 +1579,6 @@ export interface WorkerWeeklyHoursResponse {
     'weekStart'?: string;
     'weekEnd'?: string;
     'totalHours'?: number;
-    'regularHours'?: number;
-    'overtimeHours'?: number;
-    'regularPay'?: number;
-    'overtimePay'?: number;
-    'totalPay'?: number;
     'hasOpenVisit'?: boolean;
 }
 export interface WorkflowBulkUpdateRequest {
@@ -2090,331 +2028,6 @@ export class AssetAssignmentsApi extends BaseAPI {
 
 
 /**
- * AssetGroupsApi - axios parameter creator
- */
-export const AssetGroupsApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupCreate: async (assetGroupCreateRequest: AssetGroupCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'assetGroupCreateRequest' is not null or undefined
-            assertParamExists('assetGroupCreate', 'assetGroupCreateRequest', assetGroupCreateRequest)
-            const localVarPath = `/api/v1/asset-groups`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(assetGroupCreateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('assetGroupDelete', 'id', id)
-            const localVarPath = `/api/v1/asset-groups/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} [page] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupList: async (page?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/asset-groups`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (page !== undefined) {
-                localVarQueryParameter['page'] = page;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupUpdate: async (id: number, assetGroupCreateRequest: AssetGroupCreateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('assetGroupUpdate', 'id', id)
-            // verify required parameter 'assetGroupCreateRequest' is not null or undefined
-            assertParamExists('assetGroupUpdate', 'assetGroupCreateRequest', assetGroupCreateRequest)
-            const localVarPath = `/api/v1/asset-groups/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(assetGroupCreateRequest, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * AssetGroupsApi - functional programming interface
- */
-export const AssetGroupsApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = AssetGroupsApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async assetGroupCreate(assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assetGroupCreate(assetGroupCreateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetGroupsApi.assetGroupCreate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async assetGroupDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assetGroupDelete(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetGroupsApi.assetGroupDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} [page] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async assetGroupList(page?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelAssetGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assetGroupList(page, size, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetGroupsApi.assetGroupList']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async assetGroupUpdate(id: number, assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssetGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assetGroupUpdate(id, assetGroupCreateRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['AssetGroupsApi.assetGroupUpdate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * AssetGroupsApi - factory interface
- */
-export const AssetGroupsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = AssetGroupsApiFp(configuration)
-    return {
-        /**
-         * 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupCreate(assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetGroupResponse> {
-            return localVarFp.assetGroupCreate(assetGroupCreateRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.assetGroupDelete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} [page] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupList(page?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelAssetGroupResponse> {
-            return localVarFp.assetGroupList(page, size, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        assetGroupUpdate(id: number, assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig): AxiosPromise<AssetGroupResponse> {
-            return localVarFp.assetGroupUpdate(id, assetGroupCreateRequest, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * AssetGroupsApi - object-oriented interface
- */
-export class AssetGroupsApi extends BaseAPI {
-    /**
-     * 
-     * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public assetGroupCreate(assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig) {
-        return AssetGroupsApiFp(this.configuration).assetGroupCreate(assetGroupCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public assetGroupDelete(id: number, options?: RawAxiosRequestConfig) {
-        return AssetGroupsApiFp(this.configuration).assetGroupDelete(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} [page] 
-     * @param {number} [size] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public assetGroupList(page?: number, size?: number, options?: RawAxiosRequestConfig) {
-        return AssetGroupsApiFp(this.configuration).assetGroupList(page, size, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} id 
-     * @param {AssetGroupCreateRequest} assetGroupCreateRequest 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public assetGroupUpdate(id: number, assetGroupCreateRequest: AssetGroupCreateRequest, options?: RawAxiosRequestConfig) {
-        return AssetGroupsApiFp(this.configuration).assetGroupUpdate(id, assetGroupCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
  * AssetsApi - axios parameter creator
  */
 export const AssetsApiAxiosParamCreator = function (configuration?: Configuration) {
@@ -2588,13 +2201,12 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
          * @param {number} [size] 
          * @param {boolean} [archived] 
          * @param {boolean} [available] 
-         * @param {number} [groupId] 
          * @param {string} [sort] 
          * @param {string} [dir] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assetList: async (page?: number, size?: number, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        assetList: async (page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/assets`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2625,10 +2237,6 @@ export const AssetsApiAxiosParamCreator = function (configuration?: Configuratio
 
             if (available !== undefined) {
                 localVarQueryParameter['available'] = available;
-            }
-
-            if (groupId !== undefined) {
-                localVarQueryParameter['groupId'] = groupId;
             }
 
             if (sort !== undefined) {
@@ -2876,14 +2484,13 @@ export const AssetsApiFp = function(configuration?: Configuration) {
          * @param {number} [size] 
          * @param {boolean} [archived] 
          * @param {boolean} [available] 
-         * @param {number} [groupId] 
          * @param {string} [sort] 
          * @param {string} [dir] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async assetList(page?: number, size?: number, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelAssetResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.assetList(page, size, archived, available, groupId, sort, dir, options);
+        async assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PagedModelAssetResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.assetList(page, size, archived, available, sort, dir, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AssetsApi.assetList']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2990,14 +2597,13 @@ export const AssetsApiFactory = function (configuration?: Configuration, basePat
          * @param {number} [size] 
          * @param {boolean} [archived] 
          * @param {boolean} [available] 
-         * @param {number} [groupId] 
          * @param {string} [sort] 
          * @param {string} [dir] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        assetList(page?: number, size?: number, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelAssetResponse> {
-            return localVarFp.assetList(page, size, archived, available, groupId, sort, dir, options).then((request) => request(axios, basePath));
+        assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig): AxiosPromise<PagedModelAssetResponse> {
+            return localVarFp.assetList(page, size, archived, available, sort, dir, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3091,14 +2697,13 @@ export class AssetsApi extends BaseAPI {
      * @param {number} [size] 
      * @param {boolean} [archived] 
      * @param {boolean} [available] 
-     * @param {number} [groupId] 
      * @param {string} [sort] 
      * @param {string} [dir] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public assetList(page?: number, size?: number, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
-        return AssetsApiFp(this.configuration).assetList(page, size, archived, available, groupId, sort, dir, options).then((request) => request(this.axios, this.basePath));
+    public assetList(page?: number, size?: number, archived?: boolean, available?: boolean, sort?: string, dir?: string, options?: RawAxiosRequestConfig) {
+        return AssetsApiFp(this.configuration).assetList(page, size, archived, available, sort, dir, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -10941,43 +10546,6 @@ export const JobsApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        jobGetJobForms: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('jobGetJobForms', 'id', id)
-            const localVarPath = `/api/v1/jobs/{id}/forms`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11192,18 +10760,6 @@ export const JobsApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async jobGetJobForms(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FormSubmissionResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.jobGetJobForms(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['JobsApi.jobGetJobForms']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11315,15 +10871,6 @@ export const JobsApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        jobGetJobForms(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<FormSubmissionResponse>> {
-            return localVarFp.jobGetJobForms(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @param {number} templateId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -11426,16 +10973,6 @@ export class JobsApi extends BaseAPI {
      */
     public jobGetArchived(options?: RawAxiosRequestConfig) {
         return JobsApiFp(this.configuration).jobGetArchived(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public jobGetJobForms(id: number, options?: RawAxiosRequestConfig) {
-        return JobsApiFp(this.configuration).jobGetJobForms(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -11853,330 +11390,6 @@ export class LineItemsApi extends BaseAPI {
      */
     public lineItemUpdate(id: number, lineItemUpdateRequest: LineItemUpdateRequest, options?: RawAxiosRequestConfig) {
         return LineItemsApiFp(this.configuration).lineItemUpdate(id, lineItemUpdateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-
-
-/**
- * NotificationsApi - axios parameter creator
- */
-export const NotificationsApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * 
-         * @summary Get user notifications via Cursor Pagination
-         * @param {boolean} [unreadOnly] 
-         * @param {number} [cursor] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationGetNotifications: async (unreadOnly?: boolean, cursor?: number, size?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/notifications`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-            if (unreadOnly !== undefined) {
-                localVarQueryParameter['unreadOnly'] = unreadOnly;
-            }
-
-            if (cursor !== undefined) {
-                localVarQueryParameter['cursor'] = cursor;
-            }
-
-            if (size !== undefined) {
-                localVarQueryParameter['size'] = size;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Get unread notification count
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationGetUnreadCount: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/notifications/unread-count`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Mark all notifications as read
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationMarkAllAsRead: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/notifications/read-all`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Mark single notification as read
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationMarkAsRead: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('notificationMarkAsRead', 'id', id)
-            const localVarPath = `/api/v1/notifications/{id}/read`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * NotificationsApi - functional programming interface
- */
-export const NotificationsApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = NotificationsApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * 
-         * @summary Get user notifications via Cursor Pagination
-         * @param {boolean} [unreadOnly] 
-         * @param {number} [cursor] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CursorPagedResponseNotificationResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetNotifications(unreadOnly, cursor, size, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetNotifications']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Get unread notification count
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async notificationGetUnreadCount(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: number; }>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetUnreadCount(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetUnreadCount']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Mark all notifications as read
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async notificationMarkAllAsRead(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationMarkAllAsRead(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationMarkAllAsRead']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @summary Mark single notification as read
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationMarkAsRead(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationMarkAsRead']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * NotificationsApi - factory interface
- */
-export const NotificationsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = NotificationsApiFp(configuration)
-    return {
-        /**
-         * 
-         * @summary Get user notifications via Cursor Pagination
-         * @param {boolean} [unreadOnly] 
-         * @param {number} [cursor] 
-         * @param {number} [size] 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<CursorPagedResponseNotificationResponse> {
-            return localVarFp.notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Get unread notification count
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationGetUnreadCount(options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: number; }> {
-            return localVarFp.notificationGetUnreadCount(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Mark all notifications as read
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationMarkAllAsRead(options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.notificationMarkAllAsRead(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Mark single notification as read
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.notificationMarkAsRead(id, options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * NotificationsApi - object-oriented interface
- */
-export class NotificationsApi extends BaseAPI {
-    /**
-     * 
-     * @summary Get user notifications via Cursor Pagination
-     * @param {boolean} [unreadOnly] 
-     * @param {number} [cursor] 
-     * @param {number} [size] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig) {
-        return NotificationsApiFp(this.configuration).notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Get unread notification count
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public notificationGetUnreadCount(options?: RawAxiosRequestConfig) {
-        return NotificationsApiFp(this.configuration).notificationGetUnreadCount(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Mark all notifications as read
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public notificationMarkAllAsRead(options?: RawAxiosRequestConfig) {
-        return NotificationsApiFp(this.configuration).notificationMarkAllAsRead(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Mark single notification as read
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig) {
-        return NotificationsApiFp(this.configuration).notificationMarkAsRead(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -13117,48 +12330,6 @@ export const WorkerCertificatesApiAxiosParamCreator = function (configuration?: 
         },
         /**
          * 
-         * @summary Get a single certificate for a worker
-         * @param {number} workerId 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        workerCertificateGetCertificateForWorker: async (workerId: number, id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'workerId' is not null or undefined
-            assertParamExists('workerCertificateGetCertificateForWorker', 'workerId', workerId)
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('workerCertificateGetCertificateForWorker', 'id', id)
-            const localVarPath = `/api/v1/workers/{workerId}/certificates/{id}`
-                .replace(`{${"workerId"}}`, encodeURIComponent(String(workerId)))
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
          * @summary List certificates for a specific worker
          * @param {number} workerId 
          * @param {*} [options] Override http request option.
@@ -13285,14 +12456,13 @@ export const WorkerCertificatesApiAxiosParamCreator = function (configuration?: 
          * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerCertificateUploadCertificateForWorker: async (workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerCertificateUploadCertificateForWorker: async (workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workerId' is not null or undefined
             assertParamExists('workerCertificateUploadCertificateForWorker', 'workerId', workerId)
             // verify required parameter 'type' is not null or undefined
@@ -13321,10 +12491,6 @@ export const WorkerCertificatesApiAxiosParamCreator = function (configuration?: 
 
             if (type !== undefined) {
                 localVarQueryParameter['type'] = type;
-            }
-
-            if (customTypeLabel !== undefined) {
-                localVarQueryParameter['customTypeLabel'] = customTypeLabel;
             }
 
             if (name !== undefined) {
@@ -13390,20 +12556,6 @@ export const WorkerCertificatesApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Get a single certificate for a worker
-         * @param {number} workerId 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async workerCertificateGetCertificateForWorker(workerId: number, id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateGetCertificateForWorker(workerId, id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateGetCertificateForWorker']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary List certificates for a specific worker
          * @param {number} workerId 
          * @param {*} [options] Override http request option.
@@ -13449,15 +12601,14 @@ export const WorkerCertificatesApiFp = function(configuration?: Configuration) {
          * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateUploadCertificateForWorker(workerId, type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options);
+        async workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesApi.workerCertificateUploadCertificateForWorker']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -13481,17 +12632,6 @@ export const WorkerCertificatesApiFactory = function (configuration?: Configurat
          */
         workerCertificateDeleteCertificate(workerId: number, id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.workerCertificateDeleteCertificate(workerId, id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Get a single certificate for a worker
-         * @param {number} workerId 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        workerCertificateGetCertificateForWorker(workerId: number, id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
-            return localVarFp.workerCertificateGetCertificateForWorker(workerId, id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -13531,15 +12671,14 @@ export const WorkerCertificatesApiFactory = function (configuration?: Configurat
          * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
-            return localVarFp.workerCertificateUploadCertificateForWorker(workerId, type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
+        workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
+            return localVarFp.workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -13558,18 +12697,6 @@ export class WorkerCertificatesApi extends BaseAPI {
      */
     public workerCertificateDeleteCertificate(workerId: number, id: number, options?: RawAxiosRequestConfig) {
         return WorkerCertificatesApiFp(this.configuration).workerCertificateDeleteCertificate(workerId, id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Get a single certificate for a worker
-     * @param {number} workerId 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public workerCertificateGetCertificateForWorker(workerId: number, id: number, options?: RawAxiosRequestConfig) {
-        return WorkerCertificatesApiFp(this.configuration).workerCertificateGetCertificateForWorker(workerId, id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -13613,15 +12740,14 @@ export class WorkerCertificatesApi extends BaseAPI {
      * @param {WorkerCertificateUploadCertificateForWorkerTypeEnum} type 
      * @param {string} name 
      * @param {File} file 
-     * @param {string} [customTypeLabel] 
      * @param {string} [issuingAuthority] 
      * @param {string} [issueDate] 
      * @param {string} [expiryDate] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
-        return WorkerCertificatesApiFp(this.configuration).workerCertificateUploadCertificateForWorker(workerId, type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
+    public workerCertificateUploadCertificateForWorker(workerId: number, type: WorkerCertificateUploadCertificateForWorkerTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesApiFp(this.configuration).workerCertificateUploadCertificateForWorker(workerId, type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -13660,44 +12786,6 @@ export const WorkerCertificatesSelfServiceApiAxiosParamCreator = function (confi
             }
 
             const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Get a single own certificate
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        workerCertificateSelfGetOwnCertificate: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('workerCertificateSelfGetOwnCertificate', 'id', id)
-            const localVarPath = `/api/v1/worker/certificates/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -13800,14 +12888,13 @@ export const WorkerCertificatesSelfServiceApiAxiosParamCreator = function (confi
          * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerCertificateSelfUploadOwnCertificate: async (type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        workerCertificateSelfUploadOwnCertificate: async (type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'type' is not null or undefined
             assertParamExists('workerCertificateSelfUploadOwnCertificate', 'type', type)
             // verify required parameter 'name' is not null or undefined
@@ -13833,10 +12920,6 @@ export const WorkerCertificatesSelfServiceApiAxiosParamCreator = function (confi
 
             if (type !== undefined) {
                 localVarQueryParameter['type'] = type;
-            }
-
-            if (customTypeLabel !== undefined) {
-                localVarQueryParameter['customTypeLabel'] = customTypeLabel;
             }
 
             if (name !== undefined) {
@@ -13901,19 +12984,6 @@ export const WorkerCertificatesSelfServiceApiFp = function(configuration?: Confi
         },
         /**
          * 
-         * @summary Get a single own certificate
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async workerCertificateSelfGetOwnCertificate(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfGetOwnCertificate(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfGetOwnCertificate']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
          * @summary List the current worker\'s certificates
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -13944,15 +13014,14 @@ export const WorkerCertificatesSelfServiceApiFp = function(configuration?: Confi
          * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfUploadOwnCertificate(type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options);
+        async workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkerCertificateResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['WorkerCertificatesSelfServiceApi.workerCertificateSelfUploadOwnCertificate']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -13975,16 +13044,6 @@ export const WorkerCertificatesSelfServiceApiFactory = function (configuration?:
          */
         workerCertificateSelfDeleteOwnCertificate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.workerCertificateSelfDeleteOwnCertificate(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @summary Get a single own certificate
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        workerCertificateSelfGetOwnCertificate(id: number, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
-            return localVarFp.workerCertificateSelfGetOwnCertificate(id, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -14012,15 +13071,14 @@ export const WorkerCertificatesSelfServiceApiFactory = function (configuration?:
          * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
          * @param {string} name 
          * @param {File} file 
-         * @param {string} [customTypeLabel] 
          * @param {string} [issuingAuthority] 
          * @param {string} [issueDate] 
          * @param {string} [expiryDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
-            return localVarFp.workerCertificateSelfUploadOwnCertificate(type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
+        workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<WorkerCertificateResponse> {
+            return localVarFp.workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -14038,17 +13096,6 @@ export class WorkerCertificatesSelfServiceApi extends BaseAPI {
      */
     public workerCertificateSelfDeleteOwnCertificate(id: number, options?: RawAxiosRequestConfig) {
         return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfDeleteOwnCertificate(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @summary Get a single own certificate
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public workerCertificateSelfGetOwnCertificate(id: number, options?: RawAxiosRequestConfig) {
-        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfGetOwnCertificate(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -14079,15 +13126,14 @@ export class WorkerCertificatesSelfServiceApi extends BaseAPI {
      * @param {WorkerCertificateSelfUploadOwnCertificateTypeEnum} type 
      * @param {string} name 
      * @param {File} file 
-     * @param {string} [customTypeLabel] 
      * @param {string} [issuingAuthority] 
      * @param {string} [issueDate] 
      * @param {string} [expiryDate] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, customTypeLabel?: string, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
-        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfUploadOwnCertificate(type, name, file, customTypeLabel, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
+    public workerCertificateSelfUploadOwnCertificate(type: WorkerCertificateSelfUploadOwnCertificateTypeEnum, name: string, file: File, issuingAuthority?: string, issueDate?: string, expiryDate?: string, options?: RawAxiosRequestConfig) {
+        return WorkerCertificatesSelfServiceApiFp(this.configuration).workerCertificateSelfUploadOwnCertificate(type, name, file, issuingAuthority, issueDate, expiryDate, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { FieldError } from 'react-hook-form';
@@ -98,20 +97,7 @@ export const CompanyProfile: React.FC = () => {
     formState: { errors },
   } = methods;
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-
-  const activeTab = (() => {
-    if (tabParam) {
-      const idx = TABS.indexOf(tabParam as any);
-      if (idx !== -1) return idx;
-    }
-    return 0;
-  })();
-
-  const handleTabChange = (_: SyntheticEvent, val: number) => {
-    setSearchParams({ tab: TABS[val] }, { replace: true });
-  };
+  const [activeTab, setActiveTab] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -342,7 +328,7 @@ export const CompanyProfile: React.FC = () => {
           </HeaderRow>
 
           <TabsWrapper>
-            <StyledTabs value={activeTab} onChange={handleTabChange}>
+            <StyledTabs value={activeTab} onChange={(_: SyntheticEvent, val: number) => setActiveTab(val)}>
               <StyledTab label="Overview" />
               <StyledTab label="Documents" />
               <StyledTab label="Posts" />

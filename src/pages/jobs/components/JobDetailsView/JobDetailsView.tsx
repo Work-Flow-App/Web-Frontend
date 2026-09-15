@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import IconButton from '@mui/material/IconButton';
@@ -27,13 +27,11 @@ import { StepActivityTab } from '../JobDetailsTabs/tabs/StepActivityTab';
 import { JobAssetsSection } from '../../../assets/components/JobAssetsSection/JobAssetsSection';
 import { JobEstimateTab } from '../JobDetailsTabs/tabs/JobEstimateTab';
 import { JobWorkLogsTab } from '../JobDetailsTabs/tabs/JobWorkLogsTab';
-import { JobFormsTab } from '../JobDetailsTabs/tabs/JobFormsTab';
 import { CustomerName, JobValue, Status, Progress, Created, OverviewContainer } from '../OverviewField';
 
 export const JobDetailsView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { showError } = useSnackbar();
 
   const [job, setJob] = useState<JobResponse | null>(null);
@@ -42,25 +40,8 @@ export const JobDetailsView: React.FC = () => {
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [customer, setCustomer] = useState<CustomerResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState('overview');
   const [workflowUpdateTrigger, setWorkflowUpdateTrigger] = useState(0);
-
-  useEffect(() => {
-    const tab = searchParams.get('tab') || 'overview';
-    setActiveTab(tab);
-  }, [searchParams]);
-
-  const handleTabChange = (newTab: string) => {
-    setActiveTab(newTab);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('tab', newTab);
-        return next;
-      },
-      { replace: true }
-    );
-  };
 
   const handleWorkflowUpdate = useCallback(() => {
     setWorkflowUpdateTrigger((prev) => prev + 1);
@@ -167,39 +148,39 @@ export const JobDetailsView: React.FC = () => {
 
         {/* Tabs Navigation */}
         <S.TabsContainer>
-          <S.TabButton active={activeTab === 'overview'} onClick={() => handleTabChange('overview')}>
+          <S.TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
             Overview
           </S.TabButton>
-          <S.TabButton active={activeTab === 'activity-log'} onClick={() => handleTabChange('activity-log')}>
+          <S.TabButton active={activeTab === 'activity-log'} onClick={() => setActiveTab('activity-log')}>
             Activity Log
           </S.TabButton>
-          <S.TabButton active={activeTab === 'estimate'} onClick={() => handleTabChange('estimate')}>
+          <S.TabButton active={activeTab === 'estimate'} onClick={() => setActiveTab('estimate')}>
             Estimate
           </S.TabButton>
-          {/* <S.TabButton active={activeTab === 'financials'} onClick={() => handleTabChange('financials')}>
+          {/* <S.TabButton active={activeTab === 'financials'} onClick={() => setActiveTab('financials')}>
             Financials
           </S.TabButton> */}
-          <S.TabButton active={activeTab === 'documents'} onClick={() => handleTabChange('documents')}>
+          <S.TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')}>
             Documents
           </S.TabButton>
-          <S.TabButton active={activeTab === 'complaints'} onClick={() => handleTabChange('complaints')}>
+          <S.TabButton active={activeTab === 'complaints'} onClick={() => setActiveTab('complaints')}>
             Complaints
           </S.TabButton>
-          <S.TabButton active={activeTab === 'step-activity'} onClick={() => handleTabChange('step-activity')}>
+          <S.TabButton active={activeTab === 'step-activity'} onClick={() => setActiveTab('step-activity')}>
             Step Activity
           </S.TabButton>
-          <S.TabButton active={activeTab === 'work-logs'} onClick={() => handleTabChange('work-logs')}>
+          <S.TabButton active={activeTab === 'work-logs'} onClick={() => setActiveTab('work-logs')}>
             Work Logs
           </S.TabButton>
-          <S.TabButton active={activeTab === 'assets'} onClick={() => handleTabChange('assets')}>
+          <S.TabButton active={activeTab === 'assets'} onClick={() => setActiveTab('assets')}>
             Assets
           </S.TabButton>
-          {/* <S.TabButton active={activeTab === 'history'} onClick={() => handleTabChange('history')}>
+          {/* <S.TabButton active={activeTab === 'history'} onClick={() => setActiveTab('history')}>
             History
           </S.TabButton> */}
-          <S.TabButton active={activeTab === 'forms'} onClick={() => handleTabChange('forms')}>
-            Forms
-          </S.TabButton>
+          {/* <S.TabButton active={activeTab === 'form'} onClick={() => setActiveTab('form')}>
+            Form
+          </S.TabButton> */}
         </S.TabsContainer>
 
         {/* Overview Fields */}
@@ -245,10 +226,6 @@ export const JobDetailsView: React.FC = () => {
             ) : activeTab === 'estimate' ? (
               <S.DetailsSection>
                 <JobEstimateTab job={job} />
-              </S.DetailsSection>
-            ) : activeTab === 'forms' ? (
-              <S.DetailsSection>
-                <JobFormsTab job={job} />
               </S.DetailsSection>
             ) : (
               <>
