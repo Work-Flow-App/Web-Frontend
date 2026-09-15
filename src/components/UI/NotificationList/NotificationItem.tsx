@@ -1,103 +1,125 @@
 import React from 'react';
 import type { INotificationItem } from './INotificationList';
-import { getNotificationCategory } from './notificationCategories';
-import { formatRelativeTime } from '../../../utils/formatRelativeTime';
-import { floowColors } from '../../../theme/colors';
+import { MailIcon } from './icons';
+import { Button } from '../Button';
 import {
   NotificationItemContainer,
-  NotificationIconCircle,
+  NotificationContent,
+  NotificationIconContainer,
   NotificationAvatar,
   NotificationTextContent,
-  NotificationTopRow,
   NotificationMainText,
   NotificationSubText,
-  NotificationMetaRow,
-  CategoryLabel,
-  MetaDot,
-  MetaTime,
-  UrgentTag,
-  UnreadDot,
-  MarkReadButton,
+  UserProfileSection,
+  UserProfileAvatar,
+  UserProfileName,
+  NotificationActions,
+  MailButton,
+  ViewButtonWrapper,
+  NotificationDivider,
 } from './NotificationList.styles';
 
-const PRIORITY_ACCENT: Record<string, string> = {
-  URGENT: floowColors.error.main,
-  HIGH: floowColors.warning.main,
-};
-
-export const NotificationItem: React.FC<INotificationItem> = ({ notification, onMarkAsRead, onViewClick }) => {
-  const unread = !notification.isRead;
-  const category = getNotificationCategory(notification.type);
-  const accentColor = notification.priority ? PRIORITY_ACCENT[notification.priority] : undefined;
-  const timeAgo = notification.timestamp ? formatRelativeTime(notification.timestamp.toISOString()) : undefined;
-
-  const getInitials = (name: string): string =>
-    name
-      .split(' ')
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-
-  const handleActivate = () => {
-    onViewClick?.(notification);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleActivate();
+export const NotificationItem: React.FC<INotificationItem> = ({
+  notification,
+  onMailClick,
+  onViewClick,
+}) => {
+  const handleMailClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMailClick) {
+      onMailClick(notification.id);
     }
   };
 
-  const handleMarkAsRead = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onMarkAsRead?.(notification.id);
+  const handleViewClick = () => {
+    if (onViewClick) {
+      onViewClick(notification);
+    }
+  };
+
+  const getInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
-    <NotificationItemContainer
-      unread={unread}
-      accentColor={accentColor}
-      tabIndex={0}
-      onClick={handleActivate}
-      onKeyDown={handleKeyDown}
-      aria-label={notification.title}
-    >
-      {notification.avatar || notification.user ? (
-        <NotificationAvatar src={notification.avatar} alt={notification.user || 'User'}>
-          {notification.user ? getInitials(notification.user) : 'U'}
-        </NotificationAvatar>
-      ) : (
-        <NotificationIconCircle color={category.color} bg={category.bg}>
-          {notification.icon ?? category.icon}
-        </NotificationIconCircle>
-      )}
-
-      <NotificationTextContent>
-        <NotificationTopRow>
-          <NotificationMainText unread={unread}>{notification.title}</NotificationMainText>
-          {unread && <UnreadDot aria-label="Unread" />}
-        </NotificationTopRow>
-
-        {notification.subtitle && <NotificationSubText>{notification.subtitle}</NotificationSubText>}
-
-        <NotificationMetaRow>
-          <CategoryLabel color={category.color}>{category.label}</CategoryLabel>
-          {timeAgo && (
-            <>
-              <MetaDot />
-              <MetaTime>{timeAgo}</MetaTime>
-            </>
+    <>
+      <NotificationItemContainer>
+        <NotificationContent>
+          {/* Icon or Avatar */}
+          {notification.icon ? (
+            <NotificationIconContainer>
+              {notification.icon}
+            </NotificationIconContainer>
+          ) : notification.avatar ? (
+            <NotificationAvatar
+              src={notification.avatar}
+              alt={notification.user || 'User'}
+            >
+              {notification.user ? getInitials(notification.user) : 'U'}
+            </NotificationAvatar>
+          ) : (
+            <NotificationAvatar>
+              {notification.user ? getInitials(notification.user) : 'N'}
+            </NotificationAvatar>
           )}
-          {notification.priority === 'URGENT' && <UrgentTag>Urgent</UrgentTag>}
-          {unread && onMarkAsRead && (
-            <MarkReadButton className="notification-mark-read" onClick={handleMarkAsRead} type="button">
-              Mark as read
-            </MarkReadButton>
-          )}
-        </NotificationMetaRow>
-      </NotificationTextContent>
-    </NotificationItemContainer>
+
+          {/* Text Content */}
+          <NotificationTextContent>
+            <NotificationMainText>
+              {notification.title}
+            </NotificationMainText>
+            {(notification.subtitle || notification.jobId) && (
+              <NotificationSubText>
+                {notification.jobId && <span>Job ID {notification.jobId}</span>}
+                {!notification.jobId && notification.subtitle && (
+                  <span>{notification.subtitle}</span>
+                )}
+              </NotificationSubText>
+            )}
+          </NotificationTextContent>
+        </NotificationContent>
+
+        {/* Actions */}
+        <NotificationActions>
+          <MailButton onClick={handleMailClick} role="button" aria-label="Send mail">
+            {notification.user ? (
+              <UserProfileSection>
+                {notification.avatar ? (
+                  <UserProfileAvatar
+                    src={notification.avatar}
+                    alt={notification.user}
+                  >
+                    {getInitials(notification.user)}
+                  </UserProfileAvatar>
+                ) : (
+                  <UserProfileAvatar>
+                    {getInitials(notification.user)}
+                  </UserProfileAvatar>
+                )}
+                <UserProfileName>{notification.user}</UserProfileName>
+              </UserProfileSection>
+            ) : (
+              <MailIcon />
+            )}
+          </MailButton>
+          <ViewButtonWrapper>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={handleViewClick}
+            >
+              View
+            </Button>
+          </ViewButtonWrapper>
+        </NotificationActions>
+      </NotificationItemContainer>
+      <NotificationDivider />
+    </>
   );
 };

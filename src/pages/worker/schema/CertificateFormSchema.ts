@@ -10,14 +10,6 @@ export const CertificateFormSchema: IFields = {
     label: 'Certificate Type',
     isRequired: true,
   },
-  customTypeLabel: {
-    title: 'customTypeLabel',
-    rule: InputValidationRules.StringNotRequired,
-    defaultValue: '',
-    placeHolder: 'e.g. Confined Space Entry',
-    label: 'Custom Type Label',
-    isRequired: false,
-  },
   name: {
     title: 'name',
     rule: InputValidationRules.StringRequired,
@@ -54,7 +46,6 @@ export const CertificateFormSchema: IFields = {
 
 export interface CertificateFormData {
   type: CertificateType | { value: CertificateType; label: string };
-  customTypeLabel?: string;
   name: string;
   issuingAuthority?: string;
   issueDate?: string;

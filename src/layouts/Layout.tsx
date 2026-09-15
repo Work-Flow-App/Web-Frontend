@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useNavigate, Navigate } from 'react-router-dom';
-import { Menu, MenuItem, ListItemIcon, ListItemText, Badge, Box } from '@mui/material';
+import { Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar, BottomTab } from '../components/UI/Sidebar';
 import type { SidebarItem } from '../components/UI/Sidebar';
@@ -12,7 +12,6 @@ import WorkIcon from '@mui/icons-material/Work';
 import DescriptionIcon from '@mui/icons-material/Description';
 import BusinessIcon from '@mui/icons-material/Business';
 import BuildIcon from '@mui/icons-material/Build';
-import CategoryIcon from '@mui/icons-material/Category';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -23,19 +22,12 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { Loader } from '../components/UI/Loader';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
-import { NotificationDropdown, resolveNotificationTargetUrl } from '../components/UI/NotificationList';
-import type { INotification } from '../components/UI/NotificationList';
-import { mapNotificationToItem } from '../components/UI/NotificationList/mapNotification';
 import { companyService } from '../services/api/company';
 import { useSessionRestore } from '../hooks/useSessionRestore';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useNotifications } from '../contexts/NotificationContext';
-import { useSnackbar } from '../contexts/SnackbarContext';
-import { isWorkerRole } from '../utils/roles';
 import { SubscriptionStatusResponseStatusEnum } from '../../workflow-api';
 import * as S from './Layout.styles';
 import { Place } from '@mui/icons-material';
@@ -137,83 +129,6 @@ const RightActions = ({
 };
 
 /**
- * Notification bell with unread badge and dropdown, wired to NotificationContext.
- */
-const NotificationBell = () => {
-  const { unreadCount, recent, markAsRead, markAllAsRead } = useNotifications();
-  const { userRole } = useAuth();
-  const { showInfo } = useSnackbar();
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const isWorker = isWorkerRole(userRole);
-
-  const findSource = (id: string) => recent.find((n) => String(n.id) === id);
-
-  const handleItemAction = (item: INotification) => {
-    const source = findSource(item.id);
-    if (source?.id !== undefined) {
-      markAsRead(source.id);
-    }
-    setOpen(false);
-
-    const { url, unresolved } = resolveNotificationTargetUrl(source ?? {}, isWorker);
-    if (url) {
-      navigate(url);
-    } else if (unresolved) {
-      showInfo("Marked as read — a direct link to this isn't available yet.");
-    }
-  };
-
-  return (
-    <NotificationDropdown
-      open={open}
-      onOpen={() => setOpen(true)}
-      onClose={() => setOpen(false)}
-      notifications={recent.map(mapNotificationToItem)}
-      showMarkAllRead
-      onMarkAllRead={() => markAllAsRead()}
-      onViewClick={handleItemAction}
-      onMarkAsRead={(id) => {
-        const source = findSource(id);
-        if (source?.id !== undefined) {
-          markAsRead(source.id);
-        }
-      }}
-      footer={
-        <Box
-          component="button"
-          type="button"
-          onClick={() => {
-            setOpen(false);
-            navigate('/notifications');
-          }}
-          sx={{
-            border: 'none',
-            background: 'transparent',
-            padding: 0,
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            fontFamily: 'Manrope, sans-serif',
-            color: 'primary.main',
-            cursor: 'pointer',
-            '&:hover': { textDecoration: 'underline' },
-          }}
-        >
-          View all notifications
-        </Box>
-      }
-      trigger={
-        <S.ActionButton role="button" aria-label="Notifications">
-          <Badge badgeContent={unreadCount} color="error" max={99}>
-            <NotificationsOutlinedIcon fontSize="small" />
-          </Badge>
-        </S.ActionButton>
-      }
-    />
-  );
-};
-
-/**
  * Layout Component
  *
  * Persistent layout wrapper that contains:
@@ -263,7 +178,7 @@ export const Layout: React.FC = () => {
     return userRole.replace('ROLE_', '').substring(0, 2).toUpperCase();
   }, [userRole]);
 
-  const isWorker = isWorkerRole(userRole);
+  const isWorker = userRole === 'ROLE_WORKER' || userRole === 'WORKER';
 
   const [userInitials, setUserInitials] = useState(roleInitials);
 
@@ -344,7 +259,6 @@ export const Layout: React.FC = () => {
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
     { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
-    { id: 'asset-groups', label: 'Asset Groups', icon: <CategoryIcon />, href: '/company/assets/groups' },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'forms', label: 'Forms', icon: <DescriptionOutlinedIcon />, href: '/company/forms' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
@@ -395,7 +309,6 @@ export const Layout: React.FC = () => {
           isCollapsed={isSidebarCollapsed}
           rightContent={
             <>
-              <NotificationBell />
               {trialDaysLeft !== null && (
                 <S.TrialBadge>
                   <S.TrialBadgeIcon>!</S.TrialBadgeIcon>

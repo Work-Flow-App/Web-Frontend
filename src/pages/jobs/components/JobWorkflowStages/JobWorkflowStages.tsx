@@ -1006,9 +1006,7 @@ export const JobWorkflowStages: React.FC<JobWorkflowStagesProps> = ({ job, onSte
             />
           ) : (
             <>
-              <S.WorkflowTitleText title={workflow?.name || 'Workflow Name'}>
-                {workflow?.name || 'Workflow Name'}
-              </S.WorkflowTitleText>
+              {workflow?.name || 'Workflow Name'}
               <S.WorkerAvatarsRow>
                 {Array.from(workers.values())
                   .slice(0, 2)
