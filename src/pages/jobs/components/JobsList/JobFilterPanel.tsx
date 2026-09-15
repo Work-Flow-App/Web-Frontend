@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Divider, ToggleButton } from '@mui/material';
+import { Divider } from '@mui/material';
 import { StandaloneDropdown } from '../../../../components/UI/Forms/Dropdown';
 import type { DropdownOption } from '../../../../components/UI/Forms/Dropdown';
 import type { JobFilters } from '../../../../services/api';
@@ -10,21 +10,25 @@ import {
   PanelHeader,
   PanelTitle,
   PanelBody,
-  ViewToggleGroup,
   FilterSection,
   PanelFooter,
   FilterRowWrapper,
   FilterLabel,
 } from './JobFilterPanel.styles';
 
-export type ViewTab = 'active' | 'completed' | 'archived';
+export type ViewTab = 'active' | 'completed' | 'cancelled' | 'archived';
+
+const VIEW_OPTIONS: DropdownOption[] = [
+  { label: 'Active', value: 'active' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Archived', value: 'archived' },
+];
 
 const STATUS_OPTIONS: DropdownOption[] = [
   { label: 'New', value: 'NEW' },
   { label: 'Pending', value: 'PENDING' },
   { label: 'In Progress', value: 'IN_PROGRESS' },
-  { label: 'Completed', value: 'COMPLETED' },
-  { label: 'Cancelled', value: 'CANCELLED' },
 ];
 
 // StandaloneDropdown initialises its internal state from defaultValue on mount.
@@ -74,7 +78,8 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   const set = (key: keyof JobFilters) => (v: string | number) =>
     setDraft((prev) => ({ ...prev, [key]: (v as string) || undefined }));
 
-  const handleViewToggle = (_: React.MouseEvent, value: ViewTab | null) => {
+  const handleViewChange = (v: string | number) => {
+    const value = v as ViewTab;
     if (!value) return;
     if (value !== 'active') {
       setDraft({});
@@ -101,7 +106,13 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
   };
 
   const isFiltersDisabled = viewTab === 'archived';
-  const isStatusDisabled = viewTab === 'archived' || viewTab === 'completed';
+  const isStatusDisabled = viewTab === 'archived' || viewTab === 'completed' || viewTab === 'cancelled';
+  const statusPlaceholder =
+    viewTab === 'completed'
+      ? 'Completed'
+      : viewTab === 'cancelled'
+        ? 'Cancelled'
+        : 'Any status';
 
   return (
     <FilterPopover
@@ -120,17 +131,17 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
 
         <PanelBody>
           <FilterRow label="View">
-            <ViewToggleGroup
-              value={viewTab}
-              exclusive
-              onChange={handleViewToggle}
-              size="small"
+            <StandaloneDropdown
+              key={`view-${dropdownKey}`}
+              name="filter-view"
+              placeHolder="Select view"
+              preFetchedOptions={VIEW_OPTIONS}
+              defaultValue={toOption(VIEW_OPTIONS, viewTab) as unknown as string}
+              onChange={handleViewChange}
+              disableClearable
+              hideErrorMessage
               fullWidth
-            >
-              <ToggleButton value="active">Active</ToggleButton>
-              <ToggleButton value="completed">Completed</ToggleButton>
-              <ToggleButton value="archived">Archived</ToggleButton>
-            </ViewToggleGroup>
+            />
           </FilterRow>
 
           <FilterSection $disabled={isFiltersDisabled}>
@@ -138,7 +149,7 @@ export const JobFilterPanel: React.FC<JobFilterPanelProps> = ({
               <StandaloneDropdown
                 key={`status-${dropdownKey}`}
                 name="filter-status"
-                placeHolder={isStatusDisabled ? 'Completed' : 'Any status'}
+                placeHolder={statusPlaceholder}
                 preFetchedOptions={STATUS_OPTIONS}
                 defaultValue={toOption(STATUS_OPTIONS, draft.status) as unknown as string}
                 onChange={set('status')}

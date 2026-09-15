@@ -1,22 +1,12 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { CircularProgress, Box, LinearProgress, Typography, Menu, MenuItem } from '@mui/material';
+import { CircularProgress, LinearProgress } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import AddIcon from '@mui/icons-material/Add';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-//import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-// import PendingActionsIcon from '@mui/icons-material/PendingActions';
-// import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { useNavigate } from 'react-router-dom';
-//import { useCurrency } from '../../../contexts/CurrencyContext';
-import { Button } from '../../../components/UI/Button';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
-import { AddJobWizard } from '../../jobs/components/AddJobWizard';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   jobService,
   jobWorkflowService,
   workflowService,
-  jobTemplateService,
   customerService,
   estimateService,
 } from '../../../services/api';
@@ -119,114 +109,35 @@ function buildGroups(templateSteps: WorkflowStepResponse[], jobWorkflows: JobWor
   return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
 }
 
-// ─── Stat Boxes ───────────────────────────────────────────────────────────────
-
-const statCardSx = {
-  bgcolor: '#fff',
-  borderRadius: '12px',
-  border: '1px solid #e5e7eb',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-  p: '20px 24px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
-};
-
 function StatBoxesRow({
   jobs,
-  // estimateSentTotal,
-  //awaitingInvoiceTotal,
 }: {
   jobs: JobResponse[];
   estimateSentTotal: number;
   awaitingInvoiceTotal: number;
 }) {
-  //const { formatCurrency } = useCurrency();
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
-  //const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '16px' }}>
-      {/* Box 1 — Estimate Sent */}
-      {/* <Box sx={statCardSx}>
-        <Typography
-          sx={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: floowColors.text.muted,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Estimate Sent
-        </Typography>
-        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {formatCurrency(estimateSentTotal)}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>up-trend</Typography>
-        </Box>
-      </Box> */}
-
-      {/* Box 2 — Work In Progress */}
-      <Box sx={statCardSx}>
-        <Typography
-          sx={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: floowColors.text.muted,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Work In Progress (Total Job)
-        </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {inProgress}
-        </Typography>
+    <S.StatBoxesContainer>
+      <S.StatCard>
+        <S.StatLabel>Work In Progress (Total Job)</S.StatLabel>
+        <S.StatValue>{inProgress}</S.StatValue>
         <LinearProgress
           variant="determinate"
           value={progressPct}
           sx={{
-            borderRadius: '2px',
-            height: '4px',
-            bgcolor: floowColors.grey[100],
-            '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main },
+            borderRadius: '4px',
+            height: '6px',
+            bgcolor: (theme) => theme.palette.grey[100] || '#f3f4f6',
+            '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main, borderRadius: '4px' },
           }}
         />
-        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>{progressPct}% Complete</Typography>
-      </Box>
-
-      {/* Box 3 — Estimates Awaiting Approval */}
-      {/* <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Estimates Awaiting Approval
-        </Typography>
-        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          £{formatAmount(awaitingInvoiceTotal)}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {awaitingCount > 0 ? (
-            <>
-              <ErrorOutlineIcon sx={{ fontSize: '14px', color: floowColors.error.main }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.error.main }}>
-                awaiting approval
-              </Typography>
-            </>
-          ) : (
-            <>
-              <PendingActionsIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
-                all approved
-              </Typography>
-            </>
-          )}
-        </Box>
-      </Box> */}
-    </Box>
+        <S.StatSubText>{progressPct}% Complete</S.StatSubText>
+      </S.StatCard>
+    </S.StatBoxesContainer>
   );
 }
 
@@ -241,9 +152,10 @@ function PipelineBar({
   activeStep: string | null;
   onSelectStep: (name: string) => void;
 }) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const isOpen = Boolean(anchorEl);
+  const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800); // Default fallback
 
   useEffect(() => {
@@ -257,40 +169,37 @@ function PipelineBar({
     return () => observer.disconnect();
   }, []);
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setIsOpen(false);
   };
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleScroll = (event: Event) => {
-      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
-      if (paper && paper.contains(event.target as Node)) {
-        return;
-      }
-      handleClose();
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       const target = event.target as Node;
-      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
-      if (paper && !paper.contains(target) && anchorEl && !anchorEl.contains(target)) {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(target) &&
+        moreRef.current &&
+        !moreRef.current.contains(target)
+      ) {
         handleClose();
       }
     };
 
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('click', handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
+    document.addEventListener('touchstart', handleClickOutside, true);
     return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
     };
-  }, [isOpen, anchorEl]);
+  }, [isOpen]);
 
   // Dynamically calculate visible count based on containerWidth and estimated item widths:
   let maxVisible = 0;
@@ -348,35 +257,40 @@ function PipelineBar({
         </React.Fragment>
       ))}
       {hidden > 0 && (
-        <>
+        <S.PipelineMoreWrapper ref={moreRef}>
           <S.PipelineArrow>›</S.PipelineArrow>
-          <S.PipelineMore onClick={handleOpen}>···</S.PipelineMore>
-          <S.DropdownMenu
-            anchorEl={anchorEl}
-            open={isOpen}
-            onClose={handleClose}
-            disableScrollLock
-          >
-            {groups.slice(maxVisible).map((group) => (
-              <S.DropdownMenuItem
-                key={group.stepName}
-                onClick={() => {
-                  onSelectStep(group.stepName);
-                  handleClose();
-                }}
-                selected={activeStep === group.stepName}
-              >
-                <S.DropdownPipelineChip
-                  chipColor={group.color}
-                  isActive={activeStep === group.stepName}
-                >
-                  <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
-                  <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
-                </S.DropdownPipelineChip>
-              </S.DropdownMenuItem>
-            ))}
-          </S.DropdownMenu>
-        </>
+          <S.PipelineMore onClick={handleToggle}>···</S.PipelineMore>
+          {isOpen && (
+            <S.DropdownPopup ref={popupRef}>
+              <S.DropdownHeader>
+                <S.DropdownTitle>More Steps</S.DropdownTitle>
+                <S.DropdownCloseButton size="small" onClick={handleClose} aria-label="Close more steps">
+                  <CloseIcon sx={{ fontSize: 15 }} />
+                </S.DropdownCloseButton>
+              </S.DropdownHeader>
+
+              <S.DropdownListWrapper>
+                {groups.slice(maxVisible).map((group) => (
+                  <S.DropdownMenuItem
+                    key={group.stepName}
+                    onClick={() => {
+                      onSelectStep(group.stepName);
+                      handleClose();
+                    }}
+                  >
+                    <S.DropdownPipelineChip
+                      chipColor={group.color}
+                      isActive={activeStep === group.stepName}
+                    >
+                      <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
+                      <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
+                    </S.DropdownPipelineChip>
+                  </S.DropdownMenuItem>
+                ))}
+              </S.DropdownListWrapper>
+            </S.DropdownPopup>
+          )}
+        </S.PipelineMoreWrapper>
       )}
     </S.PipelineBar>
   );
@@ -496,13 +410,10 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export const JobEventsSection: React.FC = () => {
-  const navigate = useNavigate();
-  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<StepEventGroup[]>([]);
   const [jobsMap, setJobsMap] = useState<Map<number, JobResponse>>(new Map());
   const [customersMap, setCustomersMap] = useState<Map<number, CustomerResponse>>(new Map());
-  const [templates, setTemplates] = useState<{ id?: number }[]>([]);
   const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [allJobs, setAllJobs] = useState<JobResponse[]>([]);
@@ -521,13 +432,11 @@ export const JobEventsSection: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [jobsRes, workflowsRes, templatesRes, customersRes] = await Promise.all([
+        const [jobsRes, workflowsRes, customersRes] = await Promise.all([
           jobService.getAllJobs(),
           workflowService.getAllWorkflows(),
-          jobTemplateService.getAllTemplates(),
           customerService.getAllCustomers(),
         ]);
-        setTemplates(Array.isArray(templatesRes.data) ? templatesRes.data : []);
 
         const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
         const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
@@ -649,44 +558,6 @@ export const JobEventsSection: React.FC = () => {
   useEffect(() => {
     if (!loading) recomputeGroups(selectedWorkflowId);
   }, [selectedWorkflowId, loading, recomputeGroups]);
-
-  const handleAddJob = () => {
-    if (templates.length === 0) {
-      setGlobalModalOuterProps({
-        isOpen: true,
-        size: ModalSizes.SMALL,
-        fieldName: 'noTemplateWarning',
-        children: (
-          <ConfirmationModal
-            title="No Templates Available"
-            message="You need to create a job template before creating a job."
-            description="Job templates define the structure and fields for your jobs. Would you like to create a template now?"
-            variant="default"
-            confirmButtonText="Create Template"
-            cancelButtonText="Cancel"
-            onConfirm={() => {
-              resetGlobalModalOuterProps();
-              navigate('/company/jobs/templates?openAddModal=true');
-            }}
-            onCancel={() => resetGlobalModalOuterProps()}
-          />
-        ),
-      });
-      return;
-    }
-    setGlobalModalOuterProps({
-      isOpen: true,
-      size: ModalSizes.LARGE,
-      fieldName: 'addJob',
-      children: (
-        <AddJobWizard
-          onSuccess={() => {
-            resetGlobalModalOuterProps();
-          }}
-        />
-      ),
-    });
-  };
 
   const handleSelectStep = (stepName: string) => {
     setActiveStep(stepName);
@@ -822,12 +693,6 @@ export const JobEventsSection: React.FC = () => {
             </S.WorkflowFormControl>
           )}
         </S.HeaderRow>
-
-
-        {/* Right: New Job button */}
-        <Button startIcon={<AddIcon />} endIcon={<KeyboardArrowDownIcon />} onClick={handleAddJob}>
-          New Job
-        </Button>
       </S.SectionHeader>
 
       {/* Stat boxes */}
