@@ -29,6 +29,7 @@ export interface CertificateResponse {
   workerId: number;
   workerName?: string;
   type: CertificateType;
+  customTypeLabel?: string;
   name: string;
   issuingAuthority?: string;
   issueDate?: string;
@@ -52,6 +53,8 @@ export interface CertificateUploadPayload {
   file: File;
   type: CertificateType;
   name: string;
+  // Only meaningful (and required by the backend) when type is CertificateType.Other
+  customTypeLabel?: string;
   issuingAuthority?: string;
   issueDate?: string;
   expiryDate?: string;
@@ -96,6 +99,7 @@ export const certificateService = {
       payload.type,
       payload.name,
       payload.file,
+      payload.customTypeLabel,
       payload.issuingAuthority,
       payload.issueDate,
       payload.expiryDate
@@ -123,6 +127,7 @@ export const certificateService = {
       payload.type,
       payload.name,
       payload.file,
+      payload.customTypeLabel,
       payload.issuingAuthority,
       payload.issueDate,
       payload.expiryDate

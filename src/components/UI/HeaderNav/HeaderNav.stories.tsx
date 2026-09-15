@@ -419,9 +419,9 @@ export const WithNotificationDropdown: Story = {
                 notifications={sampleNotifications}
                 position="bottom-right"
                 title="Notifications"
-                showClearAll={true}
-                onClearAll={() => console.log('Clear all notifications')}
-                onMailClick={(id: string) => console.log('Mail clicked:', id)}
+                showMarkAllRead={true}
+                onMarkAllRead={() => console.log('Mark all notifications as read')}
+                onMarkAsRead={(id: string) => console.log('Mark as read:', id)}
                 onViewClick={(notif: any) => console.log('View notification:', notif)}
               />
 

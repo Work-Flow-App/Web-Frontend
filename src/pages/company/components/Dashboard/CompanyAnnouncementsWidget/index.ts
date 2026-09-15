@@ -1,0 +1,1 @@
+export { CompanyAnnouncementsWidget } from './CompanyAnnouncementsWidget';

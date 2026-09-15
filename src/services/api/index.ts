@@ -75,6 +75,9 @@ export type {
   PagedModelAssetResponse,
 } from './asset';
 
+export { assetGroupService } from './assetGroup';
+export type { AssetGroupResponse, AssetGroupCreateRequest, PagedModelAssetGroupResponse } from './assetGroup';
+
 export { workflowService } from './workflow';
 export type {
   WorkflowResponse,
@@ -101,6 +104,7 @@ export type {
   StepCommentCreateRequest,
   StepCommentResponse,
   StepTimelineItemResponse,
+  StepActivityResponse,
   StepAttachmentResponse,
 } from './stepActivity';
 
@@ -155,6 +159,14 @@ export type {
   PagedCertificates,
   ExpiringCertificateResponse,
 } from './certificate';
+
+export { notificationService } from './notification';
+export { NotificationResponseTypeEnum, NotificationResponsePriorityEnum } from '../../../workflow-api';
+export type {
+  NotificationResponse,
+  NotificationListParams,
+  CursorPagedResponseNotificationResponse,
+} from './notification';
 
 export { leaveService, LeaveType, LEAVE_TYPE_OPTIONS, LeaveStatus, LEAVE_STATUS_OPTIONS } from './leave';
 export type {

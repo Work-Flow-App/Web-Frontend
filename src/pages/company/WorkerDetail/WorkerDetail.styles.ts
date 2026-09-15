@@ -122,6 +122,13 @@ export const RateCard = styled(Box)(({ theme }) => ({
   flexWrap: 'wrap',
 }));
 
+export const RateColsRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: rem(28),
+  flexWrap: 'wrap',
+}));
+
 export const RateMainCol = styled(Box)({
   display: 'flex',
   flexDirection: 'column',

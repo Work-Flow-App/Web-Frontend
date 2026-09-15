@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -12,6 +13,9 @@ import { useFetch } from '../../../../hooks';
 import { columns, type ClientTableRow } from './DataColumn';
 
 export const PageList: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const hasAutoOpened = useRef(false);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { showSuccess, showError } = useSnackbar();
 
@@ -35,7 +39,7 @@ export const PageList: React.FC = () => {
   }, [rawClients]);
 
   // Handle add client
-  const handleAddClient = () => {
+  const handleAddClient = useCallback(() => {
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
@@ -50,7 +54,17 @@ export const PageList: React.FC = () => {
         />
       ),
     });
-  };
+  }, [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchClients]);
+
+  // Automatically trigger client creation modal if ?openAddModal=true query parameter is present in URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('openAddModal') === 'true' && !loading && !hasAutoOpened.current) {
+      hasAutoOpened.current = true;
+      navigate('/company/clients', { replace: true });
+      handleAddClient();
+    }
+  }, [location.search, loading, navigate, handleAddClient]);
 
   // Handle edit client
   const handleEditClient = useCallback(

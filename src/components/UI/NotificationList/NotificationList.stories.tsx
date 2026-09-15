@@ -43,7 +43,7 @@ const sampleNotifications: INotification[] = [
   },
 ];
 
-const notificationsWithAvatars: Notification[] = [
+const notificationsWithAvatars: INotification[] = [
   {
     id: '1',
     title: 'Due date exceeded, action required',
@@ -74,9 +74,9 @@ export const Default: Story = {
   args: {
     notifications: sampleNotifications,
     title: 'Notifications',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -85,9 +85,9 @@ export const WithAvatars: Story = {
   args: {
     notifications: notificationsWithAvatars,
     title: 'Notifications',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -96,7 +96,7 @@ export const Empty: Story = {
   args: {
     notifications: [],
     title: 'Notifications',
-    showClearAll: true,
+    showMarkAllRead: true,
   },
 };
 
@@ -104,8 +104,8 @@ export const WithoutClearAll: Story = {
   args: {
     notifications: sampleNotifications,
     title: 'Notifications',
-    showClearAll: false,
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: false,
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -148,9 +148,9 @@ export const ManyNotifications: Story = {
       },
     ],
     title: 'Notifications',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -159,9 +159,9 @@ export const AllRead: Story = {
   args: {
     notifications: sampleNotifications.map(n => ({ ...n, isRead: true })),
     title: 'Notifications',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -192,9 +192,9 @@ export const MixedContent: Story = {
       },
     ],
     title: 'Notifications',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };
@@ -203,9 +203,9 @@ export const CustomTitle: Story = {
   args: {
     notifications: sampleNotifications,
     title: 'Recent Activity',
-    showClearAll: true,
-    onClearAll: () => console.log('Clear all clicked'),
-    onMailClick: (id) => console.log('Mail clicked:', id),
+    showMarkAllRead: true,
+    onMarkAllRead: () => console.log('Mark all as read clicked'),
+    onMarkAsRead: (id) => console.log('Mark as read clicked:', id),
     onViewClick: (notification) => console.log('View clicked:', notification),
   },
 };

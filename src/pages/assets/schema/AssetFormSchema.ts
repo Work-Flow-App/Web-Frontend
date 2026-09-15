@@ -33,6 +33,13 @@ export const AssetFormSchema: IFields = {
     label: 'Asset Tag',
     isRequired: false,
   },
+  groupId: {
+    title: 'groupId',
+    defaultValue: null,
+    placeHolder: 'Select group (optional)',
+    label: 'Asset Group',
+    isRequired: false,
+  },
   purchasePrice: {
     title: 'purchasePrice',
     rule: InputValidationRules.NumberValidationWithRange(0),
@@ -119,6 +126,7 @@ export interface AssetFormData {
   description?: string;
   serialNumber?: string;
   assetTag?: string;
+  groupId?: number | { value: number; label: string } | null;
   purchasePrice: number;
   purchaseDate: string;
   depreciationRate?: number;

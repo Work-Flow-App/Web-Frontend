@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+node_modules_corrupt_*
 dist
 dist-ssr
 *.local
@@ -41,3 +42,6 @@ nul
 # Ignore all markdown files except main README.md
 *.md
 !README.md
+
+# Superpowers SDD workspaces (scratch — not part of the repo)
+.superpowers/

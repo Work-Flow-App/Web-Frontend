@@ -6,6 +6,7 @@ import type {
   WorkerUpdateRequest,
   WorkerInviteResponse,
   WorkerPasswordResetRequest,
+  WorkerRateUpdateRequest,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
@@ -35,6 +36,12 @@ export interface WorkerWeeklyHoursResponse {
   weekEnd: string;
   totalHours: number;
   hasOpenVisit: boolean;
+  // Only present once overtime tracking has something to report for the week
+  regularHours?: number;
+  overtimeHours?: number;
+  regularPay?: number;
+  overtimePay?: number;
+  totalPay?: number;
 }
 
 // Additional types for worker invitation system
@@ -195,10 +202,12 @@ export const workerService = {
   },
 
   /**
-   * Company admin: update a worker's hourly rate
+   * Company admin: update a worker's hourly (and optionally overtime) rate
    */
-  async updateWorkerRate(id: number, hourlyRate: number): Promise<AxiosResponse<WorkerResponse>> {
-    return await getWorkerApi().workerUpdateHourlyRate(id, { hourlyRate });
+  async updateWorkerRate(id: number, hourlyRate: number, overtimeRate?: number): Promise<AxiosResponse<WorkerResponse>> {
+    const payload: WorkerRateUpdateRequest = { hourlyRate };
+    if (overtimeRate !== undefined) payload.overtimeRate = overtimeRate;
+    return await getWorkerApi().workerUpdateHourlyRate(id, payload);
   },
 
   /**

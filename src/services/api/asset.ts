@@ -57,8 +57,8 @@ function getWorkerAssetSelfApi(): WorkerAssetsApi {
 }
 
 export const assetService = {
-  async getAllAssets(page = 0, size = 20, archived?: boolean, available?: boolean, sort?: string, dir?: string) {
-    return await getAssetApi().assetList(page, size, archived, available, sort, dir);
+  async getAllAssets(page = 0, size = 20, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string) {
+    return await getAssetApi().assetList(page, size, archived, available, groupId, sort, dir);
   },
 
   async getAssetById(id: number) {

@@ -1,13 +1,17 @@
 import React from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { CertificateFormSchema } from '../../schema/CertificateFormSchema';
 import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
-import { CERTIFICATE_TYPE_OPTIONS } from '../../../../services/api';
+import { CERTIFICATE_TYPE_OPTIONS, CertificateType } from '../../../../services/api';
+import { extractDropdownValue } from '../../../../utils/dropdownValue';
 
 export const CertificateFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(CertificateFormSchema);
+  const { control } = useFormContext();
+  const selectedType = extractDropdownValue<CertificateType>(useWatch({ control, name: fieldTitles.type }));
 
   return (
     <>
@@ -21,6 +25,16 @@ export const CertificateFormFields: React.FC = () => {
           disablePortal
         />
       </FormField>
+
+      {selectedType === CertificateType.Other && (
+        <FormField label={fieldLabels.customTypeLabel} required>
+          <Input
+            name={fieldTitles.customTypeLabel}
+            placeholder={placeHolders.customTypeLabel}
+            hideErrorMessage={false}
+          />
+        </FormField>
+      )}
 
       <FormField label={fieldLabels.name} required={isRequireds.name}>
         <Input
