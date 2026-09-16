@@ -1,7 +1,19 @@
 import React from 'react';
-import { Box, Typography, FormControl, Select, MenuItem as MuiMenuItem, IconButton, styled } from '@mui/material';
+import {
+  Box,
+  Typography,
+  FormControl,
+  Select,
+  MenuItem as MuiMenuItem,
+  IconButton,
+  LinearProgress,
+  styled,
+} from '@mui/material';
 import type { SelectProps } from '@mui/material';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
 
@@ -31,7 +43,7 @@ export const SectionTitle = styled(Typography)(({ theme }) => ({
   fontSize: rem(18),
   fontWeight: 700,
   color: theme.palette.text.primary,
-  letterSpacing: '-0.2px',
+  letterSpacing: rem(-0.2),
 }));
 
 // ─── Stat Box (Work In Progress) ──────────────────────────────────────────────
@@ -48,7 +60,7 @@ export const StatCard = styled(Box)(({ theme }) => ({
   borderRadius: rem(16),
   border: `${rem(1)} solid ${theme.palette.divider}`,
   borderLeft: `${rem(4)} solid ${floowColors.info.main}`,
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+  boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.03)`,
   padding: `${rem(16)} ${rem(22)}`,
   display: 'flex',
   flexDirection: 'column',
@@ -56,7 +68,7 @@ export const StatCard = styled(Box)(({ theme }) => ({
   boxSizing: 'border-box',
   transition: 'transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
   '&:hover': {
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+    boxShadow: `0 ${rem(4)} ${rem(12)} rgba(0, 0, 0, 0.06)`,
   },
 }));
 
@@ -82,6 +94,16 @@ export const StatSubText = styled(Typography)(({ theme }) => ({
   marginTop: rem(2),
 }));
 
+export const StatProgressBar = styled(LinearProgress)(({ theme }) => ({
+  borderRadius: rem(4),
+  height: rem(6),
+  backgroundColor: theme.palette.grey[100] || '#f3f4f6',
+  '& .MuiLinearProgress-bar': {
+    backgroundColor: floowColors.info.main,
+    borderRadius: rem(4),
+  },
+}));
+
 // ─── Pipeline Bar ─────────────────────────────────────────────────────────────
 
 export const PipelineBar = styled(Box)(({ theme }) => ({
@@ -93,7 +115,7 @@ export const PipelineBar = styled(Box)(({ theme }) => ({
   border: `${rem(1)} solid ${theme.palette.divider}`,
   borderRadius: rem(16),
   padding: `${rem(12)} ${rem(18)}`,
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+  boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.03)`,
   boxSizing: 'border-box',
 }));
 
@@ -149,18 +171,18 @@ export const PipelineMore = styled(Box)(({ theme }) => ({
   padding: `0 ${rem(8)}`,
   cursor: 'pointer',
   fontWeight: 700,
-  letterSpacing: '2px',
+  letterSpacing: rem(2),
 }));
 
 export const DropdownPopup = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: `calc(100% + ${rem(8)})`,
   right: 0,
-  width: '250px',
+  width: rem(250),
   backgroundColor: theme.palette.background.paper,
   borderRadius: rem(12),
   border: `${rem(1)} solid ${theme.palette.divider}`,
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+  boxShadow: `0 ${rem(8)} ${rem(24)} rgba(0, 0, 0, 0.12)`,
   zIndex: 50,
   overflow: 'hidden',
   display: 'flex',
@@ -172,7 +194,7 @@ export const DropdownHeader = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: `${rem(6)} ${rem(12)}`,
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  borderBottom: `${rem(1)} solid ${theme.palette.divider}`,
   backgroundColor: theme.palette.background.paper,
 }));
 
@@ -192,6 +214,10 @@ export const DropdownCloseButton = styled(IconButton)(({ theme }) => ({
     backgroundColor: theme.palette.action.hover || '#f3f4f6',
     color: theme.palette.text.primary,
   },
+}));
+
+export const DropdownCloseIcon = styled(CloseIcon)(() => ({
+  fontSize: rem(15),
 }));
 
 export const DropdownListWrapper = styled(Box)(() => ({
@@ -237,10 +263,10 @@ export const DropdownPipelineChip = styled(Box, {
 
 export const ContentRow = styled(Box)(() => ({
   display: 'grid',
-  gridTemplateColumns: '1fr 320px',
+  gridTemplateColumns: `1fr ${rem(320)}`,
   gap: rem(20),
   alignItems: 'flex-start',
-  '@media (max-width: 1100px)': {
+  [`@media (max-width: ${rem(1100)})`]: {
     gridTemplateColumns: '1fr',
   },
 }));
@@ -251,7 +277,7 @@ export const EventsCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: rem(16),
   border: `${rem(1)} solid ${theme.palette.divider}`,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+  boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.03)`,
   overflow: 'hidden',
 }));
 
@@ -300,7 +326,7 @@ export const CountBadge = styled(Box, {
   color: '#fff',
   fontWeight: 800,
   fontSize: rem(20),
-  letterSpacing: '-0.5px',
+  letterSpacing: rem(-0.5),
 }));
 
 export const EventInfo = styled(Box)(() => ({
@@ -359,13 +385,18 @@ export const EventArrow = styled(Box)(({ theme }) => ({
   alignItems: 'center',
 }));
 
+export const EventArrowIcon = styled(ChevronRightIcon)(() => ({
+  color: floowColors.grey[300],
+  fontSize: rem(20),
+}));
+
 // ─── Right Summary Panel ──────────────────────────────────────────────────────
 
 export const SummaryCard = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: rem(16),
   border: `${rem(1)} solid ${theme.palette.divider}`,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+  boxShadow: `0 ${rem(2)} ${rem(8)} rgba(0, 0, 0, 0.03)`,
   padding: rem(22),
   display: 'flex',
   flexDirection: 'column',
@@ -386,13 +417,19 @@ export const SummaryStatRow = styled(Box)(() => ({
   alignItems: 'center',
 }));
 
+export const SummaryBubbleItem = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+}));
+
 export const SummaryBubble = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'bubbleColor',
 })<{ bubbleColor: string }>(({ bubbleColor }) => ({
   width: rem(54),
   height: rem(54),
   borderRadius: '50%',
-  border: `2px solid ${bubbleColor}`,
+  border: `${rem(2)} solid ${bubbleColor}`,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -405,11 +442,18 @@ export const SummaryBubble = styled(Box, {
 export const SummaryBubbleLabel = styled(Typography)(({ theme }) => ({
   fontSize: rem(12),
   color: theme.palette.colors?.grey_500 || '#6b7280',
+  textAlign: 'center',
+  marginTop: rem(4),
 }));
 
 export const SummaryDivider = styled(Box)(({ theme }) => ({
-  height: '1px',
+  height: rem(1),
   backgroundColor: theme.palette.divider,
+}));
+
+export const SummarySection = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
 }));
 
 export const SummarySectionLabel = styled(Typography)(({ theme }) => ({
@@ -467,6 +511,11 @@ export const EmptyState = styled(Box)(({ theme }) => ({
   gap: rem(8),
 }));
 
+export const EmptyStateIcon = styled(WorkOutlineIcon)(() => ({
+  fontSize: rem(40),
+  opacity: 0.3,
+}));
+
 // ─── Primary Workflow Dropdown Extras ─────────────────────────────────────────
 
 export const HeaderRow = styled(Box)(({ theme }) => ({
@@ -498,8 +547,8 @@ export const WorkflowSelect = styled((props: SelectProps) =>
         sx: {
           maxHeight: '25rem',
           borderRadius: rem(12),
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-          border: (t: any) => `1px solid ${t.palette.divider}`,
+          boxShadow: `0 ${rem(4)} ${rem(20)} rgba(0, 0, 0, 0.08)`,
+          border: (t: any) => `${rem(1)} solid ${t.palette.divider}`,
           ...props.MenuProps?.PaperProps?.sx,
         },
       },
@@ -523,7 +572,7 @@ export const WorkflowSelect = styled((props: SelectProps) =>
 }));
 
 export const WorkflowAdornment = styled(AccountTreeOutlinedIcon)(() => ({
-  fontSize: 16,
+  fontSize: rem(16),
   marginRight: rem(4),
   color: floowColors.text.muted,
 }));
@@ -598,7 +647,7 @@ export const PrimaryTag = styled('span')(() => ({
 }));
 
 export const PrimaryMenuDivider = styled(Box)(({ theme }) => ({
-  height: '1px',
+  height: rem(1),
   backgroundColor: theme.palette.colors?.grey_100 || '#f3f4f6',
   margin: `${rem(4)} 0`,
 }));
@@ -617,7 +666,7 @@ export const PrimaryMenuAction = styled(MuiMenuItem, {
   borderRadius: rem(6),
   margin: `${rem(6)} ${rem(8)}`,
   padding: `${rem(8)} ${rem(12)}`,
-  border: `1px solid ${floowColors.indigo.main}`,
+  border: `${rem(1)} solid ${floowColors.indigo.main}`,
   transition: 'all 0.15s ease-in-out',
   cursor: 'pointer',
   '&:hover': {

@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { CircularProgress, LinearProgress } from '@mui/material';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import CloseIcon from '@mui/icons-material/Close';
+import { CircularProgress } from '@mui/material';
+import { rem } from '../../../components/UI/Typography/utility';
 import {
   jobService,
   jobWorkflowService,
@@ -125,15 +123,9 @@ function StatBoxesRow({
       <S.StatCard>
         <S.StatLabel>Work In Progress (Total Job)</S.StatLabel>
         <S.StatValue>{inProgress}</S.StatValue>
-        <LinearProgress
+        <S.StatProgressBar
           variant="determinate"
           value={progressPct}
-          sx={{
-            borderRadius: '4px',
-            height: '6px',
-            bgcolor: (theme) => theme.palette.grey[100] || '#f3f4f6',
-            '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main, borderRadius: '4px' },
-          }}
         />
         <S.StatSubText>{progressPct}% Complete</S.StatSubText>
       </S.StatCard>
@@ -265,7 +257,7 @@ function PipelineBar({
               <S.DropdownHeader>
                 <S.DropdownTitle>More Steps</S.DropdownTitle>
                 <S.DropdownCloseButton size="small" onClick={handleClose} aria-label="Close more steps">
-                  <CloseIcon sx={{ fontSize: 15 }} />
+                  <S.DropdownCloseIcon />
                 </S.DropdownCloseButton>
               </S.DropdownHeader>
 
@@ -305,7 +297,7 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
     return (
       <S.EventsCard>
         <S.EmptyState>
-          <WorkOutlineIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+          <S.EmptyStateIcon />
           No active job events
         </S.EmptyState>
       </S.EventsCard>
@@ -339,7 +331,7 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
             </S.EventInfo>
 
             <S.EventArrow>
-              <ChevronRightIcon sx={{ color: floowColors.grey[300] }} />
+              <S.EventArrowIcon />
             </S.EventArrow>
           </S.EventRow>
         );
@@ -364,20 +356,20 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
       <S.SummaryTitle>Workfloow Pipeline</S.SummaryTitle>
 
       <S.SummaryStatRow>
-        <div>
+        <S.SummaryBubbleItem>
           <S.SummaryBubble bubbleColor={floowColors.info.main}>{totalJobs}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Total</S.SummaryBubbleLabel>
-        </div>
-        <div>
+          <S.SummaryBubbleLabel>Total</S.SummaryBubbleLabel>
+        </S.SummaryBubbleItem>
+        <S.SummaryBubbleItem>
           <S.SummaryBubble bubbleColor={floowColors.success.main}>{activeJobs}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Active</S.SummaryBubbleLabel>
-        </div>
+          <S.SummaryBubbleLabel>Active</S.SummaryBubbleLabel>
+        </S.SummaryBubbleItem>
       </S.SummaryStatRow>
 
       {withJobs.length > 0 && (
         <>
           <S.SummaryDivider />
-          <div>
+          <S.SummarySection>
             <S.SummarySectionLabel>With Jobs</S.SummarySectionLabel>
             {withJobs.map((g) => (
               <S.SummaryRow key={g.stepName}>
@@ -385,14 +377,14 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
                 <S.SummaryRowCount countColor={g.color}>{g.count}</S.SummaryRowCount>
               </S.SummaryRow>
             ))}
-          </div>
+          </S.SummarySection>
         </>
       )}
 
       {noJobs.length > 0 && (
         <>
           <S.SummaryDivider />
-          <div>
+          <S.SummarySection>
             <S.SummarySectionLabel>Empty Steps</S.SummarySectionLabel>
             {noJobs.map((g) => (
               <S.SummaryRow key={g.stepName}>
@@ -400,7 +392,7 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
                 <S.SummaryRowCount countColor={floowColors.grey[400]}>0</S.SummaryRowCount>
               </S.SummaryRow>
             ))}
-          </div>
+          </S.SummarySection>
         </>
       )}
     </S.SummaryCard>
@@ -707,7 +699,7 @@ export const JobEventsSection: React.FC = () => {
       {/* Pipeline bar */}
       {loading ? (
         <S.LoadingBox>
-          <CircularProgress size={28} />
+          <CircularProgress size={rem(28)} />
         </S.LoadingBox>
       ) : (
         <>
