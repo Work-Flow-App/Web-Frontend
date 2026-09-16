@@ -2,7 +2,6 @@ import { styled } from '@mui/material/styles';
 import {
   Box,
   Popover,
-  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { TuneRounded } from '@mui/icons-material';
@@ -37,14 +36,6 @@ export const PanelBody = styled(Box)({
   gap: rem(20),
 });
 
-export const ViewToggleGroup = styled(ToggleButtonGroup)({
-  '& .MuiToggleButton-root': {
-    textTransform: 'none',
-    fontWeight: 500,
-    fontSize: rem(13),
-    flex: 1,
-  },
-});
 
 export const FilterSection = styled(Box, {
   shouldForwardProp: (prop) => prop !== '$disabled',

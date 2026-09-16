@@ -1,4 +1,5 @@
 export type WidgetId =
+  | 'workflow_events'
   | 'map'
   | 'workflow_activity'
   | 'activity'

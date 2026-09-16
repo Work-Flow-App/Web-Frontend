@@ -14,6 +14,7 @@ import {
   customerService,
   companyClientService,
   workflowService,
+  jobWorkflowService,
 } from '../../../../services/api';
 import type {
   JobResponse,
@@ -24,11 +25,14 @@ import type {
   CustomerResponse,
   ClientResponse,
   WorkflowResponse,
+  WorkflowStepResponse,
+  JobWorkflowResponse,
   JobFilters,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { generateJobColumns, type JobTableRow } from './DataColumn';
+import { getCurrentStepName } from '../../utils/jobStepUtils';
 import { AddJobWizard } from '../AddJobWizard';
 import { useFetch, useCanMutate } from '../../../../hooks';
 import { JobFilterPanel } from './JobFilterPanel';
@@ -49,7 +53,7 @@ export const JobsList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewTab, setViewTab] = useState<ViewTab>(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'completed' || tabParam === 'archived') {
+    if (tabParam === 'completed' || tabParam === 'archived' || tabParam === 'cancelled') {
       return tabParam;
     }
     return 'active';
@@ -57,7 +61,7 @@ export const JobsList: React.FC = () => {
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'completed' || tabParam === 'archived') {
+    if (tabParam === 'completed' || tabParam === 'archived' || tabParam === 'cancelled') {
       setViewTab(tabParam);
       // Clean query parameter
       searchParams.delete('tab');
@@ -121,6 +125,81 @@ export const JobsList: React.FC = () => {
   });
   const workflows = useMemo<WorkflowResponse[]>(() => workflowsData ?? [], [workflowsData]);
 
+  // ─── Workflow templates & steps cache (baseline/fallback for all jobs) ────────
+  const [templateStepsMap, setTemplateStepsMap] = useState<Map<number | string, WorkflowStepResponse[]>>(new Map());
+
+  useEffect(() => {
+    if (!workflows || workflows.length === 0) return;
+    let isMounted = true;
+
+    const fetchAllTemplateSteps = async () => {
+      try {
+        const results = await Promise.allSettled(
+          workflows.map(async (w) => {
+            if (!w.id) return null;
+            try {
+              const res = await workflowService.getWorkflowSteps(w.id);
+              const steps: WorkflowStepResponse[] = Array.isArray(res.data)
+                ? res.data
+                : Array.isArray((res.data as any)?.steps)
+                  ? (res.data as any).steps
+                  : [];
+              return { id: w.id, name: w.name, steps };
+            } catch {
+              return null;
+            }
+          })
+        );
+        if (!isMounted) return;
+
+        const map = new Map<number | string, WorkflowStepResponse[]>();
+        results.forEach((r) => {
+          if (r.status === 'fulfilled' && r.value) {
+            map.set(r.value.id, r.value.steps);
+            if (r.value.name) {
+              map.set(r.value.name.toLowerCase().trim(), r.value.steps);
+            }
+          }
+        });
+        setTemplateStepsMap(map);
+      } catch (err) {
+        console.error('Error fetching template steps:', err);
+      }
+    };
+
+    fetchAllTemplateSteps();
+    return () => {
+      isMounted = false;
+    };
+  }, [workflows]);
+
+  // ─── Live Job Workflows cache (per-job fetch for runtime ongoing statuses) ───
+  const [jobWorkflowsMap, setJobWorkflowsMap] = useState<Map<number, JobWorkflowResponse>>(new Map());
+
+  const fetchJobWorkflows = useCallback(async (jobsToFetch: JobResponse[]) => {
+    const validJobs = jobsToFetch.filter((j) => j.id != null);
+    if (validJobs.length === 0) return;
+
+    try {
+      const results = await Promise.allSettled(
+        validJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
+      );
+
+      setJobWorkflowsMap((prev) => {
+        const next = new Map(prev);
+        validJobs.forEach((job, idx) => {
+          const res = results[idx];
+          if (res.status === 'fulfilled' && res.value?.data) {
+            next.set(job.id!, res.value.data);
+          }
+        });
+        return next;
+      });
+    } catch (err) {
+      console.error('Error fetching job workflows:', err);
+    }
+  }, []);
+
   // Resolve template ID from active template name filter (drives dynamic columns)
   const filteredTemplateId = useMemo(
     () => (filters.templateName ? (templates.find((t) => t.name === filters.templateName)?.id ?? null) : null),
@@ -151,6 +230,7 @@ export const JobsList: React.FC = () => {
     () => {
       if (viewTab === 'archived') return jobService.getArchivedJobs();
       if (viewTab === 'completed') return jobService.getAllJobs({ ...apiFilters, status: 'COMPLETED' });
+      if (viewTab === 'cancelled') return jobService.getAllJobs({ ...apiFilters, status: 'CANCELLED' });
       return jobService.getAllJobs(apiFilters);
     },
     [viewTab, apiFilters],
@@ -159,6 +239,30 @@ export const JobsList: React.FC = () => {
       onError: (error) => showError(extractErrorMessage(error, 'Failed to load jobs')),
     }
   );
+
+  useEffect(() => {
+    if (rawJobs && rawJobs.length > 0) {
+      fetchJobWorkflows(rawJobs);
+    }
+  }, [rawJobs, location.key, fetchJobWorkflows]);
+
+  // Automatically refresh live workflow steps when user switches back to this browser tab
+  useEffect(() => {
+    const handleFocus = () => {
+      if (rawJobs && rawJobs.length > 0) {
+        fetchJobWorkflows(rawJobs);
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [rawJobs, fetchJobWorkflows]);
+
+  const refetchJobs = useCallback(() => {
+    fetchJobs();
+    if (rawJobs && rawJobs.length > 0) {
+      fetchJobWorkflows(rawJobs);
+    }
+  }, [fetchJobs, rawJobs, fetchJobWorkflows]);
 
   const jobs = useMemo<JobTableRow[]>(() => {
     const fieldsById = new Map(templateFields.filter((f) => f.id != null).map((f) => [String(f.id), f]));
@@ -193,6 +297,13 @@ export const JobsList: React.FC = () => {
       const clientName = job.clientName || clients.find((c) => c.id === job.clientId)?.name || '-';
       const workflowName = job.workflowName || workflows.find((w) => w.id === job.workflowId)?.name || '-';
 
+      const matchingTemplateSteps =
+        (job.workflowId ? templateStepsMap.get(job.workflowId) : undefined) ||
+        (workflowName && workflowName !== '-' ? templateStepsMap.get(workflowName.toLowerCase().trim()) : undefined);
+
+      const jobWorkflow = job.id ? jobWorkflowsMap.get(job.id) : undefined;
+      const currentStep = getCurrentStepName(job, jobWorkflow, matchingTemplateSteps);
+
       return {
         id: job.id || 0,
         jobRef: job.jobRef,
@@ -202,6 +313,7 @@ export const JobsList: React.FC = () => {
         customerName,
         workflowName,
         clientName,
+        currentStep,
         jobValue: job.estimateTotalNet?.toString() || '-',
         postCode: job.address?.postalCode || '-',
         status: job.status || '-',
@@ -211,12 +323,18 @@ export const JobsList: React.FC = () => {
         assetNames,
       };
     });
-    // In Active tab, filter out completed jobs (they have their own tab)
+    // In Active tab, filter out completed and cancelled jobs (they have their own tabs)
     if (viewTab === 'active') {
-      return mapped.filter((job) => job.status !== 'COMPLETED');
+      return mapped.filter((job) => job.status !== 'COMPLETED' && job.status !== 'CANCELLED');
+    }
+    if (viewTab === 'completed') {
+      return mapped.filter((job) => job.status === 'COMPLETED');
+    }
+    if (viewTab === 'cancelled') {
+      return mapped.filter((job) => job.status === 'CANCELLED');
     }
     return mapped;
-  }, [rawJobs, assets, templates, customers, clients, workflows, viewTab, templateFields]);
+  }, [rawJobs, assets, templates, customers, clients, workflows, templateStepsMap, jobWorkflowsMap, viewTab, templateFields]);
 
   // No-template modal on first load
   useEffect(() => {
@@ -289,12 +407,12 @@ export const JobsList: React.FC = () => {
         <AddJobWizard
           onSuccess={() => {
             resetGlobalModalOuterProps();
-            fetchJobs();
+            refetchJobs();
           }}
         />
       ),
     });
-  }, [canMutate, reason, templates, navigate, setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchJobs, showError]);
+  }, [canMutate, reason, templates, navigate, setGlobalModalOuterProps, resetGlobalModalOuterProps, refetchJobs, showError]);
 
   // Automatically trigger job creation modal if ?openAddModal=true query parameter is present in URL
   useEffect(() => {
@@ -325,13 +443,13 @@ export const JobsList: React.FC = () => {
             jobId={job.id}
             onSuccess={() => {
               resetGlobalModalOuterProps();
-              fetchJobs();
+              refetchJobs();
             }}
           />
         ),
       });
     },
-    [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchJobs]
+    [setGlobalModalOuterProps, resetGlobalModalOuterProps, refetchJobs]
   );
 
   const handleDeleteJob = useCallback(
@@ -353,7 +471,7 @@ export const JobsList: React.FC = () => {
                 await jobService.deleteJob(job.id);
                 showSuccess(`Job #${job.jobRef ?? job.id} deleted successfully`);
                 resetGlobalModalOuterProps();
-                fetchJobs();
+                refetchJobs();
               } catch (error) {
                 showError(extractErrorMessage(error, 'Failed to delete job'));
                 resetGlobalModalOuterProps();
@@ -364,7 +482,7 @@ export const JobsList: React.FC = () => {
         ),
       });
     },
-    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+    [showSuccess, showError, refetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   const handleArchiveJob = useCallback(
@@ -386,7 +504,7 @@ export const JobsList: React.FC = () => {
                 await jobService.archiveJob(job.id);
                 showSuccess(`Job #${job.id} archived successfully`);
                 resetGlobalModalOuterProps();
-                fetchJobs();
+                refetchJobs();
               } catch (error) {
                 showError(extractErrorMessage(error, 'Failed to archive job'));
                 resetGlobalModalOuterProps();
@@ -397,7 +515,7 @@ export const JobsList: React.FC = () => {
         ),
       });
     },
-    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+    [showSuccess, showError, refetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   const handleBulkArchive = useCallback(() => {
@@ -424,7 +542,7 @@ export const JobsList: React.FC = () => {
               showSuccess(`Successfully archived ${selectedJobIds.length} job(s)`);
               setSelectedJobIds([]);
               resetGlobalModalOuterProps();
-              fetchJobs();
+              refetchJobs();
             } catch (error) {
               showError(extractErrorMessage(error, 'Failed to archive jobs'));
               resetGlobalModalOuterProps();
@@ -434,7 +552,7 @@ export const JobsList: React.FC = () => {
         />
       ),
     });
-  }, [selectedJobIds, fetchJobs, showSuccess, showError, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
+  }, [selectedJobIds, refetchJobs, showSuccess, showError, setGlobalModalOuterProps, resetGlobalModalOuterProps]);
 
   const handleRestoreJob = useCallback(
     (job: JobTableRow) => {
@@ -455,7 +573,7 @@ export const JobsList: React.FC = () => {
                 await jobService.restoreJob(job.id);
                 showSuccess(`Job #${job.jobRef ?? job.id} restored successfully`);
                 resetGlobalModalOuterProps();
-                fetchJobs();
+                refetchJobs();
               } catch (error) {
                 showError(extractErrorMessage(error, 'Failed to restore job'));
                 resetGlobalModalOuterProps();
@@ -466,7 +584,7 @@ export const JobsList: React.FC = () => {
         ),
       });
     },
-    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+    [showSuccess, showError, refetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   const handleDuplicateJob = useCallback(
@@ -523,7 +641,7 @@ export const JobsList: React.FC = () => {
                 await jobService.createJob(duplicateRequest);
                 showSuccess(`Job #${job.jobRef ?? job.id} duplicated successfully`);
                 resetGlobalModalOuterProps();
-                fetchJobs();
+                refetchJobs();
               } catch (error) {
                 showError(extractErrorMessage(error, 'Failed to duplicate job'));
                 resetGlobalModalOuterProps();
@@ -534,7 +652,7 @@ export const JobsList: React.FC = () => {
         ),
       });
     },
-    [showSuccess, showError, fetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
+    [showSuccess, showError, refetchJobs, setGlobalModalOuterProps, resetGlobalModalOuterProps]
   );
 
   const tableActions: ITableAction<JobTableRow>[] = useMemo(
@@ -600,6 +718,14 @@ export const JobsList: React.FC = () => {
       chips.push({
         key: 'completed',
         label: 'Completed jobs',
+        onDelete: () => setViewTab('active'),
+      });
+    }
+
+    if (viewTab === 'cancelled') {
+      chips.push({
+        key: 'cancelled',
+        label: 'Cancelled jobs',
         onDelete: () => setViewTab('active'),
       });
     }
@@ -756,9 +882,11 @@ export const JobsList: React.FC = () => {
             ? 'No archived jobs found.'
             : viewTab === 'completed'
               ? 'No completed jobs found.'
-              : activeChips.length > 0
-                ? 'No jobs match the current filters.'
-                : 'No jobs found. Add your first job to get started.'
+              : viewTab === 'cancelled'
+                ? 'No cancelled jobs found.'
+                : activeChips.length > 0
+                  ? 'No jobs match the current filters.'
+                  : 'No jobs found. Add your first job to get started.'
         }
         rowsPerPage={100}
         showPagination={true}

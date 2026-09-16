@@ -14,6 +14,7 @@ import {
   QuickActionsWidget,
   DashboardCustomizerDrawer,
 } from './components/Dashboard';
+import { JobEventsSection } from './components/JobEventsSection';
 import type { RecentWorkflowActivityData } from './components/Dashboard';
 import type {
   WidgetConfig,
@@ -51,12 +52,13 @@ import { prepareJobLocationMarkers } from '../../utils/mapDataHelpers';
 const LOCAL_STORAGE_KEY = 'workfloow_dashboard_widgets_config';
 
 const DEFAULT_CONFIG: WidgetConfig[] = [
-  { id: 'map', label: 'Live Job Locations', visible: true, order: 0 },
-  { id: 'workflow_activity', label: 'Recent Workflow Activity', visible: true, order: 1 },
-  { id: 'activity', label: 'Recent Activity', visible: true, order: 2 },
-  { id: 'announcements', label: 'Company Announcements', visible: true, order: 3 },
-  { id: 'donut', label: 'Job Status Overview', visible: true, order: 4 },
-  { id: 'due_jobs', label: 'Jobs Due Soon', visible: true, order: 5 },
+  { id: 'workflow_events', label: 'Workfloow Event', visible: true, order: 0 },
+  { id: 'map', label: 'Live Job Locations', visible: true, order: 1 },
+  { id: 'workflow_activity', label: 'Recent Workflow Activity', visible: true, order: 2 },
+  { id: 'activity', label: 'Recent Activity', visible: true, order: 3 },
+  { id: 'announcements', label: 'Company Announcements', visible: true, order: 4 },
+  { id: 'donut', label: 'Job Status Overview', visible: true, order: 5 },
+  { id: 'due_jobs', label: 'Jobs Due Soon', visible: true, order: 6 },
 ];
 
 const QUICK_ACTIONS_LOCAL_STORAGE_KEY = 'workfloow_dashboard_quick_actions_config';
@@ -88,6 +90,13 @@ export const CompanyPage: React.FC = () => {
         const parsed = JSON.parse(saved);
         let migrated = false;
         const config = parsed.map((item: any) => {
+          if (item.id === 'workflow_events' && item.label !== 'Workfloow Event') {
+            migrated = true;
+            return {
+              ...item,
+              label: 'Workfloow Event',
+            };
+          }
           if (item.id === 'tasks') {
             migrated = true;
             return {
@@ -112,6 +121,12 @@ export const CompanyPage: React.FC = () => {
         const hasWorkflowActivity = config.some((item: any) => item.id === 'workflow_activity');
         if (!hasWorkflowActivity) {
           config.push({ id: 'workflow_activity', label: 'Recent Workflow Activity', visible: true, order: 1 });
+          migrated = true;
+        }
+
+        const hasWorkflowEvents = config.some((item: any) => item.id === 'workflow_events');
+        if (!hasWorkflowEvents) {
+          config.unshift({ id: 'workflow_events', label: 'Workfloow Event', visible: true, order: 0 });
           migrated = true;
         }
 
@@ -628,6 +643,12 @@ export const CompanyPage: React.FC = () => {
 
       {/* 3. Customizable Widget Grid Matrix */}
       <S.DashboardGrid>
+        {isVisible('workflow_events') && (
+          <S.GridItem lgSpan={12} mdSpan={12} smSpan={12}>
+            <JobEventsSection />
+          </S.GridItem>
+        )}
+
         {isVisible('map') && (
           <S.GridItem lgSpan={5} mdSpan={6} smSpan={12}>
             <LiveJobLocationsWidget
