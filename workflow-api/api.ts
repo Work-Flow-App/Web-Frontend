@@ -1228,7 +1228,18 @@ export interface NotificationResponse {
 
 export const NotificationResponseTypeEnum = {
     ForceLogout: 'FORCE_LOGOUT',
-    VisitLogAdded: 'VISIT_LOG_ADDED'
+    VisitLogAdded: 'VISIT_LOG_ADDED',
+    StepStatusChanged: 'STEP_STATUS_CHANGED',
+    StepCompleted: 'STEP_COMPLETED',
+    StepCommentAdded: 'STEP_COMMENT_ADDED',
+    StepAttachmentAdded: 'STEP_ATTACHMENT_ADDED',
+    StepCommentUpdated: 'STEP_COMMENT_UPDATED',
+    StepAttachmentUpdated: 'STEP_ATTACHMENT_UPDATED',
+    WorkerAssigned: 'WORKER_ASSIGNED',
+    AssetSlaBreached: 'ASSET_SLA_BREACHED',
+    StepSlaBreached: 'STEP_SLA_BREACHED',
+    UserMentioned: 'USER_MENTIONED',
+    MentionSent: 'MENTION_SENT'
 } as const;
 
 export type NotificationResponseTypeEnum = typeof NotificationResponseTypeEnum[keyof typeof NotificationResponseTypeEnum];
@@ -1445,6 +1456,31 @@ export interface StepVisitLogSummaryResponse {
     'visitLogs'?: Array<StepVisitLogResponse>;
     'totalWorkedMinutes'?: number;
 }
+export interface SubscriptionAddonsResponse {
+    'planType'?: SubscriptionAddonsResponsePlanTypeEnum;
+    'status'?: SubscriptionAddonsResponseStatusEnum;
+    'extraUserSeats'?: number;
+    'extraStorageBlocks'?: number;
+}
+
+export const SubscriptionAddonsResponsePlanTypeEnum = {
+    Free: 'FREE',
+    Starter: 'STARTER',
+    Professional: 'PROFESSIONAL'
+} as const;
+
+export type SubscriptionAddonsResponsePlanTypeEnum = typeof SubscriptionAddonsResponsePlanTypeEnum[keyof typeof SubscriptionAddonsResponsePlanTypeEnum];
+export const SubscriptionAddonsResponseStatusEnum = {
+    Trial: 'TRIAL',
+    Active: 'ACTIVE',
+    PastDue: 'PAST_DUE',
+    Paused: 'PAUSED',
+    Cancelled: 'CANCELLED',
+    Expired: 'EXPIRED'
+} as const;
+
+export type SubscriptionAddonsResponseStatusEnum = typeof SubscriptionAddonsResponseStatusEnum[keyof typeof SubscriptionAddonsResponseStatusEnum];
+
 export interface SubscriptionStatusResponse {
     'status'?: SubscriptionStatusResponseStatusEnum;
     'trialEndsAt'?: string;
@@ -1463,6 +1499,10 @@ export const SubscriptionStatusResponseStatusEnum = {
 
 export type SubscriptionStatusResponseStatusEnum = typeof SubscriptionStatusResponseStatusEnum[keyof typeof SubscriptionStatusResponseStatusEnum];
 
+export interface UpdateSubscriptionAddonsRequest {
+    'extraSeats'?: number;
+    'extraStorageBlocks'?: number;
+}
 export interface UsageSummaryResponse {
     'jobsUsedThisMonth'?: number;
     'jobsLimit'?: number;
@@ -12674,6 +12714,45 @@ export const SubscriptionApiAxiosParamCreator = function (configuration?: Config
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {UpdateSubscriptionAddonsRequest} updateSubscriptionAddonsRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionUpdateAddons: async (updateSubscriptionAddonsRequest: UpdateSubscriptionAddonsRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'updateSubscriptionAddonsRequest' is not null or undefined
+            assertParamExists('subscriptionUpdateAddons', 'updateSubscriptionAddonsRequest', updateSubscriptionAddonsRequest)
+            const localVarPath = `/api/v1/companies/subscription/addons`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(updateSubscriptionAddonsRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -12728,6 +12807,18 @@ export const SubscriptionApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionGetStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @param {UpdateSubscriptionAddonsRequest} updateSubscriptionAddonsRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async subscriptionUpdateAddons(updateSubscriptionAddonsRequest: UpdateSubscriptionAddonsRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SubscriptionAddonsResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.subscriptionUpdateAddons(updateSubscriptionAddonsRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SubscriptionApi.subscriptionUpdateAddons']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -12769,6 +12860,15 @@ export const SubscriptionApiFactory = function (configuration?: Configuration, b
          */
         subscriptionGetStatus(options?: RawAxiosRequestConfig): AxiosPromise<SubscriptionStatusResponse> {
             return localVarFp.subscriptionGetStatus(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {UpdateSubscriptionAddonsRequest} updateSubscriptionAddonsRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        subscriptionUpdateAddons(updateSubscriptionAddonsRequest: UpdateSubscriptionAddonsRequest, options?: RawAxiosRequestConfig): AxiosPromise<SubscriptionAddonsResponse> {
+            return localVarFp.subscriptionUpdateAddons(updateSubscriptionAddonsRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -12812,6 +12912,16 @@ export class SubscriptionApi extends BaseAPI {
      */
     public subscriptionGetStatus(options?: RawAxiosRequestConfig) {
         return SubscriptionApiFp(this.configuration).subscriptionGetStatus(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {UpdateSubscriptionAddonsRequest} updateSubscriptionAddonsRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public subscriptionUpdateAddons(updateSubscriptionAddonsRequest: UpdateSubscriptionAddonsRequest, options?: RawAxiosRequestConfig) {
+        return SubscriptionApiFp(this.configuration).subscriptionUpdateAddons(updateSubscriptionAddonsRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
