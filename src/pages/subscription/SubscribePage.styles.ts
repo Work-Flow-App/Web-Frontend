@@ -153,6 +153,14 @@ export const SeatSlider = styled(Slider)(() => ({
   },
 }));
 
+export const PlanLimitNotice = styled(Box)(() => ({
+  fontFamily: "'Manrope', sans-serif",
+  fontSize: rem(13),
+  fontWeight: 600,
+  color: floowColors.error.main,
+  textAlign: 'center',
+}));
+
 export const OrderButton = styled(Button)(({ theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',

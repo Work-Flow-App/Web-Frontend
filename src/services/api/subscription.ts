@@ -1,9 +1,19 @@
 import { SubscriptionApi, Configuration } from '../../../workflow-api';
-import type { SubscriptionStatusResponse, CreateCheckoutSessionRequest } from '../../../workflow-api';
+import type {
+  SubscriptionStatusResponse,
+  CreateCheckoutSessionRequest,
+  UpdateSubscriptionAddonsRequest,
+  SubscriptionAddonsResponse,
+} from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
-export type { SubscriptionStatusResponse, CreateCheckoutSessionRequest };
+export type {
+  SubscriptionStatusResponse,
+  CreateCheckoutSessionRequest,
+  UpdateSubscriptionAddonsRequest,
+  SubscriptionAddonsResponse,
+};
 
 function getSubscriptionApi(): SubscriptionApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
@@ -25,6 +35,10 @@ export const subscriptionService = {
 
   async cancelSubscription() {
     return await getSubscriptionApi().subscriptionCancelSubscription();
+  },
+
+  async updateAddons(request: UpdateSubscriptionAddonsRequest) {
+    return await getSubscriptionApi().subscriptionUpdateAddons(request);
   },
 };
 

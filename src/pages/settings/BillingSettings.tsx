@@ -16,7 +16,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useNavigate } from 'react-router-dom';
-import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@paddle/paddle-js';
 import { SubscriptionStatusResponseStatusEnum } from '../../../workflow-api';
 import type { UsageSummaryResponse } from '../../../workflow-api';
 import { subscriptionService } from '../../services/api/subscription';
@@ -24,7 +23,7 @@ import { companyService } from '../../services/api/company';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
-import { getAffiliateTid } from '../../utils/tracking';
+import { isPaymentRequiredError } from '../../utils/subscriptionErrors';
 import {
   inferPlanTierFromJobsLimit,
   computeCurrentStorageBlocks,
@@ -91,9 +90,10 @@ export const BillingSettings: React.FC = () => {
   const [cancelling, setCancelling] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [usage, setUsage] = useState<UsageSummaryResponse | null>(null);
-  const [storageDialogOpen, setStorageDialogOpen] = useState(false);
-  const [blocksToAdd, setBlocksToAdd] = useState(1);
-  const [purchasingStorage, setPurchasingStorage] = useState(false);
+  const [addonsDialogOpen, setAddonsDialogOpen] = useState(false);
+  const [extraSeatsInput, setExtraSeatsInput] = useState(0);
+  const [extraStorageBlocksInput, setExtraStorageBlocksInput] = useState(0);
+  const [savingAddons, setSavingAddons] = useState(false);
 
   const loadUsage = () => {
     companyService
@@ -149,62 +149,55 @@ export const BillingSettings: React.FC = () => {
   // The API doesn't expose which paid tier a company is on directly, but each tier has
   // a distinct jobs limit, so it can be identified from the usage summary.
   const currentTier = inferPlanTierFromJobsLimit(usage?.jobsLimit);
-  const canBuyStorage = currentStatus === SubscriptionStatusResponseStatusEnum.Active && currentTier !== null;
+  // PAST_DUE still has a grace window while accessAllowed stays true; once the grace
+  // period lapses the backend flips accessAllowed to false ahead of a full status change.
+  const withinPastDueGrace =
+    currentStatus === SubscriptionStatusResponseStatusEnum.PastDue && status.accessAllowed !== false;
+  const canManageAddons =
+    currentTier !== null &&
+    (currentStatus === SubscriptionStatusResponseStatusEnum.Active || withinPastDueGrace);
   const storageFull = Boolean(
     usage?.storageLimitBytes && (usage.storageUsedBytes ?? 0) >= usage.storageLimitBytes
   );
 
-  const openStorageDialog = () => {
-    setBlocksToAdd(1);
-    setStorageDialogOpen(true);
+  const currentExtraSeats = currentTier ? computeCurrentExtraSeats(currentTier, usage?.seatsLimit) : 0;
+  const currentStorageBlocks = currentTier ? computeCurrentStorageBlocks(currentTier, usage?.storageLimitBytes) : 0;
+
+  const openAddonsDialog = () => {
+    setExtraSeatsInput(currentExtraSeats);
+    setExtraStorageBlocksInput(currentStorageBlocks);
+    setAddonsDialogOpen(true);
   };
 
-  const handleBuyStorage = async () => {
-    if (!currentTier) return;
-    setPurchasingStorage(true);
+  const seatsBelowInUse = Boolean(
+    currentTier && usage?.activeWorkers && currentTier.baseSeats + extraSeatsInput < usage.activeWorkers
+  );
+  const storageBelowUsed = Boolean(
+    currentTier &&
+      usage?.storageUsedBytes &&
+      (currentTier.baseStorageGB + extraStorageBlocksInput * currentTier.extraStorageBlockGB) * 1_000_000_000 <
+        usage.storageUsedBytes
+  );
+
+  const handleUpdateAddons = async () => {
+    if (!currentTier || savingAddons) return;
+    setSavingAddons(true);
     try {
-      const currentBlocks = computeCurrentStorageBlocks(currentTier, usage?.storageLimitBytes);
-      const currentExtraSeats = computeCurrentExtraSeats(currentTier, usage?.seatsLimit);
-
-      const { data } = await subscriptionService.createCheckout({
-        planType: currentTier.key,
-        extraSeats: currentExtraSeats,
-        extraStorageBlocks: currentBlocks + blocksToAdd,
+      await subscriptionService.updateAddons({
+        extraSeats: extraSeatsInput,
+        extraStorageBlocks: extraStorageBlocksInput,
       });
-      const { transactionId } = data as Record<string, string>;
-
-      const profile = await companyService.getProfile().then((r) => r.data).catch(() => null);
-
-      const paddle = getPaddleInstance();
-      if (!paddle) {
-        showError('Payment system not available. Please refresh the page and try again.');
-        return;
-      }
-
-      paddle.Checkout.open({
-        transactionId,
-        customData: {
-          companyId: profile?.id ?? null,
-          email: profile?.email ?? null,
-          fp_tid: getAffiliateTid(),
-        },
-        settings: {
-          successUrl: window.location.href,
-        },
-        // @ts-expect-error eventCallback is not in Paddle's CheckoutOpenOptions types but is supported at runtime
-        eventCallback: (event: PaddleEventData) => {
-          if (event.name === CheckoutEventNames.CHECKOUT_COMPLETED) {
-            showSuccess('Storage purchase complete.');
-            setStorageDialogOpen(false);
-            refresh();
-            loadUsage();
-          }
-        },
-      });
+      showSuccess('Add-ons updated.');
+      setAddonsDialogOpen(false);
+      refresh();
+      loadUsage();
     } catch (error) {
-      showError(extractErrorMessage(error, 'Failed to start storage checkout. Please try again.'));
+      // Match the existing 402 pattern (subscriptionErrors.ts): no ad-hoc copy here,
+      // just refresh status so the persistent SubscriptionBanner reflects it.
+      if (isPaymentRequiredError(error)) refresh();
+      showError(extractErrorMessage(error, 'Failed to update add-ons. Please try again.'));
     } finally {
-      setPurchasingStorage(false);
+      setSavingAddons(false);
     }
   };
 
@@ -318,14 +311,14 @@ export const BillingSettings: React.FC = () => {
                   <Typography variant="body2" color={storageFull ? 'error' : undefined}>
                     {formatBytes(usage.storageUsedBytes)} / {formatBytes(usage.storageLimitBytes)}
                   </Typography>
-                  {canBuyStorage && (
+                  {canManageAddons && (
                     <Button
                       variant={storageFull ? 'contained' : 'text'}
                       color={storageFull ? 'error' : 'primary'}
                       size="small"
-                      onClick={openStorageDialog}
+                      onClick={openAddonsDialog}
                     >
-                      Buy Storage
+                      Manage Add-ons
                     </Button>
                   )}
                 </S.MeterValueGroup>
@@ -352,9 +345,16 @@ export const BillingSettings: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   Worker seats
                 </Typography>
-                <Typography variant="body2">
-                  {usage.activeWorkers ?? 0} / {usage.seatsLimit ?? 0}
-                </Typography>
+                <S.MeterValueGroup>
+                  <Typography variant="body2">
+                    {usage.activeWorkers ?? 0} / {usage.seatsLimit ?? 0}
+                  </Typography>
+                  {canManageAddons && (
+                    <Button variant="text" size="small" onClick={openAddonsDialog}>
+                      Manage Add-ons
+                    </Button>
+                  )}
+                </S.MeterValueGroup>
               </S.MeterLabelRow>
               <LinearProgress
                 variant="determinate"
@@ -426,44 +426,93 @@ export const BillingSettings: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={storageDialogOpen} onClose={() => !purchasingStorage && setStorageDialogOpen(false)}>
-        <DialogTitle>Buy Extra Storage</DialogTitle>
+      <Dialog open={addonsDialogOpen} onClose={() => !savingAddons && setAddonsDialogOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Manage Add-ons</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ mb: 1 }}>
-            {currentTier &&
-              `Each block adds ${currentTier.extraStorageBlockGB}GB for $${currentTier.extraStorageBlockPrice}/mo.`}
-          </DialogContentText>
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Extra Seats
+          </Typography>
+          {currentTier && (
+            <DialogContentText sx={{ mb: 1 }}>${currentTier.extraSeatPrice}/mo per seat.</DialogContentText>
+          )}
           <S.StepperControl>
             <IconButton
               size="small"
-              onClick={() => setBlocksToAdd((n) => Math.max(1, n - 1))}
-              disabled={blocksToAdd <= 1}
+              onClick={() => setExtraSeatsInput((n) => Math.max(0, n - 1))}
+              disabled={extraSeatsInput <= 0 || savingAddons}
+              aria-label="Decrease extra seats"
+            >
+              <RemoveIcon />
+            </IconButton>
+            <S.StepperCount>{extraSeatsInput}</S.StepperCount>
+            <IconButton
+              size="small"
+              onClick={() => setExtraSeatsInput((n) => n + 1)}
+              disabled={savingAddons}
+              aria-label="Increase extra seats"
+            >
+              <AddIcon />
+            </IconButton>
+          </S.StepperControl>
+          {seatsBelowInUse && (
+            <Typography variant="caption" color="error" display="block" sx={{ textAlign: 'center', mb: 1 }}>
+              You have {usage?.activeWorkers} active worker{usage?.activeWorkers === 1 ? '' : 's'} — this may be rejected.
+            </Typography>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Extra Storage Blocks
+          </Typography>
+          {currentTier && (
+            <DialogContentText sx={{ mb: 1 }}>
+              Each block adds {currentTier.extraStorageBlockGB}GB for ${currentTier.extraStorageBlockPrice}/mo.
+            </DialogContentText>
+          )}
+          <S.StepperControl>
+            <IconButton
+              size="small"
+              onClick={() => setExtraStorageBlocksInput((n) => Math.max(0, n - 1))}
+              disabled={extraStorageBlocksInput <= 0 || savingAddons}
               aria-label="Decrease storage blocks"
             >
               <RemoveIcon />
             </IconButton>
-            <S.StepperCount>{blocksToAdd}</S.StepperCount>
-            <IconButton size="small" onClick={() => setBlocksToAdd((n) => n + 1)} aria-label="Increase storage blocks">
+            <S.StepperCount>{extraStorageBlocksInput}</S.StepperCount>
+            <IconButton
+              size="small"
+              onClick={() => setExtraStorageBlocksInput((n) => n + 1)}
+              disabled={savingAddons}
+              aria-label="Increase storage blocks"
+            >
               <AddIcon />
             </IconButton>
           </S.StepperControl>
-          {currentTier && (
-            <DialogContentText sx={{ textAlign: 'center' }}>
-              +{blocksToAdd * currentTier.extraStorageBlockGB}GB for +${blocksToAdd * currentTier.extraStorageBlockPrice}/mo
-            </DialogContentText>
+          {storageBelowUsed && (
+            <Typography variant="caption" color="error" display="block" sx={{ textAlign: 'center', mb: 1 }}>
+              This is below your current storage usage ({formatBytes(usage?.storageUsedBytes)}) — this may be rejected.
+            </Typography>
           )}
+
+          <Divider sx={{ my: 2 }} />
+
+          <DialogContentText variant="caption">
+            Increases are billed immediately, prorated, to your saved card. Decreases apply immediately and are
+            credited toward your next invoice.
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setStorageDialogOpen(false)} disabled={purchasingStorage}>
+          <Button onClick={() => setAddonsDialogOpen(false)} disabled={savingAddons}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={handleBuyStorage}
-            disabled={purchasingStorage}
-            startIcon={purchasingStorage ? <CircularProgress size={16} /> : undefined}
+            onClick={handleUpdateAddons}
+            disabled={savingAddons}
+            startIcon={savingAddons ? <CircularProgress size={16} /> : undefined}
           >
-            Purchase
+            Confirm & Charge
           </Button>
         </DialogActions>
       </Dialog>
