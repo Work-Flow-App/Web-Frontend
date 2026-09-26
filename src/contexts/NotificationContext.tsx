@@ -15,11 +15,13 @@ import {
   notificationReducer,
   initialNotificationState,
   sumUnreadCount,
+  getPushToastVariant,
   type NotificationState,
 } from './notificationReducer';
 import type { NotificationResponse } from '../../workflow-api';
 import { NotificationResponseTypeEnum } from '../../workflow-api';
 import { useAuth } from './AuthContext';
+import { useSnackbar } from './SnackbarContext';
 
 const RECONCILE_INTERVAL_MS = 120_000;
 const INITIAL_FETCH_SIZE = 20;
@@ -56,6 +58,10 @@ const reconcileUnreadCount = async (
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const { accessToken } = useAuth();
+  const { showInfo, showWarning } = useSnackbar();
+  // Held in a ref so a new snackbar identity never tears down the socket effect.
+  const toastRef = useRef({ showInfo, showWarning });
+  toastRef.current = { showInfo, showWarning };
   const [state, dispatch] = useReducer(notificationReducer, initialNotificationState);
   const stateRef = useRef<NotificationState>(state);
   const socketRef = useRef<ReturnType<typeof createNotificationSocket> | null>(null);
@@ -103,6 +109,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         dispatch({ type: 'PUSHED', notification });
+        const toastVariant = getPushToastVariant(notification);
+        if (toastVariant && notification.title) {
+          const { showInfo, showWarning } = toastRef.current;
+          (toastVariant === 'warning' ? showWarning : showInfo)(notification.title);
+        }
       },
       onError: (error) => {
         console.error('Notification socket error:', error);

@@ -27,6 +27,15 @@ export function sumUnreadCount(counts: Record<string, number>): number {
   );
 }
 
+/**
+ * Which snackbar a live-pushed notification should raise: a warning for HIGH/URGENT,
+ * info otherwise, and none for already-read or untitled pushes.
+ */
+export function getPushToastVariant(notification: NotificationResponse): 'info' | 'warning' | null {
+  if (notification.read || !notification.title) return null;
+  return notification.priority === 'HIGH' || notification.priority === 'URGENT' ? 'warning' : 'info';
+}
+
 export function notificationReducer(
   state: NotificationState,
   action: NotificationAction

@@ -15,6 +15,8 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 import { isWorkerRole } from '../../utils/roles';
 import { Button } from '../../components/UI/Button';
+import { mergePushedNotifications } from './mergePushedNotifications';
+import { buildGroupFilters } from './buildGroupFilters';
 
 const PAGE_SIZE = 20;
 
@@ -29,7 +31,7 @@ export const NotificationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { showError, showInfo } = useSnackbar();
   const { userRole } = useAuth();
-  const { markAsRead, markAllAsRead, refresh } = useNotifications();
+  const { recent, markAsRead, markAllAsRead, refresh } = useNotifications();
   const isWorker = isWorkerRole(userRole);
 
   const [readFilter, setReadFilter] = useState<ReadFilter>('all');
@@ -70,6 +72,14 @@ export const NotificationsPage: React.FC = () => {
     loadFirstPage(readFilter === 'unread');
     loadCounts();
   }, [readFilter, loadFirstPage, loadCounts]);
+
+  // Pushed notifications land in the context's `recent` list; prepend any that are newer
+  // than what this page has loaded so the page updates live instead of needing a reload.
+  useEffect(() => {
+    if (loading || recent.length === 0) return;
+    setItems((prev) => mergePushedNotifications(prev, recent, readFilter === 'unread'));
+    loadCounts();
+  }, [recent, loading, readFilter, loadCounts]);
 
   const loadMore = useCallback(async () => {
     setLoading(true);
@@ -125,37 +135,11 @@ export const NotificationsPage: React.FC = () => {
     loadCounts();
   };
 
-  // Groups are derived client-side from notification `type`, combining every type
-  // seen on the loaded page with every type that currently has unread items
-  // (from the per-type unread-count map) so a group doesn't disappear just because
-  // its notifications haven't been fetched into view yet.
-  const groupFilters: NotificationFilterOption[] = useMemo(() => {
-    const totals = new Map<string, { label: string; count: number }>();
-
-    const addType = (type: string | undefined, unread: number) => {
-      const category = getNotificationCategory(type);
-      const existing = totals.get(category.id);
-      if (existing) {
-        existing.count += unread;
-      } else {
-        totals.set(category.id, { label: category.label, count: unread });
-      }
-    };
-
-    Object.entries(countsByType).forEach(([type, count]) => addType(type, count ?? 0));
-    items.forEach((item) => {
-      if (!totals.has(getNotificationCategory(item.type).id)) {
-        addType(item.type, 0);
-      }
-    });
-
-    return [
-      { id: 'all', label: 'All' },
-      ...Array.from(totals.entries())
-        .map(([id, { label, count }]) => ({ id, label, count }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    ];
-  }, [countsByType, items]);
+  // Groups are derived client-side from notification `type`.
+  const groupFilters: NotificationFilterOption[] = useMemo(
+    () => buildGroupFilters(countsByType, items),
+    [countsByType, items]
+  );
 
   const visibleItems = useMemo(
     () => (groupFilter === 'all' ? items : items.filter((item) => getNotificationCategory(item.type).id === groupFilter)),

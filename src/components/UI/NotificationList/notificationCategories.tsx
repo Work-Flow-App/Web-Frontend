@@ -7,6 +7,7 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
+import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import { floowColors } from '../../../theme/colors';
 
 export interface NotificationCategoryMeta {
@@ -34,6 +35,14 @@ const CATEGORY_RULES: Array<{
   icon: ReactNode;
   match: RegExp;
 }> = [
+  {
+    id: 'mentions',
+    label: 'Mentions',
+    color: floowColors.blue.main,
+    bg: floowColors.blue[50],
+    icon: <AlternateEmailOutlinedIcon fontSize="small" />,
+    match: /MENTION/,
+  },
   {
     id: 'jobs',
     label: 'Jobs & Workflow',

@@ -16,6 +16,7 @@ import {
   MetaDot,
   MetaTime,
   UrgentTag,
+  HighPriorityTag,
   UnreadDot,
   MarkReadButton,
 } from './NotificationList.styles';
@@ -91,6 +92,7 @@ export const NotificationItem: React.FC<INotificationItem> = ({ notification, on
             </>
           )}
           {notification.priority === 'URGENT' && <UrgentTag>Urgent</UrgentTag>}
+          {notification.priority === 'HIGH' && <HighPriorityTag>High</HighPriorityTag>}
           {unread && onMarkAsRead && (
             <MarkReadButton className="notification-mark-read" onClick={handleMarkAsRead} type="button">
               Mark as read
