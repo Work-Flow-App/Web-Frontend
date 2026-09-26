@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
 import { companyService } from '../../../../../../services/api';
 import type { CompanyDocumentResponse } from '../../../../../../services/api';
@@ -12,9 +11,9 @@ import { useFormSubmit } from '../../../../../../hooks/useFormSubmit';
 import { useSchema } from '../../../../../../utils/validation';
 import { extractErrorMessage } from '../../../../../../utils/errorHandler';
 import { SchemaField } from '../../SchemaField';
-import { DocumentFormSchema } from './DocumentFormSchema';
+import { DocumentFormSchema, DocumentEditFormSchema } from './DocumentFormSchema';
 import type { DocumentFormValues } from './IDocumentForm';
-import { FormContainer, FormWrapper, FileRow, FileName, FileError } from './DocumentForm.styles';
+import { FormContainer, FormWrapper } from './DocumentForm.styles';
 
 interface DocumentFormProps {
   document?: CompanyDocumentResponse;
@@ -22,11 +21,10 @@ interface DocumentFormProps {
   onCancel?: () => void;
 }
 
-const DOCUMENT_FIELD_ENTRIES = Object.entries(DocumentFormSchema);
-
 export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess, onCancel }) => {
   const isEditMode = Boolean(document);
-  const { fieldRules, defaultValues } = useSchema(DocumentFormSchema, document);
+  const schema = isEditMode ? DocumentEditFormSchema : DocumentFormSchema;
+  const { fieldRules, defaultValues } = useSchema(schema, document);
 
   const methods = useForm<DocumentFormValues>({
     // useSchema's rules are typed for any object; narrow the resolver to this form's values.
@@ -44,13 +42,8 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess,
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
     useGlobalModalInnerContext();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileError, setFileError] = useState('');
-
   // handleSubmit(onSubmit) is only re-registered with the modal when [saving, isEditMode]
-  // change, so onSubmit's closure over selectedFile/fileError would otherwise go stale the
-  // moment the user picks a file. Route through a ref that's always current instead.
+  // change, so route through a ref to always call the latest onSubmit.
   const onSubmitRef = useRef<(data: DocumentFormValues) => void>(() => {});
 
   useEffect(() => {
@@ -67,20 +60,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saving, isEditMode]);
 
-  const handleFileSelect = () => fileInputRef.current?.click();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setSelectedFile(file);
-    if (file) setFileError('');
-  };
-
   const onSubmit = async (data: DocumentFormValues) => {
-    if (!isEditMode && !selectedFile) {
-      setFileError('Please attach a file.');
-      return;
-    }
-
     const type = (
       typeof data.type === 'object' ? (data.type as { value: string })?.value : data.type
     ) as CompanyUploadDocumentTypeEnum;
@@ -95,15 +75,15 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess,
             startDate: data.validityStartDate || undefined,
             endDate: data.validityEndDate || undefined,
             isPublic: data.isPublic,
-            file: selectedFile || undefined,
+            file: data.file || undefined,
           });
           showSuccess('Document updated successfully.');
-        } else if (selectedFile) {
+        } else if (data.file) {
           await companyService.uploadDocument({
             title: data.title,
             type,
             isPublic: data.isPublic,
-            file: selectedFile,
+            file: data.file,
             description: data.description || undefined,
             startDate: data.validityStartDate || undefined,
             endDate: data.validityEndDate || undefined,
@@ -123,29 +103,16 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess,
     <FormProvider {...methods}>
       <FormContainer>
         <FormWrapper>
-          {DOCUMENT_FIELD_ENTRIES.map(([key, field]) => (
+          {Object.entries(schema).map(([key, field]) => (
             <SchemaField
               key={key}
               name={key}
               field={field}
               error={errors[key as keyof DocumentFormValues] as FieldError | undefined}
               disablePortal
+              existingFileName={key === 'file' ? document?.fileName : undefined}
             />
           ))}
-
-          <FileRow>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-            <Button variant="outlined" color="secondary" size="small" onClick={handleFileSelect} type="button">
-              {selectedFile ? 'Change File' : document?.fileName ? 'Replace File' : 'Choose File'}
-            </Button>
-            <FileName>{selectedFile?.name || document?.fileName || 'No file selected'}</FileName>
-          </FileRow>
-          {fileError && <FileError>{fileError}</FileError>}
         </FormWrapper>
       </FormContainer>
     </FormProvider>

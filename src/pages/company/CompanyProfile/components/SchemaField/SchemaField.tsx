@@ -4,10 +4,11 @@ import { Input } from '../../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../../components/UI/Forms/TextArea';
 import { Dropdown } from '../../../../../components/UI/Forms/Dropdown';
 import { Checkbox } from '../../../../../components/UI/Forms/Checkbox';
+import { FileInput } from '../../../../../components/UI/Forms/FileInput';
 import type { IField } from '../../../../../utils/validation';
 import { FieldRow, FieldLabel, FieldValue } from '../../CompanyProfile.styles';
 
-export type SchemaFieldControl = 'text' | 'email' | 'date' | 'textarea' | 'dropdown' | 'checkbox';
+export type SchemaFieldControl = 'text' | 'email' | 'date' | 'textarea' | 'dropdown' | 'checkbox' | 'file';
 
 export interface SchemaFieldDefinition extends IField {
   control?: SchemaFieldControl;
@@ -18,6 +19,8 @@ export interface SchemaFieldDefinition extends IField {
   helperText?: string;
   /** Row count for a textarea control. Defaults to 3. */
   rows?: number;
+  /** Accepted file types for a file control, e.g. ".pdf,image/*". */
+  accept?: string;
 }
 
 export interface SchemaFieldProps {
@@ -36,6 +39,8 @@ export interface SchemaFieldProps {
    * InviteMemberForm/ChangeMemberRoleForm, the other modal-hosted dropdowns in this codebase.
    */
   disablePortal?: boolean;
+  /** For a file control: the file already saved on the record, shown until a new one is chosen. */
+  existingFileName?: string;
 }
 
 const EMPTY = 'Not provided';
@@ -52,6 +57,7 @@ export const SchemaField: React.FC<SchemaFieldProps> = ({
   isEditing = true,
   viewValue,
   disablePortal = false,
+  existingFileName,
 }) => {
   if (!isEditing) {
     return (
@@ -79,6 +85,17 @@ export const SchemaField: React.FC<SchemaFieldProps> = ({
     case 'textarea':
       return (
         <TextArea name={name} label={field.label} placeHolder={field.placeHolder} fullWidth rows={field.rows ?? 3} />
+      );
+    case 'file':
+      return (
+        <FileInput
+          name={name}
+          label={field.label}
+          required={field.isRequired}
+          accept={field.accept}
+          existingFileName={existingFileName}
+          error={error}
+        />
       );
     case 'checkbox':
       return <Checkbox name={name} label={field.label} description={field.helperText} />;

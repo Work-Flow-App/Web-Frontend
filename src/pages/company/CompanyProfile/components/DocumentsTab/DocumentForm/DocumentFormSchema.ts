@@ -70,4 +70,23 @@ export const DocumentFormSchema: Record<string, SchemaFieldDefinition> = {
     control: 'checkbox',
     helperText: 'Anyone with the link can view this document without logging in, even outside your company',
   },
+  file: {
+    title: 'file',
+    rule: InputValidationRules.SingleFileRequired,
+    defaultValue: null,
+    placeHolder: '',
+    label: 'File',
+    isRequired: true,
+    control: 'file',
+  },
+};
+
+/** Same form when editing: the document already has a file, so choosing a new one is optional. */
+export const DocumentEditFormSchema: Record<string, SchemaFieldDefinition> = {
+  ...DocumentFormSchema,
+  file: {
+    ...DocumentFormSchema.file,
+    rule: InputValidationRules.SingleFileNotRequired,
+    isRequired: false,
+  },
 };
