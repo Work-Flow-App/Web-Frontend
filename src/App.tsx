@@ -114,7 +114,9 @@ function App() {
                           <Route path="/company/assets" element={<AssetsPage />} />
                           <Route path="/company/assets/groups" element={<AssetGroupsPage />} />
                           <Route path="/company/assets/:assetId/history" element={<AssetHistory />} />
-                          <Route path="/company/assets/maps" element={<MapsPage />} />
+                          <Route path="/company/maps" element={<MapsPage />} />
+                          {/* Old Maps URL, kept so existing links and bookmarks still work. */}
+                          <Route path="/company/assets/maps" element={<Navigate to="/company/maps" replace />} />
                           <Route path="/company/forms" element={<FormsPage />} />
                           <Route path="/company/forms/templates/:templateId/builder" element={<FormTemplateBuilderPage />} />
                           <Route path="/company/forms/submissions/:submissionId" element={<FormSubmissionDetailPage />} />

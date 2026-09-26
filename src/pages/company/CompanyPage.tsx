@@ -570,7 +570,7 @@ export const CompanyPage: React.FC = () => {
   };
 
   const handleViewFullMap = () => {
-    navigate('/company/assets/maps');
+    navigate('/company/maps');
   };
 
   const handleViewAllTasks = () => {
