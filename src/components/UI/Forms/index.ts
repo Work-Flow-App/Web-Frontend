@@ -2,6 +2,8 @@ export { Checkbox } from './Checkbox';
 export type { CheckboxProps } from './Checkbox';
 export { Dropdown } from './Dropdown';
 export type { DropdownProps, DropdownOption, DropdownSize } from './Dropdown';
+export { FileInput } from './FileInput';
+export type { FileInputProps } from './FileInput';
 export { Input } from './Input';
 export type { InputProps } from './Input';
 export { TextArea } from './TextArea';

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import type { FieldError } from 'react-hook-form';
+import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
@@ -88,7 +88,8 @@ export const CompanyProfile: React.FC = () => {
   const { fieldRules, defaultValues } = useSchema(CompanyProfileFormSchema);
 
   const methods = useForm<CompanyProfileFormData>({
-    resolver: yupResolver(fieldRules),
+    // useSchema's rules are typed for any object; narrow the resolver to this form's values.
+    resolver: yupResolver(fieldRules) as unknown as Resolver<CompanyProfileFormData>,
     defaultValues,
   });
 
@@ -103,7 +104,7 @@ export const CompanyProfile: React.FC = () => {
 
   const activeTab = (() => {
     if (tabParam) {
-      const idx = TABS.indexOf(tabParam as any);
+      const idx = (TABS as readonly string[]).indexOf(tabParam);
       if (idx !== -1) return idx;
     }
     return 0;
@@ -359,7 +360,7 @@ export const CompanyProfile: React.FC = () => {
 
         {activeTab === TABS.indexOf('posts') && (
           <TabContent>
-            <PostsTab companyName={profile?.name} />
+            <PostsTab companyId={profile?.id} companyName={profile?.name} />
           </TabContent>
         )}
 

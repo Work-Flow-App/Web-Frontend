@@ -370,6 +370,14 @@ export const InputValidationRules = {
   FileRequired: mixed().test('fileFormat', 'Invalid file format, only accept images.', (value) => {
     return !!(value && (value as { length?: number }).length);
   }),
+  // A single File from a FileInput control (any file type, unlike FileRequired above).
+  // nullable() so an empty picker (null) reaches the test and gets its message, not yup's default.
+  SingleFileRequired: mixed().nullable().test(
+    'singleFileRequired',
+    'Please attach a file.',
+    (value) => typeof File !== 'undefined' && value instanceof File
+  ),
+  SingleFileNotRequired: mixed().nullable().notRequired(),
   DropDownRequired: checkDropDownField,
   ObjectNotRequired: object().notRequired(),
   StringNotRequired: string().notRequired(),

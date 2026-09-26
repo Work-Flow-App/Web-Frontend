@@ -16,7 +16,10 @@ export const PublicPostCard: React.FC<PublicPostCardProps> = ({ post }) => {
         <Avatar>{getInitials(post.authorName)}</Avatar>
         <AuthorBlock>
           <AuthorName>{post.authorName || 'Company'}</AuthorName>
-          <PostDate>{formatRelativeTime(post.createdAt)}</PostDate>
+          <PostDate>
+            {formatRelativeTime(post.createdAt)}
+            {post.groupName && ` · ${post.groupName}`}
+          </PostDate>
         </AuthorBlock>
       </CardHeader>
 

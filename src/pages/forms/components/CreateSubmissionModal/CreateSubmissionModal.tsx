@@ -13,11 +13,14 @@ import type { FormTemplateRequest, WorkerResponse, FormSubmissionResponse } from
 
 export interface CreateSubmissionModalProps {
   onSuccess?: (submission: FormSubmissionResponse) => void;
-  /** When opened from a job's context, links the new submission to that job. */
-  jobId?: number;
+  /**
+   * When opened from a job's context, links the new submission to that job. This is the
+   * job's per-company reference number (JobResponse.jobRef, shown as "Job #"), not its id.
+   */
+  jobRef?: number;
 }
 
-export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ onSuccess, jobId }) => {
+export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ onSuccess, jobRef }) => {
   const methods = useForm();
   const { showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } = useGlobalModalInnerContext();
@@ -54,10 +57,10 @@ export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ on
     methods.setValue('workerId', selectedWorkerId != null ? selectedWorkerId.toString() : null);
   }, [selectedWorkerId, methods]);
 
-  const stateRef = useRef({ selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobId });
+  const stateRef = useRef({ selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobRef });
   useEffect(() => {
-    stateRef.current = { selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobId };
-  }, [selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobId]);
+    stateRef.current = { selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobRef };
+  }, [selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobRef]);
 
   useEffect(() => {
     updateModalTitle('Create Form Submission');
@@ -70,7 +73,7 @@ export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ on
 
   useEffect(() => {
     updateOnConfirm(async () => {
-      const { selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobId } = stateRef.current;
+      const { selectedTemplateId, selectedWorkerId, title, templates, onSuccess, jobRef } = stateRef.current;
       if (!selectedTemplateId) {
         showError('Please select a form template');
         return;
@@ -82,7 +85,7 @@ export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ on
           templateId: selectedTemplateId,
           title: title || template?.name,
           workerId: selectedWorkerId ?? undefined,
-          jobRef: jobId ?? undefined,
+          jobRef: jobRef ?? undefined,
         });
         onSuccess?.(response.data);
       } catch (error) {
@@ -145,8 +148,8 @@ export const CreateSubmissionModal: React.FC<CreateSubmissionModalProps> = ({ on
           />
         </FormField>
 
-        {jobId != null && (
-          <Box sx={{ fontSize: 13, color: 'text.secondary' }}>This submission will be linked to Job #{jobId}.</Box>
+        {jobRef != null && (
+          <Box sx={{ fontSize: 13, color: 'text.secondary' }}>This submission will be linked to Job #{jobRef}.</Box>
         )}
       </Box>
     </FormProvider>

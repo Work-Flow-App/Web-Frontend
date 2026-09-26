@@ -1,8 +1,9 @@
-import { CompanyApi, Configuration, PublicCompanyViewsApi } from '../../../workflow-api';
+import { CompanyApi, CompanyPostGroupsApi, Configuration, PublicCompanyViewsApi } from '../../../workflow-api';
 import type {
   CompanyProfileUpdateRequest,
   CompanyPostCreateRequest,
   CompanyPostUpdateRequest,
+  CompanyPostGroupRequest,
   CompanyUploadDocumentTypeEnum,
   CompanyUpdateDocumentTypeEnum,
 } from '../../../workflow-api';
@@ -18,6 +19,8 @@ export type {
   CompanyPostCreateRequest,
   CompanyPostUpdateRequest,
   CompanyPostAttachmentResponse,
+  CompanyPostGroupRequest,
+  CompanyPostGroupResponse,
   PublicCompanyProfileResponse,
   UsageSummaryResponse,
 } from '../../../workflow-api';
@@ -45,6 +48,11 @@ export interface CompanyDocumentUpdatePayload {
 function getCompanyApi(): CompanyApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
   return new CompanyApi(config, env.apiBaseUrl, axiosInstance);
+}
+
+function getPostGroupsApi(): CompanyPostGroupsApi {
+  const config = new Configuration({ basePath: env.apiBaseUrl });
+  return new CompanyPostGroupsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 function getPublicCompanyApi(): PublicCompanyViewsApi {
@@ -119,8 +127,8 @@ export const companyService = {
   /**
    * Posts
    */
-  async getPosts() {
-    return await getCompanyApi().companyGetCompanyPosts();
+  async getPosts(groupId?: number) {
+    return await getCompanyApi().companyGetCompanyPosts(groupId);
   },
 
   async createPost(data: CompanyPostCreateRequest, files?: File[]) {
@@ -136,14 +144,33 @@ export const companyService = {
   },
 
   /**
+   * Post groups
+   */
+  async getPostGroups(companyId: number) {
+    return await getPostGroupsApi().companyPostGroupGetAllGroups(companyId);
+  },
+
+  async createPostGroup(companyId: number, data: CompanyPostGroupRequest) {
+    return await getPostGroupsApi().companyPostGroupCreateGroup(companyId, data);
+  },
+
+  async updatePostGroup(companyId: number, groupId: number, data: CompanyPostGroupRequest) {
+    return await getPostGroupsApi().companyPostGroupUpdateGroup(companyId, groupId, data);
+  },
+
+  async deletePostGroup(companyId: number, groupId: number) {
+    return await getPostGroupsApi().companyPostGroupDeleteGroup(companyId, groupId);
+  },
+
+  /**
    * Public views — no authentication required, used for shareable company/post links
    */
   async getPublicProfile(companyId: number) {
     return await getPublicCompanyApi().publicCompanyGetPublicProfile(companyId);
   },
 
-  async getPublicPosts(companyId: number) {
-    return await getPublicCompanyApi().publicCompanyGetPublicPosts(companyId);
+  async getPublicPosts(companyId: number, groupId?: number) {
+    return await getPublicCompanyApi().publicCompanyGetPublicPosts(companyId, groupId);
   },
 
   async getPublicDocuments(companyId: number) {

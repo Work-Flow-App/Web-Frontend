@@ -20,7 +20,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 import { useFormSubmit } from '../../hooks';
-import { formService, workerService, FormFieldDtoRoleTargetEnum } from '../../services/api';
+import { formService, workerService, jobService, FormFieldDtoRoleTargetEnum } from '../../services/api';
 import type { FormSubmissionResponse, WorkerResponse } from '../../services/api';
 import { buildFieldDefaultValues, buildFieldValueDtos, getMissingRequiredFieldLabels } from './utils/formFieldRender';
 import { FormFieldRow } from './components/FormFieldRow';
@@ -33,6 +33,25 @@ export const FormSubmissionDetailPage: React.FC = () => {
   const { submissionId } = useParams<{ submissionId: string }>();
   const navigate = useNavigate();
   const { showSuccess, showError } = useSnackbar();
+
+  // Submissions only carry the job's reference number ("Job #"), but the job page is
+  // routed by id, so look the id up before navigating.
+  const openLinkedJob = useCallback(
+    async (jobRef: number) => {
+      try {
+        const { data: jobs } = await jobService.getAllJobs();
+        const job = jobs.find((j) => j.jobRef === jobRef);
+        if (job?.id != null) {
+          navigate(`/company/jobs/${job.id}/details`);
+        } else {
+          showError(`Job #${jobRef} could not be found. It may have been archived or deleted.`);
+        }
+      } catch (error) {
+        showError(extractErrorMessage(error, 'Failed to open the linked job'));
+      }
+    },
+    [navigate, showError]
+  );
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { saving, withSaving } = useFormSubmit();
 
@@ -237,7 +256,7 @@ export const FormSubmissionDetailPage: React.FC = () => {
               </S.MetaItem>
               {submission.jobRef != null && (
                 <S.MetaItem
-                  onClick={() => navigate(`/company/jobs/${submission.jobRef}/details`)}
+                  onClick={() => openLinkedJob(submission.jobRef!)}
                   style={{ cursor: 'pointer' }}
                 >
                   <S.MetaIconBadge tint={floowColors.chart.tertiary}>

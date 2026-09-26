@@ -143,3 +143,31 @@ export const StyledGoogleMap = styled(GoogleMap)(() => ({
   },
 }));
 
+
+// Labels each group of rows with where its data lives (customer/client record, the job
+// itself, or the job's template), so similarly named fields aren't mistaken for each other.
+export const GroupHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.25),
+  padding: theme.spacing(1.5, 2.5, 0.5),
+}));
+
+export const GroupTitle = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.75),
+  '& svg': {
+    fontSize: '1rem',
+  },
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  color: theme.palette.primary.main,
+  letterSpacing: '0.03125rem',
+  textTransform: 'uppercase',
+}));
+
+export const GroupCaption = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  color: theme.palette.text.secondary,
+}));

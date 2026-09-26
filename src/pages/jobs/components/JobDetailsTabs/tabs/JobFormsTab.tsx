@@ -45,7 +45,7 @@ export const JobFormsTab: React.FC<JobFormsTabProps> = ({ job }) => {
       fieldName: 'createFormSubmission',
       children: (
         <CreateSubmissionModal
-          jobId={job.id}
+          jobRef={job.jobRef}
           onSuccess={() => {
             resetGlobalModalOuterProps();
             showSuccess('Form submission created');
@@ -54,7 +54,7 @@ export const JobFormsTab: React.FC<JobFormsTabProps> = ({ job }) => {
         />
       ),
     });
-  }, [job.id, setGlobalModalOuterProps, resetGlobalModalOuterProps, showSuccess, refetch]);
+  }, [job.jobRef, setGlobalModalOuterProps, resetGlobalModalOuterProps, showSuccess, refetch]);
 
   const handleRowClick = useCallback(
     (row: FormSubmissionTableRow) => navigate(`/company/forms/submissions/${row.id}`),

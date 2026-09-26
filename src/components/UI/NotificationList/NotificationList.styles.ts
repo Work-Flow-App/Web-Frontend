@@ -314,6 +314,11 @@ export const UrgentTag = styled('span')(() => ({
   letterSpacing: '0.02em',
 }));
 
+export const HighPriorityTag = styled(UrgentTag)(() => ({
+  color: floowColors.warning.main,
+  background: floowColors.warning.light,
+}));
+
 export const UnreadDot = styled(Box)(() => ({
   width: rem(9),
   height: rem(9),

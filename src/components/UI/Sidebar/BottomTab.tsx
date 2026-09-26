@@ -64,7 +64,11 @@ export const BottomTab: React.FC<SidebarProps> = ({
 
   // Remaining items to show under the arrow button
   const arrowItemIds = ['clients', 'assets', 'maps', 'customers'];
-  const arrowItems = items.filter((item) => arrowItemIds.includes(item.id));
+  // Parents with children (e.g. Assets → All Assets / Asset Groups) have no href of their
+  // own, so list their children in the popup instead.
+  const arrowItems = items
+    .filter((item) => arrowItemIds.includes(item.id))
+    .flatMap((item) => (item.children?.length ? item.children : [item]));
   const isAnyArrowItemActive = arrowItems.some((item) => isItemOrChildActive(item));
 
   // Helper to render popup sub-items

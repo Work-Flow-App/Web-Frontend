@@ -1,0 +1,1 @@
+export { ManagePostGroups } from './ManagePostGroups';
