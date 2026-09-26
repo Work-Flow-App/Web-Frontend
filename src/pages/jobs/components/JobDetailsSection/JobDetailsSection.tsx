@@ -79,6 +79,20 @@ const toDateInputValue = (value: string): string => {
   return value.split('T')[0];
 };
 
+// Row keys for the contact fields in each group, mapped to the record property they edit.
+// The customer's address isn't here: it's structured and edited through the map picker.
+const CUSTOMER_CONTACT_FIELDS: Record<string, 'telephone' | 'email' | 'mobile'> = {
+  customerTelephone: 'telephone',
+  customerEmail: 'email',
+  customerMobile: 'mobile',
+};
+const CLIENT_CONTACT_FIELDS: Record<string, 'telephone' | 'email' | 'mobile' | 'address'> = {
+  clientTelephone: 'telephone',
+  clientEmail: 'email',
+  clientMobile: 'mobile',
+  clientAddress: 'address',
+};
+
 export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   job,
   client,
@@ -106,21 +120,25 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   const [mapCenter, setMapCenter] = useState(GOOGLE_MAPS_CONFIG.defaultCenter);
   const [mapZoom, setMapZoom] = useState(GOOGLE_MAPS_CONFIG.defaultZoom);
 
-  const hasCustomer = !!customer;
-  const contactEmail = customer?.email || client?.email;
-  const contactTelephone = customer?.telephone || client?.telephone;
-  const contactMobile = customer?.mobile || client?.mobile;
   // Was showing only customer.address.street (no city/postcode/country) — the
   // Address row never actually included the postcode for customers.
-  const contactAddress = hasCustomer
-    ? formatAddress({
-        street: customer?.address?.street,
-        city: customer?.address?.city,
-        state: customer?.address?.county,
-        postalCode: customer?.address?.postalCode,
-        country: customer?.address?.country,
-      })
-    : client?.address;
+  const customerAddress = formatAddress({
+    street: customer?.address?.street,
+    city: customer?.address?.city,
+    state: customer?.address?.county,
+    postalCode: customer?.address?.postalCode,
+    country: customer?.address?.country,
+  });
+
+  // Customer and client each keep their own contact details, so they're shown as two
+  // separate groups rather than one merged set where it's unclear whose details they are.
+  const customerCaption = customer
+    ? 'From the customer record. Edits update this customer everywhere it is used.'
+    : 'No customer linked. Adding any detail here creates a customer and links it to this job.';
+  const clientCaption = client
+    ? 'From the client record. Edits update this client everywhere it is used.'
+    : 'No client linked. Adding any detail here creates a client and links it to this job.';
+  const templateDisplayName = template?.name || job.templateName;
 
   const handleAddressEditClick = async (target: 'address' | 'siteAddress') => {
     setEditingField(target);
@@ -194,7 +212,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           const res = await customerService.updateCustomer(customer.id, updateReq);
           onCustomerUpdate?.(res.data);
         } else {
-          const defaultName = `Customer for Job #${job.id || ''}`;
+          const defaultName = `Customer for Job #${job.jobRef ?? job.id ?? ''}`;
           const createReq = {
             name: defaultName,
             address: addressObj,
@@ -309,37 +327,24 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
           }
           onClientUpdate?.(newClient);
         }
-      } else if (['email', 'telephone', 'mobile', 'address'].includes(field)) {
+      } else if (field in CUSTOMER_CONTACT_FIELDS) {
+        const key = CUSTOMER_CONTACT_FIELDS[field];
         if (customer?.id) {
           const updateReq: CustomerUpdateRequest = {
             name: customer.name || '',
-            email: field === 'email' ? editValue : customer.email,
-            telephone: field === 'telephone' ? editValue : customer.telephone,
-            mobile: field === 'mobile' ? editValue : customer.mobile,
+            email: customer.email,
+            telephone: customer.telephone,
+            mobile: customer.mobile,
             address: customer.address,
+            [key]: editValue,
           };
           const res = await customerService.updateCustomer(customer.id, updateReq);
           onCustomerUpdate?.(res.data);
-        } else if (client?.id) {
-          const updateReq: ClientUpdateRequest = {
-            name: client.name || '',
-            email: field === 'email' ? editValue : client.email,
-            telephone: field === 'telephone' ? editValue : client.telephone,
-            mobile: field === 'mobile' ? editValue : client.mobile,
-            address: field === 'address' ? editValue : client.address,
-          };
-          const res = await companyClientService.updateClient(client.id, updateReq);
-          onClientUpdate?.(res.data);
         } else {
-          const defaultName = `Customer for Job #${job.id || ''}`;
-          const createReq = {
-            name: defaultName,
-            email: field === 'email' ? editValue : undefined,
-            telephone: field === 'telephone' ? editValue : undefined,
-            mobile: field === 'mobile' ? editValue : undefined,
-            address: field === 'address' ? { street: editValue } : undefined,
-          };
-          const res = await customerService.createCustomer(createReq);
+          const res = await customerService.createCustomer({
+            name: `Customer for Job #${job.jobRef ?? job.id ?? ''}`,
+            [key]: editValue,
+          });
           const newCust = res.data;
           if (job.id && newCust.id) {
             // PATCH: only sets the one key given, unlike PUT which risks wiping
@@ -348,6 +353,33 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
             onJobUpdate?.(jobRes.data);
           }
           onCustomerUpdate?.(newCust);
+        }
+      } else if (field in CLIENT_CONTACT_FIELDS) {
+        const key = CLIENT_CONTACT_FIELDS[field];
+        if (client?.id) {
+          const updateReq: ClientUpdateRequest = {
+            name: client.name || '',
+            email: client.email,
+            telephone: client.telephone,
+            mobile: client.mobile,
+            address: client.address,
+            [key]: editValue,
+          };
+          const res = await companyClientService.updateClient(client.id, updateReq);
+          onClientUpdate?.(res.data);
+        } else {
+          const res = await companyClientService.createClient({
+            name: `Client for Job #${job.jobRef ?? job.id ?? ''}`,
+            [key]: editValue,
+          });
+          const newClient = res.data;
+          if (job.id && newClient.id) {
+            // PATCH: only sets the one key given, unlike PUT which risks wiping
+            // fieldValues/assetIds/etc. that this bare single-field body omits.
+            const jobRes = await jobService.patchJob(job.id, { clientId: newClient.id });
+            onJobUpdate?.(jobRes.data);
+          }
+          onClientUpdate?.(newClient);
         }
       } else if (field === 'status' && job.id) {
         const updateReq: JobUpdateRequest = { status: editValue as JobUpdateRequest['status'] };
@@ -450,7 +482,7 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
     const isSaving = savingField === fieldKey;
     const displayValue = value || '';
     const notSet = !value;
-    const isMapAddressField = fieldKey === 'siteAddress' || (fieldKey === 'address' && hasCustomer);
+    const isMapAddressField = fieldKey === 'siteAddress' || fieldKey === 'address';
 
     if (isMapAddressField) {
       return (
@@ -787,19 +819,23 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
       </S.SectionHeader>
 
       <S.FieldsList>
-        {renderEditableRow(<PersonIcon />, 'Customer Name', 'customerName', customer?.name, true)}
-        {renderEditableRow(<BusinessIcon />, 'Client Name', 'clientName', client?.name, true)}
-        {renderEditableRow(<PhoneIcon />, 'Telephone', 'telephone', contactTelephone, true)}
-        {renderEditableRow(<EmailIcon />, 'Email', 'email', contactEmail, true)}
-        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'mobile', contactMobile, true)}
-        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', contactAddress, true)}
+        <S.GroupHeader>
+          <S.GroupTitle>
+            <PersonIcon />
+            Customer
+          </S.GroupTitle>
+          <S.GroupCaption>{customerCaption}</S.GroupCaption>
+        </S.GroupHeader>
+        {renderEditableRow(<PersonIcon />, 'Name', 'customerName', customer?.name)}
+        {renderEditableRow(<PhoneIcon />, 'Telephone', 'customerTelephone', customer?.telephone)}
+        {renderEditableRow(<EmailIcon />, 'Email', 'customerEmail', customer?.email)}
+        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'customerMobile', customer?.mobile)}
+        {renderEditableRow(<LocationOnIcon />, 'Address', 'address', customerAddress)}
 
-        {/* Only the "Address" row's isMapAddressField branch (fieldKey === 'address' && hasCustomer)
-            offers a map editor in the first place — without this same hasCustomer guard here, a
-            client-only job (no customer) would render this map ALONGSIDE the plain-text editor
-            for the same row, and confirming a pick would silently create a new
-            `Customer for Job #N` and reassign the job, with no warning. */}
-        {editingField === 'address' && hasCustomer && (
+        {/* Customer address (key 'address') is structured, so it's edited on the map. If no
+            customer is linked yet, confirming a pick creates one and links it to this job,
+            which is expected here since the row sits under the Customer heading. */}
+        {editingField === 'address' && (
           <S.MapEditWrapper>
             <S.StyledGoogleMap
               height="15rem"
@@ -817,6 +853,24 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         )}
 
         <S.DividerLine />
+        <S.GroupHeader>
+          <S.GroupTitle>
+            <BusinessIcon />
+            Client
+          </S.GroupTitle>
+          <S.GroupCaption>{clientCaption}</S.GroupCaption>
+        </S.GroupHeader>
+        {renderEditableRow(<BusinessIcon />, 'Name', 'clientName', client?.name)}
+        {renderEditableRow(<PhoneIcon />, 'Telephone', 'clientTelephone', client?.telephone)}
+        {renderEditableRow(<EmailIcon />, 'Email', 'clientEmail', client?.email)}
+        {renderEditableRow(<PhoneAndroidIcon />, 'Mobile', 'clientMobile', client?.mobile)}
+        {renderEditableRow(<LocationOnIcon />, 'Address', 'clientAddress', client?.address)}
+
+        <S.DividerLine />
+        <S.GroupHeader>
+          <S.GroupTitle>Job Information</S.GroupTitle>
+          <S.GroupCaption>Core details stored on this job.</S.GroupCaption>
+        </S.GroupHeader>
 
         <S.FieldRow>
           <S.FieldIconContainer><FlagIcon /></S.FieldIconContainer>
@@ -926,6 +980,15 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
         {sortedTemplateFields.length > 0 && (
           <>
             <S.DividerLine />
+            <S.GroupHeader>
+              <S.GroupTitle>
+                {templateDisplayName ? `${templateDisplayName} Template Fields` : 'Template Fields'}
+              </S.GroupTitle>
+              <S.GroupCaption>
+                Custom fields defined by the {templateDisplayName ? `“${templateDisplayName}”` : 'job'} template. Values
+                are saved on this job only and don&apos;t change the customer or client records.
+              </S.GroupCaption>
+            </S.GroupHeader>
             {sortedTemplateFields.map((field) => renderCustomFieldRow(field))}
           </>
         )}
