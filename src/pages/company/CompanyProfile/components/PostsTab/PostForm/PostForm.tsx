@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm, useController, FormProvider } from 'react-hook-form';
-import type { FieldError } from 'react-hook-form';
+import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Menu, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -60,7 +60,8 @@ export const PostForm: React.FC<PostFormProps> = ({
   const { fieldRules, defaultValues } = useSchema(PostFormSchema, post);
 
   const methods = useForm<PostFormValues>({
-    resolver: yupResolver(fieldRules),
+    // useSchema's rules are typed for any object; narrow the resolver to this form's values.
+    resolver: yupResolver(fieldRules) as unknown as Resolver<PostFormValues>,
     defaultValues,
   });
 

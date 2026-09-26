@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import type { FieldError } from 'react-hook-form';
+import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
@@ -29,7 +29,8 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({ document, onSuccess,
   const { fieldRules, defaultValues } = useSchema(DocumentFormSchema, document);
 
   const methods = useForm<DocumentFormValues>({
-    resolver: yupResolver(fieldRules),
+    // useSchema's rules are typed for any object; narrow the resolver to this form's values.
+    resolver: yupResolver(fieldRules) as unknown as Resolver<DocumentFormValues>,
     defaultValues,
   });
 
