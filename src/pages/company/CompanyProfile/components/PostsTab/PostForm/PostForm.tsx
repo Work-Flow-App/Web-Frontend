@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useController, FormProvider } from 'react-hook-form';
 import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -57,7 +57,12 @@ export const PostForm: React.FC<PostFormProps> = ({
   onCancel,
 }) => {
   const isEditMode = Boolean(post);
-  const { fieldRules, defaultValues } = useSchema(PostFormSchema, post);
+  // New posts start in the group the feed is filtered by; edits hydrate from the post itself.
+  const schemaSource = useMemo(
+    () => post ?? (defaultGroupId !== undefined ? { groupId: defaultGroupId } : undefined),
+    [post, defaultGroupId]
+  );
+  const { fieldRules, defaultValues } = useSchema(PostFormSchema, schemaSource);
 
   const methods = useForm<PostFormValues>({
     // useSchema's rules are typed for any object; narrow the resolver to this form's values.
@@ -74,8 +79,10 @@ export const PostForm: React.FC<PostFormProps> = ({
     field: { value: isPublic, onChange: setIsPublic },
   } = useController({ control, name: 'isPublic', defaultValue: false });
   const [audienceAnchor, setAudienceAnchor] = useState<HTMLElement | null>(null);
+  const {
+    field: { value: groupId, onChange: setGroupId },
+  } = useController({ control, name: 'groupId' });
   const [groupAnchor, setGroupAnchor] = useState<HTMLElement | null>(null);
-  const [groupId, setGroupId] = useState<number | undefined>(post ? post.groupId : defaultGroupId);
   const selectedGroup = groups.find((g) => g.id === groupId);
   const { showSuccess, showError } = useSnackbar();
   const { saving, withSaving } = useFormSubmit();
@@ -133,8 +140,8 @@ export const PostForm: React.FC<PostFormProps> = ({
             {
               content: data.content,
               isPublic: data.isPublic,
-              groupId,
-              removeGroup: post.groupId !== undefined && groupId === undefined ? true : undefined,
+              groupId: data.groupId ?? undefined,
+              removeGroup: post.groupId != null && data.groupId == null ? true : undefined,
               attachmentIdsToDelete: attachmentIdsToDelete.length ? attachmentIdsToDelete : undefined,
             },
             newFiles.length ? newFiles : undefined
@@ -142,7 +149,7 @@ export const PostForm: React.FC<PostFormProps> = ({
           showSuccess('Post updated successfully.');
         } else {
           await companyService.createPost(
-            { content: data.content, isPublic: data.isPublic, groupId },
+            { content: data.content, isPublic: data.isPublic, groupId: data.groupId ?? undefined },
             newFiles.length ? newFiles : undefined
           );
           showSuccess('Post published successfully.');
@@ -184,9 +191,9 @@ export const PostForm: React.FC<PostFormProps> = ({
               sx={{ zIndex: 9000 }}
             >
               <MenuItem
-                selected={groupId === undefined}
+                selected={groupId == null}
                 onClick={() => {
-                  setGroupId(undefined);
+                  setGroupId(null);
                   setGroupAnchor(null);
                 }}
               >

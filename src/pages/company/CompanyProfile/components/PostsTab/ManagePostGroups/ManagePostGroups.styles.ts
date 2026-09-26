@@ -8,10 +8,12 @@ export const Wrapper = styled(Box)(() => ({
   width: '100%',
 }));
 
-export const AddRow = styled(Box)(() => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: rem(8),
+export const SectionLabel = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12),
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.03em',
+  color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
 }));
 
 export const GroupList = styled(Box)(() => ({
@@ -32,6 +34,13 @@ export const GroupRow = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
 }));
 
+export const GroupText = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(2),
+  minWidth: 0,
+}));
+
 export const GroupName = styled(Typography)(({ theme }) => ({
   fontSize: rem(14),
   fontWeight: 500,
@@ -39,6 +48,11 @@ export const GroupName = styled(Typography)(({ theme }) => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+}));
+
+export const GroupDescription = styled(Typography)(({ theme }) => ({
+  fontSize: rem(12.5),
+  color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
 }));
 
 export const GroupActions = styled(Box)(() => ({

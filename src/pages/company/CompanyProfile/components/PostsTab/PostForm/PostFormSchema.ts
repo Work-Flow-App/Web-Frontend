@@ -22,4 +22,12 @@ export const PostFormSchema: Record<string, SchemaFieldDefinition> = {
     control: 'checkbox',
     helperText: 'Anyone with the link can view this post without logging in, even outside your company',
   },
+  groupId: {
+    title: 'groupId',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: null,
+    placeHolder: '',
+    label: 'Group',
+    isRequired: false,
+  },
 };

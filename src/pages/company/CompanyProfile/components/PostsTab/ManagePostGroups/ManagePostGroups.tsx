@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { TextField } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 import { Button, IconButton } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
 import { companyService } from '../../../../../../services/api';
 import type { CompanyPostGroupResponse } from '../../../../../../services/api';
 import { useSnackbar } from '../../../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../../../utils/errorHandler';
+import { PostGroupForm } from '../PostGroupForm';
+import type { PostGroupFormValues } from '../PostGroupForm/IPostGroupForm';
 import {
   Wrapper,
-  AddRow,
+  SectionLabel,
   GroupList,
   GroupRow,
+  GroupText,
   GroupName,
+  GroupDescription,
   GroupActions,
   ConfirmText,
   EmptyText,
@@ -35,9 +36,7 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
 
   // Local copy so the list updates immediately; the parent refetches in the background.
   const [items, setItems] = useState<CompanyPostGroupResponse[]>(groups);
-  const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -49,71 +48,55 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const run = async (action: () => Promise<void>, errorMessage: string) => {
+  /** Runs a group mutation; resolves true on success so the form can react. */
+  const run = async (action: () => Promise<void>, errorMessage: string): Promise<boolean> => {
     setBusy(true);
     try {
       await action();
       onGroupsChange();
+      return true;
     } catch (error) {
       showError(extractErrorMessage(error, errorMessage));
+      return false;
     } finally {
       setBusy(false);
     }
   };
 
-  const handleCreate = () => {
-    const name = newName.trim();
-    if (!name) return;
+  const toRequest = (values: PostGroupFormValues) => ({
+    name: values.name,
+    description: values.description || undefined,
+  });
+
+  const handleCreate = (values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.createPostGroup(companyId, { name });
+      const res = await companyService.createPostGroup(companyId, toRequest(values));
       setItems((prev) => [...prev, res.data]);
-      setNewName('');
       showSuccess('Group created.');
     }, 'Failed to create group.');
-  };
 
-  const handleUpdate = (group: CompanyPostGroupResponse) => {
-    const name = editName.trim();
-    if (!group.id || !name) return;
+  const handleUpdate = (groupId: number, values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.updatePostGroup(companyId, group.id!, { name, description: group.description });
-      setItems((prev) => prev.map((g) => (g.id === group.id ? res.data : g)));
+      const res = await companyService.updatePostGroup(companyId, groupId, toRequest(values));
+      setItems((prev) => prev.map((g) => (g.id === groupId ? res.data : g)));
       setEditingId(null);
       showSuccess('Group updated.');
     }, 'Failed to update group.');
-  };
 
-  const handleDelete = (groupId: number) => {
+  const handleDelete = (groupId: number) =>
     run(async () => {
       await companyService.deletePostGroup(companyId, groupId);
       setItems((prev) => prev.filter((g) => g.id !== groupId));
       setDeletingId(null);
       showSuccess('Group deleted.');
     }, 'Failed to delete group.');
-  };
 
   return (
     <Wrapper>
-      <AddRow>
-        <TextField
-          size="small"
-          fullWidth
-          placeholder="New group name, e.g. Safety Updates"
-          value={newName}
-          disabled={busy}
-          onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleCreate();
-            }
-          }}
-        />
-        <Button size="small" variant="contained" color="primary" disabled={busy || !newName.trim()} onClick={handleCreate}>
-          Add
-        </Button>
-      </AddRow>
+      <SectionLabel>New group</SectionLabel>
+      <PostGroupForm submitLabel="Add Group" busy={busy} onSubmit={handleCreate} />
 
+      <SectionLabel>Groups</SectionLabel>
       {items.length === 0 ? (
         <EmptyText>No groups yet. Groups let you organise posts and filter the feed by topic.</EmptyText>
       ) : (
@@ -121,44 +104,13 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
           {items.map((group) => (
             <GroupRow key={group.id}>
               {editingId === group.id ? (
-                <>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    autoFocus
-                    value={editName}
-                    disabled={busy}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleUpdate(group);
-                      }
-                      if (e.key === 'Escape') setEditingId(null);
-                    }}
-                  />
-                  <GroupActions>
-                    <IconButton
-                      size="small"
-                      variant="text"
-                      color="primary"
-                      aria-label="Save group"
-                      disabled={busy || !editName.trim()}
-                      onClick={() => handleUpdate(group)}
-                    >
-                      <CheckIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      variant="text"
-                      color="secondary"
-                      aria-label="Cancel editing"
-                      onClick={() => setEditingId(null)}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  </GroupActions>
-                </>
+                <PostGroupForm
+                  group={group}
+                  submitLabel="Save"
+                  busy={busy}
+                  onSubmit={(values) => handleUpdate(group.id!, values)}
+                  onCancel={() => setEditingId(null)}
+                />
               ) : deletingId === group.id ? (
                 <>
                   <ConfirmText>Delete &ldquo;{group.name}&rdquo;? Posts in it will become ungrouped.</ConfirmText>
@@ -179,18 +131,20 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
                 </>
               ) : (
                 <>
-                  <GroupName>{group.name}</GroupName>
+                  <GroupText>
+                    <GroupName>{group.name}</GroupName>
+                    {group.description && <GroupDescription>{group.description}</GroupDescription>}
+                  </GroupText>
                   <GroupActions>
                     <IconButton
                       size="small"
                       variant="text"
                       color="secondary"
-                      aria-label="Rename group"
+                      aria-label="Edit group"
                       disabled={busy}
                       onClick={() => {
                         setDeletingId(null);
                         setEditingId(group.id ?? null);
-                        setEditName(group.name || '');
                       }}
                     >
                       <EditOutlinedIcon fontSize="small" />
