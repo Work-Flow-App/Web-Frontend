@@ -343,8 +343,15 @@ export const Layout: React.FC = () => {
     },
     { id: 'line-items', label: 'Line Items', icon: <ListAltIcon />, href: '/company/line-items' },
     { id: 'clients', label: 'Clients', icon: <BusinessIcon />, href: '/company/clients' },
-    { id: 'assets', label: 'Assets', icon: <BuildIcon />, href: '/company/assets' },
-    { id: 'asset-groups', label: 'Asset Groups', icon: <CategoryIcon />, href: '/company/assets/groups' },
+    {
+      id: 'assets',
+      label: 'Assets',
+      icon: <BuildIcon />,
+      children: [
+        { id: 'assets-list', label: 'All Assets', icon: <BuildIcon />, href: '/company/assets' },
+        { id: 'asset-groups', label: 'Asset Groups', icon: <CategoryIcon />, href: '/company/assets/groups' },
+      ],
+    },
     { id: 'maps', label: 'Maps', icon: <Place />, href: '/company/assets/maps' },
     { id: 'forms', label: 'Forms', icon: <DescriptionOutlinedIcon />, href: '/company/forms' },
     { id: 'customers', label: 'Customers', icon: <PersonIcon />, href: '/company/customers' },
