@@ -359,7 +359,7 @@ export const CompanyProfile: React.FC = () => {
 
         {activeTab === TABS.indexOf('posts') && (
           <TabContent>
-            <PostsTab companyName={profile?.name} />
+            <PostsTab companyId={profile?.id} companyName={profile?.name} />
           </TabContent>
         )}
 

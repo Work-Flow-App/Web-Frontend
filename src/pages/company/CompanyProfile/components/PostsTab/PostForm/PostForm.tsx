@@ -8,11 +8,12 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { Button } from '../../../../../../components/UI/Button';
 import { IconButton } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
 import { companyService } from '../../../../../../services/api';
-import type { CompanyPostResponse } from '../../../../../../services/api';
+import type { CompanyPostGroupResponse, CompanyPostResponse } from '../../../../../../services/api';
 import { useSnackbar } from '../../../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../../../hooks/useFormSubmit';
 import { useSchema } from '../../../../../../utils/validation';
@@ -26,6 +27,7 @@ import {
   ComposerIdentityRow,
   ComposerAvatar,
   ComposerName,
+  PillRow,
   AudiencePill,
   AudienceOptionItem,
   AudienceOptionTitle,
@@ -39,11 +41,21 @@ import {
 interface PostFormProps {
   post?: CompanyPostResponse;
   companyName?: string;
+  groups?: CompanyPostGroupResponse[];
+  /** Pre-selected group for new posts, e.g. the group the feed is currently filtered by. */
+  defaultGroupId?: number;
   onSuccess: () => void;
   onCancel?: () => void;
 }
 
-export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess, onCancel }) => {
+export const PostForm: React.FC<PostFormProps> = ({
+  post,
+  companyName,
+  groups = [],
+  defaultGroupId,
+  onSuccess,
+  onCancel,
+}) => {
   const isEditMode = Boolean(post);
   const { fieldRules, defaultValues } = useSchema(PostFormSchema, post);
 
@@ -61,6 +73,9 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
     field: { value: isPublic, onChange: setIsPublic },
   } = useController({ control, name: 'isPublic', defaultValue: false });
   const [audienceAnchor, setAudienceAnchor] = useState<HTMLElement | null>(null);
+  const [groupAnchor, setGroupAnchor] = useState<HTMLElement | null>(null);
+  const [groupId, setGroupId] = useState<number | undefined>(post ? post.groupId : defaultGroupId);
+  const selectedGroup = groups.find((g) => g.id === groupId);
   const { showSuccess, showError } = useSnackbar();
   const { saving, withSaving } = useFormSubmit();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
@@ -117,6 +132,8 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
             {
               content: data.content,
               isPublic: data.isPublic,
+              groupId,
+              removeGroup: post.groupId !== undefined && groupId === undefined ? true : undefined,
               attachmentIdsToDelete: attachmentIdsToDelete.length ? attachmentIdsToDelete : undefined,
             },
             newFiles.length ? newFiles : undefined
@@ -124,7 +141,7 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
           showSuccess('Post updated successfully.');
         } else {
           await companyService.createPost(
-            { content: data.content, isPublic: data.isPublic },
+            { content: data.content, isPublic: data.isPublic, groupId },
             newFiles.length ? newFiles : undefined
           );
           showSuccess('Post published successfully.');
@@ -145,11 +162,48 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
           <ComposerAvatar>{getInitials(companyName)}</ComposerAvatar>
           <div>
             <ComposerName>{companyName || 'Company'}</ComposerName>
-            <AudiencePill type="button" onClick={(e) => setAudienceAnchor(e.currentTarget)}>
-              {isPublic ? <PublicOutlinedIcon fontSize="small" /> : <LockOutlinedIcon fontSize="small" />}
-              {isPublic ? 'Anyone' : 'Private'}
-              <ExpandMoreIcon fontSize="small" />
-            </AudiencePill>
+            <PillRow>
+              <AudiencePill type="button" onClick={(e) => setAudienceAnchor(e.currentTarget)}>
+                {isPublic ? <PublicOutlinedIcon fontSize="small" /> : <LockOutlinedIcon fontSize="small" />}
+                {isPublic ? 'Anyone' : 'Private'}
+                <ExpandMoreIcon fontSize="small" />
+              </AudiencePill>
+              {groups.length > 0 && (
+                <AudiencePill type="button" onClick={(e) => setGroupAnchor(e.currentTarget)}>
+                  <FolderOutlinedIcon fontSize="small" />
+                  {selectedGroup?.name || post?.groupName || 'No group'}
+                  <ExpandMoreIcon fontSize="small" />
+                </AudiencePill>
+              )}
+            </PillRow>
+            <Menu
+              anchorEl={groupAnchor}
+              open={Boolean(groupAnchor)}
+              onClose={() => setGroupAnchor(null)}
+              sx={{ zIndex: 9000 }}
+            >
+              <MenuItem
+                selected={groupId === undefined}
+                onClick={() => {
+                  setGroupId(undefined);
+                  setGroupAnchor(null);
+                }}
+              >
+                No group
+              </MenuItem>
+              {groups.map((group) => (
+                <MenuItem
+                  key={group.id}
+                  selected={groupId === group.id}
+                  onClick={() => {
+                    setGroupId(group.id);
+                    setGroupAnchor(null);
+                  }}
+                >
+                  {group.name}
+                </MenuItem>
+              ))}
+            </Menu>
             <Menu
               anchorEl={audienceAnchor}
               open={Boolean(audienceAnchor)}

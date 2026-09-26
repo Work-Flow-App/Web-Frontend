@@ -39,6 +39,8 @@ export type {
   CompanyPostCreateRequest,
   CompanyPostUpdateRequest,
   CompanyPostAttachmentResponse,
+  CompanyPostGroupRequest,
+  CompanyPostGroupResponse,
   CompanyDocumentUploadPayload,
   CompanyDocumentUpdatePayload,
   PublicCompanyProfileResponse,

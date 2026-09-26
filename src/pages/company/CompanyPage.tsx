@@ -506,7 +506,7 @@ export const CompanyPage: React.FC = () => {
   const getAnnouncementsData = (): Announcement[] => {
     return announcements.slice(0, 2).map((post) => ({
       id: post.id || 0,
-      title: post.isPublic ? 'Public System Post' : 'Internal Announcement',
+      title: post.groupName || (post.isPublic ? 'Public System Post' : 'Internal Announcement'),
       content: post.content || '',
       date: post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date',
       author: post.authorName || 'Admin',

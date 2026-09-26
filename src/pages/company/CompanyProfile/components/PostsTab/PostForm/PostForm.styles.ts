@@ -113,3 +113,10 @@ export const AttachmentItem = styled(Box)(({ theme }) => ({
   fontSize: rem(13),
   color: theme.palette.colors?.grey_700 || theme.palette.text.primary,
 }));
+
+export const PillRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  flexWrap: 'wrap',
+}));

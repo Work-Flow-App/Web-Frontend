@@ -3,6 +3,7 @@ import { Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { PostAttachments } from '../../../../../components/UI/PostAttachments';
 import { formatRelativeTime } from '../../../../../utils/formatRelativeTime';
 import { getInitials } from '../../../../../utils/getInitials';
@@ -45,6 +46,13 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
               <MetaDot />
               {post.isPublic ? <PublicOutlinedIcon /> : <LockOutlinedIcon />}
               <span>{post.isPublic ? 'Public' : 'Private'}</span>
+              {post.groupName && (
+                <>
+                  <MetaDot />
+                  <FolderOutlinedIcon />
+                  <span>{post.groupName}</span>
+                </>
+              )}
             </AuthorMeta>
           </AuthorBlock>
         </HeaderLeft>

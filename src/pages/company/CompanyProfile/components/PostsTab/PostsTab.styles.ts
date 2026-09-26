@@ -91,3 +91,51 @@ export const LoadingContainer = styled(Box)(() => ({
   alignItems: 'center',
   minHeight: rem(160),
 }));
+
+export const GroupFilterRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  flexWrap: 'wrap',
+  marginBottom: rem(20),
+}));
+
+export const GroupFilterChip = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>(({ theme, active }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: `${rem(6)} ${rem(14)}`,
+  borderRadius: rem(16),
+  border: `1px solid ${active ? theme.palette.primary.main : theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
+  backgroundColor: active ? theme.palette.primary.main : theme.palette.colors?.white || theme.palette.background.paper,
+  color: active ? theme.palette.primary.contrastText : theme.palette.colors?.grey_700 || theme.palette.text.primary,
+  fontSize: rem(13),
+  fontWeight: 600,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+  },
+}));
+
+export const ManageGroupsButton = styled('button')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: rem(4),
+  marginLeft: 'auto',
+  padding: `${rem(6)} ${rem(8)}`,
+  border: 'none',
+  background: 'none',
+  color: theme.palette.primary.main,
+  fontSize: rem(13),
+  fontWeight: 600,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  '& svg': {
+    fontSize: rem(16),
+  },
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+}));
