@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { env } from '../../config/env';
 import { apiClient } from './client';
+import { queryClient } from '../queryClient';
 import { classifySubscriptionError, isOnSubscriptionPage, isPaymentRequiredError } from '../../utils/subscriptionErrors';
 
 /**
@@ -47,7 +48,22 @@ axiosInstance.interceptors.request.use(
  * Response interceptor - Handle 401 and 403 errors
  */
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Any successful write may change data cached by TanStack Query — mark it
+    // all stale so mounted queries refetch and others refetch on next mount.
+    const method = response.config.method?.toLowerCase();
+    const url = response.config.url ?? '';
+    const isWrite = !!method && method !== 'get' && method !== 'head' && method !== 'options';
+    // Marking notifications read can't change any cached page data
+    const affectsCachedData = !url.includes('/api/v1/notifications');
+    if (isWrite && affectsCachedData) {
+      if (import.meta.env.DEV) {
+        console.debug(`[query cache] invalidated by ${method!.toUpperCase()} ${url}`);
+      }
+      void queryClient.invalidateQueries();
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
