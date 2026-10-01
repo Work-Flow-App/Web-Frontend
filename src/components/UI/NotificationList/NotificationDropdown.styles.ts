@@ -7,9 +7,10 @@ export const DropdownContainer = styled(Box)(() => ({
 
 type DropdownPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 
-export const DropdownContent = styled(Box)<{ open?: boolean; position?: DropdownPosition }>(
-  ({ open, position = 'bottom-right' }) => {
-    const dropdownPosition = position as DropdownPosition;
+export const DropdownContent = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'dropdownPosition',
+})<{ open?: boolean; dropdownPosition?: DropdownPosition }>(
+  ({ open, dropdownPosition = 'bottom-right' }) => {
     const positions: Record<DropdownPosition, { top?: string; bottom?: string; left?: number; right?: number }> = {
       'bottom-right': {
         top: 'calc(100% + 8px)',

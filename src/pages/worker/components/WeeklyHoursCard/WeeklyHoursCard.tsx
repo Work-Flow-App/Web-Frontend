@@ -8,6 +8,7 @@ import { CircularProgress } from '@mui/material';
 import { Badge } from '../../../../components/UI/Badge';
 import type { WorkerWeeklyHoursResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
+import { useCurrency } from '../../../../contexts/CurrencyContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import {
   Card,
@@ -15,6 +16,9 @@ import {
   LabelRow,
   Label,
   HoursValue,
+  BreakdownRow,
+  BreakdownDot,
+  PayValue,
   WeekRangeRow,
   WeekRangeLabel,
   NavButton,
@@ -39,6 +43,7 @@ const formatRange = (weekStart: string, weekEnd: string) => {
  */
 export const WeeklyHoursCard: React.FC<WeeklyHoursCardProps> = ({ fetchHours }) => {
   const { showError } = useSnackbar();
+  const { formatCurrency } = useCurrency();
   const [referenceDate, setReferenceDate] = useState<Dayjs>(() => dayjs());
   const [data, setData] = useState<WorkerWeeklyHoursResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +91,19 @@ export const WeeklyHoursCard: React.FC<WeeklyHoursCardProps> = ({ fetchHours }) 
               {totalHours.toFixed(1)}
               <span>hrs</span>
             </HoursValue>
+            {data?.overtimeHours != null && data.overtimeHours > 0 && (
+              <BreakdownRow>
+                <span>{(data.regularHours ?? 0).toFixed(1)}h regular</span>
+                <BreakdownDot>&bull;</BreakdownDot>
+                <span>{data.overtimeHours.toFixed(1)}h overtime</span>
+                {data.totalPay != null && (
+                  <>
+                    <BreakdownDot>&bull;</BreakdownDot>
+                    <PayValue>{formatCurrency(data.totalPay)}</PayValue>
+                  </>
+                )}
+              </BreakdownRow>
+            )}
             {data && (
               <WeekRangeRow>
                 <NavButton

@@ -1,0 +1,1 @@
+export { AssetGroupsPage } from './AssetGroupsPage';

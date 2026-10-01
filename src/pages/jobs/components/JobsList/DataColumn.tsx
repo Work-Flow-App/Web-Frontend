@@ -32,6 +32,7 @@ export interface JobTableRow {
   customerName?: string;
   clientId?: number;
   clientName?: string;
+  currentStep?: string;
   status?: string;
   createdAt: string;
   fieldValues?: { [key: string]: unknown };
@@ -97,6 +98,14 @@ export const generateJobColumns = (templateFields: JobTemplateFieldResponse[] = 
       sortable: true,
       width: '10rem',
       render: (row) => row.clientName || '-',
+    },
+    {
+      id: 'currentStep',
+      label: 'Current Step',
+      accessor: 'currentStep',
+      sortable: true,
+      width: '10rem',
+      render: (row) => row.currentStep || '-',
     },
     {
       id: 'jobValue',

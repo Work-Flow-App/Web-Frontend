@@ -11,6 +11,7 @@ import {
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
+import { extractDropdownValue } from '../../../../utils/dropdownValue';
 import * as S from './CertificateForm.styles';
 
 const MAX_FILE_SIZE_MB = 15;
@@ -23,9 +24,6 @@ export interface CertificateFormProps {
   certificate?: CertificateResponse;
   onSuccess?: () => void;
 }
-
-const extractDropdownValue = (value: CertificateFormData['type']): CertificateType =>
-  (typeof value === 'object' ? value.value : value) as CertificateType;
 
 export const CertificateForm: React.FC<CertificateFormProps> = ({
   isModal = false,
@@ -69,7 +67,7 @@ export const CertificateForm: React.FC<CertificateFormProps> = ({
   const handleSubmit = useCallback(
     async (data: CertificateFormData) => {
       try {
-        const type = extractDropdownValue(data.type);
+        const type = extractDropdownValue<CertificateType>(data.type) as CertificateType;
 
         if (isEdit && certificate) {
           await certificateService.updateMyCertificate(certificate.id, {
@@ -85,10 +83,15 @@ export const CertificateForm: React.FC<CertificateFormProps> = ({
             showError('Please choose a file to upload');
             throw new Error('A file is required');
           }
+          if (type === CertificateType.Other && !data.customTypeLabel) {
+            showError('Enter a label for the custom certificate type');
+            throw new Error('A custom type label is required');
+          }
           const payload = {
             file,
             type,
             name: data.name,
+            customTypeLabel: type === CertificateType.Other ? data.customTypeLabel : undefined,
             issuingAuthority: data.issuingAuthority || undefined,
             issueDate: data.issueDate || undefined,
             expiryDate: data.expiryDate || undefined,
@@ -119,6 +122,7 @@ export const CertificateForm: React.FC<CertificateFormProps> = ({
         certificate
           ? {
               type: certificate.type,
+              customTypeLabel: certificate.customTypeLabel || '',
               name: certificate.name,
               issuingAuthority: certificate.issuingAuthority || '',
               issueDate: certificate.issueDate || '',

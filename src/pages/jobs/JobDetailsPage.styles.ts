@@ -559,6 +559,10 @@ export const WorkflowSidebarHeader = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   padding: theme.spacing(2),
   borderBottom: `1px solid ${theme.palette.colors.grey_200}`,
+  '@media (max-width: 600px)': {
+    padding: theme.spacing(1.25, 1.5),
+    gap: theme.spacing(1),
+  },
 }));
 
 export const WorkflowSidebarTitle = styled('h3')(({ theme }) => ({
@@ -569,6 +573,12 @@ export const WorkflowSidebarTitle = styled('h3')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
+  minWidth: 0,
+  overflow: 'hidden',
+  '@media (max-width: 600px)': {
+    fontSize: rem(12),
+    gap: theme.spacing(0.5),
+  },
 }));
 
 export const WorkflowStepsList = styled(Box)(() => ({

@@ -1,24 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useController, FormProvider } from 'react-hook-form';
-import type { FieldError } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Menu, MenuItem } from '@mui/material';
+import { MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { Button } from '../../../../../../components/UI/Button';
 import { IconButton } from '../../../../../../components/UI/Button';
 import { useGlobalModalInnerContext } from '../../../../../../components/UI/GlobalModal';
+import { RichTextEditor } from '../../../../../../components/UI/Forms/RichTextEditor/RichTextEditor';
 import { companyService } from '../../../../../../services/api';
-import type { CompanyPostResponse } from '../../../../../../services/api';
+import type { CompanyPostGroupResponse, CompanyPostResponse } from '../../../../../../services/api';
 import { useSnackbar } from '../../../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../../../hooks/useFormSubmit';
 import { useSchema } from '../../../../../../utils/validation';
 import { extractErrorMessage } from '../../../../../../utils/errorHandler';
 import { getInitials } from '../../../../../../utils/getInitials';
-import { SchemaField } from '../../SchemaField';
 import { PostFormSchema } from './PostFormSchema';
 import type { PostFormValues } from './IPostForm';
 import {
@@ -26,6 +27,7 @@ import {
   ComposerIdentityRow,
   ComposerAvatar,
   ComposerName,
+  PillRow,
   AudiencePill,
   AudienceOptionItem,
   AudienceOptionTitle,
@@ -34,33 +36,59 @@ import {
   AttachmentSectionLabel,
   AttachmentList,
   AttachmentItem,
+  StyledMenu,
+  HiddenFileInput,
 } from './PostForm.styles';
 
 interface PostFormProps {
   post?: CompanyPostResponse;
   companyName?: string;
+  groups?: CompanyPostGroupResponse[];
+  /** Pre-selected group for new posts, e.g. the group the feed is currently filtered by. */
+  defaultGroupId?: number;
   onSuccess: () => void;
   onCancel?: () => void;
 }
 
-export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess, onCancel }) => {
+export const PostForm: React.FC<PostFormProps> = ({
+  post,
+  companyName,
+  groups = [],
+  defaultGroupId,
+  onSuccess,
+  onCancel,
+}) => {
   const isEditMode = Boolean(post);
-  const { fieldRules, defaultValues } = useSchema(PostFormSchema, post);
+  // New posts start in the group the feed is filtered by; edits hydrate from the post itself.
+  // Strip the sentinel used for attachment-only posts so the editor starts empty on edit.
+  const schemaSource = useMemo(() => {
+    const base = post ?? (defaultGroupId !== undefined ? { groupId: defaultGroupId } : undefined);
+    if (base && 'content' in base && (base as { content?: string }).content === 'NULLLLLLLL') {
+      return { ...base, content: '' };
+    }
+    return base;
+  }, [post, defaultGroupId]);
+  const { fieldRules, defaultValues } = useSchema(PostFormSchema, schemaSource);
 
   const methods = useForm<PostFormValues>({
-    resolver: yupResolver(fieldRules),
+    // useSchema's rules are typed for any object; narrow the resolver to this form's values.
+    resolver: yupResolver(fieldRules) as unknown as Resolver<PostFormValues>,
     defaultValues,
   });
 
   const {
     control,
     handleSubmit,
-    formState: { errors },
   } = methods;
   const {
     field: { value: isPublic, onChange: setIsPublic },
   } = useController({ control, name: 'isPublic', defaultValue: false });
   const [audienceAnchor, setAudienceAnchor] = useState<HTMLElement | null>(null);
+  const {
+    field: { value: groupId, onChange: setGroupId },
+  } = useController({ control, name: 'groupId' });
+  const [groupAnchor, setGroupAnchor] = useState<HTMLElement | null>(null);
+  const selectedGroup = groups.find((g) => g.id === groupId);
   const { showSuccess, showError } = useSnackbar();
   const { saving, withSaving } = useFormSubmit();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
@@ -109,14 +137,31 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
   };
 
   const onSubmit = async (data: PostFormValues) => {
+    // Check if rich text editor has non-empty text (stripping basic HTML tags if present)
+    const strippedContent = (data.content || '').replace(/<[^>]*>/g, '').trim();
+    const hasContent = strippedContent.length > 0;
+    const hasAttachments = newFiles.length > 0 || existingAttachments.length > 0;
+
+    if (!hasContent && !hasAttachments) {
+      showError('Please add text content or an attachment to your post.');
+      return;
+    }
+
+    // Use a sentinel value for attachment-only posts so the backend non-empty validation passes.
+    // The frontend strips this sentinel when displaying posts (see PostCard.tsx).
+    const EMPTY_CONTENT_SENTINEL = 'NULLLLLLLL';
+    const contentToSend = hasContent ? data.content : EMPTY_CONTENT_SENTINEL;
+
     await withSaving(async () => {
       try {
         if (isEditMode && post?.id) {
           await companyService.updatePost(
             post.id,
             {
-              content: data.content,
+              content: contentToSend,
               isPublic: data.isPublic,
+              groupId: data.groupId ?? undefined,
+              removeGroup: post.groupId != null && data.groupId == null ? true : undefined,
               attachmentIdsToDelete: attachmentIdsToDelete.length ? attachmentIdsToDelete : undefined,
             },
             newFiles.length ? newFiles : undefined
@@ -124,7 +169,7 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
           showSuccess('Post updated successfully.');
         } else {
           await companyService.createPost(
-            { content: data.content, isPublic: data.isPublic },
+            { content: contentToSend, isPublic: data.isPublic, groupId: data.groupId ?? undefined },
             newFiles.length ? newFiles : undefined
           );
           showSuccess('Post published successfully.');
@@ -145,16 +190,51 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
           <ComposerAvatar>{getInitials(companyName)}</ComposerAvatar>
           <div>
             <ComposerName>{companyName || 'Company'}</ComposerName>
-            <AudiencePill type="button" onClick={(e) => setAudienceAnchor(e.currentTarget)}>
-              {isPublic ? <PublicOutlinedIcon fontSize="small" /> : <LockOutlinedIcon fontSize="small" />}
-              {isPublic ? 'Anyone' : 'Private'}
-              <ExpandMoreIcon fontSize="small" />
-            </AudiencePill>
-            <Menu
+            <PillRow>
+              <AudiencePill type="button" onClick={(e) => setAudienceAnchor(e.currentTarget)}>
+                {isPublic ? <PublicOutlinedIcon fontSize="small" /> : <LockOutlinedIcon fontSize="small" />}
+                {isPublic ? 'Anyone' : 'Private'}
+                <ExpandMoreIcon fontSize="small" />
+              </AudiencePill>
+              {groups.length > 0 && (
+                <AudiencePill type="button" onClick={(e) => setGroupAnchor(e.currentTarget)}>
+                  <FolderOutlinedIcon fontSize="small" />
+                  {selectedGroup?.name || post?.groupName || 'No group'}
+                  <ExpandMoreIcon fontSize="small" />
+                </AudiencePill>
+              )}
+            </PillRow>
+            <StyledMenu
+              anchorEl={groupAnchor}
+              open={Boolean(groupAnchor)}
+              onClose={() => setGroupAnchor(null)}
+            >
+              <MenuItem
+                selected={groupId == null}
+                onClick={() => {
+                  setGroupId(null);
+                  setGroupAnchor(null);
+                }}
+              >
+                No group
+              </MenuItem>
+              {groups.map((group) => (
+                <MenuItem
+                  key={group.id}
+                  selected={groupId === group.id}
+                  onClick={() => {
+                    setGroupId(group.id);
+                    setGroupAnchor(null);
+                  }}
+                >
+                  {group.name}
+                </MenuItem>
+              ))}
+            </StyledMenu>
+            <StyledMenu
               anchorEl={audienceAnchor}
               open={Boolean(audienceAnchor)}
               onClose={() => setAudienceAnchor(null)}
-              sx={{ zIndex: 9000 }}
             >
               <MenuItem
                 selected={Boolean(isPublic)}
@@ -190,20 +270,15 @@ export const PostForm: React.FC<PostFormProps> = ({ post, companyName, onSuccess
                   </div>
                 </AudienceOptionItem>
               </MenuItem>
-            </Menu>
+            </StyledMenu>
           </div>
         </ComposerIdentityRow>
 
-        <SchemaField
-          name="content"
-          field={PostFormSchema.content}
-          error={errors.content as FieldError | undefined}
-          disablePortal
-        />
+        <RichTextEditor name="content" label="Content" placeholder="Share an update with your team..." />
 
         <AttachmentSection>
           <AttachmentSectionLabel>Attachments</AttachmentSectionLabel>
-          <input type="file" ref={fileInputRef} multiple onChange={handleFilesChange} style={{ display: 'none' }} />
+          <HiddenFileInput type="file" ref={fileInputRef} multiple onChange={handleFilesChange} />
 
           {(existingAttachments.length > 0 || newFiles.length > 0) && (
             <AttachmentList>

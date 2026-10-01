@@ -1,13 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AssetFormSchema } from '../../schema/AssetFormSchema';
 import { useSchema } from '../../../../utils/validation';
 import { Input } from '../../../../components/UI/Forms/Input';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
 import { FormRow, FormField } from '../../../../components/UI/FormComponents';
 import LocationMapField from '../../../jobs/components/JobFormFields/LocationMapField';
+import { assetGroupService } from '../../../../services/api';
+import type { AssetGroupResponse } from '../../../../services/api';
 
 export const AssetFormFields: React.FC = () => {
   const { placeHolders, fieldLabels, fieldTitles, isRequireds } = useSchema(AssetFormSchema);
+  const [groups, setGroups] = useState<AssetGroupResponse[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        setLoadingGroups(true);
+        const response = await assetGroupService.getAllAssetGroups();
+        setGroups(response.data.content || []);
+      } catch (error) {
+        console.error('Error fetching asset groups:', error);
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  const groupOptions = groups.map((group) => ({
+    label: group.name || '',
+    value: group.id || 0,
+  }));
 
   return (
     <>
@@ -44,6 +70,17 @@ export const AssetFormFields: React.FC = () => {
           />
         </FormField>
       </FormRow>
+
+      <FormField label={fieldLabels.groupId} required={isRequireds.groupId}>
+        <Dropdown
+          name={fieldTitles.groupId}
+          placeHolder={placeHolders.groupId}
+          preFetchedOptions={groupOptions}
+          isPreFetchLoading={loadingGroups}
+          fullWidth
+          disablePortal
+        />
+      </FormField>
 
       <FormRow>
         <FormField label={fieldLabels.purchasePrice} required={isRequireds.purchasePrice}>

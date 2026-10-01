@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { queryClient } from '../queryClient';
 import type { ApiResponse } from './client';
 import { getAffiliateTid } from '../../utils/tracking';
 import type {
@@ -49,6 +50,8 @@ export const authService = {
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
       apiClient.setRefreshToken(response.data.refreshToken);
+      // A new session must never see data cached for the previous user
+      queryClient.clear();
     }
 
     return response;
@@ -73,6 +76,8 @@ export const authService = {
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
       apiClient.setRefreshToken(response.data.refreshToken);
+      // A new session must never see data cached for the previous user
+      queryClient.clear();
     }
 
     return response;
@@ -87,6 +92,8 @@ export const authService = {
     if (response.data.accessToken) {
       apiClient.setAuthToken(response.data.accessToken);
       apiClient.setRefreshToken(response.data.refreshToken);
+      // A new session must never see data cached for the previous user
+      queryClient.clear();
     }
 
     return response;
@@ -125,6 +132,7 @@ export const authService = {
       // Clear tokens from memory even if request fails
       apiClient.clearAuthToken();
       apiClient.clearRefreshToken();
+      queryClient.clear();
     }
   },
 
@@ -139,6 +147,7 @@ export const authService = {
       // Clear tokens from memory even if request fails
       apiClient.clearAuthToken();
       apiClient.clearRefreshToken();
+      queryClient.clear();
     }
   },
 

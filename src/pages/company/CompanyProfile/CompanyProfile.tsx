@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import type { FieldError } from 'react-hook-form';
+import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CircularProgress } from '@mui/material';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
@@ -87,7 +88,8 @@ export const CompanyProfile: React.FC = () => {
   const { fieldRules, defaultValues } = useSchema(CompanyProfileFormSchema);
 
   const methods = useForm<CompanyProfileFormData>({
-    resolver: yupResolver(fieldRules),
+    // useSchema's rules are typed for any object; narrow the resolver to this form's values.
+    resolver: yupResolver(fieldRules) as unknown as Resolver<CompanyProfileFormData>,
     defaultValues,
   });
 
@@ -97,7 +99,20 @@ export const CompanyProfile: React.FC = () => {
     formState: { errors },
   } = methods;
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
+  const activeTab = (() => {
+    if (tabParam) {
+      const idx = (TABS as readonly string[]).indexOf(tabParam);
+      if (idx !== -1) return idx;
+    }
+    return 0;
+  })();
+
+  const handleTabChange = (_: SyntheticEvent, val: number) => {
+    setSearchParams({ tab: TABS[val] }, { replace: true });
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -328,7 +343,7 @@ export const CompanyProfile: React.FC = () => {
           </HeaderRow>
 
           <TabsWrapper>
-            <StyledTabs value={activeTab} onChange={(_: SyntheticEvent, val: number) => setActiveTab(val)}>
+            <StyledTabs value={activeTab} onChange={handleTabChange}>
               <StyledTab label="Overview" />
               <StyledTab label="Documents" />
               <StyledTab label="Posts" />
@@ -345,7 +360,7 @@ export const CompanyProfile: React.FC = () => {
 
         {activeTab === TABS.indexOf('posts') && (
           <TabContent>
-            <PostsTab companyName={profile?.name} />
+            <PostsTab companyId={profile?.id} companyName={profile?.name} />
           </TabContent>
         )}
 

@@ -7,8 +7,15 @@ import { extractFieldValue } from './fieldValueHelper';
 // keep working — the implementation itself lives in the single shared
 // geocoding module (Google only; the previous Nominatim-based version here
 // was a second, less accurate, unrelated geocoding backend).
+// Successful lookups are cached for the session so the same address is never
+// sent to Google twice; misses aren't cached since Maps may not have loaded yet.
+const geocodeCache = new Map<string, { lat: number; lng: number }>();
+
 export async function geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
+  const cached = geocodeCache.get(address);
+  if (cached) return cached;
   const result = await googleGeocodeAddress(address);
+  if (result?.location) geocodeCache.set(address, result.location);
   return result?.location ?? null;
 }
 

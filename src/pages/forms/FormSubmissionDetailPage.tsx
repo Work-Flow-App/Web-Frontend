@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import { PageWrapper } from '../../components/UI/PageWrapper';
 import { Loader } from '../../components/UI';
 import { Button } from '../../components/UI/Button';
@@ -19,7 +20,7 @@ import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../..
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 import { useFormSubmit } from '../../hooks';
-import { formService, workerService, FormFieldDtoRoleTargetEnum } from '../../services/api';
+import { formService, workerService, jobService, FormFieldDtoRoleTargetEnum } from '../../services/api';
 import type { FormSubmissionResponse, WorkerResponse } from '../../services/api';
 import { buildFieldDefaultValues, buildFieldValueDtos, getMissingRequiredFieldLabels } from './utils/formFieldRender';
 import { FormFieldRow } from './components/FormFieldRow';
@@ -32,6 +33,25 @@ export const FormSubmissionDetailPage: React.FC = () => {
   const { submissionId } = useParams<{ submissionId: string }>();
   const navigate = useNavigate();
   const { showSuccess, showError } = useSnackbar();
+
+  // Submissions only carry the job's reference number ("Job #"), but the job page is
+  // routed by id, so look the id up before navigating.
+  const openLinkedJob = useCallback(
+    async (jobRef: number) => {
+      try {
+        const { data: jobs } = await jobService.getAllJobs();
+        const job = jobs.find((j) => j.jobRef === jobRef);
+        if (job?.id != null) {
+          navigate(`/company/jobs/${job.id}/details`);
+        } else {
+          showError(`Job #${jobRef} could not be found. It may have been archived or deleted.`);
+        }
+      } catch (error) {
+        showError(extractErrorMessage(error, 'Failed to open the linked job'));
+      }
+    },
+    [navigate, showError]
+  );
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
   const { saving, withSaving } = useFormSubmit();
 
@@ -234,6 +254,20 @@ export const FormSubmissionDetailPage: React.FC = () => {
                   <span className={submission.workerName ? 'value' : 'value muted'}>{submission.workerName || 'Unassigned'}</span>
                 </S.MetaText>
               </S.MetaItem>
+              {submission.jobRef != null && (
+                <S.MetaItem
+                  onClick={() => openLinkedJob(submission.jobRef!)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <S.MetaIconBadge tint={floowColors.chart.tertiary}>
+                    <WorkOutlineIcon />
+                  </S.MetaIconBadge>
+                  <S.MetaText>
+                    <span className="label">Job</span>
+                    <span className="value">Job #{submission.jobRef}</span>
+                  </S.MetaText>
+                </S.MetaItem>
+              )}
             </S.MetaRow>
 
             <S.SendToWorkerPanel>

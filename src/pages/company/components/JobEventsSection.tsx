@@ -1,25 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { CircularProgress, Box, LinearProgress, Typography, Menu, MenuItem } from '@mui/material';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import AddIcon from '@mui/icons-material/Add';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-//import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-// import PendingActionsIcon from '@mui/icons-material/PendingActions';
-// import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { useNavigate } from 'react-router-dom';
-//import { useCurrency } from '../../../contexts/CurrencyContext';
-import { Button } from '../../../components/UI/Button';
-import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
-import { AddJobWizard } from '../../jobs/components/AddJobWizard';
-import {
-  jobService,
-  jobWorkflowService,
-  workflowService,
-  jobTemplateService,
-  customerService,
-  estimateService,
-} from '../../../services/api';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { CircularProgress } from '@mui/material';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { rem } from '../../../components/UI/Typography/utility';
+import { queries } from '../../../services/queries';
 import type {
   JobResponse,
   JobWorkflowResponse,
@@ -119,114 +102,23 @@ function buildGroups(templateSteps: WorkflowStepResponse[], jobWorkflows: JobWor
   return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
 }
 
-// ─── Stat Boxes ───────────────────────────────────────────────────────────────
-
-const statCardSx = {
-  bgcolor: '#fff',
-  borderRadius: '12px',
-  border: '1px solid #e5e7eb',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-  p: '20px 24px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
-};
-
-function StatBoxesRow({
-  jobs,
-  // estimateSentTotal,
-  //awaitingInvoiceTotal,
-}: {
-  jobs: JobResponse[];
-  estimateSentTotal: number;
-  awaitingInvoiceTotal: number;
-}) {
-  //const { formatCurrency } = useCurrency();
+function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
-  //const awaitingCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '16px' }}>
-      {/* Box 1 — Estimate Sent */}
-      {/* <Box sx={statCardSx}>
-        <Typography
-          sx={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: floowColors.text.muted,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Estimate Sent
-        </Typography>
-        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {formatCurrency(estimateSentTotal)}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <TrendingUpIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-          <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>up-trend</Typography>
-        </Box>
-      </Box> */}
-
-      {/* Box 2 — Work In Progress */}
-      <Box sx={statCardSx}>
-        <Typography
-          sx={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: floowColors.text.muted,
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-          }}
-        >
-          Work In Progress (Total Job)
-        </Typography>
-        <Typography sx={{ fontSize: '34px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          {inProgress}
-        </Typography>
-        <LinearProgress
+    <S.StatBoxesContainer>
+      <S.StatCard>
+        <S.StatLabel>Work In Progress (Total Job)</S.StatLabel>
+        <S.StatValue>{inProgress}</S.StatValue>
+        <S.StatProgressBar
           variant="determinate"
           value={progressPct}
-          sx={{
-            borderRadius: '2px',
-            height: '4px',
-            bgcolor: floowColors.grey[100],
-            '& .MuiLinearProgress-bar': { bgcolor: floowColors.info.main },
-          }}
         />
-        <Typography sx={{ fontSize: '11px', color: floowColors.text.muted }}>{progressPct}% Complete</Typography>
-      </Box>
-
-      {/* Box 3 — Estimates Awaiting Approval */}
-      {/* <Box sx={statCardSx}>
-        <Typography sx={{ fontSize: '11px', fontWeight: 700, color: floowColors.text.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Estimates Awaiting Approval
-        </Typography>
-        <Typography sx={{ fontSize: '28px', fontWeight: 800, color: floowColors.text.heading, lineHeight: 1.1 }}>
-          £{formatAmount(awaitingInvoiceTotal)}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {awaitingCount > 0 ? (
-            <>
-              <ErrorOutlineIcon sx={{ fontSize: '14px', color: floowColors.error.main }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.error.main }}>
-                awaiting approval
-              </Typography>
-            </>
-          ) : (
-            <>
-              <PendingActionsIcon sx={{ fontSize: '14px', color: floowColors.success.main }} />
-              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: floowColors.success.main }}>
-                all approved
-              </Typography>
-            </>
-          )}
-        </Box>
-      </Box> */}
-    </Box>
+        <S.StatSubText>{progressPct}% Complete</S.StatSubText>
+      </S.StatCard>
+    </S.StatBoxesContainer>
   );
 }
 
@@ -241,9 +133,10 @@ function PipelineBar({
   activeStep: string | null;
   onSelectStep: (name: string) => void;
 }) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const isOpen = Boolean(anchorEl);
+  const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800); // Default fallback
 
   useEffect(() => {
@@ -257,40 +150,37 @@ function PipelineBar({
     return () => observer.disconnect();
   }, []);
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsOpen((prev) => !prev);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setIsOpen(false);
   };
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleScroll = (event: Event) => {
-      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
-      if (paper && paper.contains(event.target as Node)) {
-        return;
-      }
-      handleClose();
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       const target = event.target as Node;
-      const paper = document.querySelector('[role="menu"]')?.closest('.MuiPaper-root');
-      if (paper && !paper.contains(target) && anchorEl && !anchorEl.contains(target)) {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(target) &&
+        moreRef.current &&
+        !moreRef.current.contains(target)
+      ) {
         handleClose();
       }
     };
 
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('click', handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
+    document.addEventListener('touchstart', handleClickOutside, true);
     return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
     };
-  }, [isOpen, anchorEl]);
+  }, [isOpen]);
 
   // Dynamically calculate visible count based on containerWidth and estimated item widths:
   let maxVisible = 0;
@@ -348,35 +238,40 @@ function PipelineBar({
         </React.Fragment>
       ))}
       {hidden > 0 && (
-        <>
+        <S.PipelineMoreWrapper ref={moreRef}>
           <S.PipelineArrow>›</S.PipelineArrow>
-          <S.PipelineMore onClick={handleOpen}>···</S.PipelineMore>
-          <S.DropdownMenu
-            anchorEl={anchorEl}
-            open={isOpen}
-            onClose={handleClose}
-            disableScrollLock
-          >
-            {groups.slice(maxVisible).map((group) => (
-              <S.DropdownMenuItem
-                key={group.stepName}
-                onClick={() => {
-                  onSelectStep(group.stepName);
-                  handleClose();
-                }}
-                selected={activeStep === group.stepName}
-              >
-                <S.DropdownPipelineChip
-                  chipColor={group.color}
-                  isActive={activeStep === group.stepName}
-                >
-                  <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
-                  <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
-                </S.DropdownPipelineChip>
-              </S.DropdownMenuItem>
-            ))}
-          </S.DropdownMenu>
-        </>
+          <S.PipelineMore onClick={handleToggle}>···</S.PipelineMore>
+          {isOpen && (
+            <S.DropdownPopup ref={popupRef}>
+              <S.DropdownHeader>
+                <S.DropdownTitle>More Steps</S.DropdownTitle>
+                <S.DropdownCloseButton size="small" onClick={handleClose} aria-label="Close more steps">
+                  <S.DropdownCloseIcon />
+                </S.DropdownCloseButton>
+              </S.DropdownHeader>
+
+              <S.DropdownListWrapper>
+                {groups.slice(maxVisible).map((group) => (
+                  <S.DropdownMenuItem
+                    key={group.stepName}
+                    onClick={() => {
+                      onSelectStep(group.stepName);
+                      handleClose();
+                    }}
+                  >
+                    <S.DropdownPipelineChip
+                      chipColor={group.color}
+                      isActive={activeStep === group.stepName}
+                    >
+                      <S.PipelineChipCount>{group.count}</S.PipelineChipCount>
+                      <S.PipelineChipName>{group.stepName}</S.PipelineChipName>
+                    </S.DropdownPipelineChip>
+                  </S.DropdownMenuItem>
+                ))}
+              </S.DropdownListWrapper>
+            </S.DropdownPopup>
+          )}
+        </S.PipelineMoreWrapper>
       )}
     </S.PipelineBar>
   );
@@ -391,7 +286,7 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
     return (
       <S.EventsCard>
         <S.EmptyState>
-          <WorkOutlineIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+          <S.EmptyStateIcon />
           No active job events
         </S.EmptyState>
       </S.EventsCard>
@@ -425,7 +320,7 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
             </S.EventInfo>
 
             <S.EventArrow>
-              <ChevronRightIcon sx={{ color: floowColors.grey[300] }} />
+              <S.EventArrowIcon />
             </S.EventArrow>
           </S.EventRow>
         );
@@ -450,20 +345,20 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
       <S.SummaryTitle>Workfloow Pipeline</S.SummaryTitle>
 
       <S.SummaryStatRow>
-        <div>
+        <S.SummaryBubbleItem>
           <S.SummaryBubble bubbleColor={floowColors.info.main}>{totalJobs}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Total</S.SummaryBubbleLabel>
-        </div>
-        <div>
+          <S.SummaryBubbleLabel>Total</S.SummaryBubbleLabel>
+        </S.SummaryBubbleItem>
+        <S.SummaryBubbleItem>
           <S.SummaryBubble bubbleColor={floowColors.success.main}>{activeJobs}</S.SummaryBubble>
-          <S.SummaryBubbleLabel sx={{ textAlign: 'center', mt: '4px' }}>Active</S.SummaryBubbleLabel>
-        </div>
+          <S.SummaryBubbleLabel>Active</S.SummaryBubbleLabel>
+        </S.SummaryBubbleItem>
       </S.SummaryStatRow>
 
       {withJobs.length > 0 && (
         <>
           <S.SummaryDivider />
-          <div>
+          <S.SummarySection>
             <S.SummarySectionLabel>With Jobs</S.SummarySectionLabel>
             {withJobs.map((g) => (
               <S.SummaryRow key={g.stepName}>
@@ -471,14 +366,14 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
                 <S.SummaryRowCount countColor={g.color}>{g.count}</S.SummaryRowCount>
               </S.SummaryRow>
             ))}
-          </div>
+          </S.SummarySection>
         </>
       )}
 
       {noJobs.length > 0 && (
         <>
           <S.SummaryDivider />
-          <div>
+          <S.SummarySection>
             <S.SummarySectionLabel>Empty Steps</S.SummarySectionLabel>
             {noJobs.map((g) => (
               <S.SummaryRow key={g.stepName}>
@@ -486,7 +381,7 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
                 <S.SummaryRowCount countColor={floowColors.grey[400]}>0</S.SummaryRowCount>
               </S.SummaryRow>
             ))}
-          </div>
+          </S.SummarySection>
         </>
       )}
     </S.SummaryCard>
@@ -495,21 +390,16 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const NO_JOBS: JobResponse[] = [];
+const NO_WORKFLOWS: WorkflowResponse[] = [];
+const NO_CUSTOMERS: CustomerResponse[] = [];
+const NO_GROUPS: StepEventGroup[] = [];
+
 export const JobEventsSection: React.FC = () => {
-  const navigate = useNavigate();
-  const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
-  const [loading, setLoading] = useState(true);
-  const [groups, setGroups] = useState<StepEventGroup[]>([]);
-  const [jobsMap, setJobsMap] = useState<Map<number, JobResponse>>(new Map());
-  const [customersMap, setCustomersMap] = useState<Map<number, CustomerResponse>>(new Map());
-  const [templates, setTemplates] = useState<{ id?: number }[]>([]);
-  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
+  const queryClient = useQueryClient();
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
-  const [allJobs, setAllJobs] = useState<JobResponse[]>([]);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [estimateSentTotal, setEstimateSentTotal] = useState(0);
-  const [awaitingInvoiceTotal, setAwaitingInvoiceTotal] = useState(0);
   const [isPrimaryMode, setIsPrimaryMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [pendingPrimaryId, setPendingPrimaryId] = useState<number | null>(null);
@@ -518,175 +408,79 @@ export const JobEventsSection: React.FC = () => {
     return saved ? Number(saved) : null;
   });
 
+  // Shared with the dashboard page through `queries`, so these lists are requested once
+  const jobsQuery = useQuery(queries.jobs());
+  const workflowsQuery = useQuery(queries.workflows());
+  const customersQuery = useQuery(queries.customers());
+
+  const allJobs = jobsQuery.data ?? NO_JOBS;
+  const workflows = workflowsQuery.data ?? NO_WORKFLOWS;
+  const customers = customersQuery.data ?? NO_CUSTOMERS;
+
+  const jobsMap = useMemo(() => {
+    const map = new Map<number, JobResponse>();
+    allJobs.forEach((j) => {
+      if (j.id != null) map.set(j.id, j);
+    });
+    return map;
+  }, [allJobs]);
+
+  const customersMap = useMemo(() => {
+    const map = new Map<number, CustomerResponse>();
+    customers.forEach((c) => {
+      if (c.id != null) map.set(c.id, c);
+    });
+    return map;
+  }, [customers]);
+
+  // Use saved primary workflow as default, fallback to first workflow
+  const defaultWorkflowId =
+    primaryWorkflowId != null && workflows.some((w) => w.id === primaryWorkflowId)
+      ? primaryWorkflowId
+      : (workflows[0]?.id ?? null);
+  const activeWorkflowId = selectedWorkflowId ?? defaultWorkflowId;
+
+  // If no primary saved yet, auto-save first workflow as primary
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [jobsRes, workflowsRes, templatesRes, customersRes] = await Promise.all([
-          jobService.getAllJobs(),
-          workflowService.getAllWorkflows(),
-          jobTemplateService.getAllTemplates(),
-          customerService.getAllCustomers(),
-        ]);
-        setTemplates(Array.isArray(templatesRes.data) ? templatesRes.data : []);
+    if (primaryWorkflowId == null && workflows[0]?.id != null) {
+      localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(workflows[0].id));
+      setPrimaryWorkflowId(workflows[0].id);
+    }
+  }, [primaryWorkflowId, workflows]);
 
-        const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
-        const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
-        const customers: CustomerResponse[] = Array.isArray(customersRes.data) ? customersRes.data : [];
-
-        const map = new Map<number, JobResponse>();
-        jobs.forEach((j) => {
-          if (j.id != null) map.set(j.id, j);
-        });
-        setJobsMap(map);
-
-        const cMap = new Map<number, CustomerResponse>();
-        customers.forEach((c) => {
-          if (c.id != null) cMap.set(c.id, c);
-        });
-        setCustomersMap(cMap);
-
-        setAllJobs(jobs);
-        setWorkflows(wfs);
-
-        // Use saved primary workflow as default, fallback to first workflow
-        const savedPrimary = localStorage.getItem(PRIMARY_WORKFLOW_KEY);
-        const savedId = savedPrimary ? Number(savedPrimary) : null;
-        const validId = savedId && wfs.some((w) => w.id === savedId) ? savedId : (wfs[0]?.id ?? null);
-
-        // If no primary saved yet, auto-save first workflow as primary
-        if (!savedPrimary && wfs[0]?.id != null) {
-          localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(wfs[0].id));
-          setPrimaryWorkflowId(wfs[0].id);
-        }
-
-        setSelectedWorkflowId(validId);
-
-        // Fetch estimates for all jobs in parallel
-        const estimateResults = await Promise.allSettled(
-          jobs.filter((j) => j.id != null).map((j) => estimateService.getByJobId(j.id!))
-        );
-
-        let sentTotal = 0;
-        const awaitingJobIds = new Set(
-          jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').map((j) => j.id!)
-        );
-        const awaitingEstimateIds: number[] = [];
-
-        jobs
-          .filter((j) => j.id != null)
-          .forEach((j, i) => {
-            const result = estimateResults[i];
-            if (result.status === 'fulfilled') {
-              const estimate = result.value.data;
-              sentTotal += estimate.grandTotal ?? 0;
-              if (awaitingJobIds.has(j.id!) && estimate.id != null) {
-                awaitingEstimateIds.push(estimate.id);
-              }
-            }
-          });
-        setEstimateSentTotal(sentTotal);
-
-        // Fetch invoices for awaiting-approval estimates and sum their totals
-        const invoiceResults = await Promise.allSettled(
-          awaitingEstimateIds.map((eid) => estimateService.listInvoicesForEstimate(eid))
-        );
-        let invoiceTotal = 0;
-        invoiceResults.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            const invoices = Array.isArray(result.value.data) ? result.value.data : [];
-            invoices.forEach((inv) => {
-              invoiceTotal += inv.grandTotal ?? 0;
-            });
-          }
-        });
-        setAwaitingInvoiceTotal(invoiceTotal);
-      } catch (err) {
-        console.error('Failed to load job events:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
-  // Recompute groups whenever selected workflow changes
-  const recomputeGroups = useCallback(
-    async (workflowId: number | null) => {
-      if (workflowId == null) {
-        setGroups([]);
-        return;
-      }
+  // Step groups for the selected workflow; cached per workflow so switching back is instant
+  const groupsQuery = useQuery({
+    queryKey: ['dashboard', 'workflow-events', activeWorkflowId],
+    queryFn: async () => {
+      const workflowId = activeWorkflowId!;
+      const jobs = await queryClient.fetchQuery(queries.jobs());
 
       // Jobs that belong to this workflow
-      const filteredJobs = allJobs.filter((j) => j.workflowId === workflowId && j.id != null);
+      const filteredJobs = jobs.filter((j) => j.workflowId === workflowId && j.id != null);
 
       // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
       // returns stale or incomplete data; per-job fetch matches the Job Details page.
-      const jwResults = await Promise.allSettled(
-        filteredJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
-      );
+      const [jwResults, templateSteps] = await Promise.all([
+        Promise.allSettled(filteredJobs.map((j) => queryClient.fetchQuery(queries.jobWorkflow(j.id!)))),
+        // Template steps for this workflow
+        queryClient.fetchQuery(queries.workflowSteps(workflowId)).catch((): WorkflowStepResponse[] => []),
+      ]);
+
       const filteredJobWorkflows: JobWorkflowResponse[] = [];
       jwResults.forEach((r) => {
-        if (r.status === 'fulfilled' && r.value?.data) {
-          filteredJobWorkflows.push(r.value.data);
+        if (r.status === 'fulfilled' && r.value) {
+          filteredJobWorkflows.push(r.value);
         }
       });
 
-      // Template steps for this workflow
-      let templateSteps: WorkflowStepResponse[] = [];
-      try {
-        const stepsRes = await workflowService.getWorkflowSteps(workflowId);
-        templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
-      } catch {
-        /* ignore */
-      }
-
-      setGroups(buildGroups(templateSteps, filteredJobWorkflows));
+      return buildGroups(templateSteps, filteredJobWorkflows);
     },
-    [allJobs]
-  );
+    enabled: activeWorkflowId != null,
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    if (!loading) recomputeGroups(selectedWorkflowId);
-  }, [selectedWorkflowId, loading, recomputeGroups]);
-
-  const handleAddJob = () => {
-    if (templates.length === 0) {
-      setGlobalModalOuterProps({
-        isOpen: true,
-        size: ModalSizes.SMALL,
-        fieldName: 'noTemplateWarning',
-        children: (
-          <ConfirmationModal
-            title="No Templates Available"
-            message="You need to create a job template before creating a job."
-            description="Job templates define the structure and fields for your jobs. Would you like to create a template now?"
-            variant="default"
-            confirmButtonText="Create Template"
-            cancelButtonText="Cancel"
-            onConfirm={() => {
-              resetGlobalModalOuterProps();
-              navigate('/company/jobs/templates?openAddModal=true');
-            }}
-            onCancel={() => resetGlobalModalOuterProps()}
-          />
-        ),
-      });
-      return;
-    }
-    setGlobalModalOuterProps({
-      isOpen: true,
-      size: ModalSizes.LARGE,
-      fieldName: 'addJob',
-      children: (
-        <AddJobWizard
-          onSuccess={() => {
-            resetGlobalModalOuterProps();
-          }}
-        />
-      ),
-    });
-  };
+  const groups = groupsQuery.data ?? NO_GROUPS;
+  const loading = jobsQuery.isLoading || workflowsQuery.isLoading || groupsQuery.isLoading;
 
   const handleSelectStep = (stepName: string) => {
     setActiveStep(stepName);
@@ -712,7 +506,7 @@ export const JobEventsSection: React.FC = () => {
       // Keep open after save
     } else {
       // Enter primary-selection mode — highlight the current primary
-      setPendingPrimaryId(primaryWorkflowId ?? selectedWorkflowId);
+      setPendingPrimaryId(primaryWorkflowId ?? activeWorkflowId);
       setIsPrimaryMode(true);
     }
   };
@@ -729,7 +523,7 @@ export const JobEventsSection: React.FC = () => {
           {workflows.length > 0 && (
             <S.WorkflowFormControl size="small">
               <S.WorkflowSelect
-                value={selectedWorkflowId ?? ''}
+                value={activeWorkflowId ?? ''}
                 open={dropdownOpen}
                 onOpen={() => setDropdownOpen(true)}
                 onClose={(e) => {
@@ -822,27 +616,15 @@ export const JobEventsSection: React.FC = () => {
             </S.WorkflowFormControl>
           )}
         </S.HeaderRow>
-
-
-        {/* Right: New Job button */}
-        <Button startIcon={<AddIcon />} endIcon={<KeyboardArrowDownIcon />} onClick={handleAddJob}>
-          New Job
-        </Button>
       </S.SectionHeader>
 
       {/* Stat boxes */}
-      {!loading && (
-        <StatBoxesRow
-          jobs={allJobs}
-          estimateSentTotal={estimateSentTotal}
-          awaitingInvoiceTotal={awaitingInvoiceTotal}
-        />
-      )}
+      {!jobsQuery.isLoading && <StatBoxesRow jobs={allJobs} />}
 
       {/* Pipeline bar */}
       {loading ? (
         <S.LoadingBox>
-          <CircularProgress size={28} />
+          <CircularProgress size={rem(28)} />
         </S.LoadingBox>
       ) : (
         <>

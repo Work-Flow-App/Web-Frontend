@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import { PostAttachments } from '../../../../../components/UI/PostAttachments';
 import { formatRelativeTime } from '../../../../../utils/formatRelativeTime';
 import { getInitials } from '../../../../../utils/getInitials';
@@ -33,6 +35,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const showMenu = canEdit || canDelete;
 
+  // NULLLLLLLL is a sentinel used for attachment-only posts to satisfy backend validation.
+  // Never display it to the user.
+  const rawContent = post.content === 'NULLLLLLLL' ? '' : (post.content || '');
+  const sanitizedContent = DOMPurify.sanitize(rawContent);
+
   return (
     <Card>
       <CardHeader>
@@ -45,6 +52,13 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
               <MetaDot />
               {post.isPublic ? <PublicOutlinedIcon /> : <LockOutlinedIcon />}
               <span>{post.isPublic ? 'Public' : 'Private'}</span>
+              {post.groupName && (
+                <>
+                  <MetaDot />
+                  <FolderOutlinedIcon />
+                  <span>{post.groupName}</span>
+                </>
+              )}
             </AuthorMeta>
           </AuthorBlock>
         </HeaderLeft>
@@ -70,7 +84,6 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
               )}
               {canDelete && (
                 <MenuItem
-                  sx={{ color: 'error.main' }}
                   onClick={() => {
                     setAnchorEl(null);
                     onDelete();
@@ -84,7 +97,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
         )}
       </CardHeader>
 
-      <PostContent>{post.content}</PostContent>
+      <PostContent dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
 
       <PostAttachments attachments={post.attachments || []} />
     </Card>

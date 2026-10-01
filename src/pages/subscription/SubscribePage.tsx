@@ -8,7 +8,7 @@ import { getPaddleInstance, CheckoutEventNames, type PaddleEventData } from '@pa
 import { PricingCard } from '../../components/UI/PricingCard';
 import type { PricingFeature } from '../../components/UI/PricingCard';
 import { subscriptionService } from '../../services/api/subscription';
-import { CreateCheckoutSessionRequestPlanTypeEnum, SubscriptionStatusResponseStatusEnum } from '../../../workflow-api';
+import { CreateCheckoutSessionRequestPlanTypeEnum } from '../../../workflow-api';
 import type { CreateCheckoutSessionRequestPlanTypeEnum as PlanType } from '../../../workflow-api';
 import { companyService } from '../../services/api/company';
 import { getAffiliateTid } from '../../utils/tracking';
@@ -30,29 +30,11 @@ interface PlanConfig {
   features: PricingFeature[];
 }
 
-type PlanKey = 'FREE_TRIAL' | 'STARTER' | 'PROFESSIONAL';
-type PaidPlanKey = 'STARTER' | 'PROFESSIONAL';
+type PlanKey = 'STARTER' | 'PROFESSIONAL';
 
 // Numeric fields (price, seats, jobs limit) come from the shared PLAN_TIERS source of
 // truth in subscriptionPricing.ts; only label/description/features are page-specific.
 const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
-  FREE_TRIAL: {
-    label: 'Free Trial',
-    description: 'Try full access risk-free before choosing a plan',
-    basePrice: 0,
-    baseSeats: 1,
-    maxSeats: 1,
-    extraSeatPrice: 0,
-    jobsLimit: 10,
-    features: [
-      { text: '1 User Access Included', included: true },
-      { text: 'Up to 10 Jobs Included', included: true },
-      { text: 'Full Feature Access During Trial', included: true },
-      { text: 'Mobile App & Web App Access for Field Workers', included: true },
-      { text: 'Instant Upgrade to Starter or Professional Anytime', included: true },
-      { text: 'No Credit Card Required', included: true },
-    ],
-  },
   STARTER: {
     label: 'Starter',
     description: 'Essential tools to manage and grow your business operations',
@@ -91,20 +73,33 @@ const PLAN_CONFIG: Record<PlanKey, PlanConfig> = {
   },
 };
 
-const PLAN_TYPE_BY_KEY: Record<PaidPlanKey, PlanType> = {
+const PLAN_TYPE_BY_KEY: Record<PlanKey, PlanType> = {
   STARTER: CreateCheckoutSessionRequestPlanTypeEnum.Starter,
   PROFESSIONAL: CreateCheckoutSessionRequestPlanTypeEnum.Professional,
 };
 
-const CARD_ORDER: PlanKey[] = ['FREE_TRIAL', 'STARTER', 'PROFESSIONAL'];
+const CARD_ORDER: PlanKey[] = ['STARTER', 'PROFESSIONAL'];
+
+// Free Trial has no pricing card or checkout flow (see PlanKey above) but still shows
+// as a reference column in the "Compare features" table below.
+type ComparisonPlanKey = 'FREE_TRIAL' | PlanKey;
+const COMPARISON_COLUMNS: ComparisonPlanKey[] = ['FREE_TRIAL', 'STARTER', 'PROFESSIONAL'];
+const FREE_TRIAL_COMPARISON = {
+  label: 'Free Trial',
+  baseSeats: 1,
+  jobsLimit: 10,
+};
 
 // One shared "how many users" value drives every card's price at once — each plan
-// applies it against its own base seats/extra-seat price, so all three stay in sync.
+// applies it against its own base seats/extra-seat price, so both stay in sync.
+// The slider's range is plan-agnostic (dragging it doesn't change when you click a
+// different card) — a plan whose maxSeats can't fit that many users is flagged and
+// its Order disabled, rather than silently clamping the slider back down.
 const MIN_HEADCOUNT = 1;
 const MAX_HEADCOUNT = Math.max(...Object.values(PLAN_CONFIG).map((c) => c.maxSeats));
 
 // Feature checklist shown in the "Compare features" table below the cards.
-const FEATURE_MATRIX: { label: string; values: Record<PlanKey, boolean> }[] = [
+const FEATURE_MATRIX: { label: string; values: Record<ComparisonPlanKey, boolean> }[] = [
   { label: 'Staff Profile Management', values: { FREE_TRIAL: true, STARTER: true, PROFESSIONAL: true } },
   { label: 'Company Profile Management', values: { FREE_TRIAL: false, STARTER: false, PROFESSIONAL: true } },
   { label: 'Estimates & Invoices (500/mo)', values: { FREE_TRIAL: false, STARTER: false, PROFESSIONAL: true } },
@@ -118,16 +113,13 @@ export const SubscribePage: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>('PROFESSIONAL');
   const [headcount, setHeadcount] = useState<number>(PLAN_CONFIG.PROFESSIONAL.baseSeats);
   const navigate = useNavigate();
-  const { status, refresh } = useSubscription();
+  const { refresh } = useSubscription();
   const { showError } = useSnackbar();
-
-  const isOnTrial = status?.status === SubscriptionStatusResponseStatusEnum.Trial;
-  const isPaidPlanKey = (key: PlanKey): key is PaidPlanKey => key === 'STARTER' || key === 'PROFESSIONAL';
 
   // The slider's single headcount value is shared across every card — each plan just
   // applies it against its own base seats and extra-seat price, so moving the slider
   // updates all three prices at once, each according to its own plan's rules.
-  const getPricingInfo = (planKey: PaidPlanKey) => {
+  const getPricingInfo = (planKey: PlanKey) => {
     const config = PLAN_CONFIG[planKey];
     const extraSeats = computeExtraSeatsFromHeadcount(headcount, config.baseSeats);
     const monthlyTotal = computePlanMonthlyTotal({
@@ -143,7 +135,6 @@ export const SubscribePage: React.FC = () => {
   };
 
   const handleSubscribe = async () => {
-    if (!isPaidPlanKey(selectedPlan)) return;
     const planType = PLAN_TYPE_BY_KEY[selectedPlan];
     const info = getPricingInfo(selectedPlan);
     setLoadingPlan(planType);
@@ -191,12 +182,11 @@ export const SubscribePage: React.FC = () => {
   };
 
   const selectedConfig = PLAN_CONFIG[selectedPlan];
-  const isLoadingSelected = isPaidPlanKey(selectedPlan) && loadingPlan === PLAN_TYPE_BY_KEY[selectedPlan];
-  const orderDisabled = !isPaidPlanKey(selectedPlan) || isLoadingSelected;
-  const orderButtonText = !isPaidPlanKey(selectedPlan)
-    ? isOnTrial
-      ? 'Current Plan'
-      : 'Included at Signup'
+  const isLoadingSelected = loadingPlan === PLAN_TYPE_BY_KEY[selectedPlan];
+  const selectedExceedsLimit = headcount > selectedConfig.maxSeats;
+  const orderDisabled = isLoadingSelected || selectedExceedsLimit;
+  const orderButtonText = selectedExceedsLimit
+    ? 'Exceeds Plan Limit'
     : isLoadingSelected
       ? 'Loading...'
       : 'Order';
@@ -252,7 +242,8 @@ export const SubscribePage: React.FC = () => {
       <S.CardsRow role="radiogroup" aria-label="Choose a plan">
         {CARD_ORDER.map((planKey) => {
           const config = PLAN_CONFIG[planKey];
-          const price = isPaidPlanKey(planKey) ? getPricingInfo(planKey).monthlyTotal : 0;
+          const price = getPricingInfo(planKey).monthlyTotal;
+          const exceedsLimit = headcount > config.maxSeats;
 
           return (
             <PricingCard
@@ -267,6 +258,11 @@ export const SubscribePage: React.FC = () => {
               selectable
               selected={selectedPlan === planKey}
               onSelect={() => setSelectedPlan(planKey)}
+              stepper={
+                exceedsLimit ? (
+                  <S.PlanLimitNotice>Exceeds this plan's {config.maxSeats}-seat limit</S.PlanLimitNotice>
+                ) : undefined
+              }
             />
           );
         })}
@@ -282,7 +278,7 @@ export const SubscribePage: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell />
-                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.label}</TableCell>
+                  <TableCell>{FREE_TRIAL_COMPARISON.label}</TableCell>
                   <TableCell>{PLAN_CONFIG.STARTER.label}</TableCell>
                   <TableCell>
                     <S.FeaturedColumnHeader>
@@ -295,20 +291,20 @@ export const SubscribePage: React.FC = () => {
               <TableBody>
                 <TableRow>
                   <TableCell>Seats</TableCell>
-                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.baseSeats}</TableCell>
+                  <TableCell>{FREE_TRIAL_COMPARISON.baseSeats}</TableCell>
                   <TableCell>{getPricingInfo('STARTER').totalSeats}</TableCell>
                   <TableCell>{getPricingInfo('PROFESSIONAL').totalSeats}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Jobs/month</TableCell>
-                  <TableCell>{PLAN_CONFIG.FREE_TRIAL.jobsLimit}</TableCell>
+                  <TableCell>{FREE_TRIAL_COMPARISON.jobsLimit}</TableCell>
                   <TableCell>{PLAN_CONFIG.STARTER.jobsLimit}</TableCell>
                   <TableCell>{PLAN_CONFIG.PROFESSIONAL.jobsLimit}</TableCell>
                 </TableRow>
                 {FEATURE_MATRIX.map((row) => (
                   <TableRow key={row.label}>
                     <TableCell>{row.label}</TableCell>
-                    {(['FREE_TRIAL', 'STARTER', 'PROFESSIONAL'] as PlanKey[]).map((planKey) => (
+                    {COMPARISON_COLUMNS.map((planKey) => (
                       <TableCell key={planKey}>
                         <S.FeatureBadge included={row.values[planKey]}>
                           {row.values[planKey] ? (

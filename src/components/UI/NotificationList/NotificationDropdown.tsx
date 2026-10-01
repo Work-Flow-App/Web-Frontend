@@ -42,7 +42,7 @@ export interface NotificationDropdownProps extends INotificationList {
  * <NotificationDropdown
  *   trigger={<IconButton><NotificationIcon /></IconButton>}
  *   notifications={notifications}
- *   onMailClick={(id) => console.log(id)}
+ *   onMarkAsRead={(id) => console.log(id)}
  *   onViewClick={(notif) => console.log(notif)}
  * />
  * ```
@@ -112,7 +112,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       <Backdrop open={isOpen} onClick={handleClose} />
       <DropdownContainer ref={containerRef}>
         {triggerWithClick}
-        <DropdownContent open={isOpen} position={position}>
+        <DropdownContent open={isOpen} dropdownPosition={position}>
           <NotificationList
             notifications={notifications}
             {...notificationListProps}

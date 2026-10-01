@@ -1,17 +1,23 @@
-import { Box, Typography, styled } from '@mui/material';
+import { Box, Menu, Typography, styled } from '@mui/material';
 import { rem } from '../../../../../../components/UI/Typography/utility';
 
-export const FormWrapper = styled('form')(() => ({
+export const FormWrapper = styled('form')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: rem(20),
   width: '100%',
+  [theme.breakpoints.down('sm')]: {
+    gap: rem(14),
+  },
 }));
 
-export const ComposerIdentityRow = styled(Box)(() => ({
+export const ComposerIdentityRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: rem(12),
   alignItems: 'flex-start',
+  [theme.breakpoints.down('sm')]: {
+    gap: rem(10),
+  },
 }));
 
 export const ComposerAvatar = styled(Box)(({ theme }) => ({
@@ -26,6 +32,12 @@ export const ComposerAvatar = styled(Box)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
   fontSize: rem(14),
   fontWeight: 700,
+  [theme.breakpoints.down('sm')]: {
+    width: rem(36),
+    height: rem(36),
+    minWidth: rem(36),
+    fontSize: rem(12),
+  },
 }));
 
 export const ComposerName = styled(Typography)(({ theme }) => ({
@@ -33,13 +45,24 @@ export const ComposerName = styled(Typography)(({ theme }) => ({
   fontSize: rem(14.5),
   color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
   marginBottom: rem(5),
+  [theme.breakpoints.down('sm')]: {
+    fontSize: rem(13.5),
+    marginBottom: rem(3),
+  },
+}));
+
+export const PillRow = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  flexWrap: 'wrap',
 }));
 
 export const AudiencePill = styled('button')(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: rem(6),
-  border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
+  border: `${rem(1)} solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
   backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
   borderRadius: rem(16),
   padding: `${rem(5)} ${rem(10)}`,
@@ -52,6 +75,10 @@ export const AudiencePill = styled('button')(({ theme }) => ({
   },
   '&:hover': {
     backgroundColor: theme.palette.colors?.grey_100 || theme.palette.grey[100],
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: `${rem(4)} ${rem(8)}`,
+    fontSize: rem(11.5),
   },
 }));
 
@@ -108,8 +135,16 @@ export const AttachmentItem = styled(Box)(({ theme }) => ({
   gap: rem(8),
   padding: `${rem(8)} ${rem(12)}`,
   borderRadius: rem(8),
-  border: `1px solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
+  border: `${rem(1)} solid ${theme.palette.colors?.grey_200 || theme.palette.grey[200]}`,
   backgroundColor: theme.palette.colors?.grey_50 || theme.palette.background.default,
   fontSize: rem(13),
   color: theme.palette.colors?.grey_700 || theme.palette.text.primary,
+}));
+
+export const StyledMenu = styled(Menu)(() => ({
+  zIndex: 9000,
+}));
+
+export const HiddenFileInput = styled('input')(() => ({
+  display: 'none',
 }));

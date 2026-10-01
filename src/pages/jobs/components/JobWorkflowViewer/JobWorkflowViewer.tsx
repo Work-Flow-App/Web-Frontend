@@ -1,54 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, LinearProgress, Chip } from '@mui/material';
-import styled from '@emotion/styled';
 import { floowColors } from '../../../../theme/colors';
 import { jobWorkflowService } from '../../../../services/api';
 import type { JobWorkflowResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI';
 import { getWorkflowStatusColor, getWorkflowStatusLabel, calculateWorkflowProgress } from '../../../../types/workflow';
+import * as S from './JobWorkflowViewer.styles';
 
 interface JobWorkflowViewerProps {
   jobId: number;
 }
-
-const WorkflowContainer = styled(Box)`
-  background: white;
-  border: 1px solid ${floowColors.grey[300]};
-  border-radius: 8px;
-  padding: 24px;
-`;
-
-const StepCard = styled(Box)<{ status?: string }>`
-  background: ${(props: { status?: string }) => {
-    switch (props.status) {
-      case 'COMPLETED': return floowColors.success.light;
-      case 'STARTED':
-      case 'ONGOING': return floowColors.info.light;
-      case 'PENDING': return floowColors.warning.light;
-      default: return floowColors.grey[50];
-    }
-  }};
-  border: 1px solid ${(props: { status?: string }) => {
-    switch (props.status) {
-      case 'COMPLETED': return floowColors.success.main;
-      case 'STARTED':
-      case 'ONGOING': return floowColors.info.main;
-      case 'PENDING': return floowColors.warning.main;
-      default: return floowColors.grey[200];
-    }
-  }};
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-`;
-
-const StepHeader = styled(Box)`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-`;
 
 export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) => {
   const [jobWorkflow, setJobWorkflow] = useState<JobWorkflowResponse | null>(null);
@@ -83,14 +45,14 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
   // No workflow started yet
   if (!jobWorkflow) {
     return (
-      <WorkflowContainer>
+      <S.WorkflowContainer>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
           Job Workfloow
         </Typography>
         <Typography variant="body2" sx={{ color: floowColors.grey[600] }}>
           No workfloow has been started for this job yet.
         </Typography>
-      </WorkflowContainer>
+      </S.WorkflowContainer>
     );
   }
 
@@ -98,7 +60,7 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
   const progress = calculateWorkflowProgress(steps);
 
   return (
-    <WorkflowContainer>
+    <S.WorkflowContainer>
       {/* Workflow Header */}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -133,8 +95,8 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
         </Typography>
       ) : (
         steps.map((step, index) => (
-          <StepCard key={step.id} status={step.status}>
-            <StepHeader>
+          <S.StepCard key={step.id} status={step.status}>
+            <S.StepHeader>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                   {index + 1}. {step.name}
@@ -145,7 +107,7 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
                   size="small"
                 />
               </Box>
-            </StepHeader>
+            </S.StepHeader>
             {step.description && (
               <Typography variant="body2" sx={{ color: floowColors.grey[600], mb: 1 }}>
                 {step.description}
@@ -168,9 +130,9 @@ export const JobWorkflowViewer: React.FC<JobWorkflowViewerProps> = ({ jobId }) =
                 </Typography>
               )}
             </Box>
-          </StepCard>
+          </S.StepCard>
         ))
       )}
-    </WorkflowContainer>
+    </S.WorkflowContainer>
   );
 };

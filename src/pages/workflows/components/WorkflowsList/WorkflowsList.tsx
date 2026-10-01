@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageWrapper } from '../../../../components/UI/PageWrapper';
 import Table from '../../../../components/UI/Table/Table';
 import type { ITableAction } from '../../../../components/UI/Table/ITable';
@@ -16,6 +16,8 @@ import { TitleContainer } from './WorkflowsList.styles';
 
 export const WorkflowsList: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const hasAutoOpened = useRef(false);
   const [workflows, setWorkflows] = useState<WorkflowTableRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { setGlobalModalOuterProps, resetGlobalModalOuterProps } = useGlobalModalOuterContext();
@@ -64,7 +66,7 @@ export const WorkflowsList: React.FC = () => {
   }, [fetchWorkflows]);
 
   // Handle add workflow
-  const handleAddWorkflow = () => {
+  const handleAddWorkflow = useCallback(() => {
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.MEDIUM,
@@ -79,7 +81,17 @@ export const WorkflowsList: React.FC = () => {
         />
       ),
     });
-  };
+  }, [setGlobalModalOuterProps, resetGlobalModalOuterProps, fetchWorkflows]);
+
+  // Automatically trigger workflow creation modal if ?openAddModal=true query parameter is present in URL
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('openAddModal') === 'true' && !loading && !hasAutoOpened.current) {
+      hasAutoOpened.current = true;
+      navigate('/company/workflows', { replace: true });
+      handleAddWorkflow();
+    }
+  }, [location.search, loading, navigate, handleAddWorkflow]);
 
   // Handle row click - navigate to workflow builder
   const handleRowClick = useCallback(

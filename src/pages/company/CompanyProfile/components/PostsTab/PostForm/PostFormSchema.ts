@@ -4,11 +4,11 @@ import type { SchemaFieldDefinition } from '../../SchemaField';
 export const PostFormSchema: Record<string, SchemaFieldDefinition> = {
   content: {
     title: 'content',
-    rule: InputValidationRules.StringRequired,
+    rule: InputValidationRules.StringNotRequired,
     defaultValue: '',
     placeHolder: 'Share an update with your team...',
     label: 'Content',
-    isRequired: true,
+    isRequired: false,
     control: 'textarea',
     rows: 5,
   },
@@ -21,5 +21,13 @@ export const PostFormSchema: Record<string, SchemaFieldDefinition> = {
     isRequired: false,
     control: 'checkbox',
     helperText: 'Anyone with the link can view this post without logging in, even outside your company',
+  },
+  groupId: {
+    title: 'groupId',
+    rule: InputValidationRules.NumberNotRequired,
+    defaultValue: null,
+    placeHolder: '',
+    label: 'Group',
+    isRequired: false,
   },
 };
