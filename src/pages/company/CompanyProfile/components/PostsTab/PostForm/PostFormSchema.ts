@@ -4,11 +4,11 @@ import type { SchemaFieldDefinition } from '../../SchemaField';
 export const PostFormSchema: Record<string, SchemaFieldDefinition> = {
   content: {
     title: 'content',
-    rule: InputValidationRules.StringRequired,
+    rule: InputValidationRules.StringNotRequired,
     defaultValue: '',
     placeHolder: 'Share an update with your team...',
     label: 'Content',
-    isRequired: true,
+    isRequired: false,
     control: 'textarea',
     rows: 5,
   },
