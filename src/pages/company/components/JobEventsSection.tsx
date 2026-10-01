@@ -1,13 +1,8 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { CircularProgress } from '@mui/material';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rem } from '../../../components/UI/Typography/utility';
-import {
-  jobService,
-  jobWorkflowService,
-  workflowService,
-  customerService,
-  estimateService,
-} from '../../../services/api';
+import { queries } from '../../../services/queries';
 import type {
   JobResponse,
   JobWorkflowResponse,
@@ -107,13 +102,7 @@ function buildGroups(templateSteps: WorkflowStepResponse[], jobWorkflows: JobWor
   return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
 }
 
-function StatBoxesRow({
-  jobs,
-}: {
-  jobs: JobResponse[];
-  estimateSentTotal: number;
-  awaitingInvoiceTotal: number;
-}) {
+function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
   const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
   const total = jobs.length;
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
@@ -401,18 +390,16 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const NO_JOBS: JobResponse[] = [];
+const NO_WORKFLOWS: WorkflowResponse[] = [];
+const NO_CUSTOMERS: CustomerResponse[] = [];
+const NO_GROUPS: StepEventGroup[] = [];
+
 export const JobEventsSection: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [groups, setGroups] = useState<StepEventGroup[]>([]);
-  const [jobsMap, setJobsMap] = useState<Map<number, JobResponse>>(new Map());
-  const [customersMap, setCustomersMap] = useState<Map<number, CustomerResponse>>(new Map());
-  const [workflows, setWorkflows] = useState<WorkflowResponse[]>([]);
+  const queryClient = useQueryClient();
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
-  const [allJobs, setAllJobs] = useState<JobResponse[]>([]);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [estimateSentTotal, setEstimateSentTotal] = useState(0);
-  const [awaitingInvoiceTotal, setAwaitingInvoiceTotal] = useState(0);
   const [isPrimaryMode, setIsPrimaryMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [pendingPrimaryId, setPendingPrimaryId] = useState<number | null>(null);
@@ -421,135 +408,79 @@ export const JobEventsSection: React.FC = () => {
     return saved ? Number(saved) : null;
   });
 
+  // Shared with the dashboard page through `queries`, so these lists are requested once
+  const jobsQuery = useQuery(queries.jobs());
+  const workflowsQuery = useQuery(queries.workflows());
+  const customersQuery = useQuery(queries.customers());
+
+  const allJobs = jobsQuery.data ?? NO_JOBS;
+  const workflows = workflowsQuery.data ?? NO_WORKFLOWS;
+  const customers = customersQuery.data ?? NO_CUSTOMERS;
+
+  const jobsMap = useMemo(() => {
+    const map = new Map<number, JobResponse>();
+    allJobs.forEach((j) => {
+      if (j.id != null) map.set(j.id, j);
+    });
+    return map;
+  }, [allJobs]);
+
+  const customersMap = useMemo(() => {
+    const map = new Map<number, CustomerResponse>();
+    customers.forEach((c) => {
+      if (c.id != null) map.set(c.id, c);
+    });
+    return map;
+  }, [customers]);
+
+  // Use saved primary workflow as default, fallback to first workflow
+  const defaultWorkflowId =
+    primaryWorkflowId != null && workflows.some((w) => w.id === primaryWorkflowId)
+      ? primaryWorkflowId
+      : (workflows[0]?.id ?? null);
+  const activeWorkflowId = selectedWorkflowId ?? defaultWorkflowId;
+
+  // If no primary saved yet, auto-save first workflow as primary
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [jobsRes, workflowsRes, customersRes] = await Promise.all([
-          jobService.getAllJobs(),
-          workflowService.getAllWorkflows(),
-          customerService.getAllCustomers(),
-        ]);
+    if (primaryWorkflowId == null && workflows[0]?.id != null) {
+      localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(workflows[0].id));
+      setPrimaryWorkflowId(workflows[0].id);
+    }
+  }, [primaryWorkflowId, workflows]);
 
-        const jobs: JobResponse[] = Array.isArray(jobsRes.data) ? jobsRes.data : [];
-        const wfs: WorkflowResponse[] = Array.isArray(workflowsRes.data) ? workflowsRes.data : [];
-        const customers: CustomerResponse[] = Array.isArray(customersRes.data) ? customersRes.data : [];
-
-        const map = new Map<number, JobResponse>();
-        jobs.forEach((j) => {
-          if (j.id != null) map.set(j.id, j);
-        });
-        setJobsMap(map);
-
-        const cMap = new Map<number, CustomerResponse>();
-        customers.forEach((c) => {
-          if (c.id != null) cMap.set(c.id, c);
-        });
-        setCustomersMap(cMap);
-
-        setAllJobs(jobs);
-        setWorkflows(wfs);
-
-        // Use saved primary workflow as default, fallback to first workflow
-        const savedPrimary = localStorage.getItem(PRIMARY_WORKFLOW_KEY);
-        const savedId = savedPrimary ? Number(savedPrimary) : null;
-        const validId = savedId && wfs.some((w) => w.id === savedId) ? savedId : (wfs[0]?.id ?? null);
-
-        // If no primary saved yet, auto-save first workflow as primary
-        if (!savedPrimary && wfs[0]?.id != null) {
-          localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(wfs[0].id));
-          setPrimaryWorkflowId(wfs[0].id);
-        }
-
-        setSelectedWorkflowId(validId);
-
-        // Fetch estimates for all jobs in parallel
-        const estimateResults = await Promise.allSettled(
-          jobs.filter((j) => j.id != null).map((j) => estimateService.getByJobId(j.id!))
-        );
-
-        let sentTotal = 0;
-        const awaitingJobIds = new Set(
-          jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').map((j) => j.id!)
-        );
-        const awaitingEstimateIds: number[] = [];
-
-        jobs
-          .filter((j) => j.id != null)
-          .forEach((j, i) => {
-            const result = estimateResults[i];
-            if (result.status === 'fulfilled') {
-              const estimate = result.value.data;
-              sentTotal += estimate.grandTotal ?? 0;
-              if (awaitingJobIds.has(j.id!) && estimate.id != null) {
-                awaitingEstimateIds.push(estimate.id);
-              }
-            }
-          });
-        setEstimateSentTotal(sentTotal);
-
-        // Fetch invoices for awaiting-approval estimates and sum their totals
-        const invoiceResults = await Promise.allSettled(
-          awaitingEstimateIds.map((eid) => estimateService.listInvoicesForEstimate(eid))
-        );
-        let invoiceTotal = 0;
-        invoiceResults.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            const invoices = Array.isArray(result.value.data) ? result.value.data : [];
-            invoices.forEach((inv) => {
-              invoiceTotal += inv.grandTotal ?? 0;
-            });
-          }
-        });
-        setAwaitingInvoiceTotal(invoiceTotal);
-      } catch (err) {
-        console.error('Failed to load job events:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
-  // Recompute groups whenever selected workflow changes
-  const recomputeGroups = useCallback(
-    async (workflowId: number | null) => {
-      if (workflowId == null) {
-        setGroups([]);
-        return;
-      }
+  // Step groups for the selected workflow; cached per workflow so switching back is instant
+  const groupsQuery = useQuery({
+    queryKey: ['dashboard', 'workflow-events', activeWorkflowId],
+    queryFn: async () => {
+      const workflowId = activeWorkflowId!;
+      const jobs = await queryClient.fetchQuery(queries.jobs());
 
       // Jobs that belong to this workflow
-      const filteredJobs = allJobs.filter((j) => j.workflowId === workflowId && j.id != null);
+      const filteredJobs = jobs.filter((j) => j.workflowId === workflowId && j.id != null);
 
       // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
       // returns stale or incomplete data; per-job fetch matches the Job Details page.
-      const jwResults = await Promise.allSettled(
-        filteredJobs.map((j) => jobWorkflowService.getJobWorkflowByJobId(j.id!))
-      );
+      const [jwResults, templateSteps] = await Promise.all([
+        Promise.allSettled(filteredJobs.map((j) => queryClient.fetchQuery(queries.jobWorkflow(j.id!)))),
+        // Template steps for this workflow
+        queryClient.fetchQuery(queries.workflowSteps(workflowId)).catch((): WorkflowStepResponse[] => []),
+      ]);
+
       const filteredJobWorkflows: JobWorkflowResponse[] = [];
       jwResults.forEach((r) => {
-        if (r.status === 'fulfilled' && r.value?.data) {
-          filteredJobWorkflows.push(r.value.data);
+        if (r.status === 'fulfilled' && r.value) {
+          filteredJobWorkflows.push(r.value);
         }
       });
 
-      // Template steps for this workflow
-      let templateSteps: WorkflowStepResponse[] = [];
-      try {
-        const stepsRes = await workflowService.getWorkflowSteps(workflowId);
-        templateSteps = Array.isArray(stepsRes.data) ? stepsRes.data : [];
-      } catch {
-        /* ignore */
-      }
-
-      setGroups(buildGroups(templateSteps, filteredJobWorkflows));
+      return buildGroups(templateSteps, filteredJobWorkflows);
     },
-    [allJobs]
-  );
+    enabled: activeWorkflowId != null,
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    if (!loading) recomputeGroups(selectedWorkflowId);
-  }, [selectedWorkflowId, loading, recomputeGroups]);
+  const groups = groupsQuery.data ?? NO_GROUPS;
+  const loading = jobsQuery.isLoading || workflowsQuery.isLoading || groupsQuery.isLoading;
 
   const handleSelectStep = (stepName: string) => {
     setActiveStep(stepName);
@@ -575,7 +506,7 @@ export const JobEventsSection: React.FC = () => {
       // Keep open after save
     } else {
       // Enter primary-selection mode — highlight the current primary
-      setPendingPrimaryId(primaryWorkflowId ?? selectedWorkflowId);
+      setPendingPrimaryId(primaryWorkflowId ?? activeWorkflowId);
       setIsPrimaryMode(true);
     }
   };
@@ -592,7 +523,7 @@ export const JobEventsSection: React.FC = () => {
           {workflows.length > 0 && (
             <S.WorkflowFormControl size="small">
               <S.WorkflowSelect
-                value={selectedWorkflowId ?? ''}
+                value={activeWorkflowId ?? ''}
                 open={dropdownOpen}
                 onOpen={() => setDropdownOpen(true)}
                 onClose={(e) => {
@@ -688,13 +619,7 @@ export const JobEventsSection: React.FC = () => {
       </S.SectionHeader>
 
       {/* Stat boxes */}
-      {!loading && (
-        <StatBoxesRow
-          jobs={allJobs}
-          estimateSentTotal={estimateSentTotal}
-          awaitingInvoiceTotal={awaitingInvoiceTotal}
-        />
-      )}
+      {!jobsQuery.isLoading && <StatBoxesRow jobs={allJobs} />}
 
       {/* Pipeline bar */}
       {loading ? (
