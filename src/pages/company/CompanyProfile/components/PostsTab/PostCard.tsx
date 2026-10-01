@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
 import { Menu, MenuItem } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PublicOutlinedIcon from '@mui/icons-material/PublicOutlined';
@@ -33,6 +34,11 @@ interface PostCardProps {
 export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const showMenu = canEdit || canDelete;
+
+  // NULLLLLLLL is a sentinel used for attachment-only posts to satisfy backend validation.
+  // Never display it to the user.
+  const rawContent = post.content === 'NULLLLLLLL' ? '' : (post.content || '');
+  const sanitizedContent = DOMPurify.sanitize(rawContent);
 
   return (
     <Card>
@@ -78,7 +84,6 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
               )}
               {canDelete && (
                 <MenuItem
-                  sx={{ color: 'error.main' }}
                   onClick={() => {
                     setAnchorEl(null);
                     onDelete();
@@ -92,7 +97,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, canEdit, canDelete, on
         )}
       </CardHeader>
 
-      <PostContent>{post.content}</PostContent>
+      <PostContent dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
 
       <PostAttachments attachments={post.attachments || []} />
     </Card>
