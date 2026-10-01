@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { useAuth } from '../../contexts/AuthContext';
 import {
   HeaderBanner,
   MetricsRow,
@@ -15,7 +15,6 @@ import {
   DashboardCustomizerDrawer,
 } from './components/Dashboard';
 import { JobEventsSection } from './components/JobEventsSection';
-import type { RecentWorkflowActivityData } from './components/Dashboard';
 import type {
   WidgetConfig,
   WidgetId,
@@ -25,29 +24,9 @@ import type {
   QuickActionConfig,
   QuickActionId,
 } from './components/Dashboard/types';
-import type { PlaceDetails } from '../../components/UI/GoogleMap/GoogleMap.types';
 import * as S from './CompanyPage.styles';
-import {
-  companyService,
-  jobService,
-  jobWorkflowService,
-  workerJobWorkflowService,
-  workerService,
-  companyClientService,
-  customerService,
-  dashboardService,
-  stepActivityService,
-} from '../../services/api';
-import type {
-  CompanyProfileResponse,
-  CompanyPostResponse,
-  JobResponse,
-  WorkerAssignedStepResponse,
-  FinancialSummaryResponse,
-  StepActivityResponse,
-  JobWorkflowStepResponse,
-} from '../../services/api';
-import { prepareJobLocationMarkers } from '../../utils/mapDataHelpers';
+import { queries } from '../../services/queries';
+import { useJobLocationMarkers, useRecentWorkflowActivity } from './dashboardQueries';
 
 const LOCAL_STORAGE_KEY = 'workfloow_dashboard_widgets_config';
 
@@ -78,8 +57,6 @@ const DEFAULT_QUICK_ACTIONS: QuickActionConfig[] = [
 export const CompanyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showSuccess } = useSnackbar();
-  const { userRole } = useAuth();
-  const isWorker = userRole === 'ROLE_WORKER' || userRole === 'WORKER';
 
   const [customizerOpen, setCustomizerOpen] = useState(false);
 
@@ -169,23 +146,36 @@ export const CompanyPage: React.FC = () => {
     return DEFAULT_QUICK_ACTIONS;
   });
 
-  // API Data State
-  const [profile, setProfile] = useState<CompanyProfileResponse | null>(null);
-  const [jobs, setJobs] = useState<JobResponse[]>([]);
-  const [archivedJobs, setArchivedJobs] = useState<JobResponse[]>([]);
-  const [announcements, setAnnouncements] = useState<CompanyPostResponse[]>([]);
-  const [assignedSteps, setAssignedSteps] = useState<WorkerAssignedStepResponse[]>([]);
-  const [mapMarkers, setMapMarkers] = useState<PlaceDetails[]>([]);
-  const [workflowActivities, setWorkflowActivities] = useState<RecentWorkflowActivityData[]>([]);
-  const [financialSummary, setFinancialSummary] = useState<FinancialSummaryResponse | null>(null);
+  const isVisible = (id: WidgetId) => {
+    const widget = widgetConfigs.find((w) => w.id === id);
+    return widget ? widget.visible : false;
+  };
 
-  // Loading States
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [loadingJobs, setLoadingJobs] = useState(true);
-  const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
-  const [loadingSteps, setLoadingSteps] = useState(true);
-  const [loadingWorkflows, setLoadingWorkflows] = useState(true);
-  const [loadingFinancial, setLoadingFinancial] = useState(true);
+  // API data — cached and de-duplicated by TanStack Query (see services/queries.ts).
+  // Queries for hidden widgets are disabled so they send no requests.
+  const profileQuery = useQuery(queries.companyProfile());
+  const jobsQuery = useQuery(queries.jobs());
+  const archivedJobsQuery = useQuery(queries.archivedJobs());
+  const financialQuery = useQuery(queries.financialSummary());
+  const announcementsQuery = useQuery({ ...queries.companyPosts(), enabled: isVisible('announcements') });
+  const workflowActivityQuery = useRecentWorkflowActivity(isVisible('workflow_activity'));
+  const mapMarkersQuery = useJobLocationMarkers(isVisible('map'));
+
+  const profile = profileQuery.data ?? null;
+  const jobs = jobsQuery.data ?? [];
+  const archivedJobs = archivedJobsQuery.data ?? [];
+  const announcements = announcementsQuery.data ?? [];
+  const workflowActivities = workflowActivityQuery.data ?? [];
+  const mapMarkers = mapMarkersQuery.data ?? [];
+  const financialSummary = financialQuery.data ?? null;
+
+  const loadingProfile = profileQuery.isLoading;
+  const loadingJobs = jobsQuery.isLoading;
+  const loadingMetrics = jobsQuery.isLoading || archivedJobsQuery.isLoading;
+  const loadingAnnouncements = announcementsQuery.isLoading;
+  const loadingWorkflows = workflowActivityQuery.isLoading;
+  const loadingMap = mapMarkersQuery.isLoading;
+  const loadingFinancial = financialQuery.isLoading;
 
   // Sync widget layouts to local storage
   useEffect(() => {
@@ -196,203 +186,6 @@ export const CompanyPage: React.FC = () => {
   useEffect(() => {
     localStorage.setItem(QUICK_ACTIONS_LOCAL_STORAGE_KEY, JSON.stringify(quickActionConfigs));
   }, [quickActionConfigs]);
-
-  // Load API Data on Mount
-  useEffect(() => {
-    // 1. Fetch Company Profile
-    companyService.getProfile()
-      .then((res) => {
-        setProfile(res.data);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch company profile:', err);
-      })
-      .finally(() => {
-        setLoadingProfile(false);
-      });
-
-    // 2. Fetch Jobs and Related Location Data
-    const loadJobsAndMap = async () => {
-      try {
-        const [jobsRes, archivedJobsRes, workersRes, clientsRes, customersRes] = await Promise.all([
-          jobService.getAllJobs(),
-          jobService.getArchivedJobs().catch(() => ({ data: [] })),
-          workerService.getAllWorkers().catch(() => ({ data: [] })),
-          companyClientService.getAllClients().catch(() => ({ data: [] })),
-          customerService.getAllCustomers().catch(() => ({ data: [] })),
-        ]);
-
-        const activeJobs = jobsRes.data || [];
-        setJobs(activeJobs);
-        setArchivedJobs(archivedJobsRes.data || []);
-
-        // Prepare Geocoded Coordinates for the Mini Map
-        const markers = await prepareJobLocationMarkers(
-          activeJobs,
-          workersRes.data || [],
-          clientsRes.data || [],
-          customersRes.data || []
-        );
-        setMapMarkers(markers);
-
-        // Fetch Workflows and step activities for the top 10 most recently updated jobs
-        const sortedJobs = [...activeJobs].sort((a, b) => {
-          const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-          const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
-        const targetJobs = sortedJobs.slice(0, 10);
-
-        try {
-          const promises = targetJobs.map((j) =>
-            jobWorkflowService.getJobWorkflowByJobId(j.id!).catch(() => null)
-          );
-          const workflowResults = await Promise.all(promises);
-
-          // For each workflow, gather active/non-skipped steps and fetch their activity timelines
-          const stepTimelinePromises: Promise<{
-            job: JobResponse;
-            workflowName: string;
-            step: JobWorkflowStepResponse;
-            timeline: StepActivityResponse[];
-          }>[] = [];
-
-          workflowResults.forEach((result, idx) => {
-            if (!result || !result.data) return;
-            const jw = result.data;
-            const job = targetJobs[idx];
-            const activeSteps = (jw.steps || []).filter(
-              (s: JobWorkflowStepResponse) => s.id && s.status?.toUpperCase() !== 'SKIPPED'
-            );
-
-            activeSteps.forEach((step: JobWorkflowStepResponse) => {
-              stepTimelinePromises.push(
-                stepActivityService
-                  .getTimeline(step.id!)
-                  .then((res) => ({
-                    job,
-                    workflowName: job.workflowName || job.templateName || 'Workflow',
-                    step,
-                    timeline: (res.data || []) as StepActivityResponse[],
-                  }))
-                  .catch(() => ({
-                    job,
-                    workflowName: job.workflowName || job.templateName || 'Workflow',
-                    step,
-                    timeline: [],
-                  }))
-              );
-            });
-          });
-
-          const stepTimelineResults = await Promise.all(stepTimelinePromises);
-
-          const activities: RecentWorkflowActivityData[] = [];
-          const jobsWithActivities = new Set<number>();
-
-          stepTimelineResults.forEach(({ job, workflowName, step, timeline }) => {
-            timeline.forEach((act) => {
-              jobsWithActivities.add(job.id || 0);
-              activities.push({
-                id: act.id,
-                jobId: job.id || 0,
-                jobRef: job.jobRef || job.id || 0,
-                workflowName,
-                stepId: step.id,
-                stepName: step.name || 'Step',
-                activityType: act.type,
-                message: act.message,
-                actorUsername: act.actorUsername,
-                status: step.status?.toLowerCase() || 'pending',
-                updatedAt: act.createdAt || step.updatedAt || job.updatedAt || job.createdAt || '',
-              });
-            });
-          });
-
-          // Fallback: If any target job produced 0 timeline activities from its steps, add its active step
-          targetJobs.forEach((job, idx) => {
-            if (jobsWithActivities.has(job.id || 0)) return;
-            const result = workflowResults[idx];
-            if (!result || !result.data) return;
-            const jw = result.data;
-            if (!jw.steps || jw.steps.length === 0) return;
-
-            const activeStep =
-              jw.steps.find((s: JobWorkflowStepResponse) => s.status === 'STARTED' || s.status === 'ONGOING') ||
-              jw.steps.find((s: JobWorkflowStepResponse) => s.status === 'NOT_STARTED') ||
-              jw.steps[jw.steps.length - 1];
-
-            activities.push({
-              jobId: job.id || 0,
-              jobRef: job.jobRef || job.id || 0,
-              workflowName: job.workflowName || job.templateName || 'Workflow',
-              stepId: activeStep?.id,
-              stepName: activeStep?.name || 'Start',
-              activityType: 'STATUS_CHANGED',
-              message: `Status: ${activeStep?.status || 'Pending'}`,
-              status: activeStep?.status?.toLowerCase() || 'pending',
-              updatedAt: job.updatedAt || job.createdAt || '',
-            });
-          });
-
-          // Sort final activities desc by date and keep top 10
-          activities.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-          setWorkflowActivities(activities.slice(0, 10));
-        } catch (wfErr) {
-          console.error('Failed to load job workflows details:', wfErr);
-        } finally {
-          setLoadingWorkflows(false);
-        }
-      } catch (err) {
-        console.error('Failed to load jobs or map details:', err);
-      } finally {
-        setLoadingJobs(false);
-        setLoadingWorkflows(false);
-      }
-    };
-    loadJobsAndMap();
-
-    // 3. Fetch Company Posts (Announcements)
-    companyService.getPosts()
-      .then((res) => {
-        setAnnouncements(res.data || []);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch announcements:', err);
-      })
-      .finally(() => {
-        setLoadingAnnouncements(false);
-      });
-
-    // 4. Fetch User Assigned Tasks (Only if user has WORKER role to avoid 403 response)
-    if (isWorker) {
-      workerJobWorkflowService.getMyAssignedSteps()
-        .then((res) => {
-          setAssignedSteps(res.data || []);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch assigned tasks:', err);
-        })
-        .finally(() => {
-          setLoadingSteps(false);
-        });
-    } else {
-      setAssignedSteps([]);
-      setLoadingSteps(false);
-    }
-
-    // 5. Fetch Financial Summary
-    dashboardService.getFinancialSummary()
-      .then((res) => {
-        setFinancialSummary(res.data);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch financial summary:', err);
-      })
-      .finally(() => {
-        setLoadingFinancial(false);
-      });
-  }, [isWorker]);
 
   // Widget Preferences Toggles
   const handleToggleWidget = (id: WidgetId) => {
@@ -452,19 +245,6 @@ export const CompanyPage: React.FC = () => {
       { name: 'On Hold', value: cancelled, color: '#EF4444', percentage: Math.round((cancelled / total) * 100) },
     ];
   };
-
-  // Task list format maps
-  const getMyTasksData = (): TaskData[] => {
-    return assignedSteps.slice(0, 6).map((s) => ({
-      id: s.step?.id || 0,
-      name: s.step?.name || `Task #${s.step?.id}`,
-      priority: s.step?.slaStatus === 'BREACHED' ? 'High' : (s.step?.slaStatus === 'ATTENTION_NEEDED' ? 'Medium' : 'Low'),
-      status: s.step?.status === 'COMPLETED' ? 'Completed' : (s.step?.status === 'STARTED' || s.step?.status === 'ONGOING' ? 'In Progress' : 'Pending'),
-      dueDate: s.step?.startedAt ? new Date(s.step.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Pending',
-    }));
-  };
-
-
 
   // Timeline events logs mapping
   const getRecentActivityData = (): ActivityLog[] => {
@@ -608,10 +388,6 @@ export const CompanyPage: React.FC = () => {
     }
   };
 
-  const isVisible = (id: WidgetId) => {
-    const widget = widgetConfigs.find((w) => w.id === id);
-    return widget ? widget.visible : false;
-  };
 
   return (
     <S.PageContainer>
@@ -633,7 +409,7 @@ export const CompanyPage: React.FC = () => {
         completedCount={completedCount}
         archivedCount={archivedCount}
         totalJobsCount={totalJobsCount}
-        loading={loadingJobs}
+        loading={loadingMetrics}
         onCardClick={handleMetricCardClick}
         waitingApprovalValue={financialSummary?.waitingApprovalValue}
         approvedValue={financialSummary?.approvedValue}
@@ -653,7 +429,7 @@ export const CompanyPage: React.FC = () => {
           <S.GridItem lgSpan={5} mdSpan={6} smSpan={12}>
             <LiveJobLocationsWidget
               markers={mapMarkers}
-              loading={loadingJobs}
+              loading={loadingMap}
               onViewFullMap={handleViewFullMap}
             />
           </S.GridItem>
