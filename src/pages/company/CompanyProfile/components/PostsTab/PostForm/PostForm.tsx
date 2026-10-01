@@ -60,10 +60,14 @@ export const PostForm: React.FC<PostFormProps> = ({
 }) => {
   const isEditMode = Boolean(post);
   // New posts start in the group the feed is filtered by; edits hydrate from the post itself.
-  const schemaSource = useMemo(
-    () => post ?? (defaultGroupId !== undefined ? { groupId: defaultGroupId } : undefined),
-    [post, defaultGroupId]
-  );
+  // Strip the sentinel used for attachment-only posts so the editor starts empty on edit.
+  const schemaSource = useMemo(() => {
+    const base = post ?? (defaultGroupId !== undefined ? { groupId: defaultGroupId } : undefined);
+    if (base && 'content' in base && (base as { content?: string }).content === 'NULLLLLLLL') {
+      return { ...base, content: '' };
+    }
+    return base;
+  }, [post, defaultGroupId]);
   const { fieldRules, defaultValues } = useSchema(PostFormSchema, schemaSource);
 
   const methods = useForm<PostFormValues>({
