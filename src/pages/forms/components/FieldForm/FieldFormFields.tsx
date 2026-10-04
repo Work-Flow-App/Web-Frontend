@@ -4,7 +4,8 @@ import { FieldFormSchema } from '../../schema/FieldFormSchema';
 import { useSchema } from '../../../../utils/validation';
 import { Input, Checkbox } from '../../../../components/UI/Forms';
 import { Dropdown } from '../../../../components/UI/Forms/Dropdown';
-import { FormField, FormRow } from '../../../../components/UI/FormComponents';
+import { FormField } from '../../../../components/UI/FormComponents';
+import * as S from './FieldForm.styles';
 import { FORM_FIELD_TYPE_OPTIONS, FORM_FIELD_ROLE_TARGET_OPTIONS, FORM_FIELD_TYPES_WITH_OPTIONS } from '../../../../services/api';
 import type { FormFieldDtoTypeEnum } from '../../../../services/api';
 
@@ -23,7 +24,7 @@ export const FieldFormFields: React.FC = () => {
         <Input name={fieldTitles.label} placeholder={placeHolders.label} hideErrorMessage={false} />
       </FormField>
 
-      <FormRow>
+      <S.FormRowResponsive>
         <FormField label={fieldLabels.type} required={isRequireds.type}>
           <Dropdown
             name={fieldTitles.type}
@@ -42,7 +43,7 @@ export const FieldFormFields: React.FC = () => {
             disableClearable
           />
         </FormField>
-      </FormRow>
+      </S.FormRowResponsive>
 
       {showOptions && (
         <FormField label={fieldLabels.options} required={isRequireds.options}>
