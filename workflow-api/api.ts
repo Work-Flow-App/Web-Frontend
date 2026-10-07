@@ -7367,18 +7367,14 @@ export const CompanyPostGroupsApiAxiosParamCreator = function (configuration?: C
     return {
         /**
          * 
-         * @param {number} companyId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupCreateGroup: async (companyId: number, companyPostGroupRequest: CompanyPostGroupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'companyId' is not null or undefined
-            assertParamExists('companyPostGroupCreateGroup', 'companyId', companyId)
+        companyPostGroupCreateGroup: async (companyPostGroupRequest: CompanyPostGroupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'companyPostGroupRequest' is not null or undefined
             assertParamExists('companyPostGroupCreateGroup', 'companyPostGroupRequest', companyPostGroupRequest)
-            const localVarPath = `/api/v1/companies/{companyId}/post-groups`
-                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)));
+            const localVarPath = `/api/v1/companies/post-groups`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -7410,18 +7406,14 @@ export const CompanyPostGroupsApiAxiosParamCreator = function (configuration?: C
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupDeleteGroup: async (companyId: number, groupId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'companyId' is not null or undefined
-            assertParamExists('companyPostGroupDeleteGroup', 'companyId', companyId)
+        companyPostGroupDeleteGroup: async (groupId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('companyPostGroupDeleteGroup', 'groupId', groupId)
-            const localVarPath = `/api/v1/companies/{companyId}/post-groups/{groupId}`
-                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)))
+            const localVarPath = `/api/v1/companies/post-groups/{groupId}`
                 .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7451,15 +7443,11 @@ export const CompanyPostGroupsApiAxiosParamCreator = function (configuration?: C
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupGetAllGroups: async (companyId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'companyId' is not null or undefined
-            assertParamExists('companyPostGroupGetAllGroups', 'companyId', companyId)
-            const localVarPath = `/api/v1/companies/{companyId}/post-groups`
-                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)));
+        companyPostGroupGetAllGroups: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/companies/post-groups`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -7488,21 +7476,17 @@ export const CompanyPostGroupsApiAxiosParamCreator = function (configuration?: C
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupUpdateGroup: async (companyId: number, groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'companyId' is not null or undefined
-            assertParamExists('companyPostGroupUpdateGroup', 'companyId', companyId)
+        companyPostGroupUpdateGroup: async (groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'groupId' is not null or undefined
             assertParamExists('companyPostGroupUpdateGroup', 'groupId', groupId)
             // verify required parameter 'companyPostGroupRequest' is not null or undefined
             assertParamExists('companyPostGroupUpdateGroup', 'companyPostGroupRequest', companyPostGroupRequest)
-            const localVarPath = `/api/v1/companies/{companyId}/post-groups/{groupId}`
-                .replace(`{${"companyId"}}`, encodeURIComponent(String(companyId)))
+            const localVarPath = `/api/v1/companies/post-groups/{groupId}`
                 .replace(`{${"groupId"}}`, encodeURIComponent(String(groupId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -7544,52 +7528,48 @@ export const CompanyPostGroupsApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {number} companyId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async companyPostGroupCreateGroup(companyId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupCreateGroup(companyId, companyPostGroupRequest, options);
+        async companyPostGroupCreateGroup(companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostGroupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupCreateGroup(companyPostGroupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompanyPostGroupsApi.companyPostGroupCreateGroup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async companyPostGroupDeleteGroup(companyId: number, groupId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupDeleteGroup(companyId, groupId, options);
+        async companyPostGroupDeleteGroup(groupId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupDeleteGroup(groupId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompanyPostGroupsApi.companyPostGroupDeleteGroup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async companyPostGroupGetAllGroups(companyId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyPostGroupResponse>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupGetAllGroups(companyId, options);
+        async companyPostGroupGetAllGroups(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<CompanyPostGroupResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupGetAllGroups(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompanyPostGroupsApi.companyPostGroupGetAllGroups']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async companyPostGroupUpdateGroup(companyId: number, groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupUpdateGroup(companyId, groupId, companyPostGroupRequest, options);
+        async companyPostGroupUpdateGroup(groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompanyPostGroupResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.companyPostGroupUpdateGroup(groupId, companyPostGroupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompanyPostGroupsApi.companyPostGroupUpdateGroup']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -7605,43 +7585,39 @@ export const CompanyPostGroupsApiFactory = function (configuration?: Configurati
     return {
         /**
          * 
-         * @param {number} companyId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupCreateGroup(companyId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostGroupResponse> {
-            return localVarFp.companyPostGroupCreateGroup(companyId, companyPostGroupRequest, options).then((request) => request(axios, basePath));
+        companyPostGroupCreateGroup(companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostGroupResponse> {
+            return localVarFp.companyPostGroupCreateGroup(companyPostGroupRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupDeleteGroup(companyId: number, groupId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.companyPostGroupDeleteGroup(companyId, groupId, options).then((request) => request(axios, basePath));
+        companyPostGroupDeleteGroup(groupId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.companyPostGroupDeleteGroup(groupId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupGetAllGroups(companyId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyPostGroupResponse>> {
-            return localVarFp.companyPostGroupGetAllGroups(companyId, options).then((request) => request(axios, basePath));
+        companyPostGroupGetAllGroups(options?: RawAxiosRequestConfig): AxiosPromise<Array<CompanyPostGroupResponse>> {
+            return localVarFp.companyPostGroupGetAllGroups(options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {number} companyId 
          * @param {number} groupId 
          * @param {CompanyPostGroupRequest} companyPostGroupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        companyPostGroupUpdateGroup(companyId: number, groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostGroupResponse> {
-            return localVarFp.companyPostGroupUpdateGroup(companyId, groupId, companyPostGroupRequest, options).then((request) => request(axios, basePath));
+        companyPostGroupUpdateGroup(groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompanyPostGroupResponse> {
+            return localVarFp.companyPostGroupUpdateGroup(groupId, companyPostGroupRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -7652,46 +7628,42 @@ export const CompanyPostGroupsApiFactory = function (configuration?: Configurati
 export class CompanyPostGroupsApi extends BaseAPI {
     /**
      * 
-     * @param {number} companyId 
      * @param {CompanyPostGroupRequest} companyPostGroupRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public companyPostGroupCreateGroup(companyId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig) {
-        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupCreateGroup(companyId, companyPostGroupRequest, options).then((request) => request(this.axios, this.basePath));
+    public companyPostGroupCreateGroup(companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig) {
+        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupCreateGroup(companyPostGroupRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {number} companyId 
      * @param {number} groupId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public companyPostGroupDeleteGroup(companyId: number, groupId: number, options?: RawAxiosRequestConfig) {
-        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupDeleteGroup(companyId, groupId, options).then((request) => request(this.axios, this.basePath));
+    public companyPostGroupDeleteGroup(groupId: number, options?: RawAxiosRequestConfig) {
+        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupDeleteGroup(groupId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {number} companyId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public companyPostGroupGetAllGroups(companyId: number, options?: RawAxiosRequestConfig) {
-        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupGetAllGroups(companyId, options).then((request) => request(this.axios, this.basePath));
+    public companyPostGroupGetAllGroups(options?: RawAxiosRequestConfig) {
+        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupGetAllGroups(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {number} companyId 
      * @param {number} groupId 
      * @param {CompanyPostGroupRequest} companyPostGroupRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public companyPostGroupUpdateGroup(companyId: number, groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig) {
-        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupUpdateGroup(companyId, groupId, companyPostGroupRequest, options).then((request) => request(this.axios, this.basePath));
+    public companyPostGroupUpdateGroup(groupId: number, companyPostGroupRequest: CompanyPostGroupRequest, options?: RawAxiosRequestConfig) {
+        return CompanyPostGroupsApiFp(this.configuration).companyPostGroupUpdateGroup(groupId, companyPostGroupRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

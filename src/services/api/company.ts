@@ -1,9 +1,10 @@
-import { CompanyApi, CompanyPostGroupsApi, Configuration, PublicCompanyViewsApi } from '../../../workflow-api';
+import { CompanyApi, Configuration, PublicCompanyViewsApi } from '../../../workflow-api';
 import type {
   CompanyProfileUpdateRequest,
   CompanyPostCreateRequest,
   CompanyPostUpdateRequest,
   CompanyPostGroupRequest,
+  CompanyPostGroupResponse,
   CompanyUploadDocumentTypeEnum,
   CompanyUpdateDocumentTypeEnum,
 } from '../../../workflow-api';
@@ -48,11 +49,6 @@ export interface CompanyDocumentUpdatePayload {
 function getCompanyApi(): CompanyApi {
   const config = new Configuration({ basePath: env.apiBaseUrl });
   return new CompanyApi(config, env.apiBaseUrl, axiosInstance);
-}
-
-function getPostGroupsApi(): CompanyPostGroupsApi {
-  const config = new Configuration({ basePath: env.apiBaseUrl });
-  return new CompanyPostGroupsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
 function getPublicCompanyApi(): PublicCompanyViewsApi {
@@ -146,20 +142,35 @@ export const companyService = {
   /**
    * Post groups
    */
-  async getPostGroups(companyId: number) {
-    return await getPostGroupsApi().companyPostGroupGetAllGroups(companyId);
+  async getPostGroups(_companyId?: number) {
+    return await axiosInstance.get<CompanyPostGroupResponse[]>('/api/v1/companies/post-groups');
   },
 
-  async createPostGroup(companyId: number, data: CompanyPostGroupRequest) {
-    return await getPostGroupsApi().companyPostGroupCreateGroup(companyId, data);
+  async createPostGroup(dataOrCompanyId: CompanyPostGroupRequest | number, maybeData?: CompanyPostGroupRequest) {
+    const data = typeof dataOrCompanyId === 'object' ? dataOrCompanyId : maybeData!;
+    return await axiosInstance.post<CompanyPostGroupResponse>('/api/v1/companies/post-groups', data);
   },
 
-  async updatePostGroup(companyId: number, groupId: number, data: CompanyPostGroupRequest) {
-    return await getPostGroupsApi().companyPostGroupUpdateGroup(companyId, groupId, data);
+  async updatePostGroup(
+    firstArg: number,
+    secondArg: CompanyPostGroupRequest | number,
+    thirdArg?: CompanyPostGroupRequest
+  ) {
+    let groupId: number;
+    let data: CompanyPostGroupRequest;
+    if (typeof secondArg === 'number') {
+      groupId = secondArg;
+      data = thirdArg!;
+    } else {
+      groupId = firstArg;
+      data = secondArg;
+    }
+    return await axiosInstance.put<CompanyPostGroupResponse>(`/api/v1/companies/post-groups/${groupId}`, data);
   },
 
-  async deletePostGroup(companyId: number, groupId: number) {
-    return await getPostGroupsApi().companyPostGroupDeleteGroup(companyId, groupId);
+  async deletePostGroup(firstArg: number, secondArg?: number) {
+    const groupId = secondArg !== undefined ? secondArg : firstArg;
+    return await axiosInstance.delete<void>(`/api/v1/companies/post-groups/${groupId}`);
   },
 
   /**
