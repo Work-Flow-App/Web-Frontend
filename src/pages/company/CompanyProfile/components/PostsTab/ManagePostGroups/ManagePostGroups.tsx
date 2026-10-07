@@ -23,13 +23,13 @@ import {
 } from './ManagePostGroups.styles';
 
 interface ManagePostGroupsProps {
-  companyId: number;
+  companyId?: number;
   groups: CompanyPostGroupResponse[];
   onGroupsChange: () => void;
   onClose: () => void;
 }
 
-export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, groups, onGroupsChange, onClose }) => {
+export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ groups, onGroupsChange, onClose }) => {
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
     useGlobalModalInnerContext();
@@ -70,14 +70,14 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
 
   const handleCreate = (values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.createPostGroup(companyId, toRequest(values));
+      const res = await companyService.createPostGroup(toRequest(values));
       setItems((prev) => [...prev, res.data]);
       showSuccess('Group created.');
     }, 'Failed to create group.');
 
   const handleUpdate = (groupId: number, values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.updatePostGroup(companyId, groupId, toRequest(values));
+      const res = await companyService.updatePostGroup(groupId, toRequest(values));
       setItems((prev) => prev.map((g) => (g.id === groupId ? res.data : g)));
       setEditingId(null);
       showSuccess('Group updated.');
@@ -85,7 +85,7 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
 
   const handleDelete = (groupId: number) =>
     run(async () => {
-      await companyService.deletePostGroup(companyId, groupId);
+      await companyService.deletePostGroup(groupId);
       setItems((prev) => prev.filter((g) => g.id !== groupId));
       setDeletingId(null);
       showSuccess('Group deleted.');
