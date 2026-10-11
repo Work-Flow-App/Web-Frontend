@@ -23,13 +23,13 @@ import {
 } from './ManagePostGroups.styles';
 
 interface ManagePostGroupsProps {
-  companyId: number;
+  companyId?: number;
   groups: CompanyPostGroupResponse[];
   onGroupsChange: () => void;
   onClose: () => void;
 }
 
-export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, groups, onGroupsChange, onClose }) => {
+export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ groups, onGroupsChange, onClose }) => {
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnClose, updateOnConfirm } =
     useGlobalModalInnerContext();
@@ -56,7 +56,13 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
       onGroupsChange();
       return true;
     } catch (error) {
-      showError(extractErrorMessage(error, errorMessage));
+      const extracted = extractErrorMessage(error, errorMessage);
+      const isCrypticServerError =
+        extracted.includes('Reference:') ||
+        extracted.includes('unexpected error') ||
+        extracted.includes('GroupInUseException') ||
+        extracted.includes('active posts');
+      showError(isCrypticServerError ? errorMessage : extracted);
       return false;
     } finally {
       setBusy(false);
@@ -70,26 +76,29 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
 
   const handleCreate = (values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.createPostGroup(companyId, toRequest(values));
+      const res = await companyService.createPostGroup(toRequest(values));
       setItems((prev) => [...prev, res.data]);
       showSuccess('Group created.');
     }, 'Failed to create group.');
 
   const handleUpdate = (groupId: number, values: PostGroupFormValues) =>
     run(async () => {
-      const res = await companyService.updatePostGroup(companyId, groupId, toRequest(values));
+      const res = await companyService.updatePostGroup(groupId, toRequest(values));
       setItems((prev) => prev.map((g) => (g.id === groupId ? res.data : g)));
       setEditingId(null);
       showSuccess('Group updated.');
     }, 'Failed to update group.');
 
   const handleDelete = (groupId: number) =>
-    run(async () => {
-      await companyService.deletePostGroup(companyId, groupId);
-      setItems((prev) => prev.filter((g) => g.id !== groupId));
-      setDeletingId(null);
-      showSuccess('Group deleted.');
-    }, 'Failed to delete group.');
+    run(
+      async () => {
+        await companyService.deletePostGroup(groupId);
+        setItems((prev) => prev.filter((g) => g.id !== groupId));
+        setDeletingId(null);
+        showSuccess('Group deleted.');
+      },
+      'Cannot delete group. Please ungroup or remove all posts from this group first.'
+    );
 
   return (
     <Wrapper>
@@ -113,7 +122,9 @@ export const ManagePostGroups: React.FC<ManagePostGroupsProps> = ({ companyId, g
                 />
               ) : deletingId === group.id ? (
                 <>
-                  <ConfirmText>Delete &ldquo;{group.name}&rdquo;? Posts in it will become ungrouped.</ConfirmText>
+                  <ConfirmText>
+                    Delete &ldquo;{group.name}&rdquo;? Please make sure all posts in this group are ungrouped or moved first.
+                  </ConfirmText>
                   <GroupActions>
                     <Button size="small" variant="text" color="secondary" onClick={() => setDeletingId(null)}>
                       Cancel

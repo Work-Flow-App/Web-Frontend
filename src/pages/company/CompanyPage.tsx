@@ -19,7 +19,6 @@ import type {
   WidgetConfig,
   WidgetId,
   TaskData,
-  Announcement,
   ActivityLog,
   QuickActionConfig,
   QuickActionId,
@@ -27,6 +26,7 @@ import type {
 import * as S from './CompanyPage.styles';
 import { queries } from '../../services/queries';
 import { useJobLocationMarkers, useRecentWorkflowActivity } from './dashboardQueries';
+import type { CompanyPostResponse } from '../../services/api';
 
 const LOCAL_STORAGE_KEY = 'workfloow_dashboard_widgets_config';
 
@@ -282,16 +282,9 @@ export const CompanyPage: React.FC = () => {
     });
   };
 
-  // Announcements formatting mapping
-  const getAnnouncementsData = (): Announcement[] => {
-    return announcements.slice(0, 2).map((post) => ({
-      id: post.id || 0,
-      title: post.groupName || (post.isPublic ? 'Public System Post' : 'Internal Announcement'),
-      content: post.content || '',
-      date: post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date',
-      author: post.authorName || 'Admin',
-    }));
-  };
+  // Pass the 5 most recent posts directly so the widget can render
+  // rich-text content, attachments, and photos exactly like PostCard does.
+  const recentPosts: CompanyPostResponse[] = announcements.slice(0, 5);
 
   // Calendar metrics mapping
   const getDueSoonTasksData = (): TaskData[] => {
@@ -460,7 +453,7 @@ export const CompanyPage: React.FC = () => {
         {isVisible('announcements') && (
           <S.GridItem lgSpan={5} mdSpan={6} smSpan={12}>
             <CompanyAnnouncementsWidget
-              announcements={getAnnouncementsData()}
+              posts={recentPosts}
               loading={loadingAnnouncements}
               onViewAllAnnouncements={handleViewAnnouncements}
             />

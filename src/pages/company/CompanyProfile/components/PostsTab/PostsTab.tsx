@@ -49,9 +49,8 @@ export const PostsTab: React.FC<PostsTabProps> = ({ companyId, companyName }) =>
     onError: (err) => showError(extractErrorMessage(err, 'Failed to load posts.')),
   });
 
-  const fetchGroups = useCallback(() => companyService.getPostGroups(companyId!), [companyId]);
-  const { data: groupsData, refetch: refetchGroups } = useFetch<CompanyPostGroupResponse[]>(fetchGroups, [companyId], {
-    skip: !companyId,
+  const fetchGroups = useCallback(() => companyService.getPostGroups(), []);
+  const { data: groupsData, refetch: refetchGroups } = useFetch<CompanyPostGroupResponse[]>(fetchGroups, [], {
     onError: (err) => showError(extractErrorMessage(err, 'Failed to load post groups.')),
   });
 
@@ -59,14 +58,13 @@ export const PostsTab: React.FC<PostsTabProps> = ({ companyId, companyName }) =>
   const groups = useMemo(() => groupsData || [], [groupsData]);
 
   const openManageGroups = useCallback(() => {
-    if (!companyId) return;
     setGlobalModalOuterProps({
       isOpen: true,
       size: ModalSizes.SMALL,
       fieldName: 'managePostGroups',
       children: (
         <ManagePostGroups
-          companyId={companyId}
+          companyId={companyId ?? 0}
           groups={groups}
           onGroupsChange={() => {
             refetchGroups();
@@ -158,7 +156,7 @@ export const PostsTab: React.FC<PostsTabProps> = ({ companyId, companyName }) =>
         </ComposeBox>
       )}
 
-      {(groups.length > 0 || (canEdit && companyId)) && (
+      {(groups.length > 0 || canEdit) && (
         <GroupFilterRow>
           {groups.length > 0 && (
             <>
@@ -181,7 +179,7 @@ export const PostsTab: React.FC<PostsTabProps> = ({ companyId, companyName }) =>
               ))}
             </>
           )}
-          {canEdit && companyId && (
+          {canEdit && (
             <ManageGroupsButton type="button" onClick={openManageGroups}>
               <SettingsOutlinedIcon />
               Manage groups

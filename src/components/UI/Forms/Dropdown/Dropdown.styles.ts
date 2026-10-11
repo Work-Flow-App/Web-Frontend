@@ -181,6 +181,7 @@ export const CustomPopper = styled(Popper)(({ theme }) => {
       borderRadius: rem(6),
       boxShadow: `0px 4px 20px ${floowColors.shadow.xl}`,
       border: `${rem(1)} solid ${floowColors.grey[100]}`,
+      minWidth: rem(180),
     },
 
     '& .MuiAutocomplete-listbox': {
