@@ -1,6 +1,7 @@
 import { env } from '../../config/env';
 import { decodeJWT } from '../../utils/jwt';
 import { classifySubscriptionError, isOnSubscriptionPage } from '../../utils/subscriptionErrors';
+import { TokenSync, type SessionTokens } from './tokenSync';
 
 /**
  * API Client for making HTTP requests to the backend
@@ -18,20 +19,23 @@ export interface ApiError {
   errors?: Record<string, string[]>;
 }
 
-class ApiClient {
+export interface ApiClientOptions {
+  /** Where this tab's tokens live; sessionStorage unless a test simulates another tab */
+  storage?: () => Storage;
+}
+
+export class ApiClient {
   private timeout: number;
-  private isRefreshing: boolean = false;
+  // In-flight refresh shared by every caller in this tab. The backend revokes a
+  // refresh token once it's used, so two parallel refreshes with the same token
+  // would make the second one fail and log the user out. tokenSync does the
+  // same for duplicated tabs, which share the token.
+  private refreshPromise: Promise<boolean> | null = null;
   private tokenRefreshTimer: NodeJS.Timeout | null = null;
   private sessionRestored: boolean = false;
   private sessionRestorePromise: Promise<void> | null = null;
-  private failedRequestsQueue: Array<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolve: (value: any) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    reject: (reason?: any) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    request: () => Promise<any>;
-  }> = [];
+  private readonly storage: () => Storage;
+  private readonly tokenSync: TokenSync;
 
   // Token storage keys for sessionStorage
   private readonly ACCESS_TOKEN_KEY = 'app_access_token';
@@ -59,8 +63,18 @@ class ApiClient {
     '/workers/invites/check',
   ];
 
-  constructor() {
+  constructor(options: ApiClientOptions = {}) {
     this.timeout = env.apiTimeout;
+    this.storage = options.storage ?? (() => sessionStorage);
+    this.tokenSync = new TokenSync({
+      storage: this.storage,
+      getTokens: () => {
+        const accessToken = this.getAuthToken();
+        const refreshToken = this.getRefreshToken();
+        return accessToken && refreshToken ? { accessToken, refreshToken } : null;
+      },
+      adoptTokens: (tokens) => this.storeTokens(tokens),
+    });
     // Try to restore session on initialization
     this.sessionRestorePromise = this.restoreSession();
   }
@@ -126,9 +140,11 @@ class ApiClient {
   }
 
   /**
-   * Schedule proactive token refresh before expiration
+   * Schedule proactive token refresh before expiration.
+   * refreshIfDue is false for tokens from a refresh: with a skewed clock they'd
+   * look due at once, and tabs would keep refreshing in answer to each other.
    */
-  private scheduleTokenRefresh(): void {
+  private scheduleTokenRefresh(refreshIfDue = true): void {
     this.cancelTokenRefresh();
 
     const token = this.getAuthToken();
@@ -148,7 +164,7 @@ class ApiClient {
     const delay = expirationTime - now - this.TOKEN_REFRESH_BUFFER;
 
     if (delay <= 0) {
-      this.refreshAccessToken();
+      if (refreshIfDue) this.refreshAccessToken();
     } else {
       this.tokenRefreshTimer = setTimeout(() => this.refreshAccessToken(), delay);
     }
@@ -177,7 +193,7 @@ class ApiClient {
    */
   private getAuthToken(): string | null {
     try {
-      return sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
+      return this.storage().getItem(this.ACCESS_TOKEN_KEY);
     } catch {
       return null;
     }
@@ -188,7 +204,7 @@ class ApiClient {
    */
   private getRefreshToken(): string | null {
     try {
-      return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+      return this.storage().getItem(this.REFRESH_TOKEN_KEY);
     } catch {
       return null;
     }
@@ -223,9 +239,27 @@ class ApiClient {
   }
 
   /**
-   * Refresh the access token using the refresh token
+   * Refresh the access token using the refresh token.
+   * Concurrent callers share the same in-flight request, and duplicated tabs
+   * take turns, so only one refresh is ever sent at a time.
    */
-  private async refreshAccessToken(): Promise<boolean> {
+  refreshAccessToken(): Promise<boolean> {
+    if (!this.refreshPromise) {
+      const tokenBefore = this.getRefreshToken();
+      this.refreshPromise = this.tokenSync
+        .withRefreshLock(() => {
+          // A duplicated tab may have refreshed the shared login while we waited
+          const current = this.getRefreshToken();
+          return current && current !== tokenBefore ? Promise.resolve(true) : this.performTokenRefresh();
+        })
+        .finally(() => {
+          this.refreshPromise = null;
+        });
+    }
+    return this.refreshPromise;
+  }
+
+  private async performTokenRefresh(allowRecovery = true): Promise<boolean> {
     const refreshToken = this.getRefreshToken();
 
     if (!refreshToken) {
@@ -233,13 +267,9 @@ class ApiClient {
       return false;
     }
 
-    // Prevent concurrent refresh attempts
-    if (this.isRefreshing) {
-      console.log('Token refresh already in progress');
-      return false;
-    }
-
-    this.isRefreshing = true;
+    // Bounded, so a hung request can't hold up the other tabs' refreshes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
       const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
@@ -248,6 +278,7 @@ class ApiClient {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ refreshToken }),
+        signal: controller.signal,
         credentials: 'include',
         mode: 'cors',
       });
@@ -256,6 +287,9 @@ class ApiClient {
       if (!response.ok) {
         // Only clear tokens on actual auth failures, not server errors
         if (response.status === 401 || response.status === 403) {
+          if (allowRecovery && (await this.recoverFromDuplicateTabs(refreshToken))) {
+            return true;
+          }
           console.error('Refresh token is invalid or expired - clearing session');
           this.clearAuthToken();
           this.clearRefreshToken();
@@ -273,9 +307,13 @@ class ApiClient {
       const data = await response.json();
 
       if (data.accessToken) {
-        this.setAuthToken(data.accessToken);
         if (data.refreshToken) {
-          this.setRefreshToken(data.refreshToken);
+          const tokens = { accessToken: data.accessToken, refreshToken: data.refreshToken };
+          this.storeTokens(tokens);
+          // Duplicated tabs hold the refresh token we just used up
+          await this.tokenSync.announce(tokens);
+        } else {
+          this.setAuthToken(data.accessToken);
         }
         console.log('Token refreshed successfully');
         return true;
@@ -288,32 +326,56 @@ class ApiClient {
       console.error('Token refresh failed (network error):', error);
       return false;
     } finally {
-      this.isRefreshing = false;
+      clearTimeout(timeoutId);
     }
   }
 
   /**
-   * Process queued requests after token refresh
+   * Our refresh token was rejected. If a duplicated tab already rotated it,
+   * continue with that tab's tokens instead of logging out.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private processQueue(error: any = null): void {
-    this.failedRequestsQueue.forEach(({ resolve, reject, request }) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(request());
-      }
-    });
+  private async recoverFromDuplicateTabs(rejectedToken: string): Promise<boolean> {
+    // Their update may have arrived while our request was in flight
+    await this.tokenSync.settle();
+    if (this.hasRefreshTokenOtherThan(rejectedToken)) {
+      return true;
+    }
 
-    this.failedRequestsQueue = [];
+    // This tab may have been frozen or discarded through their refresh: ask them
+    if (await this.tokenSync.requestNewerTokens()) {
+      // Their access token may be about to expire, so get a fresh pair with it
+      return this.performTokenRefresh(false);
+    }
+    return this.hasRefreshTokenOtherThan(rejectedToken);
+  }
+
+  private hasRefreshTokenOtherThan(token: string): boolean {
+    const current = this.getRefreshToken();
+    return !!current && current !== token;
   }
 
   /**
-   * Handle API response with automatic token refresh on 401
+   * Store the tokens from a refresh, this tab's or a duplicated tab's.
+   * Unlike setRefreshToken, keeps the login's cross-tab sync key.
+   */
+  private storeTokens({ accessToken, refreshToken }: SessionTokens): void {
+    try {
+      this.storage().setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+      this.storage().setItem(this.ACCESS_TOKEN_KEY, accessToken);
+    } catch (error) {
+      console.error('Failed to store refreshed tokens:', error);
+    }
+    this.scheduleTokenRefresh(false);
+  }
+
+  /**
+   * Handle API response with automatic token refresh on 401.
+   * retryRequest is null when this response is already a retry, so a request
+   * that still gets 401 after a refresh fails instead of refreshing forever.
    */
   private async handleResponse<T>(
     response: Response,
-    retryRequest: () => Promise<ApiResponse<T>>,
+    retryRequest: (() => Promise<ApiResponse<T>>) | null,
     endpoint: string
   ): Promise<ApiResponse<T>> {
     const contentType = response.headers.get('content-type');
@@ -335,7 +397,7 @@ class ApiClient {
 
       // Handle 401 Unauthorized - attempt token refresh
       // BUT skip token refresh for auth endpoints (login, signup, refresh)
-      if (response.status === 401 && !this.isPublicAuthEndpoint(endpoint)) {
+      if (response.status === 401 && retryRequest && !this.isPublicAuthEndpoint(endpoint)) {
         return this.handle401Error(error, retryRequest);
       }
 
@@ -368,42 +430,23 @@ class ApiClient {
     error: ApiError,
     retryRequest: () => Promise<ApiResponse<T>>
   ): Promise<ApiResponse<T>> {
-    if (!this.isRefreshing) {
-      this.isRefreshing = true;
+    // Joins any refresh already in flight instead of starting a second one
+    const refreshed = await this.refreshAccessToken();
 
-      try {
-        const refreshed = await this.refreshAccessToken();
-
-        if (refreshed) {
-          // Token refreshed successfully, retry all queued requests
-          this.processQueue();
-          return retryRequest();
-        } else {
-          // Refresh failed - refreshAccessToken() already handled token clearing
-          // if it was an auth error (401/403). For network errors, tokens are kept.
-          this.processQueue(error);
-          throw error;
-        }
-      } finally {
-        this.isRefreshing = false;
-      }
+    if (refreshed) {
+      return retryRequest();
     }
 
-    // If already refreshing, queue this request
-    return new Promise((resolve, reject) => {
-      this.failedRequestsQueue.push({
-        resolve,
-        reject,
-        request: retryRequest,
-      });
-    });
+    // Refresh failed - refreshAccessToken() already handled token clearing
+    // if it was an auth error (401/403). For network errors, tokens are kept.
+    throw error;
   }
 
   /**
    * Make a GET request
    */
   async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    const makeRequest = async (): Promise<ApiResponse<T>> => {
+    const makeRequest = async (isRetry = false): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -417,7 +460,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest, endpoint);
+        return await this.handleResponse<T>(response, isRetry ? null : () => makeRequest(true), endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -430,7 +473,7 @@ class ApiClient {
    * Make a POST request
    */
   async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const makeRequest = async (): Promise<ApiResponse<T>> => {
+    const makeRequest = async (isRetry = false): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -445,7 +488,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest, endpoint);
+        return await this.handleResponse<T>(response, isRetry ? null : () => makeRequest(true), endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -458,7 +501,7 @@ class ApiClient {
    * Make a PUT request
    */
   async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const makeRequest = async (): Promise<ApiResponse<T>> => {
+    const makeRequest = async (isRetry = false): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -473,7 +516,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest, endpoint);
+        return await this.handleResponse<T>(response, isRetry ? null : () => makeRequest(true), endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -486,7 +529,7 @@ class ApiClient {
    * Make a PATCH request
    */
   async patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
-    const makeRequest = async (): Promise<ApiResponse<T>> => {
+    const makeRequest = async (isRetry = false): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -501,7 +544,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest, endpoint);
+        return await this.handleResponse<T>(response, isRetry ? null : () => makeRequest(true), endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -514,7 +557,7 @@ class ApiClient {
    * Make a DELETE request
    */
   async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    const makeRequest = async (): Promise<ApiResponse<T>> => {
+    const makeRequest = async (isRetry = false): Promise<ApiResponse<T>> => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -528,7 +571,7 @@ class ApiClient {
           ...options,
         });
 
-        return await this.handleResponse<T>(response, makeRequest, endpoint);
+        return await this.handleResponse<T>(response, isRetry ? null : () => makeRequest(true), endpoint);
       } finally {
         clearTimeout(timeoutId);
       }
@@ -542,7 +585,7 @@ class ApiClient {
    */
   setAuthToken(token: string): void {
     try {
-      sessionStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+      this.storage().setItem(this.ACCESS_TOKEN_KEY, token);
       // Schedule proactive refresh when new token is set
       this.scheduleTokenRefresh();
     } catch (error) {
@@ -551,14 +594,16 @@ class ApiClient {
   }
 
   /**
-   * Set refresh token in sessionStorage
+   * Set refresh token in sessionStorage — for a new login. Tabs duplicated
+   * from this one from now on share the login and keep each other in step.
    */
   setRefreshToken(token: string): void {
     try {
-      sessionStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+      this.storage().setItem(this.REFRESH_TOKEN_KEY, token);
     } catch (error) {
       console.error('Failed to store refresh token:', error);
     }
+    this.tokenSync.startSession();
   }
 
   /**
@@ -566,7 +611,7 @@ class ApiClient {
    */
   clearAuthToken(): void {
     try {
-      sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      this.storage().removeItem(this.ACCESS_TOKEN_KEY);
       // Cancel any scheduled token refresh on logout
       this.cancelTokenRefresh();
     } catch (error) {
@@ -579,10 +624,11 @@ class ApiClient {
    */
   clearRefreshToken(): void {
     try {
-      sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      this.storage().removeItem(this.REFRESH_TOKEN_KEY);
     } catch (error) {
       console.error('Failed to clear refresh token:', error);
     }
+    this.tokenSync.endSession();
   }
 
   /**
