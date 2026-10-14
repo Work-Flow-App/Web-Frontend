@@ -86,75 +86,28 @@ axiosInstance.interceptors.response.use(
     }
 
     // If error is 401 and we haven't retried yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Get the token before refresh attempt
-      const oldToken = apiClient.getStoredAccessToken();
+      // Another request may already have refreshed while this one was in
+      // flight — then just retry with the current token.
+      const sentAuth = originalRequest.headers.Authorization;
+      const currentToken = apiClient.getStoredAccessToken();
+      const alreadyRefreshed = !!currentToken && sentAuth !== `Bearer ${currentToken}`;
 
-      // Try to refresh the token (this uses your existing refresh logic)
-      // Note: This is a simplified approach. For production, you might want
-      // to implement proper queue handling like your fetch client does
-      const refreshed = await refreshAccessToken();
+      // Shares apiClient's single in-flight refresh, so a burst of 401s (e.g.
+      // every query refetching on window focus) sends only one refresh request
+      const refreshed = alreadyRefreshed || (await apiClient.refreshAccessToken());
 
-      if (refreshed) {
-        // Update the failed request with new token
-        const newToken = apiClient.getStoredAccessToken();
-        if (newToken && newToken !== oldToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return axiosInstance(originalRequest);
-        }
+      const newToken = apiClient.getStoredAccessToken();
+      if (refreshed && newToken) {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return axiosInstance(originalRequest);
       }
     }
 
     return Promise.reject(error);
   }
 );
-
-/**
- * Helper to refresh access token
- * This mirrors the logic in your ApiClient but is accessible from Axios interceptor
- */
-async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = apiClient.getStoredRefreshToken();
-  if (!refreshToken) {
-    return false;
-  }
-
-  try {
-    const response = await fetch(`${env.apiBaseUrl}/api/v1/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refreshToken }),
-      credentials: 'include',
-      mode: 'cors',
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        apiClient.clearAuthToken();
-        apiClient.clearRefreshToken();
-        window.location.href = '/login';
-      }
-      return false;
-    }
-
-    const data = await response.json();
-    if (data.accessToken) {
-      apiClient.setAuthToken(data.accessToken);
-      if (data.refreshToken) {
-        apiClient.setRefreshToken(data.refreshToken);
-      }
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error('Token refresh failed:', error);
-    return false;
-  }
-}
 
 export default axiosInstance;
