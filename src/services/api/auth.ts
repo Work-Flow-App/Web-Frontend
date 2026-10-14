@@ -100,23 +100,6 @@ export const authService = {
   },
 
   /**
-   * Refresh access token using refresh token
-   */
-  async refreshToken(refreshToken: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await apiClient.post<AuthResponse>('/api/v1/auth/refresh', {
-      refreshToken,
-    });
-
-    // Update stored tokens in memory
-    if (response.data.accessToken) {
-      apiClient.setAuthToken(response.data.accessToken);
-      apiClient.setRefreshToken(response.data.refreshToken);
-    }
-
-    return response;
-  },
-
-  /**
    * Sign out the current user
    * Sends refresh token to backend to invalidate it
    */
