@@ -285,9 +285,11 @@ export class ApiClient {
 
       // Handle authentication errors (invalid/expired refresh token)
       if (!response.ok) {
-        // Only clear tokens on actual auth failures, not server errors
-        if (response.status === 401 || response.status === 403) {
-          if (allowRecovery && (await this.recoverFromDuplicateTabs(refreshToken))) {
+        const tokenRefused = response.status === 401 || response.status === 403;
+        // Only clear tokens on auth failures and 400 (a malformed request can't
+        // succeed on retry), not on server errors
+        if (tokenRefused || response.status === 400) {
+          if (tokenRefused && allowRecovery && (await this.recoverFromDuplicateTabs(refreshToken))) {
             return true;
           }
           console.error('Refresh token is invalid or expired - clearing session');

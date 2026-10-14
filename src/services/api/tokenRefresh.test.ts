@@ -64,6 +64,8 @@ const server = {
   validAccess: null as string | null,
   validRefresh: 'refresh-1',
   refreshCalls: 0,
+  // When set, /auth/refresh answers with this status instead
+  refreshStatus: 0,
 };
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -80,6 +82,9 @@ async function fakeFetch(input: string, init?: RequestInit): Promise<Response> {
 
   if (url.endsWith('/api/v1/auth/refresh')) {
     server.refreshCalls++;
+    if (server.refreshStatus) {
+      return json(server.refreshStatus, { message: 'Refresh failed' });
+    }
     const { refreshToken } = JSON.parse(String(init?.body));
     if (refreshToken !== server.validRefresh) {
       return json(401, { message: 'Refresh token revoked' });
@@ -110,7 +115,7 @@ async function fakeAxiosAdapter(config: InternalAxiosRequestConfig) {
 
 describe('token refresh after the access token expires', () => {
   beforeEach(() => {
-    Object.assign(server, { generation: 1, validAccess: null, validRefresh: 'refresh-1', refreshCalls: 0 });
+    Object.assign(server, { generation: 1, validAccess: null, validRefresh: 'refresh-1', refreshCalls: 0, refreshStatus: 0 });
     vi.stubGlobal('fetch', vi.fn(fakeFetch));
     axiosInstance.defaults.adapter = fakeAxiosAdapter;
     window.location.href = '/dashboard';
@@ -202,6 +207,24 @@ describe('token refresh after the access token expires', () => {
     expect(results.every((r) => r.status === 'rejected')).toBe(true);
     expect(server.refreshCalls).toBe(1);
     expect(apiClient.getStoredAccessToken()).toBeNull();
+    expect(apiClient.getStoredRefreshToken()).toBeNull();
+    expect(window.location.href).toBe('/login');
+  });
+
+  it('a 5xx from refresh keeps the session instead of logging out', async () => {
+    server.refreshStatus = 500;
+
+    await expect(axiosInstance.get('/api/v1/a')).rejects.toMatchObject({ response: { status: 401 } });
+
+    expect(apiClient.getStoredRefreshToken()).toBe('refresh-1');
+    expect(window.location.href).toBe('/dashboard');
+  });
+
+  it('a 400 from refresh logs out, since retrying the same request cannot succeed', async () => {
+    server.refreshStatus = 400;
+
+    await expect(axiosInstance.get('/api/v1/a')).rejects.toMatchObject({ response: { status: 401 } });
+
     expect(apiClient.getStoredRefreshToken()).toBeNull();
     expect(window.location.href).toBe('/login');
   });
