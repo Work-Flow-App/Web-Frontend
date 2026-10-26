@@ -602,6 +602,7 @@ export interface FormFieldDto {
     'id'?: number;
     'name'?: string;
     'label'?: string;
+    'description'?: string;
     'type'?: FormFieldDtoTypeEnum;
     'roleTarget'?: FormFieldDtoRoleTargetEnum;
     'required'?: boolean;
@@ -617,7 +618,8 @@ export const FormFieldDtoTypeEnum = {
     Dropdown: 'DROPDOWN',
     MultiSelect: 'MULTI_SELECT',
     Boolean: 'BOOLEAN',
-    File: 'FILE'
+    File: 'FILE',
+    Section: 'SECTION'
 } as const;
 
 export type FormFieldDtoTypeEnum = typeof FormFieldDtoTypeEnum[keyof typeof FormFieldDtoTypeEnum];
@@ -641,6 +643,7 @@ export interface FormFieldValueResponse {
     'fieldId'?: number;
     'fieldName'?: string;
     'fieldLabel'?: string;
+    'description'?: string;
     'fieldType'?: string;
     'roleTarget'?: string;
     'required'?: boolean;
