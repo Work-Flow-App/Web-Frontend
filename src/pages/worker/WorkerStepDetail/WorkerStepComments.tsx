@@ -1,40 +1,24 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import MicIcon from '@mui/icons-material/Mic';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { StepCommentResponse } from '../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Loader } from '../../../components/UI/Loader/Loader';
-import { TextArea } from '../../../components/UI/Forms/TextArea';
-import { rem } from '../../../components/UI/Typography/utility';
+import { VoiceInputSheet } from '../../../components/UI/VoiceInputSheet';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepCommentsProps {
   stepId: number;
+  stepName?: string;
   onUpdate?: () => void;
 }
 
-interface NewCommentFormValues {
-  newComment: string;
-}
-
-const compactTextAreaStyles = {
-  input: {
-    minHeight: rem(60),
-    fontSize: rem(12),
-    padding: rem(8),
-  },
-};
-
-export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, onUpdate }) => {
+export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, stepName, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [comments, setComments] = useState<StepCommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addingNew, setAddingNew] = useState(false);
-
-  const newCommentMethods = useForm<NewCommentFormValues>({
-    defaultValues: { newComment: '' },
-  });
+  const [commentSheetOpen, setCommentSheetOpen] = useState(false);
 
   const fetchComments = useCallback(async () => {
     try {
@@ -53,40 +37,22 @@ export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, 
     fetchComments();
   }, [fetchComments]);
 
-  const handleAddComment = async () => {
-    const newComment = newCommentMethods.getValues('newComment');
-    if (!newComment.trim()) return;
-
+  const handleAddComment = async (content: string) => {
     try {
-      setAddingNew(true);
       await workerJobWorkflowService.addComment(stepId, {
-        content: newComment.trim(),
+        content,
         type: StepCommentCreateRequestTypeEnum.General,
       });
       showSuccess('Comment added');
-      newCommentMethods.reset();
       fetchComments();
       onUpdate?.();
+      return true;
     } catch (error) {
       console.error('Error adding comment:', error);
       showError('Failed to add comment');
-    } finally {
-      setAddingNew(false);
+      return false;
     }
   };
-
-  const newCommentValue = newCommentMethods.watch('newComment');
-
-  if (loading) {
-    return (
-      <S.EventNoteBox>
-        <S.EventNoteHeader>
-          <S.EventNoteTitle>Comments</S.EventNoteTitle>
-        </S.EventNoteHeader>
-        <Loader size={20} centered minHeight="60px" />
-      </S.EventNoteBox>
-    );
-  }
 
   return (
     <S.EventNoteBox>
@@ -94,7 +60,9 @@ export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, 
         <S.EventNoteTitle>Comments</S.EventNoteTitle>
       </S.EventNoteHeader>
 
-      {comments.length === 0 ? (
+      {loading ? (
+        <Loader size={20} centered minHeight="60px" />
+      ) : comments.length === 0 ? (
         <S.EventNoteContent>No comments yet.</S.EventNoteContent>
       ) : (
         <S.CommentList>
@@ -111,23 +79,20 @@ export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, 
         </S.CommentList>
       )}
 
-      <S.NewCommentBox>
-        <FormProvider {...newCommentMethods}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <TextArea
-              name="newComment"
-              rows={2}
-              placeholder="Add a comment..."
-              fullWidth
-              styles={compactTextAreaStyles}
-            />
-            <S.ButtonActionsRow>
-              <S.EventNoteEditButton onClick={handleAddComment} disabled={!newCommentValue?.trim() || addingNew}>
-                {addingNew ? 'Adding...' : 'Add Comment'}
-              </S.EventNoteEditButton>
-            </S.ButtonActionsRow>
-          </div>
-        </FormProvider>
+      <S.NewCommentBox onClick={(e) => e.stopPropagation()}>
+        <S.NewCommentTrigger type="button" onClick={() => setCommentSheetOpen(true)}>
+          Add a comment...
+          <MicIcon />
+        </S.NewCommentTrigger>
+        <VoiceInputSheet
+          open={commentSheetOpen}
+          onClose={() => setCommentSheetOpen(false)}
+          title="Add Comment"
+          subtitle={stepName}
+          placeholder="Add a comment..."
+          submitLabel="Post Comment"
+          onSubmit={handleAddComment}
+        />
       </S.NewCommentBox>
     </S.EventNoteBox>
   );

@@ -561,7 +561,7 @@ const SortableStepRow: React.FC<SortableStepRowProps> = ({
                 {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
 
                 {/* Comments */}
-                {step.id && <StepCommentsSection stepId={step.id} onUpdate={onStepUpdate} />}
+                {step.id && <StepCommentsSection stepId={step.id} stepName={step.name} onUpdate={onStepUpdate} />}
               </S.ExpandedPanelBox>
             </Collapse>
           </S.StepContentBox>

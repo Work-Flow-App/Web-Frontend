@@ -482,7 +482,7 @@ export const WorkerStepDetail: React.FC = () => {
 
           {activityTab === 'discussion' && <WorkerStepDiscussion stepId={numericStepId} />}
           {activityTab === 'comments' && (
-            <WorkerStepComments stepId={numericStepId} onUpdate={fetchStep} />
+            <WorkerStepComments stepId={numericStepId} stepName={step?.name} onUpdate={fetchStep} />
           )}
           {activityTab === 'attachments' && (
             <WorkerStepAttachments stepId={numericStepId} onUpdate={fetchStep} />

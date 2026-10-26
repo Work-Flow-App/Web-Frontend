@@ -1189,6 +1189,32 @@ export const NewCommentBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1),
 }));
 
+export const NewCommentTrigger = styled('button')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1, 1.5),
+  fontSize: rem(12),
+  fontFamily: 'inherit',
+  textAlign: 'left',
+  color: theme.palette.text.secondary,
+  backgroundColor: theme.palette.colors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(0.5),
+  cursor: 'pointer',
+  transition: 'border-color 0.2s ease',
+  '& svg': {
+    fontSize: rem(18),
+    color: theme.palette.primary.main,
+  },
+  '&:hover, &:focus-visible': {
+    borderColor: theme.palette.primary.main,
+    outline: 'none',
+  },
+}));
+
 export const StyledTextField = styled('textarea')(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(1),

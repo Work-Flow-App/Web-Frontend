@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+import MicIcon from '@mui/icons-material/Mic';
 import { stepActivityService } from '../../../../services/api';
 import type { StepCommentResponse } from '../../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../../workflow-api';
@@ -7,16 +8,14 @@ import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../hooks';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
+import { VoiceInputSheet } from '../../../../components/UI/VoiceInputSheet';
 import { rem } from '../../../../components/UI/Typography/utility';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentsSectionProps {
   stepId: number;
+  stepName?: string;
   onUpdate?: () => void;
-}
-
-interface NewCommentFormValues {
-  newComment: string;
 }
 
 interface EditCommentFormValues {
@@ -31,19 +30,13 @@ const compactTextAreaStyles = {
   },
 };
 
-export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId, onUpdate }) => {
+export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId, stepName, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [comments, setComments] = useState<StepCommentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [commentSheetOpen, setCommentSheetOpen] = useState(false);
   const { saving, withSaving } = useFormSubmit();
-  const { saving: addingNew, withSaving: withAddNew } = useFormSubmit();
-
-  const newCommentMethods = useForm<NewCommentFormValues>({
-    defaultValues: {
-      newComment: '',
-    },
-  });
 
   const editCommentMethods = useForm<EditCommentFormValues>({
     defaultValues: {
@@ -98,21 +91,17 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     }
   };
 
-  const handleAddComment = async () => {
-    const newComment = newCommentMethods.getValues('newComment');
-    if (!newComment.trim()) return;
-
+  const handleAddComment = async (content: string) => {
     try {
-      await withAddNew(async () => {
-        await stepActivityService.addComment(stepId, { content: newComment.trim(), type: StepCommentCreateRequestTypeEnum.InternalNote });
-        showSuccess('Comment added successfully');
-        newCommentMethods.reset();
-        fetchComments();
-        onUpdate?.();
-      });
+      await stepActivityService.addComment(stepId, { content, type: StepCommentCreateRequestTypeEnum.InternalNote });
+      showSuccess('Comment added successfully');
+      fetchComments();
+      onUpdate?.();
+      return true;
     } catch (error) {
       console.error('Error adding comment:', error);
       showError('Failed to add comment');
+      return false;
     }
   };
 
@@ -128,26 +117,15 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     }
   };
 
-  const newCommentValue = newCommentMethods.watch('newComment');
-
-  if (loading) {
-    return (
-      <S.EventNoteBox>
-        <S.EventNoteHeader>
-          <S.EventNoteTitle>Comments</S.EventNoteTitle>
-        </S.EventNoteHeader>
-        <Loader size={20} centered minHeight="60px" />
-      </S.EventNoteBox>
-    );
-  }
-
   return (
     <S.EventNoteBox>
       <S.EventNoteHeader>
         <S.EventNoteTitle>Comments</S.EventNoteTitle>
       </S.EventNoteHeader>
 
-      {comments.length === 0 ? (
+      {loading ? (
+        <Loader size={20} centered minHeight="60px" />
+      ) : comments.length === 0 ? (
         <S.EventNoteContent>No comments yet.</S.EventNoteContent>
       ) : (
         <S.CommentList>
@@ -194,23 +172,20 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
         </S.CommentList>
       )}
 
-      <S.NewCommentBox>
-        <FormProvider {...newCommentMethods}>
-          <div onClick={(e) => e.stopPropagation()}>
-            <TextArea
-              name="newComment"
-              rows={2}
-              placeholder="Add a comment..."
-              fullWidth
-              styles={compactTextAreaStyles}
-            />
-            <S.ButtonActionsRow>
-              <S.EventNoteEditButton onClick={handleAddComment} disabled={!newCommentValue?.trim() || addingNew}>
-                {addingNew ? 'Adding...' : 'Add Comment'}
-              </S.EventNoteEditButton>
-            </S.ButtonActionsRow>
-          </div>
-        </FormProvider>
+      <S.NewCommentBox onClick={(e) => e.stopPropagation()}>
+        <S.NewCommentTrigger type="button" onClick={() => setCommentSheetOpen(true)}>
+          Add a comment...
+          <MicIcon />
+        </S.NewCommentTrigger>
+        <VoiceInputSheet
+          open={commentSheetOpen}
+          onClose={() => setCommentSheetOpen(false)}
+          title="Add Comment"
+          subtitle={stepName}
+          placeholder="Add a comment..."
+          submitLabel="Post Comment"
+          onSubmit={handleAddComment}
+        />
       </S.NewCommentBox>
     </S.EventNoteBox>
   );
