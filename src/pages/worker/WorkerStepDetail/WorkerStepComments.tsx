@@ -4,6 +4,7 @@ import { workerJobWorkflowService } from '../../../services/api';
 import type { StepCommentResponse } from '../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../workflow-api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
+import { tidyTextHandler } from '../../../services/ai/tidyText';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { VoiceInputSheet } from '../../../components/UI/VoiceInputSheet';
 import * as S from '../../jobs/JobDetailsPage.styles';
@@ -92,6 +93,7 @@ export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, 
           placeholder="Add a comment..."
           submitLabel="Post Comment"
           onSubmit={handleAddComment}
+          onTidy={tidyTextHandler(stepName)}
         />
       </S.NewCommentBox>
     </S.EventNoteBox>

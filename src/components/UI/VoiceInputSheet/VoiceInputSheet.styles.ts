@@ -195,6 +195,46 @@ export const DraftTextArea = styled('textarea')(({ theme }) => ({
   },
 }));
 
+export const AssistRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(-1),
+}));
+
+export const AssistButton = styled('button')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(6),
+  padding: theme.spacing(0.75, 1.5),
+  borderRadius: rem(16),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+  backgroundColor: alpha(theme.palette.primary.main, 0.06),
+  color: theme.palette.primary.main,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  fontSize: rem(13),
+  fontWeight: 500,
+  transition: 'background-color 0.2s ease',
+  '& svg': {
+    fontSize: rem(16),
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+  },
+  '&:disabled': {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+  },
+}));
+
+export const AssistError = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(-1),
+  fontSize: rem(12),
+  color: theme.palette.error.main,
+}));
+
 export const ModeToggle = styled('button')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',

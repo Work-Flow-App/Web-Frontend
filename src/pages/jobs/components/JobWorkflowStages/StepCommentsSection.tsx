@@ -6,6 +6,7 @@ import type { StepCommentResponse } from '../../../../services/api';
 import { StepCommentCreateRequestTypeEnum } from '../../../../../workflow-api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { useFormSubmit } from '../../../../hooks';
+import { tidyTextHandler } from '../../../../services/ai/tidyText';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { VoiceInputSheet } from '../../../../components/UI/VoiceInputSheet';
@@ -185,6 +186,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
           placeholder="Add a comment..."
           submitLabel="Post Comment"
           onSubmit={handleAddComment}
+          onTidy={tidyTextHandler(stepName)}
         />
       </S.NewCommentBox>
     </S.EventNoteBox>

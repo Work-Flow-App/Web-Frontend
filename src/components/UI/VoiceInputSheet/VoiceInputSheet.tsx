@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { IconButton } from '@mui/material';
+import { CircularProgress, IconButton } from '@mui/material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CloseIcon from '@mui/icons-material/Close';
 import MicIcon from '@mui/icons-material/Mic';
 import KeyboardOutlinedIcon from '@mui/icons-material/KeyboardOutlined';
+import UndoIcon from '@mui/icons-material/Undo';
 import { Button } from '../Button';
 import { useSpeechToText } from '../../../hooks/useSpeechToText';
 import type { SpeechToTextError } from '../../../hooks/useSpeechToText';
@@ -20,6 +22,11 @@ export interface VoiceInputSheetProps {
   submitLabel?: string;
   /** Resolve true to clear the draft and close; false keeps the sheet open with the text intact. */
   onSubmit: (text: string) => Promise<boolean>;
+  /**
+   * Optional AI clean-up of the draft; shows a "Tidy up with AI" button when set.
+   * Reject with an Error whose message can be shown to the user. `signal` aborts when the sheet closes.
+   */
+  onTidy?: (text: string, options: { signal: AbortSignal }) => Promise<string>;
 }
 
 type InputMode = 'voice' | 'keyboard';
@@ -65,14 +72,24 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
   placeholder = 'Type here...',
   submitLabel = 'Post',
   onSubmit,
+  onTidy,
 }) => {
   const [draft, setDraft] = useState('');
   const [mode, setMode] = useState<InputMode>('voice');
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [tidying, setTidying] = useState(false);
+  const [tidyError, setTidyError] = useState<string | null>(null);
+  // The draft from before the last tidy-up, kept until the text changes again.
+  const [undoDraft, setUndoDraft] = useState<string | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const tidyAbortRef = useRef<AbortController | null>(null);
+  const busy = submitting || tidying;
 
-  const handleFinalTranscript = useCallback((text: string) => setDraft((d) => appendText(d, text)), []);
+  const handleFinalTranscript = useCallback((text: string) => {
+    setDraft((d) => appendText(d, text));
+    setUndoDraft(null);
+  }, []);
   const { isSupported, isListening, interimTranscript, error, start, stop, abort } = useSpeechToText({
     onFinalTranscript: handleFinalTranscript,
   });
@@ -107,6 +124,8 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
 
   const handleClose = () => {
     if (submitting) return;
+    tidyAbortRef.current?.abort();
+    setTidyError(null);
     commitAndAbort();
     onClose();
   };
@@ -127,18 +146,50 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
 
   const handleSubmit = async () => {
     const text = appendText(draft, interimTranscript).trim();
-    if (!text || submitting) return;
+    if (!text || busy) return;
     abort();
     setDraft(text);
     setSubmitting(true);
     try {
       if (await onSubmit(text)) {
         setDraft('');
+        setUndoDraft(null);
+        setTidyError(null);
         onClose();
       }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleTidy = async () => {
+    const text = appendText(draft, interimTranscript).trim();
+    if (!onTidy || !text || busy) return;
+    abort();
+    setDraft(text);
+    setTidyError(null);
+    setTidying(true);
+    const controller = new AbortController();
+    tidyAbortRef.current = controller;
+    try {
+      const tidied = await onTidy(text, { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      setUndoDraft(text);
+      setDraft(tidied);
+    } catch (tidyFailure) {
+      if (!controller.signal.aborted) {
+        setTidyError(tidyFailure instanceof Error ? tidyFailure.message : 'AI tidy-up failed. Your text is unchanged.');
+      }
+    } finally {
+      if (tidyAbortRef.current === controller) tidyAbortRef.current = null;
+      setTidying(false);
+    }
+  };
+
+  const handleUndoTidy = () => {
+    if (undoDraft === null) return;
+    setDraft(undoDraft);
+    setUndoDraft(null);
   };
 
   const displayText = isListening ? appendText(draft, interimTranscript) : draft;
@@ -168,7 +219,7 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
               type="button"
               active={isListening}
               onClick={isListening ? stop : startListening}
-              disabled={submitting}
+              disabled={busy}
               aria-label={isListening ? 'Stop listening' : 'Start listening'}
             >
               <MicIcon />
@@ -198,22 +249,37 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
           ref={textAreaRef}
           className={mode}
           value={displayText}
-          onChange={(e) => setDraft(e.target.value)}
-          readOnly={isListening || submitting}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setUndoDraft(null);
+          }}
+          readOnly={isListening || busy}
           placeholder={mode === 'voice' ? 'Your words will appear here...' : placeholder}
           aria-label={title}
         />
 
-        <Button fullWidth onClick={handleSubmit} disabled={!displayText.trim()} loading={submitting}>
+        {onTidy && (
+          <S.AssistRow>
+            <S.AssistButton type="button" onClick={handleTidy} disabled={!displayText.trim() || busy}>
+              {tidying ? <CircularProgress size={14} color="inherit" /> : <AutoAwesomeIcon />}
+              {tidying ? 'Tidying up...' : 'Tidy up with AI'}
+            </S.AssistButton>
+            {undoDraft !== null && !busy && (
+              <S.AssistButton type="button" onClick={handleUndoTidy}>
+                <UndoIcon />
+                Undo
+              </S.AssistButton>
+            )}
+          </S.AssistRow>
+        )}
+        {tidyError && <S.AssistError role="alert">{tidyError}</S.AssistError>}
+
+        <Button fullWidth onClick={handleSubmit} disabled={!displayText.trim() || tidying} loading={submitting}>
           {submitLabel}
         </Button>
 
         {isSupported && (
-          <S.ModeToggle
-            type="button"
-            onClick={mode === 'voice' ? switchToKeyboard : switchToVoice}
-            disabled={submitting}
-          >
+          <S.ModeToggle type="button" onClick={mode === 'voice' ? switchToKeyboard : switchToVoice} disabled={busy}>
             {mode === 'voice' ? <KeyboardOutlinedIcon /> : <MicIcon />}
             {mode === 'voice' ? 'Use keyboard instead' : 'Switch to voice'}
           </S.ModeToggle>
