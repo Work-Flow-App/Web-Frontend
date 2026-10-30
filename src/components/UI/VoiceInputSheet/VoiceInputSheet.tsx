@@ -20,6 +20,8 @@ export interface VoiceInputSheetProps {
   placeholder?: string;
   /** @default 'Post' */
   submitLabel?: string;
+  /** Text to edit: the draft resets to it each time the sheet opens, so closing without submitting discards changes. */
+  initialText?: string;
   /** Resolve true to clear the draft and close; false keeps the sheet open with the text intact. */
   onSubmit: (text: string) => Promise<boolean>;
   /**
@@ -44,8 +46,8 @@ const ERROR_MESSAGES: Record<SpeechToTextError, string> = {
 const appendText = (base: string, addition: string) => {
   let text = addition.trim();
   if (!text) return base;
-  // Recognisers return lowercase phrases; capitalise when starting a new sentence.
-  if (!base.trim() || /[.!?]\s*$/.test(base)) text = text.charAt(0).toUpperCase() + text.slice(1);
+  // Recognisers return lowercase phrases; capitalise when starting a new sentence or line.
+  if (!base.trim() || /([.!?]\s*|\n)$/.test(base)) text = text.charAt(0).toUpperCase() + text.slice(1);
   if (!base || /\s$/.test(base)) return base + text;
   return `${base} ${text}`;
 };
@@ -71,6 +73,7 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
   subtitle,
   placeholder = 'Type here...',
   submitLabel = 'Post',
+  initialText,
   onSubmit,
   onTidy,
 }) => {
@@ -113,6 +116,12 @@ export const VoiceInputSheet: React.FC<VoiceInputSheetProps> = ({
   };
 
   const handleEnter = () => {
+    if (initialText !== undefined) {
+      // Dictation is appended, so start it on a new paragraph below the existing text.
+      setDraft(initialText.trim() ? `${initialText.trim()}\n\n` : '');
+      setUndoDraft(null);
+      setTidyError(null);
+    }
     const initialMode = isSupported ? 'voice' : 'keyboard';
     setMode(initialMode);
     if (initialMode === 'voice') startListening();

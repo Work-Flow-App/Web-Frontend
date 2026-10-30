@@ -7,11 +7,15 @@ import type { StepAttachmentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
+import { BeforeAfterPhotos, companyBeforeAfterPhotosApi, splitAttachments } from '../BeforeAfterPhotos';
 import * as SPage from '../../JobDetailsPage.styles';
 import * as S from './JobWorkflowStages.styles';
 
 interface StepAttachmentsSectionProps {
   stepId: number;
+  stepName?: string;
+  /** Change it to reload the before/after photos' saved write-up after the step's comments change. */
+  refreshKey?: number;
   onUpdate?: () => void;
 }
 
@@ -30,25 +34,35 @@ const getFileIcon = (fileType?: string) => {
   return <S.StyledGenericFileIcon />;
 };
 
-export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId, onUpdate }) => {
+export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
+  stepId,
+  stepName,
+  refreshKey,
+  onUpdate,
+}) => {
   const { showSuccess, showError } = useSnackbar();
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Only the first load shows the loader; reloads keep the section mounted so an unsaved photo write-up survives.
   const fetchAttachments = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await stepActivityService.getAttachments(stepId);
-      setAttachments(response.data || []);
+      const nextAttachments = response.data || [];
+      setAttachments(nextAttachments);
+      return nextAttachments;
     } catch (error) {
       console.error('Error fetching attachments:', error);
       setAttachments([]);
+      return null;
     } finally {
       setLoading(false);
     }
   }, [stepId]);
+
+  const { before, after, others } = splitAttachments(attachments);
 
   useEffect(() => {
     fetchAttachments();
@@ -149,14 +163,25 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
         multiple
       />
 
-      {attachments.length === 0 ? (
+      <BeforeAfterPhotos
+        stepId={stepId}
+        stepName={stepName}
+        api={companyBeforeAfterPhotosApi}
+        before={before}
+        after={after}
+        reloadAttachments={fetchAttachments}
+        refreshKey={refreshKey}
+        onUpdate={onUpdate}
+      />
+
+      {others.length === 0 ? (
         <SPage.UploadDropzone onClick={handleUploadClick}>
           <S.StyledAttachFileIcon />
           <SPage.EventNoteContent>Click to upload attachments</SPage.EventNoteContent>
         </SPage.UploadDropzone>
       ) : (
         <SPage.AttachmentList>
-          {attachments.map((attachment) => (
+          {others.map((attachment) => (
             <SPage.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
               <SPage.AttachmentFileName>

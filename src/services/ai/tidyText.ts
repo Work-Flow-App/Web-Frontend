@@ -1,12 +1,6 @@
-import type Groq from 'groq-sdk';
+import { getGroqClient, groqErrorMessage, isGroqAvailable } from './groqClient';
 
-// Calls Groq's free tier straight from the browser, so the key ships in the JS bundle and anyone can copy it.
-// Use a key from a Groq account with no payment card: the worst case is someone using up the free daily quota,
-// which turns Tidy up off until it resets. Move this call behind the backend once there's an endpoint for it.
-// Groq doesn't train on API data or keep it by default (see console.groq.com/docs/your-data).
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-
-export const isTidyTextAvailable = Boolean(apiKey);
+export const isTidyTextAvailable = isGroqAvailable;
 
 const SYSTEM_PROMPT = `You tidy up comments dictated into Workfloow, a job management app for property repair and restoration work in the UK. The text comes from speech recognition, so it may lack punctuation, contain filler words, or have misheard words.
 
@@ -26,27 +20,6 @@ const RESPONSE_SCHEMA = {
   additionalProperties: false,
 };
 
-let clientPromise: Promise<{ client: Groq; GroqSdk: typeof Groq }> | null = null;
-
-// Load the SDK on first use so it stays out of the main bundle.
-const getClient = () => {
-  clientPromise ??= import('groq-sdk').then(({ default: GroqSdk }) => ({
-    GroqSdk,
-    client: new GroqSdk({ apiKey, dangerouslyAllowBrowser: true, timeout: 30_000, maxRetries: 1 }),
-  }));
-  return clientPromise;
-};
-
-const toUserMessage = (error: unknown, sdk: typeof Groq): string => {
-  if (error instanceof sdk.AuthenticationError || error instanceof sdk.PermissionDeniedError) {
-    return 'AI tidy-up is not set up correctly (API key rejected).';
-  }
-  if (error instanceof sdk.RateLimitError) return 'The free AI limit has been reached. Try again later.';
-  if (error instanceof sdk.APIConnectionError) return "Couldn't reach the AI service. Check your connection.";
-  if (error instanceof sdk.InternalServerError) return 'The AI service is busy. Try again in a minute.';
-  return 'AI tidy-up failed. Your text is unchanged.';
-};
-
 export interface TidyTextOptions {
   /** Where the text will be posted, e.g. the job step name. Helps the model fix misheard words. */
   context?: string;
@@ -58,8 +31,8 @@ export interface TidyTextOptions {
  * Rejects with an Error whose message can be shown to the user, or with the abort error if `signal` aborts.
  */
 export async function tidyText(text: string, { context, signal }: TidyTextOptions = {}): Promise<string> {
-  if (!apiKey) throw new Error('AI tidy-up is not available.');
-  const { client, GroqSdk } = await getClient();
+  if (!isGroqAvailable) throw new Error('AI tidy-up is not available.');
+  const { client, GroqSdk } = await getGroqClient();
 
   let content: string | null | undefined;
   try {
@@ -81,7 +54,7 @@ export async function tidyText(text: string, { context, signal }: TidyTextOption
   } catch (error) {
     if (error instanceof GroqSdk.APIUserAbortError) throw error;
     console.error('Error tidying text:', error);
-    throw new Error(toUserMessage(error, GroqSdk));
+    throw new Error(groqErrorMessage(error, GroqSdk, 'AI tidy-up failed. Your text is unchanged.'));
   }
 
   try {

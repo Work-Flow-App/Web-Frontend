@@ -238,6 +238,20 @@ const SortableStepRow: React.FC<SortableStepRowProps> = ({
     disabled: !isReordering,
   });
 
+  // The before/after photos' write-up is saved as a step comment, so each section reloads when the other changes.
+  const [attachmentsRefresh, setAttachmentsRefresh] = useState(0);
+  const [commentsRefresh, setCommentsRefresh] = useState(0);
+
+  const handleAttachmentsUpdate = () => {
+    setCommentsRefresh((n) => n + 1);
+    onStepUpdate?.();
+  };
+
+  const handleCommentsUpdate = () => {
+    setAttachmentsRefresh((n) => n + 1);
+    onStepUpdate?.();
+  };
+
   const dndStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -558,10 +572,24 @@ const SortableStepRow: React.FC<SortableStepRowProps> = ({
                 </SPage.EventNoteBox>
 
                 {/* Attachments */}
-                {step.id && <StepAttachmentsSection stepId={step.id} onUpdate={onStepUpdate} />}
+                {step.id && (
+                  <StepAttachmentsSection
+                    stepId={step.id}
+                    stepName={step.name}
+                    refreshKey={attachmentsRefresh}
+                    onUpdate={handleAttachmentsUpdate}
+                  />
+                )}
 
                 {/* Comments */}
-                {step.id && <StepCommentsSection stepId={step.id} stepName={step.name} onUpdate={onStepUpdate} />}
+                {step.id && (
+                  <StepCommentsSection
+                    key={commentsRefresh}
+                    stepId={step.id}
+                    stepName={step.name}
+                    onUpdate={handleCommentsUpdate}
+                  />
+                )}
               </S.ExpandedPanelBox>
             </Collapse>
           </S.StepContentBox>

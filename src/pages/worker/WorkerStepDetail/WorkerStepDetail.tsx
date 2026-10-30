@@ -485,7 +485,7 @@ export const WorkerStepDetail: React.FC = () => {
             <WorkerStepComments stepId={numericStepId} stepName={step?.name} onUpdate={fetchStep} />
           )}
           {activityTab === 'attachments' && (
-            <WorkerStepAttachments stepId={numericStepId} onUpdate={fetchStep} />
+            <WorkerStepAttachments stepId={numericStepId} stepName={step?.name} onUpdate={fetchStep} />
           )}
         </Box>
       </Collapse>
