@@ -40,6 +40,7 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = true, initialFie
     if (initialField) {
       setFieldData({
         label: initialField.label || '',
+        description: initialField.description || '',
         type: initialField.type || FormFieldDtoTypeEnum.Text,
         roleTarget: initialField.roleTarget || FormFieldDtoRoleTargetEnum.Both,
         required: initialField.required || false,
@@ -51,18 +52,24 @@ export const FieldForm: React.FC<FieldFormProps> = ({ isModal = true, initialFie
   const handleSubmit = useCallback(
     async (data: FieldFormData) => {
       const type = extractValue(data.type, FormFieldDtoTypeEnum.Text);
+      const isSection = type === FormFieldDtoTypeEnum.Section;
       const roleTarget = extractValue(data.roleTarget, FormFieldDtoRoleTargetEnum.Both);
+
       const fieldPayload: BuilderField = {
         ...initialField,
         clientId: initialField?.clientId ?? Date.now(),
         id: initialField?.id,
-        name: initialField?.name || data.label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''),
+        name:
+          initialField?.name ||
+          data.label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''),
         label: data.label,
+        description: data.description ? data.description.trim() : undefined,
         type,
-        roleTarget,
-        required: data.required || false,
-        options: data.options || undefined,
+        roleTarget: isSection ? FormFieldDtoRoleTargetEnum.Both : roleTarget,
+        required: isSection ? false : data.required || false,
+        options: isSection ? undefined : data.options || undefined,
       };
+
       onSave(fieldPayload);
       return { success: true };
     },

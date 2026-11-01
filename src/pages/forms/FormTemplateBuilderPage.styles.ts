@@ -249,6 +249,14 @@ export const FieldLabel = styled(Box)(({ theme }) => ({
   },
 }));
 
+export const FieldDescription = styled(Box)(({ theme }) => ({
+  fontSize: rem(12.5),
+  fontWeight: Bold._400,
+  color: theme.palette.text.secondary,
+  lineHeight: 1.4,
+  marginTop: rem(2),
+}));
+
 export const FieldMetaRow = styled(Box)(() => ({
   display: 'flex',
   alignItems: 'center',

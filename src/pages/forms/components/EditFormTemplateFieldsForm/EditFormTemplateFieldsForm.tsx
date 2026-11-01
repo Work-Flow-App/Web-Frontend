@@ -21,6 +21,7 @@ interface EditFieldsFormData {
 const toRowData = (template: FormTemplateRequest): FieldRowData[] =>
   (template.fields || []).map((f) => ({
     label: f.label || '',
+    description: f.description || '',
     type: f.type || null,
     roleTarget: f.roleTarget || null,
     required: f.required || false,
