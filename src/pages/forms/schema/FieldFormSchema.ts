@@ -10,6 +10,14 @@ export const FieldFormSchema: IFields = {
     label: 'Field Label',
     isRequired: true,
   },
+  description: {
+    title: 'description',
+    rule: InputValidationRules.StringNotRequired,
+    defaultValue: '',
+    placeHolder: 'Add instructions, help text, or section subtext (optional)',
+    label: 'Description / Instructions',
+    isRequired: false,
+  },
   type: {
     title: 'type',
     rule: InputValidationRules.DropDownRequired('Field type'),
@@ -37,7 +45,7 @@ export const FieldFormSchema: IFields = {
     title: 'options',
     rule: InputValidationRules.StringNotRequired,
     defaultValue: '',
-    placeHolder: 'Comma-separated choices, e.g. Yes, No, N/A',
+    placeHolder: 'e.g. Yes, No, N/A',
     label: 'Options',
     isRequired: false,
   },
@@ -45,6 +53,7 @@ export const FieldFormSchema: IFields = {
 
 export interface FieldFormData {
   label: string;
+  description?: string;
   type: FormFieldDtoTypeEnum | { value: FormFieldDtoTypeEnum; label: string };
   roleTarget: FormFieldDtoRoleTargetEnum | { value: FormFieldDtoRoleTargetEnum; label: string };
   required?: boolean;
