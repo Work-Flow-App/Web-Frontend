@@ -30,11 +30,13 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import { getUserIdFromToken } from '../../../../../utils/jwt';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
+import { ImagePreview } from '../../../../../components/UI/ImagePreview';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
 } from '../../../../../components/UI/GlobalModal';
 import { rem } from '../../../../../components/UI/Typography/utility';
+import { isImageAttachment } from '../../../../../utils/attachmentHelpers';
 
 import { FilterByTypeScreen } from './FilterByTypeScreen';
 import * as SS from './StepActivityTab.styles';
@@ -440,21 +442,26 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               /* ── Normal display mode ──────────────────────────────── */
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
-                  <SS.AttachmentRow>
-                    {getFileIcon(fileName)}
-                    <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
-                    {item.fileUrl && (
-                      <Tooltip title="Download">
-                        <SS.DownloadIconButton
-                          size="small"
-                          onClick={() => window.open(item.fileUrl, '_blank')}
-                          isMine={isMine}
-                        >
-                          <DownloadIcon fontSize="small" />
-                        </SS.DownloadIconButton>
-                      </Tooltip>
+                  <>
+                    {item.fileUrl && isImageAttachment(undefined, fileName) && (
+                      <ImagePreview src={item.fileUrl} alt={item.description || fileName} />
                     )}
-                  </SS.AttachmentRow>
+                    <SS.AttachmentRow>
+                      {getFileIcon(fileName)}
+                      <SS.AttachmentFileName isMine={isMine}>{item.description || fileName}</SS.AttachmentFileName>
+                      {item.fileUrl && (
+                        <Tooltip title="Download">
+                          <SS.DownloadIconButton
+                            size="small"
+                            onClick={() => window.open(item.fileUrl, '_blank')}
+                            isMine={isMine}
+                          >
+                            <DownloadIcon fontSize="small" />
+                          </SS.DownloadIconButton>
+                        </Tooltip>
+                      )}
+                    </SS.AttachmentRow>
+                  </>
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{

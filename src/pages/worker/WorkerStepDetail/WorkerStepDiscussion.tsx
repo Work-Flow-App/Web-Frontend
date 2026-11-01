@@ -23,6 +23,8 @@ import { workerJobWorkflowService, WorkerJobWorkflowUploadAttachmentTypeEnum } f
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { Button } from '../../../components/UI/Button';
+import { ImagePreview } from '../../../components/UI/ImagePreview';
+import { isImageAttachment } from '../../../utils/attachmentHelpers';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepDiscussionProps {
@@ -192,20 +194,25 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
 
                     <S.ActivityBubble>
                       {isAttachment ? (
-                        <S.ActivityAttachmentRow>
-                          {getFileIcon(fileName)}
-                          <S.ActivityAttachmentName>{fileName}</S.ActivityAttachmentName>
-                          {item.fileUrl && (
-                            <Tooltip title="Download">
-                              <MuiIconButton
-                                size="small"
-                                onClick={() => window.open(item.fileUrl, '_blank')}
-                              >
-                                <DownloadIcon fontSize="small" />
-                              </MuiIconButton>
-                            </Tooltip>
+                        <>
+                          {item.fileUrl && isImageAttachment(undefined, fileName) && (
+                            <ImagePreview src={item.fileUrl} alt={item.description || fileName} />
                           )}
-                        </S.ActivityAttachmentRow>
+                          <S.ActivityAttachmentRow>
+                            {getFileIcon(fileName)}
+                            <S.ActivityAttachmentName>{item.description || fileName}</S.ActivityAttachmentName>
+                            {item.fileUrl && (
+                              <Tooltip title="Download">
+                                <MuiIconButton
+                                  size="small"
+                                  onClick={() => window.open(item.fileUrl, '_blank')}
+                                >
+                                  <DownloadIcon fontSize="small" />
+                                </MuiIconButton>
+                              </Tooltip>
+                            )}
+                          </S.ActivityAttachmentRow>
+                        </>
                       ) : (
                         <S.ActivityBubbleHtml
                           dangerouslySetInnerHTML={{ __html: item.content || item.description || '—' }}

@@ -11,10 +11,12 @@ import type { StepAttachmentResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../components/UI/Button/IconButton';
+import { BeforeAfterPhotos, splitAttachments, workerBeforeAfterPhotosApi } from '../../jobs/components/BeforeAfterPhotos';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepAttachmentsProps {
   stepId: number;
+  stepName?: string;
   onUpdate?: () => void;
 }
 
@@ -32,25 +34,30 @@ const getFileIcon = (fileType?: string) => {
   return <InsertDriveFileIcon fontSize="small" sx={{ color: 'text.secondary' }} />;
 };
 
-export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ stepId, onUpdate }) => {
+export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ stepId, stepName, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Only the first load shows the loader; reloads keep the section mounted so an unsaved photo write-up survives.
   const fetchAttachments = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await workerJobWorkflowService.getStepAttachments(stepId);
-      setAttachments(response.data || []);
+      const nextAttachments = response.data || [];
+      setAttachments(nextAttachments);
+      return nextAttachments;
     } catch (error) {
       console.error('Error fetching attachments:', error);
       setAttachments([]);
+      return null;
     } finally {
       setLoading(false);
     }
   }, [stepId]);
+
+  const { before, after, others } = splitAttachments(attachments);
 
   useEffect(() => {
     fetchAttachments();
@@ -117,14 +124,24 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
         onClick={(e) => e.stopPropagation()}
       />
 
-      {attachments.length === 0 ? (
+      {/* No onUpdate: the page's reload would unmount this tab and lose an unsaved write-up. */}
+      <BeforeAfterPhotos
+        stepId={stepId}
+        stepName={stepName}
+        api={workerBeforeAfterPhotosApi}
+        before={before}
+        after={after}
+        reloadAttachments={fetchAttachments}
+      />
+
+      {others.length === 0 ? (
         <S.UploadDropzone onClick={handleUploadClick}>
           <AttachFileIcon sx={{ fontSize: 24, color: 'text.secondary', mb: 0.5 }} />
           <S.EventNoteContent>Click to upload attachments</S.EventNoteContent>
         </S.UploadDropzone>
       ) : (
         <S.AttachmentList>
-          {attachments.map((attachment) => (
+          {others.map((attachment) => (
             <S.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
               <S.AttachmentFileName>

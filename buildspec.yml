@@ -8,6 +8,8 @@ env:
     NODE_VERSION: '20'
   parameter-store:
     VITE_GOOGLE_MAPS_API_KEY: 'VITE_GOOGLE_MAPS_API_KEY'
+    # Uncomment once the parameter exists in Parameter Store, or the build fails:
+    # VITE_GROQ_API_KEY: 'VITE_GROQ_API_KEY'
     #VITE_GOOGLE_CLIENT_ID: "VITE_GOOGLE_CLIENT_ID"
     # VITE_API_BASE_URL: "VITE_API_BASE_URL"
 
