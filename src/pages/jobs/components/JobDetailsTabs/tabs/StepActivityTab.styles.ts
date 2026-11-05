@@ -424,6 +424,23 @@ export const MessageEditActions = styled(Box)(({ theme }) => ({
   flexShrink: 0,
 }));
 
+export const RichEditContainer = styled(Box)(({ theme }) => ({
+  width: '100%',
+  minWidth: 0,
+  marginTop: theme.spacing(0.5),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+}));
+
+export const RichEditActionsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(0.5),
+}));
+
 export const DateGroupLine = styled(Box)(({ theme }) => ({
   flex: 1,
   height: rem(1),
@@ -467,14 +484,16 @@ export const MessageAvatarCircle = styled(Box, {
 }));
 
 export const MessageContentBox = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isMine',
-})<MessageProps>(({ theme, isMine }) => ({
-  maxWidth: '65%',
+  shouldForwardProp: (prop) => prop !== 'isMine' && prop !== 'isEditingRich',
+})<MessageProps & { isEditingRich?: boolean }>(({ theme, isMine, isEditingRich }) => ({
+  maxWidth: isEditingRich ? '100%' : '65%',
+  width: isEditingRich ? '100%' : 'auto',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: isMine ? 'flex-end' : 'flex-start',
+  alignItems: isEditingRich ? 'stretch' : isMine ? 'flex-end' : 'flex-start',
   [theme.breakpoints.down('md')]: {
     maxWidth: '100%',
+    width: '100%',
     flex: 1,
     minWidth: 0,
     alignItems: 'stretch',
