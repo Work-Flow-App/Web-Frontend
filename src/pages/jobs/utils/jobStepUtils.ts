@@ -1,4 +1,15 @@
-import type { JobResponse, JobWorkflowResponse, WorkflowStepResponse } from '../../../services/api';
+import type { JobResponse, JobWorkflowResponse, WorkflowStepResponse, StepCommentResponse } from '../../../services/api';
+
+const EXCLUDED_COMMENT_TYPES = new Set(['ADDITIONAL', 'COMPLAINT']);
+
+/**
+ * Filter to exclude ADDITIONAL information and COMPLAINT entries from step comments.
+ * Keeps normal step comments (INTERNAL_NOTE, GENERAL, etc.) as well as comments with no type.
+ */
+export const isStepComment = (comment: StepCommentResponse): boolean => {
+  if (!comment?.type) return true;
+  return !EXCLUDED_COMMENT_TYPES.has(comment.type.toUpperCase());
+};
 
 /**
  * Normalizes status strings for safe comparison (handles undefined, null, case differences).

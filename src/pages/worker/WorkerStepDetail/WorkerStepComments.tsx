@@ -7,6 +7,7 @@ import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { tidyTextHandler } from '../../../services/ai/tidyText';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { VoiceInputSheet } from '../../../components/UI/VoiceInputSheet';
+import { isStepComment } from '../../jobs/utils/jobStepUtils';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepCommentsProps {
@@ -25,7 +26,7 @@ export const WorkerStepComments: React.FC<WorkerStepCommentsProps> = ({ stepId, 
     try {
       setLoading(true);
       const response = await workerJobWorkflowService.getStepComments(stepId);
-      setComments(response.data || []);
+      setComments((response.data || []).filter(isStepComment));
     } catch (error) {
       console.error('Error fetching comments:', error);
       setComments([]);

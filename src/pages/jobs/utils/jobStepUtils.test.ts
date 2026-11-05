@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getCurrentStepName } from './jobStepUtils';
+import { getCurrentStepName, isStepComment } from './jobStepUtils';
 import type { JobResponse, JobWorkflowResponse, JobWorkflowStepResponse } from '../../../services/api';
 
 describe('getCurrentStepName', () => {
@@ -178,5 +178,26 @@ describe('getCurrentStepName', () => {
       };
       expect(getCurrentStepName(job, jw, templateSteps)).toBe('Runtime Step 2');
     });
+  });
+});
+
+describe('isStepComment', () => {
+  it('returns false for ADDITIONAL comments', () => {
+    expect(isStepComment({ id: 1, content: 'Some info', type: 'ADDITIONAL' as any })).toBe(false);
+    expect(isStepComment({ id: 2, content: 'Some info', type: 'additional' as any })).toBe(false);
+  });
+
+  it('returns false for COMPLAINT comments', () => {
+    expect(isStepComment({ id: 1, content: 'Some complaint', type: 'COMPLAINT' as any })).toBe(false);
+    expect(isStepComment({ id: 2, content: 'Some complaint', type: 'complaint' as any })).toBe(false);
+  });
+
+  it('returns true for INTERNAL_NOTE and GENERAL comments', () => {
+    expect(isStepComment({ id: 1, content: 'Step note', type: 'INTERNAL_NOTE' as any })).toBe(true);
+    expect(isStepComment({ id: 2, content: 'General note', type: 'GENERAL' as any })).toBe(true);
+  });
+
+  it('returns true for comments without type (legacy support)', () => {
+    expect(isStepComment({ id: 1, content: 'Legacy note' })).toBe(true);
   });
 });
