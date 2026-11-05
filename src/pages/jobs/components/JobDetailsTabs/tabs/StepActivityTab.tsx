@@ -404,7 +404,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             {getInitials(item.actorUsername)}
           </SS.MessageAvatarCircle>
 
-          <SS.MessageContentBox isMine={isMine} isEditingRich={isEditing && isRich}>
+          <SS.MessageContentBox isMine={isMine} isEditing={isEditing}>
             <SS.MessageMetaRow isMine={isMine}>
               <SS.MessageSenderName>{item.actorUsername || 'Unknown'}</SS.MessageSenderName>
               <SS.MessageTimeText>{fmtTime(item.createdAt)}</SS.MessageTimeText>
@@ -426,7 +426,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                     value={editingContent}
                     onChange={(val) => setEditingContent(val)}
                     placeholder="Edit message..."
-                    minHeight={120}
+                    minHeight={rem(120)}
                   />
                   <SS.RichEditActionsRow>
                     <Button
@@ -450,35 +450,49 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 </SS.RichEditContainer>
               ) : (
                 /* ── Inline plain text edit mode for other comments ───── */
-                <SS.MessageEditInputRow>
-                  <SS.MessageEditTextField
-                    size="small"
+                <SS.PlainEditContainer>
+                  <SS.PlainEditTextArea
                     value={editingContent}
                     onChange={(e: any) => setEditingContent(e.target.value)}
                     onKeyDown={(e: any) => {
-                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit();
+                      }
                       if (e.key === 'Escape') cancelEdit();
                     }}
                     multiline
-                    maxRows={4}
+                    minRows={3}
+                    maxRows={8}
                     autoFocus
+                    placeholder="Edit comment..."
                     fullWidth
                   />
-                  <SS.MessageEditActions>
-                    <Tooltip title="Save (Enter)">
-                      <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
-                        {savingEdit
-                          ? <CircularProgress size={12} />
-                          : <SS.CheckIconStyled />}
-                      </SS.MessageEditIconBtn>
-                    </Tooltip>
-                    <Tooltip title="Cancel (Esc)">
-                      <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
-                        <SS.CloseIconStyled />
-                      </SS.MessageEditIconBtn>
-                    </Tooltip>
-                  </SS.MessageEditActions>
-                </SS.MessageEditInputRow>
+                  <SS.PlainEditActionsRow>
+                    <SS.PlainEditShortcutHint>
+                      Press <strong>Enter</strong> to save, <strong>Shift + Enter</strong> for new line, <strong>Esc</strong> to cancel
+                    </SS.PlainEditShortcutHint>
+                    <SS.PlainEditButtonsGroup>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={cancelEdit}
+                        disabled={savingEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={saveEdit}
+                        disabled={savingEdit || !editingContent.trim()}
+                        loading={savingEdit}
+                      >
+                        Save
+                      </Button>
+                    </SS.PlainEditButtonsGroup>
+                  </SS.PlainEditActionsRow>
+                </SS.PlainEditContainer>
               )
             ) : (
               /* ── Normal display mode ──────────────────────────────── */
