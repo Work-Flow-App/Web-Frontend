@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Select,
   MenuItem,
@@ -215,7 +216,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
                         </>
                       ) : (
                         <S.ActivityBubbleHtml
-                          dangerouslySetInnerHTML={{ __html: item.content || item.description || '—' }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || item.description || '—') }}
                         />
                       )}
                     </S.ActivityBubble>

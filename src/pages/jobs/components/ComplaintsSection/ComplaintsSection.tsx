@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { Box, IconButton as MuiIconButton, Collapse, Tooltip } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -236,7 +237,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
                 <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
                   {item.itemType === 'COMMENT' ? (
                     <>
-                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: item.content || '' }} />
+                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || '') }} />
                       {item.createdAt && (
                         <S.CommentTimestamp>
                           {new Date(item.createdAt).toLocaleString()}

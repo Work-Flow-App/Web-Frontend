@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Tooltip,
   CircularProgress,
@@ -521,7 +522,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: item.content || item.description || '—',
+                      __html: DOMPurify.sanitize(item.content || item.description || '—'),
                     }}
                   />
                 )}
