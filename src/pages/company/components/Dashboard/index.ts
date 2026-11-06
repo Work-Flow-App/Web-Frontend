@@ -6,7 +6,7 @@ export { RecentActivityWidget } from './RecentActivityWidget/RecentActivityWidge
 export { RecentWorkflowActivity } from './RecentWorkflowActivity';
 export { CompanyAnnouncementsWidget } from './CompanyAnnouncementsWidget';
 export { JobStatusOverviewWidget } from './JobStatusOverviewWidget';
-export { JobsDueSoonWidget } from './JobsDueSoonWidget';
+export { InProgressJobsWidget } from './InProgressJobsWidget';
 export { QuickActionsWidget } from './QuickActionsWidget';
 export { DashboardCustomizerDrawer } from './DashboardCustomizerDrawer';
 export type { RecentWorkflowActivityData } from './RecentWorkflowActivity';

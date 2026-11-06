@@ -1,17 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
-import type { TaskData } from '../types';
-import * as S from './JobsDueSoonWidget.styles';
+import type { InProgressJobData } from '../types';
+import * as S from './InProgressJobsWidget.styles';
 
-interface JobsDueSoonWidgetProps {
+interface InProgressJobsWidgetProps {
   onViewJobs: () => void;
-  jobs?: TaskData[];
+  jobs?: InProgressJobData[];
   loading?: boolean;
   onJobClick?: (jobId: number) => void;
 }
 
-export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
+export const InProgressJobsWidget: React.FC<InProgressJobsWidgetProps> = ({
   onViewJobs,
   jobs = [],
   loading = false,
@@ -31,7 +31,7 @@ export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
   return (
     <S.Container>
       <S.Header>
-        <S.TitleText variant="h6">Jobs Due Soon</S.TitleText>
+        <S.TitleText variant="h6">In-Progress Jobs</S.TitleText>
         <S.ActionLink onClick={onViewJobs}>View Jobs</S.ActionLink>
       </S.Header>
       <S.ListContainer>
@@ -51,11 +51,11 @@ export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
           ))
         ) : jobs.length === 0 ? (
           <S.TaskItem style={{ justifyContent: 'center', padding: '40px 0' }}>
-            <S.StatusText style={{ textAlign: 'center', color: '#9CA3AF' }}>No jobs due soon</S.StatusText>
+            <S.StatusText style={{ textAlign: 'center', color: '#9CA3AF' }}>No jobs in progress</S.StatusText>
           </S.TaskItem>
         ) : (
           jobs.map((job) => {
-            const parts = job.dueDate.split(' ');
+            const parts = job.createdDate.split(' ');
             const month = parts[0] || 'MAY';
             const day = parts[1] || '00';
             const jobId = job.jobId || job.id;
@@ -80,9 +80,7 @@ export const JobsDueSoonWidget: React.FC<JobsDueSoonWidgetProps> = ({
                 <S.TaskDetails>
                   <S.TaskNameText variant="subtitle2" title={job.name}>{job.name}</S.TaskNameText>
                   <S.SubRow>
-                    <S.PriorityLabel priority={job.priority}>
-                      {job.priority} Priority
-                    </S.PriorityLabel>
+                    <S.StatusText variant="caption">Created</S.StatusText>
                     <S.Bullet />
                     <S.StatusText variant="caption">{job.status}</S.StatusText>
                   </S.SubRow>

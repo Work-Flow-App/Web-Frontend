@@ -137,20 +137,6 @@ export const SubRow = styled(Box)(() => ({
   gap: rem(8),
 }));
 
-export const PriorityLabel = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'priority',
-})<{ priority: 'High' | 'Medium' | 'Low' }>(({ theme, priority }) => {
-  let color = theme.palette.text.secondary;
-  if (priority === 'High') color = '#EF4444';
-  else if (priority === 'Medium') color = '#F97316';
-  else if (priority === 'Low') color = '#0284C7';
-  return {
-    fontSize: rem(11),
-    fontWeight: 600,
-    color,
-  };
-});
-
 export const Bullet = styled(Box)(({ theme }) => ({
   width: rem(4),
   height: rem(4),

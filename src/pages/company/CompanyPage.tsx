@@ -10,12 +10,12 @@ import {
   RecentWorkflowActivity,
   CompanyAnnouncementsWidget,
   JobStatusOverviewWidget,
-  JobsDueSoonWidget,
+  InProgressJobsWidget,
   QuickActionsWidget,
   DashboardCustomizerDrawer,
 } from './components/Dashboard';
 import { JobEventsSection } from './components/JobEventsSection';
-import type { WidgetId, TaskData, ActivityLog, QuickActionId } from './components/Dashboard/types';
+import type { WidgetId, InProgressJobData, ActivityLog, QuickActionId } from './components/Dashboard/types';
 import * as S from './CompanyPage.styles';
 import { queries } from '../../services/queries';
 import {
@@ -158,15 +158,13 @@ export const CompanyPage: React.FC = () => {
   // rich-text content, attachments, and photos exactly like PostCard does.
   const recentPosts: CompanyPostResponse[] = announcements.slice(0, RECENT_POSTS_LIMIT);
 
-  // Calendar metrics mapping
-  const getDueSoonTasksData = (): TaskData[] => {
+  const getInProgressJobsData = (): InProgressJobData[] => {
     return inProgressJobs.map((job) => ({
       id: job.id || 0,
       jobId: job.id,
       name: `Job #${job.jobRef || job.id} - ${job.templateName || 'Job'}`,
-      priority: 'Medium',
       status: 'In Progress',
-      dueDate: job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Pending',
+      createdDate: job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Pending',
     }));
   };
 
@@ -332,8 +330,8 @@ export const CompanyPage: React.FC = () => {
 
         {isVisible('due_jobs') && (
           <S.GridItem lgSpan={3} mdSpan={6} smSpan={12}>
-            <JobsDueSoonWidget
-              jobs={getDueSoonTasksData()}
+            <InProgressJobsWidget
+              jobs={getInProgressJobsData()}
               loading={loadingInProgressJobs}
               onViewJobs={handleViewJobs}
               onJobClick={handleJobClickOverview}

@@ -13,7 +13,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   { id: 'activity', label: 'Recent Activity', visible: true, order: 3 },
   { id: 'announcements', label: 'Company Announcements', visible: true, order: 4 },
   { id: 'donut', label: 'Job Status Overview', visible: true, order: 5 },
-  { id: 'due_jobs', label: 'Jobs Due Soon', visible: true, order: 6 },
+  // The id predates the widget's rename; it stays so saved preferences still apply
+  { id: 'due_jobs', label: 'In-Progress Jobs', visible: true, order: 6 },
 ];
 
 export const DEFAULT_QUICK_ACTIONS: QuickActionConfig[] = [
