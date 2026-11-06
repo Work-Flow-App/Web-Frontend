@@ -125,7 +125,18 @@ export type {
 } from './estimate';
 
 export { dashboardService } from './dashboard';
-export type { FinancialSummaryResponse } from './dashboard';
+export type {
+  DashboardPreferencesResponse,
+  DashboardPreferencesUpdateRequest,
+  FinancialSummaryResponse,
+  JobLocationResponse,
+  JobStatsResponse,
+  QuickActionPreference,
+  RecentWorkflowActivityResponse,
+  WidgetPreference,
+  WorkflowEventJobResponse,
+  WorkflowEventsResponse,
+} from './dashboard';
 
 export { lineItemService } from './lineItem';
 export type { LineItemResponse } from './lineItem';

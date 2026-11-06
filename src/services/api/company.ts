@@ -123,8 +123,8 @@ export const companyService = {
   /**
    * Posts
    */
-  async getPosts(groupId?: number) {
-    return await getCompanyApi().companyGetCompanyPosts(groupId);
+  async getPosts(groupId?: number, size?: number) {
+    return await getCompanyApi().companyGetCompanyPosts(groupId, size);
   },
 
   async createPost(data: CompanyPostCreateRequest, files?: File[]) {

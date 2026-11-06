@@ -1,110 +1,23 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { CircularProgress } from '@mui/material';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { rem } from '../../../components/UI/Typography/utility';
 import { queries } from '../../../services/queries';
-import type {
-  JobResponse,
-  JobWorkflowResponse,
-  JobWorkflowStepResponse,
-  WorkflowStepResponse,
-  WorkflowResponse,
-  CustomerResponse,
-} from '../../../services/api';
+import type { WorkflowResponse } from '../../../services/api';
+import { toStepEventGroups, type StepEventGroup } from '../dashboardMappers';
+import { useDashboardPreferences } from '../dashboardQueries';
 import { floowColors } from '../../../theme/colors';
 import { JobStepDetailDrawer } from './JobStepDetailDrawer';
 import * as S from './JobEventsSection.styles';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const PRIMARY_WORKFLOW_KEY = 'workfloow_primary_workflow_id';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface StepEventGroup {
-  stepName: string;
-  orderIndex: number;
-  count: number;
-  color: string;
-  jobWorkflows: Array<{ jobWorkflow: JobWorkflowResponse; currentStep: JobWorkflowStepResponse }>;
-}
-
-// ─── Color palette — uses floowColors design system ──────────────────────────
-
-const STEP_COLORS = [
-  floowColors.info.main, // #2196F3 — blue
-  floowColors.warning.main, // #FFA500 — orange
-  floowColors.chart.quaternary, // #ff9800 — amber
-  floowColors.success.main, // #00A63E — green
-  floowColors.indigo.main, // #6366F1 — purple
-  floowColors.grey[500], // #737373 — gray
-  floowColors.error.main, // #FB2C36 — red
-  floowColors.chart.primary, // #3f51b5 — indigo
-];
-
-function getStepColor(index: number): string {
-  return STEP_COLORS[index % STEP_COLORS.length];
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const DONE_STATUSES = new Set(['COMPLETED', 'SKIPPED']);
-
-function getCurrentStep(steps: JobWorkflowStepResponse[]): JobWorkflowStepResponse | null {
-  if (!steps?.length) return null;
-  const sorted = [...steps].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
-  return sorted.find((s) => !DONE_STATUSES.has(s.status ?? '')) ?? null;
-}
 
 function getJobLabel(count: number, status: string | undefined): string {
   if (status === 'STARTED' || status === 'ONGOING') return `${count} Job${count !== 1 ? 's' : ''} active`;
   return `${count} Job${count !== 1 ? 's' : ''} waiting`;
 }
 
-// ─── Build step groups from workflow templates + active job workflows ─────────
-
-function buildGroups(templateSteps: WorkflowStepResponse[], jobWorkflows: JobWorkflowResponse[]): StepEventGroup[] {
-  // Map step name → base info from template
-  const groupMap = new Map<string, StepEventGroup>();
-
-  templateSteps.forEach((step, index) => {
-    const name = step.name ?? `Step ${index + 1}`;
-    if (!groupMap.has(name)) {
-      groupMap.set(name, {
-        stepName: name,
-        orderIndex: step.orderIndex ?? index,
-        count: 0,
-        color: getStepColor(index),
-        jobWorkflows: [],
-      });
-    }
-  });
-
-  // Overlay with actual job workflow counts
-  jobWorkflows.forEach((jw) => {
-    const current = getCurrentStep(jw.steps ?? []);
-    if (!current) return;
-    const name = current.name ?? 'Unknown';
-    if (!groupMap.has(name)) {
-      groupMap.set(name, {
-        stepName: name,
-        orderIndex: current.orderIndex ?? 999,
-        count: 0,
-        color: getStepColor(groupMap.size),
-        jobWorkflows: [],
-      });
-    }
-    const group = groupMap.get(name)!;
-    group.count += 1;
-    group.jobWorkflows.push({ jobWorkflow: jw, currentStep: current });
-  });
-
-  return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
-}
-
-function StatBoxesRow({ jobs }: { jobs: JobResponse[] }) {
-  const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
-  const total = jobs.length;
+function StatBoxesRow({ inProgress, total }: { inProgress: number; total: number }) {
   const progressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
 
   return (
@@ -302,7 +215,7 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
 
       {groups.map((group) => {
         const fillPct = (group.count / maxCount) * 100;
-        const statusOfFirst = group.jobWorkflows[0]?.currentStep.status;
+        const statusOfFirst = group.jobs[0]?.currentStepStatus;
         const label = getJobLabel(group.count, statusOfFirst);
 
         return (
@@ -334,8 +247,8 @@ function EventsList({ groups, onSelectStep }: { groups: StepEventGroup[]; onSele
 function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
   const totalJobs = groups.reduce((s, g) => s + g.count, 0);
   const activeJobs = groups
-    .flatMap((g) => g.jobWorkflows)
-    .filter(({ currentStep }) => currentStep.status === 'STARTED' || currentStep.status === 'ONGOING').length;
+    .flatMap((g) => g.jobs)
+    .filter((job) => job.currentStepStatus === 'STARTED' || job.currentStepStatus === 'ONGOING').length;
 
   const withJobs = groups.filter((g) => g.count > 0);
   const noJobs = groups.filter((g) => g.count === 0);
@@ -390,97 +303,37 @@ function SummaryPanel({ groups }: { groups: StepEventGroup[] }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const NO_JOBS: JobResponse[] = [];
 const NO_WORKFLOWS: WorkflowResponse[] = [];
-const NO_CUSTOMERS: CustomerResponse[] = [];
 const NO_GROUPS: StepEventGroup[] = [];
 
 export const JobEventsSection: React.FC = () => {
-  const queryClient = useQueryClient();
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<number | null>(null);
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isPrimaryMode, setIsPrimaryMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [pendingPrimaryId, setPendingPrimaryId] = useState<number | null>(null);
-  const [primaryWorkflowId, setPrimaryWorkflowId] = useState<number | null>(() => {
-    const saved = localStorage.getItem(PRIMARY_WORKFLOW_KEY);
-    return saved ? Number(saved) : null;
-  });
 
-  // Shared with the dashboard page through `queries`, so these lists are requested once
-  const jobsQuery = useQuery(queries.jobs());
+  const { primaryWorkflowId: savedPrimaryWorkflowId, update: updatePreferences } = useDashboardPreferences();
+  const jobStatsQuery = useQuery(queries.jobStats());
   const workflowsQuery = useQuery(queries.workflows());
-  const customersQuery = useQuery(queries.customers());
-
-  const allJobs = jobsQuery.data ?? NO_JOBS;
   const workflows = workflowsQuery.data ?? NO_WORKFLOWS;
-  const customers = customersQuery.data ?? NO_CUSTOMERS;
 
-  const jobsMap = useMemo(() => {
-    const map = new Map<number, JobResponse>();
-    allJobs.forEach((j) => {
-      if (j.id != null) map.set(j.id, j);
-    });
-    return map;
-  }, [allJobs]);
+  // The first workflow is primary until the user picks one, or if theirs has since been deleted
+  const primaryWorkflowId = workflows.some((w) => w.id === savedPrimaryWorkflowId)
+    ? savedPrimaryWorkflowId
+    : (workflows[0]?.id ?? null);
+  const activeWorkflowId = selectedWorkflowId ?? primaryWorkflowId;
 
-  const customersMap = useMemo(() => {
-    const map = new Map<number, CustomerResponse>();
-    customers.forEach((c) => {
-      if (c.id != null) map.set(c.id, c);
-    });
-    return map;
-  }, [customers]);
-
-  // Use saved primary workflow as default, fallback to first workflow
-  const defaultWorkflowId =
-    primaryWorkflowId != null && workflows.some((w) => w.id === primaryWorkflowId)
-      ? primaryWorkflowId
-      : (workflows[0]?.id ?? null);
-  const activeWorkflowId = selectedWorkflowId ?? defaultWorkflowId;
-
-  // If no primary saved yet, auto-save first workflow as primary
-  useEffect(() => {
-    if (primaryWorkflowId == null && workflows[0]?.id != null) {
-      localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(workflows[0].id));
-      setPrimaryWorkflowId(workflows[0].id);
-    }
-  }, [primaryWorkflowId, workflows]);
-
-  // Step groups for the selected workflow; cached per workflow so switching back is instant
-  const groupsQuery = useQuery({
-    queryKey: ['dashboard', 'workflow-events', activeWorkflowId],
-    queryFn: async () => {
-      const workflowId = activeWorkflowId!;
-      const jobs = await queryClient.fetchQuery(queries.jobs());
-
-      // Jobs that belong to this workflow
-      const filteredJobs = jobs.filter((j) => j.workflowId === workflowId && j.id != null);
-
-      // Fetch JobWorkflow per-job — the bulk /job-workflows endpoint sometimes
-      // returns stale or incomplete data; per-job fetch matches the Job Details page.
-      const [jwResults, templateSteps] = await Promise.all([
-        Promise.allSettled(filteredJobs.map((j) => queryClient.fetchQuery(queries.jobWorkflow(j.id!)))),
-        // Template steps for this workflow
-        queryClient.fetchQuery(queries.workflowSteps(workflowId)).catch((): WorkflowStepResponse[] => []),
-      ]);
-
-      const filteredJobWorkflows: JobWorkflowResponse[] = [];
-      jwResults.forEach((r) => {
-        if (r.status === 'fulfilled' && r.value) {
-          filteredJobWorkflows.push(r.value);
-        }
-      });
-
-      return buildGroups(templateSteps, filteredJobWorkflows);
-    },
+  // Cached per workflow so switching back is instant
+  const eventsQuery = useQuery({
+    ...queries.workflowEvents(activeWorkflowId!),
     enabled: activeWorkflowId != null,
     placeholderData: keepPreviousData,
   });
-
-  const groups = groupsQuery.data ?? NO_GROUPS;
-  const loading = jobsQuery.isLoading || workflowsQuery.isLoading || groupsQuery.isLoading;
+  const events = eventsQuery.data;
+  const groups = useMemo(() => (events ? toStepEventGroups(events) : NO_GROUPS), [events]);
+  const loading = workflowsQuery.isLoading || eventsQuery.isLoading;
 
   const handleSelectStep = (stepName: string) => {
     setActiveStep(stepName);
@@ -498,15 +351,14 @@ export const JobEventsSection: React.FC = () => {
     if (isPrimaryMode) {
       // Save mode — persist pending selection as primary
       if (pendingPrimaryId != null) {
-        localStorage.setItem(PRIMARY_WORKFLOW_KEY, String(pendingPrimaryId));
-        setPrimaryWorkflowId(pendingPrimaryId);
+        updatePreferences({ primaryWorkflowId: pendingPrimaryId });
       }
       setIsPrimaryMode(false);
       setPendingPrimaryId(null);
       // Keep open after save
     } else {
       // Enter primary-selection mode — highlight the current primary
-      setPendingPrimaryId(primaryWorkflowId ?? activeWorkflowId);
+      setPendingPrimaryId(primaryWorkflowId);
       setIsPrimaryMode(true);
     }
   };
@@ -619,7 +471,9 @@ export const JobEventsSection: React.FC = () => {
       </S.SectionHeader>
 
       {/* Stat boxes */}
-      {!jobsQuery.isLoading && <StatBoxesRow jobs={allJobs} />}
+      {!jobStatsQuery.isLoading && (
+        <StatBoxesRow inProgress={jobStatsQuery.data?.inProgress ?? 0} total={jobStatsQuery.data?.total ?? 0} />
+      )}
 
       {/* Pipeline bar */}
       {loading ? (
@@ -642,8 +496,6 @@ export const JobEventsSection: React.FC = () => {
           open={drawerOpen}
           onClose={handleCloseDrawer}
           stepGroup={selectedGroup}
-          jobsMap={jobsMap}
-          customersMap={customersMap}
         />
       )}
     </S.SectionWrapper>

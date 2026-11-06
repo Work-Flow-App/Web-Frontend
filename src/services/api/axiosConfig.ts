@@ -54,8 +54,10 @@ axiosInstance.interceptors.response.use(
     const method = response.config.method?.toLowerCase();
     const url = response.config.url ?? '';
     const isWrite = !!method && method !== 'get' && method !== 'head' && method !== 'options';
-    // Marking notifications read can't change any cached page data
-    const affectsCachedData = !url.includes('/api/v1/notifications');
+    // Marking notifications read can't change any cached page data, and saving
+    // dashboard preferences only changes its own query, which the save updates
+    const affectsCachedData =
+      !url.includes('/api/v1/notifications') && !url.includes('/api/v1/dashboard/preferences');
     if (isWrite && affectsCachedData) {
       if (import.meta.env.DEV) {
         console.debug(`[query cache] invalidated by ${method!.toUpperCase()} ${url}`);

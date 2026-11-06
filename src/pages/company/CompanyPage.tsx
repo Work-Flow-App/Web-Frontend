@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -15,44 +15,20 @@ import {
   DashboardCustomizerDrawer,
 } from './components/Dashboard';
 import { JobEventsSection } from './components/JobEventsSection';
-import type {
-  WidgetConfig,
-  WidgetId,
-  TaskData,
-  ActivityLog,
-  QuickActionConfig,
-  QuickActionId,
-} from './components/Dashboard/types';
+import type { WidgetId, TaskData, ActivityLog, QuickActionId } from './components/Dashboard/types';
 import * as S from './CompanyPage.styles';
 import { queries } from '../../services/queries';
-import { useJobLocationMarkers, useRecentWorkflowActivity } from './dashboardQueries';
+import {
+  useDashboardPreferences,
+  useJobLocationMarkers,
+  useMigrateLegacyPreferences,
+  useRecentWorkflowActivity,
+} from './dashboardQueries';
+import { DEFAULT_QUICK_ACTIONS, DEFAULT_WIDGETS } from './dashboardPreferences';
 import type { CompanyPostResponse } from '../../services/api';
 
-const LOCAL_STORAGE_KEY = 'workfloow_dashboard_widgets_config';
-
-const DEFAULT_CONFIG: WidgetConfig[] = [
-  { id: 'workflow_events', label: 'Workfloow Event', visible: true, order: 0 },
-  { id: 'map', label: 'Live Job Locations', visible: true, order: 1 },
-  { id: 'workflow_activity', label: 'Recent Workflow Activity', visible: true, order: 2 },
-  { id: 'activity', label: 'Recent Activity', visible: true, order: 3 },
-  { id: 'announcements', label: 'Company Announcements', visible: true, order: 4 },
-  { id: 'donut', label: 'Job Status Overview', visible: true, order: 5 },
-  { id: 'due_jobs', label: 'Jobs Due Soon', visible: true, order: 6 },
-];
-
-const QUICK_ACTIONS_LOCAL_STORAGE_KEY = 'workfloow_dashboard_quick_actions_config';
-
-const DEFAULT_QUICK_ACTIONS: QuickActionConfig[] = [
-  { id: 'new_job', label: 'New Job', visible: true },
-  { id: 'add_worker', label: 'Add Worker', visible: true },
-  { id: 'add_client', label: 'Add Client', visible: true },
-  { id: 'add_asset', label: 'Add Asset', visible: true },
-  { id: 'add_customer', label: 'Add Customer', visible: true },
-  { id: 'create_form', label: 'Create Form', visible: true },
-  { id: 'create_submission', label: 'Create Submission', visible: true },
-  { id: 'new_workflow', label: 'New Workflow', visible: true },
-  { id: 'create_template', label: 'Create Job Template', visible: true },
-];
+const RECENT_POSTS_LIMIT = 5;
+const RECENT_JOBS_LIMIT = 10;
 
 export const CompanyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,153 +36,66 @@ export const CompanyPage: React.FC = () => {
 
   const [customizerOpen, setCustomizerOpen] = useState(false);
 
-  const [widgetConfigs, setWidgetConfigs] = useState<WidgetConfig[]>(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        let migrated = false;
-        const config = parsed.map((item: any) => {
-          if (item.id === 'workflow_events' && item.label !== 'Workfloow Event') {
-            migrated = true;
-            return {
-              ...item,
-              label: 'Workfloow Event',
-            };
-          }
-          if (item.id === 'tasks') {
-            migrated = true;
-            return {
-              id: 'workflow_activity' as WidgetId,
-              label: 'Recent Workflow Activity',
-              visible: item.visible ?? true,
-              order: item.order ?? 1,
-            };
-          }
-          if (item.id === 'due') {
-            migrated = true;
-            return {
-              id: 'due_jobs' as WidgetId,
-              label: 'Jobs Due Soon',
-              visible: item.visible ?? true,
-              order: item.order ?? 5,
-            };
-          }
-          return item;
-        });
+  const {
+    widgets: widgetConfigs,
+    quickActions: quickActionConfigs,
+    isReady: preferencesReady,
+    update: updatePreferences,
+  } = useDashboardPreferences();
+  useMigrateLegacyPreferences();
 
-        const hasWorkflowActivity = config.some((item: any) => item.id === 'workflow_activity');
-        if (!hasWorkflowActivity) {
-          config.push({ id: 'workflow_activity', label: 'Recent Workflow Activity', visible: true, order: 1 });
-          migrated = true;
-        }
-
-        const hasWorkflowEvents = config.some((item: any) => item.id === 'workflow_events');
-        if (!hasWorkflowEvents) {
-          config.unshift({ id: 'workflow_events', label: 'Workfloow Event', visible: true, order: 0 });
-          migrated = true;
-        }
-
-        const hasDueJobs = config.some((item: any) => item.id === 'due_jobs');
-        if (!hasDueJobs) {
-          config.push({ id: 'due_jobs', label: 'Jobs Due Soon', visible: true, order: 5 });
-          migrated = true;
-        }
-
-        const cleanedConfig = config.filter((item: any) => item.id !== 'tasks' && item.id !== 'due');
-        if (cleanedConfig.length !== config.length) {
-          migrated = true;
-        }
-
-        if (migrated) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cleanedConfig));
-        }
-        return cleanedConfig;
-      } catch {
-        return DEFAULT_CONFIG;
-      }
-    }
-    return DEFAULT_CONFIG;
-  });
-
-  const [quickActionConfigs, setQuickActionConfigs] = useState<QuickActionConfig[]>(() => {
-    const saved = localStorage.getItem(QUICK_ACTIONS_LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const merged = DEFAULT_QUICK_ACTIONS.map((def) => {
-          const match = parsed.find((item: any) => item.id === def.id);
-          return match ? { ...def, visible: match.visible ?? true } : def;
-        });
-        return merged;
-      } catch {
-        return DEFAULT_QUICK_ACTIONS;
-      }
-    }
-    return DEFAULT_QUICK_ACTIONS;
-  });
-
-  const isVisible = (id: WidgetId) => {
-    const widget = widgetConfigs.find((w) => w.id === id);
-    return widget ? widget.visible : false;
-  };
+  // Nothing shows until preferences load, so a widget the user has hidden never flashes or requests data
+  const isVisible = (id: WidgetId) =>
+    preferencesReady && (widgetConfigs.find((w) => w.id === id)?.visible ?? false);
 
   // API data — cached and de-duplicated by TanStack Query (see services/queries.ts).
   // Queries for hidden widgets are disabled so they send no requests.
   const profileQuery = useQuery(queries.companyProfile());
-  const jobsQuery = useQuery(queries.jobs());
-  const archivedJobsQuery = useQuery(queries.archivedJobs());
+  const jobStatsQuery = useQuery(queries.jobStats());
   const financialQuery = useQuery(queries.financialSummary());
-  const announcementsQuery = useQuery({ ...queries.companyPosts(), enabled: isVisible('announcements') });
+  const recentJobsQuery = useQuery({ ...queries.recentlyUpdatedJobs(RECENT_JOBS_LIMIT), enabled: isVisible('activity') });
+  const inProgressJobsQuery = useQuery({ ...queries.newestInProgressJobs(RECENT_JOBS_LIMIT), enabled: isVisible('due_jobs') });
+  const announcementsQuery = useQuery({ ...queries.companyPosts(RECENT_POSTS_LIMIT), enabled: isVisible('announcements') });
   const workflowActivityQuery = useRecentWorkflowActivity(isVisible('workflow_activity'));
   const mapMarkersQuery = useJobLocationMarkers(isVisible('map'));
 
   const profile = profileQuery.data ?? null;
-  const jobs = jobsQuery.data ?? [];
-  const archivedJobs = archivedJobsQuery.data ?? [];
+  const recentJobs = recentJobsQuery.data ?? [];
+  const inProgressJobs = inProgressJobsQuery.data ?? [];
+  const jobStats = jobStatsQuery.data;
   const announcements = announcementsQuery.data ?? [];
   const workflowActivities = workflowActivityQuery.data ?? [];
   const mapMarkers = mapMarkersQuery.data ?? [];
   const financialSummary = financialQuery.data ?? null;
 
   const loadingProfile = profileQuery.isLoading;
-  const loadingJobs = jobsQuery.isLoading;
-  const loadingMetrics = jobsQuery.isLoading || archivedJobsQuery.isLoading;
+  const loadingRecentJobs = recentJobsQuery.isLoading;
+  const loadingInProgressJobs = inProgressJobsQuery.isLoading;
+  const loadingJobStats = jobStatsQuery.isLoading;
   const loadingAnnouncements = announcementsQuery.isLoading;
   const loadingWorkflows = workflowActivityQuery.isLoading;
   const loadingMap = mapMarkersQuery.isLoading;
   const loadingFinancial = financialQuery.isLoading;
 
-  // Sync widget layouts to local storage
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(widgetConfigs));
-  }, [widgetConfigs]);
-
-  // Sync quick action configurations to local storage
-  useEffect(() => {
-    localStorage.setItem(QUICK_ACTIONS_LOCAL_STORAGE_KEY, JSON.stringify(quickActionConfigs));
-  }, [quickActionConfigs]);
-
   // Widget Preferences Toggles
   const handleToggleWidget = (id: WidgetId) => {
-    setWidgetConfigs((prev) =>
-      prev.map((widget) =>
+    updatePreferences({
+      widgets: widgetConfigs.map((widget) =>
         widget.id === id ? { ...widget, visible: !widget.visible } : widget
-      )
-    );
+      ),
+    });
   };
 
   const handleToggleQuickAction = (id: QuickActionId) => {
-    setQuickActionConfigs((prev) =>
-      prev.map((action) =>
+    updatePreferences({
+      quickActions: quickActionConfigs.map((action) =>
         action.id === id ? { ...action, visible: !action.visible } : action
-      )
-    );
+      ),
+    });
   };
 
   const handleResetWidgets = () => {
-    setWidgetConfigs(DEFAULT_CONFIG);
-    setQuickActionConfigs(DEFAULT_QUICK_ACTIONS);
+    updatePreferences({ widgets: DEFAULT_WIDGETS, quickActions: DEFAULT_QUICK_ACTIONS });
     showSuccess('Dashboard reset to default layout');
   };
 
@@ -223,19 +112,12 @@ export const CompanyPage: React.FC = () => {
     return `${days} day${days !== 1 ? 's' : ''} ago`;
   };
 
-  // Derived KPI calculations
-  const totalJobsCount = jobs.length;
-  const inProgressCount = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
-  const completedCount = jobs.filter((j) => j.status === 'COMPLETED').length;
-  const newJobsCount = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
-  const archivedCount = archivedJobs.length;
-
   // Recharts pie metrics mapping
   const getJobStatusOverviewData = () => {
-    const completed = jobs.filter((j) => j.status === 'COMPLETED').length;
-    const inProgress = jobs.filter((j) => j.status === 'IN_PROGRESS').length;
-    const pending = jobs.filter((j) => j.status === 'NEW' || j.status === 'PENDING').length;
-    const cancelled = jobs.filter((j) => j.status === 'CANCELLED').length;
+    const completed = jobStats?.completed ?? 0;
+    const inProgress = jobStats?.inProgress ?? 0;
+    const pending = jobStats?.newJobs ?? 0;
+    const cancelled = jobStats?.cancelled ?? 0;
     const total = completed + inProgress + pending + cancelled || 1;
 
     return [
@@ -248,13 +130,7 @@ export const CompanyPage: React.FC = () => {
 
   // Timeline events logs mapping
   const getRecentActivityData = (): ActivityLog[] => {
-    const sortedJobs = [...jobs].sort((a, b) => {
-      const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-      const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-      return dateB - dateA;
-    });
-
-    return sortedJobs.slice(0, 10).map((job) => {
+    return recentJobs.map((job) => {
       const timeAgo = getTimeAgo(job.updatedAt || job.createdAt);
       let action = 'was updated';
       let type: 'status_change' | 'comment' | 'creation' | 'update' = 'update';
@@ -282,20 +158,13 @@ export const CompanyPage: React.FC = () => {
     });
   };
 
-  // Pass the 5 most recent posts directly so the widget can render
+  // Pass the most recent posts directly so the widget can render
   // rich-text content, attachments, and photos exactly like PostCard does.
-  const recentPosts: CompanyPostResponse[] = announcements.slice(0, 5);
+  const recentPosts: CompanyPostResponse[] = announcements.slice(0, RECENT_POSTS_LIMIT);
 
   // Calendar metrics mapping
   const getDueSoonTasksData = (): TaskData[] => {
-    const inProgressJobs = jobs.filter((j) => j.status === 'IN_PROGRESS');
-    const sorted = [...inProgressJobs].sort((a, b) => {
-      const dateA = new Date(a.createdAt || 0).getTime();
-      const dateB = new Date(b.createdAt || 0).getTime();
-      return dateB - dateA;
-    });
-
-    return sorted.slice(0, 10).map((job) => ({
+    return inProgressJobs.map((job) => ({
       id: job.id || 0,
       jobId: job.id,
       name: `Job #${job.jobRef || job.id} - ${job.templateName || 'Job'}`,
@@ -397,12 +266,12 @@ export const CompanyPage: React.FC = () => {
 
       {/* 2. Top Row Metrics Cards */}
       <MetricsRow
-        newJobsCount={newJobsCount}
-        inProgressCount={inProgressCount}
-        completedCount={completedCount}
-        archivedCount={archivedCount}
-        totalJobsCount={totalJobsCount}
-        loading={loadingMetrics}
+        newJobsCount={jobStats?.newJobs}
+        inProgressCount={jobStats?.inProgress}
+        completedCount={jobStats?.completed}
+        archivedCount={jobStats?.archived}
+        totalJobsCount={jobStats?.total}
+        loading={loadingJobStats}
         onCardClick={handleMetricCardClick}
         waitingApprovalValue={financialSummary?.waitingApprovalValue}
         approvedValue={financialSummary?.approvedValue}
@@ -443,7 +312,7 @@ export const CompanyPage: React.FC = () => {
           <S.GridItem lgSpan={3} mdSpan={6} smSpan={12}>
             <RecentActivityWidget
               activities={getRecentActivityData()}
-              loading={loadingJobs}
+              loading={loadingRecentJobs}
               onViewAll={handleViewActivity}
               onJobClick={handleJobClickOverview}
             />
@@ -464,7 +333,7 @@ export const CompanyPage: React.FC = () => {
           <S.GridItem lgSpan={4} mdSpan={6} smSpan={12}>
             <JobStatusOverviewWidget
               data={getJobStatusOverviewData()}
-              loading={loadingJobs}
+              loading={loadingJobStats}
             />
           </S.GridItem>
         )}
@@ -473,7 +342,7 @@ export const CompanyPage: React.FC = () => {
           <S.GridItem lgSpan={3} mdSpan={6} smSpan={12}>
             <JobsDueSoonWidget
               jobs={getDueSoonTasksData()}
-              loading={loadingJobs}
+              loading={loadingInProgressJobs}
               onViewJobs={handleViewJobs}
               onJobClick={handleJobClickOverview}
             />
@@ -482,22 +351,24 @@ export const CompanyPage: React.FC = () => {
       </S.DashboardGrid>
 
       {/* 4. Bottom Quick Actions Row */}
-      <QuickActionsWidget
-        configs={quickActionConfigs}
-        onCreateJob={handleNewJobClick}
-        onAddWorker={handleAddWorkerClick}
-        onAddClient={handleAddClientClick}
-        onAddAsset={handleAddAssetClick}
-        onAddCustomer={handleAddCustomerClick}
-        onCreateFormTemplate={handleCreateFormTemplateClick}
-        onCreateSubmission={handleCreateSubmissionClick}
-        onNewWorkflow={handleNewWorkflowClick}
-        onCreateJobTemplate={handleCreateJobTemplateClick}
-      />
+      {preferencesReady && (
+        <QuickActionsWidget
+          configs={quickActionConfigs}
+          onCreateJob={handleNewJobClick}
+          onAddWorker={handleAddWorkerClick}
+          onAddClient={handleAddClientClick}
+          onAddAsset={handleAddAssetClick}
+          onAddCustomer={handleAddCustomerClick}
+          onCreateFormTemplate={handleCreateFormTemplateClick}
+          onCreateSubmission={handleCreateSubmissionClick}
+          onNewWorkflow={handleNewWorkflowClick}
+          onCreateJobTemplate={handleCreateJobTemplateClick}
+        />
+      )}
 
       {/* 5. Customizer Drawer Overlay */}
       <DashboardCustomizerDrawer
-        open={customizerOpen}
+        open={customizerOpen && preferencesReady}
         onClose={() => setCustomizerOpen(false)}
         configs={widgetConfigs}
         onToggle={handleToggleWidget}
