@@ -1,20 +1,16 @@
 import React from 'react';
 import { CircularProgress } from '@mui/material';
 import GoogleMap from '../../../../../components/UI/GoogleMap/GoogleMap';
-import type { PlaceDetails } from '../../../../../components/UI/GoogleMap/GoogleMap.types';
+import { useJobLocationMarkers } from '../../../dashboardQueries';
 import * as S from './LiveJobLocationsWidget.styles';
 
 interface LiveJobLocationsWidgetProps {
   onViewFullMap: () => void;
-  markers?: PlaceDetails[];
-  loading?: boolean;
 }
 
-export const LiveJobLocationsWidget: React.FC<LiveJobLocationsWidgetProps> = ({
-  onViewFullMap,
-  markers = [],
-  loading = false,
-}) => {
+export const LiveJobLocationsWidget: React.FC<LiveJobLocationsWidgetProps> = ({ onViewFullMap }) => {
+  const { markers, isLoading } = useJobLocationMarkers();
+
   return (
     <S.Container>
       <S.Header>
@@ -22,7 +18,7 @@ export const LiveJobLocationsWidget: React.FC<LiveJobLocationsWidgetProps> = ({
         <S.ActionLink onClick={onViewFullMap}>View Full Map</S.ActionLink>
       </S.Header>
       <S.MapWrapper>
-        {loading && (
+        {isLoading && (
           <S.LoadingOverlay>
             <CircularProgress size={30} />
           </S.LoadingOverlay>

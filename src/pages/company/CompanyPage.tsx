@@ -20,7 +20,6 @@ import * as S from './CompanyPage.styles';
 import { queries } from '../../services/queries';
 import {
   useDashboardPreferences,
-  useJobLocationMarkers,
   useMigrateLegacyPreferences,
   useRecentWorkflowActivity,
 } from './dashboardQueries';
@@ -57,7 +56,6 @@ export const CompanyPage: React.FC = () => {
   const inProgressJobsQuery = useQuery({ ...queries.newestInProgressJobs(RECENT_JOBS_LIMIT), enabled: isVisible('due_jobs') });
   const announcementsQuery = useQuery({ ...queries.companyPosts(RECENT_POSTS_LIMIT), enabled: isVisible('announcements') });
   const workflowActivityQuery = useRecentWorkflowActivity(isVisible('workflow_activity'));
-  const mapMarkersQuery = useJobLocationMarkers(isVisible('map'));
 
   const profile = profileQuery.data ?? null;
   const recentJobs = recentJobsQuery.data ?? [];
@@ -65,7 +63,6 @@ export const CompanyPage: React.FC = () => {
   const jobStats = jobStatsQuery.data;
   const announcements = announcementsQuery.data ?? [];
   const workflowActivities = workflowActivityQuery.data ?? [];
-  const mapMarkers = mapMarkersQuery.data ?? [];
   const financialSummary = financialQuery.data ?? null;
 
   const loadingProfile = profileQuery.isLoading;
@@ -74,7 +71,6 @@ export const CompanyPage: React.FC = () => {
   const loadingJobStats = jobStatsQuery.isLoading;
   const loadingAnnouncements = announcementsQuery.isLoading;
   const loadingWorkflows = workflowActivityQuery.isLoading;
-  const loadingMap = mapMarkersQuery.isLoading;
   const loadingFinancial = financialQuery.isLoading;
 
   // Widget Preferences Toggles
@@ -289,11 +285,7 @@ export const CompanyPage: React.FC = () => {
 
         {isVisible('map') && (
           <S.GridItem lgSpan={5} mdSpan={6} smSpan={12}>
-            <LiveJobLocationsWidget
-              markers={mapMarkers}
-              loading={loadingMap}
-              onViewFullMap={handleViewFullMap}
-            />
+            <LiveJobLocationsWidget onViewFullMap={handleViewFullMap} />
           </S.GridItem>
         )}
 

@@ -1,10 +1,11 @@
 import type {
   JobLocationResponse,
+  JobResponse,
   RecentWorkflowActivityResponse,
   WorkflowEventJobResponse,
   WorkflowEventsResponse,
 } from '../../services/api';
-import type { PlaceDetails } from '../../components/UI/GoogleMap/GoogleMap.types';
+import type { Location, PlaceDetails } from '../../components/UI/GoogleMap/GoogleMap.types';
 import { floowColors } from '../../theme/colors';
 import type { RecentWorkflowActivityData } from './components/Dashboard';
 
@@ -46,6 +47,43 @@ export function toJobLocationMarkers(locations: JobLocationResponse[]): PlaceDet
       },
     };
   });
+}
+
+/**
+ * `job-locations` omits jobs with no stored coordinates, so place the ones that
+ * have an address from that address. One at a time to stay within Google's rate limit.
+ */
+export async function geocodeJobsWithoutCoordinates(
+  jobs: JobResponse[],
+  geocode: (address: string) => Promise<Location | null>
+): Promise<JobLocationResponse[]> {
+  const located: JobLocationResponse[] = [];
+
+  for (const job of jobs) {
+    const stored = job.address;
+    if (!stored || (stored.latitude != null && stored.longitude != null)) continue;
+
+    const address = [stored.street, stored.city, stored.state, stored.postalCode, stored.country]
+      .filter(Boolean)
+      .join(', ');
+    if (!address) continue;
+
+    const location = await geocode(address);
+    if (!location) continue;
+
+    located.push({
+      jobId: job.id,
+      jobRef: job.jobRef,
+      status: job.status,
+      lat: location.lat,
+      lng: location.lng,
+      address,
+      clientName: job.clientName,
+      customerName: job.customerName,
+    });
+  }
+
+  return located;
 }
 
 // ─── Workflow events ──────────────────────────────────────────────────────────

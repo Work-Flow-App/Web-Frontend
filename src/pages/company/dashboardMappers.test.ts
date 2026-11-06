@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { toJobLocationMarkers, toRecentWorkflowActivity, toStepEventGroups } from './dashboardMappers';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  geocodeJobsWithoutCoordinates,
+  toJobLocationMarkers,
+  toRecentWorkflowActivity,
+  toStepEventGroups,
+} from './dashboardMappers';
 
 describe('toStepEventGroups', () => {
   it('keeps the server order, including steps with no jobs', () => {
@@ -34,6 +39,73 @@ describe('toStepEventGroups', () => {
 
   it('returns nothing for an empty response', () => {
     expect(toStepEventGroups({})).toEqual([]);
+  });
+});
+
+describe('geocodeJobsWithoutCoordinates', () => {
+  const address = { street: '1 High St', city: 'London', postalCode: 'E1' };
+
+  it('geocodes a job with an address but no stored coordinates', async () => {
+    const geocode = vi.fn().mockResolvedValue({ lat: 1, lng: 2 });
+    const [located] = await geocodeJobsWithoutCoordinates(
+      [{ id: 12, jobRef: 3, status: 'NEW', clientName: 'Acme', customerName: 'Sam', address }],
+      geocode
+    );
+
+    expect(geocode).toHaveBeenCalledWith('1 High St, London, E1');
+    expect(located).toEqual({
+      jobId: 12,
+      jobRef: 3,
+      status: 'NEW',
+      lat: 1,
+      lng: 2,
+      address: '1 High St, London, E1',
+      clientName: 'Acme',
+      customerName: 'Sam',
+    });
+  });
+
+  it('skips jobs job-locations already returns, without geocoding them', async () => {
+    const geocode = vi.fn();
+    const located = await geocodeJobsWithoutCoordinates([{ id: 1, address: { ...address, latitude: 0, longitude: 0 } }], geocode);
+
+    expect(geocode).not.toHaveBeenCalled();
+    expect(located).toEqual([]);
+  });
+
+  it('geocodes a job with only one stored coordinate, which job-locations omits', async () => {
+    const geocode = vi.fn().mockResolvedValue({ lat: 1, lng: 2 });
+
+    await geocodeJobsWithoutCoordinates([{ id: 1, address: { ...address, latitude: 5 } }], geocode);
+
+    expect(geocode).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips jobs with no address, or one with nothing to look up', async () => {
+    const geocode = vi.fn();
+    const located = await geocodeJobsWithoutCoordinates([{ id: 1 }, { id: 2, address: { additionalInfo: 'Gate 2' } }], geocode);
+
+    expect(geocode).not.toHaveBeenCalled();
+    expect(located).toEqual([]);
+  });
+
+  it('skips an address that cannot be geocoded and carries on', async () => {
+    const geocode = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({ lat: 1, lng: 2 });
+    const located = await geocodeJobsWithoutCoordinates([{ id: 1, address }, { id: 2, address }], geocode);
+
+    expect(located.map((job) => job.jobId)).toEqual([2]);
+  });
+
+  it('produces locations that become ordinary map pins', async () => {
+    const located = await geocodeJobsWithoutCoordinates(
+      [{ id: 12, jobRef: 3, customerName: 'Sam', address }],
+      vi.fn().mockResolvedValue({ lat: 1, lng: 2 })
+    );
+    const [marker] = toJobLocationMarkers(located);
+
+    expect(marker.name).toBe('Job #3');
+    expect(marker.location).toEqual({ lat: 1, lng: 2 });
+    expect(marker.jobLocationData?.customerName).toBe('Sam');
   });
 });
 

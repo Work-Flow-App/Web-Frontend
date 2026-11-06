@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useJsApiLoader } from '@react-google-maps/api';
+import { GOOGLE_MAPS_CONFIG } from '../../config/googleMaps';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { dashboardService } from '../../services/api';
+import { dashboardService, jobService } from '../../services/api';
 import type { DashboardPreferencesUpdateRequest, RecentWorkflowActivityResponse } from '../../services/api';
 import { queries } from '../../services/queries';
-import { toJobLocationMarkers, toRecentWorkflowActivity } from './dashboardMappers';
+import { geocodeAddress } from '../../utils/mapDataHelpers';
+import { geocodeJobsWithoutCoordinates, toJobLocationMarkers, toRecentWorkflowActivity } from './dashboardMappers';
 import {
   clearLegacyPreferences,
   hasNoSavedChoices,
@@ -26,8 +29,34 @@ export function useRecentWorkflowActivity(enabled: boolean) {
   });
 }
 
-export function useJobLocationMarkers(enabled: boolean) {
-  return useQuery({ ...queries.jobLocations(), select: toJobLocationMarkers, enabled });
+/** Loads the Maps SDK, so call it only from a component that is showing the map. */
+export function useJobLocationMarkers() {
+  const { isLoaded: mapsApiLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_CONFIG.apiKey,
+    libraries: GOOGLE_MAPS_CONFIG.libraries,
+  });
+
+  const stored = useQuery({ ...queries.jobLocations(), select: toJobLocationMarkers });
+
+  // A separate query so slow geocoding never holds up the stored pins. It needs the
+  // full job list until the backend geocodes addresses itself (deferred in Backend#326).
+  const geocoded = useQuery({
+    queryKey: ['dashboard', 'geocoded-job-locations'],
+    queryFn: async () => {
+      const { data: jobs } = await jobService.getAllJobs();
+      return toJobLocationMarkers(await geocodeJobsWithoutCoordinates(jobs, geocodeAddress));
+    },
+    enabled: mapsApiLoaded,
+  });
+
+  const storedMarkers = stored.data;
+  const geocodedMarkers = geocoded.data;
+  const markers = useMemo(
+    () => [...(storedMarkers ?? []), ...(geocodedMarkers ?? [])],
+    [storedMarkers, geocodedMarkers]
+  );
+
+  return { markers, isLoading: stored.isLoading };
 }
 
 // ─── Preferences ──────────────────────────────────────────────────────────────
