@@ -4,7 +4,7 @@ import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
@@ -84,7 +84,7 @@ const BANK_FIELDS = SCHEMA_ENTRIES.filter(([, field]) => field.section === 'bank
 export const CompanyProfile: React.FC = () => {
   const { refreshCurrency } = useCurrency();
   const { showSuccess, showError } = useSnackbar();
-  const { canEdit } = useCompanyRole();
+  const { canEdit, canManagePublicProfile } = useCompanyRole();
   const { fieldRules, defaultValues } = useSchema(CompanyProfileFormSchema);
 
   const methods = useForm<CompanyProfileFormData>({
@@ -212,10 +212,27 @@ export const CompanyProfile: React.FC = () => {
 
   const handleLogoChange = () => refetchProfile();
 
+  // Set from the save response: refetching would replace the whole page with its loading spinner
+  const [savedPublicPageEnabled, setSavedPublicPageEnabled] = useState<boolean | null>(null);
+  const [updatingPublicPage, setUpdatingPublicPage] = useState(false);
+  const publicPageEnabled = savedPublicPageEnabled ?? profile?.publicProfileEnabled ?? false;
+
+  const handleTogglePublicPage = async (enabled: boolean) => {
+    setUpdatingPublicPage(true);
+    try {
+      const { data } = await companyService.setPublicProfileVisibility(enabled);
+      setSavedPublicPageEnabled(data.publicProfileEnabled ?? enabled);
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to update the public page.'));
+    } finally {
+      setUpdatingPublicPage(false);
+    }
+  };
+
   const handleCopyPublicLink = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!profile?.publicId) return;
     const slug = profile.name ? slugify(profile.name) : '';
-    const link = `${window.location.origin}/public/company/${profile.id}${slug ? `/${slug}` : ''}`;
+    const link = `${window.location.origin}/public/company/${profile.publicId}${slug ? `/${slug}` : ''}`;
     const success = await copyToClipboard(link);
     if (success) {
       setLinkCopied(true);
@@ -224,7 +241,7 @@ export const CompanyProfile: React.FC = () => {
     } else {
       showError('Failed to copy link.');
     }
-  }, [profile?.id, profile?.name, showError]);
+  }, [profile?.publicId, profile?.name, showError]);
 
   const renderInfoRow = ([key, field]: SchemaEntry) => {
     const Icon = field.icon;
@@ -307,7 +324,23 @@ export const CompanyProfile: React.FC = () => {
               </IdBlock>
 
               <HeaderActionsRow>
-                {profile?.id && (
+                {canManagePublicProfile && (
+                  <FormControlLabel
+                    label={publicPageEnabled ? 'Public page' : 'Public page is hidden'}
+                    title="When on, anyone with the link can see your company page"
+                    sx={{ margin: 0 }}
+                    control={
+                      <Switch
+                        size="small"
+                        checked={publicPageEnabled}
+                        disabled={updatingPublicPage}
+                        onChange={(_, checked) => handleTogglePublicPage(checked)}
+                      />
+                    }
+                  />
+                )}
+
+                {profile?.publicId && publicPageEnabled && (
                   <CopyLinkWrap>
                     <CopyLinkButton
                       type="button"

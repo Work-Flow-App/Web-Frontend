@@ -15,6 +15,7 @@ export interface CompanyRoleContextValue {
   canInviteMembers: boolean;
   canManageRoles: boolean;
   canManageSubscription: boolean;
+  canManagePublicProfile: boolean;
   refresh: () => Promise<void>;
 }
 
@@ -97,6 +98,7 @@ export const CompanyRoleProvider = ({ children }: { children: ReactNode }) => {
         canInviteMembers: has(MANAGER_ROLES),
         canManageRoles: companyRole === MemberResponseCompanyRoleEnum.CompanyAdmin,
         canManageSubscription: companyRole === MemberResponseCompanyRoleEnum.CompanyAdmin,
+        canManagePublicProfile: companyRole === MemberResponseCompanyRoleEnum.CompanyAdmin,
         refresh,
       }}
     >

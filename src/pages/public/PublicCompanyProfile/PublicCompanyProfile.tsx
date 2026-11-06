@@ -59,29 +59,26 @@ const formatAddress = (address?: PublicCompanyProfileResponse['address']): strin
 const formatDate = (value?: string): string => (value ? new Date(value).toLocaleDateString() : '');
 
 export const PublicCompanyProfile: React.FC = () => {
-  const { companyId: companyIdParam } = useParams<{ companyId: string }>();
+  const { publicId = '' } = useParams<{ publicId: string }>();
   const [activeTab, setActiveTab] = useState(0);
 
-  const companyId = Number(companyIdParam);
-  const isValidCompanyId = Boolean(companyIdParam) && Number.isFinite(companyId);
-
-  const fetchProfile = useCallback(() => companyService.getPublicProfile(companyId), [companyId]);
+  const fetchProfile = useCallback(() => companyService.getPublicProfile(publicId), [publicId]);
   const {
     data: profile,
     loading: profileLoading,
     error: profileError,
-  } = useFetch<PublicCompanyProfileResponse>(fetchProfile, [companyId], { skip: !isValidCompanyId });
+  } = useFetch<PublicCompanyProfileResponse>(fetchProfile, [publicId], { skip: !publicId });
 
-  const fetchPosts = useCallback(() => companyService.getPublicPosts(companyId), [companyId]);
-  const { data: postsData, loading: postsLoading } = useFetch<CompanyPostResponse[]>(fetchPosts, [companyId], {
-    skip: !isValidCompanyId,
+  const fetchPosts = useCallback(() => companyService.getPublicPosts(publicId), [publicId]);
+  const { data: postsData, loading: postsLoading } = useFetch<CompanyPostResponse[]>(fetchPosts, [publicId], {
+    skip: !publicId,
   });
 
-  const fetchDocuments = useCallback(() => companyService.getPublicDocuments(companyId), [companyId]);
+  const fetchDocuments = useCallback(() => companyService.getPublicDocuments(publicId), [publicId]);
   const { data: documentsData, loading: documentsLoading } = useFetch<CompanyDocumentResponse[]>(
     fetchDocuments,
-    [companyId],
-    { skip: !isValidCompanyId }
+    [publicId],
+    { skip: !publicId }
   );
 
   const posts = useMemo(() => postsData || [], [postsData]);
@@ -99,7 +96,7 @@ export const PublicCompanyProfile: React.FC = () => {
       </TopBar>
 
       <Content>
-        {!isValidCompanyId ? (
+        {!publicId ? (
           <NotFoundState>This company page link is invalid.</NotFoundState>
         ) : profileLoading ? (
           <LoadingContainer>
