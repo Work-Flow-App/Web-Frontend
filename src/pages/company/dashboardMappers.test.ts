@@ -2,56 +2,34 @@ import { describe, expect, it } from 'vitest';
 import { toJobLocationMarkers, toRecentWorkflowActivity, toStepEventGroups } from './dashboardMappers';
 
 describe('toStepEventGroups', () => {
-  const templateSteps = [
-    { stepId: 2, name: 'Install', orderIndex: 1 },
-    { stepId: 1, name: 'Survey', orderIndex: 0 },
-  ];
-
-  it('keeps template steps with no jobs when groups only lists occupied steps', () => {
+  it('keeps the server order, including steps with no jobs', () => {
     const groups = toStepEventGroups({
-      templateSteps,
-      groups: [{ stepName: 'Install', orderIndex: 1, jobCount: 1, jobs: [{ jobId: 7 }] }],
+      groups: [
+        { stepName: 'Survey', orderIndex: 0, jobCount: 0, jobs: [] },
+        { stepName: 'Install', orderIndex: 1, jobCount: 2, jobs: [{ jobId: 7 }, { jobId: 8 }] },
+        { stepName: 'Off template', orderIndex: 1, jobCount: 1, jobs: [{ jobId: 9 }] },
+      ],
     });
 
     expect(groups.map((g) => [g.stepName, g.count])).toEqual([
       ['Survey', 0],
-      ['Install', 1],
+      ['Install', 2],
+      ['Off template', 1],
     ]);
-    expect(groups[1].jobs).toEqual([{ jobId: 7 }]);
+    expect(groups[1].jobs).toEqual([{ jobId: 7 }, { jobId: 8 }]);
   });
 
-  it('does not double count when groups already lists every template step', () => {
-    const groups = toStepEventGroups({
-      templateSteps,
-      groups: [
-        { stepName: 'Survey', orderIndex: 0, jobCount: 0, jobs: [] },
-        { stepName: 'Install', orderIndex: 1, jobCount: 2, jobs: [{ jobId: 7 }, { jobId: 8 }] },
-      ],
-    });
+  it('assigns colours by position in the array', () => {
+    const groups = toStepEventGroups({ groups: Array.from({ length: 9 }, (_, i) => ({ stepName: `Step ${i}` })) });
 
-    expect(groups.map((g) => g.count)).toEqual([0, 2]);
-  });
-
-  it('keeps a group whose step is no longer in the template', () => {
-    const groups = toStepEventGroups({
-      templateSteps,
-      groups: [{ stepName: 'Old step', orderIndex: 5, jobCount: 1, jobs: [{ jobId: 9 }] }],
-    });
-
-    expect(groups.map((g) => g.stepName)).toEqual(['Survey', 'Install', 'Old step']);
+    expect(groups[0].color).not.toBe(groups[1].color);
+    expect(groups[8].color).toBe(groups[0].color); // the palette has 8 colours, then repeats
   });
 
   it('falls back to the number of jobs when jobCount is missing', () => {
     const [group] = toStepEventGroups({ groups: [{ stepName: 'Survey', jobs: [{ jobId: 1 }, { jobId: 2 }] }] });
 
     expect(group.count).toBe(2);
-  });
-
-  it('colours a step by its template position, whatever order the server sends', () => {
-    const shuffled = toStepEventGroups({ templateSteps });
-    const sorted = toStepEventGroups({ templateSteps: [...templateSteps].reverse() });
-
-    expect(shuffled.map((g) => g.color)).toEqual(sorted.map((g) => g.color));
   });
 
   it('returns nothing for an empty response', () => {

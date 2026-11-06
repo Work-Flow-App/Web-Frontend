@@ -73,43 +73,16 @@ function getStepColor(index: number): string {
   return STEP_COLORS[index % STEP_COLORS.length];
 }
 
-/**
- * Template steps come first so a step with no jobs still shows in the pipeline
- * and keeps its colour; job groups are then laid over them by step name.
- */
+/** The server lists every step in pipeline order, including steps with no jobs. */
 export function toStepEventGroups(events: WorkflowEventsResponse): StepEventGroup[] {
-  const groupMap = new Map<string, StepEventGroup>();
-
-  const templateSteps = [...(events.templateSteps ?? [])].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
-  templateSteps.forEach((step, index) => {
-    const name = step.name ?? `Step ${index + 1}`;
-    if (!groupMap.has(name)) {
-      groupMap.set(name, {
-        stepName: name,
-        orderIndex: step.orderIndex ?? index,
-        count: 0,
-        color: getStepColor(index),
-        jobs: [],
-      });
-    }
-  });
-
-  (events.groups ?? []).forEach((group) => {
-    const name = group.stepName ?? 'Unknown';
-    if (!groupMap.has(name)) {
-      groupMap.set(name, {
-        stepName: name,
-        orderIndex: group.orderIndex ?? 999,
-        count: 0,
-        color: getStepColor(groupMap.size),
-        jobs: [],
-      });
-    }
-    const target = groupMap.get(name)!;
+  return (events.groups ?? []).map((group, index) => {
     const jobs = group.jobs ?? [];
-    target.count += group.jobCount ?? jobs.length;
-    target.jobs.push(...jobs);
+    return {
+      stepName: group.stepName ?? `Step ${index + 1}`,
+      orderIndex: group.orderIndex ?? index,
+      count: group.jobCount ?? jobs.length,
+      color: getStepColor(index),
+      jobs,
+    };
   });
-
-  return Array.from(groupMap.values()).sort((a, b) => a.orderIndex - b.orderIndex);
 }
