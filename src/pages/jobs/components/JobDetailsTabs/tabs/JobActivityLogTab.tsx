@@ -7,6 +7,7 @@ import type {
 } from '../../../../../services/api';
 import { jobWorkflowService, stepActivityService, visitLogService } from '../../../../../services/api';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
+import { htmlToPlainText } from '../../../../../utils/htmlToPlainText';
 import * as S from './JobActivityLogTab.styles';
 
 // ─── Types & Configuration ───────────────────────────────────────────────────
@@ -708,7 +709,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
                                     <S.GanttTooltipTitle>
                                       {getActivityConfig(a.type).label}
                                     </S.GanttTooltipTitle>
-                                    {a.message && <S.GanttTooltipDetail>{a.message}</S.GanttTooltipDetail>}
+                                    {a.message && <S.GanttTooltipDetail>{htmlToPlainText(a.message)}</S.GanttTooltipDetail>}
                                     <S.GanttTooltipMeta>
                                       {formatDate(a.createdAt)}
                                       {a.actorUsername && ` · ${a.actorUsername}`}
@@ -797,7 +798,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
                 <S.RecentActivityContent>
                   <S.RecentActivityText>
                     <S.RecentActorName>{actor}</S.RecentActorName>{' '}
-                    {activity.message || getActivityConfig(activity.type).label}{' '}
+                    {(activity.message && htmlToPlainText(activity.message)) || getActivityConfig(activity.type).label}{' '}
                     <S.RecentStepBullet>• {activity.stepName}</S.RecentStepBullet>
                   </S.RecentActivityText>
                 </S.RecentActivityContent>
@@ -891,7 +892,7 @@ export const JobActivityLogTab: React.FC<JobActivityLogTabProps> = ({ job, refre
                     <S.ActivityPopoverContent>
                       <S.ActivityPopoverItemType>{cfg.label}</S.ActivityPopoverItemType>
                       {activity.message && (
-                        <S.ActivityPopoverItemMessage>{activity.message}</S.ActivityPopoverItemMessage>
+                        <S.ActivityPopoverItemMessage>{htmlToPlainText(activity.message)}</S.ActivityPopoverItemMessage>
                       )}
                       <S.ActivityPopoverItemMeta>
                         {formatDate(activity.createdAt)}
