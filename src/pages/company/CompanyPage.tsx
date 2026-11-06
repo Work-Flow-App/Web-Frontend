@@ -26,7 +26,7 @@ import {
 import { DEFAULT_QUICK_ACTIONS, DEFAULT_WIDGETS } from './dashboardPreferences';
 import type { CompanyPostResponse } from '../../services/api';
 
-const RECENT_POSTS_LIMIT = 5;
+const RECENT_POSTS_LIMIT = 2;
 const RECENT_JOBS_LIMIT = 10;
 
 export const CompanyPage: React.FC = () => {
