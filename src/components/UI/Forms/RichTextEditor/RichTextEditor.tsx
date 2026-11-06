@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -62,23 +62,29 @@ const CustomUnderline = Underline.extend({
   },
 });
 
-interface RichTextEditorProps {
-  name: string;
+export interface StandaloneRichTextEditorProps {
+  id?: string;
+  value?: string;
+  onChange?: (val: string) => void;
+  onBlur?: () => void;
   label?: string;
   placeholder?: string;
   required?: boolean;
+  minHeight?: string | number;
+  error?: string;
 }
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({
-  name,
+export const StandaloneRichTextEditor: React.FC<StandaloneRichTextEditorProps> = ({
+  id,
+  value = '',
+  onChange,
+  onBlur,
   label,
   placeholder,
   required,
+  minHeight,
+  error,
 }) => {
-  const { control, formState } = useFormContext();
-  const { field } = useController({ control, name, defaultValue: '' });
-  const fieldError = formState.errors[name] as { message?: string } | undefined;
-
   const [, forceUpdate] = useState({});
 
   const editor = useEditor({
@@ -91,7 +97,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: placeholder || '' }),
     ],
-    content: field.value || '',
+    content: value || '',
     onSelectionUpdate: ({ editor: currentEditor }) => {
       // When text is deselected or cursor moves, clear cursor stored formatting so typing reverts to defaults!
       if (currentEditor.state.selection.empty) {
@@ -105,10 +111,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
     onUpdate: ({ editor: currentEditor }) => {
       const html = currentEditor.getHTML();
-      field.onChange(currentEditor.isEmpty ? '' : html);
+      onChange?.(currentEditor.isEmpty ? '' : html);
     },
-    onBlur: () => field.onBlur(),
+    onBlur: () => onBlur?.(),
   });
+
+  useEffect(() => {
+    if (editor && value !== undefined && editor.getHTML() !== value) {
+      editor.commands.setContent(value || '');
+    }
+  }, [value, editor]);
 
   if (!editor) return null;
 
@@ -156,12 +168,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <S.StyledFormControl fullWidth>
       {label && (
-        <S.Label htmlFor={name}>
+        <S.Label htmlFor={id}>
           {label}
           {required && <S.RequiredIndicator> *</S.RequiredIndicator>}
         </S.Label>
       )}
-      <S.EditorWrapper>
+      <S.EditorWrapper sx={minHeight ? { '& .tiptap': { minHeight } } : undefined}>
         <S.Toolbar>
           <S.ToolbarGroup>
             <S.ToolbarButton
@@ -405,7 +417,38 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </S.Toolbar>
         <EditorContent editor={editor} />
       </S.EditorWrapper>
-      {fieldError && <S.ErrorWrapper>{fieldError.message}</S.ErrorWrapper>}
+      {error && <S.ErrorWrapper>{error}</S.ErrorWrapper>}
     </S.StyledFormControl>
   );
+};
+
+export type RichTextEditorProps =
+  | (StandaloneRichTextEditorProps & { name: string })
+  | (StandaloneRichTextEditorProps & { name?: undefined });
+
+const FormRichTextEditor: React.FC<StandaloneRichTextEditorProps & { name: string }> = ({
+  name,
+  ...props
+}) => {
+  const { control, formState } = useFormContext();
+  const { field } = useController({ control, name, defaultValue: '' });
+  const fieldError = formState?.errors?.[name] as { message?: string } | undefined;
+
+  return (
+    <StandaloneRichTextEditor
+      {...props}
+      id={name}
+      value={field.value}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      error={fieldError?.message}
+    />
+  );
+};
+
+export const RichTextEditor: React.FC<RichTextEditorProps> = (props) => {
+  if (props.name) {
+    return <FormRichTextEditor {...props} name={props.name} />;
+  }
+  return <StandaloneRichTextEditor {...props} />;
 };

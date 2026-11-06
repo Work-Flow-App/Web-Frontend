@@ -31,6 +31,7 @@ import { getUserIdFromToken } from '../../../../../utils/jwt';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
 import { ImagePreview } from '../../../../../components/UI/ImagePreview';
+import { StandaloneRichTextEditor } from '../../../../../components/UI/Forms/RichTextEditor';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
@@ -65,6 +66,11 @@ interface CombinedTimelineItem extends StepTimelineItemResponse {
   stepOrderIndex: number;
 }
 
+const isRichTextDiscussion = (discussionType?: string) => {
+  const t = discussionType?.toUpperCase();
+  return t === 'ADDITIONAL' || t === 'COMPLAINT';
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
@@ -94,6 +100,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
 
   // ── Edit / delete state ──────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<CombinedTimelineItem | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -300,11 +307,13 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   // ── Edit / delete handlers ──────────────────────────────────────────────────
 
   const startEdit = (item: CombinedTimelineItem) => {
+    setEditingItem(item);
     setEditingId(item.id ?? null);
     setEditingContent(item.content || '');
   };
 
   const cancelEdit = () => {
+    setEditingItem(null);
     setEditingId(null);
     setEditingContent('');
   };
@@ -313,9 +322,10 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!editingId || !editingContent.trim()) return;
     setSavingEdit(true);
     try {
+      const commentType = (editingItem?.discussionType || postType || StepCommentCreateRequestTypeEnum.General) as StepCommentCreateRequestTypeEnum;
       await stepActivityService.updateComment(editingId, {
         content: editingContent.trim(),
-        type: postType as StepCommentCreateRequestTypeEnum,
+        type: commentType,
       });
       showSuccess('Message updated');
       cancelEdit();
@@ -383,6 +393,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
       const isAttachment = item.itemType === 'ATTACHMENT';
       const isComment = item.itemType === 'COMMENT' || !isAttachment;
       const isEditing = editingId === item.id;
+      const isRich = isRichTextDiscussion(item.discussionType);
       const isDeleting = deletingId === item.id;
       const fileName = extractFileName(item.fileUrl);
       const ts = getTypeStyle(item.discussionType as string);
@@ -393,7 +404,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             {getInitials(item.actorUsername)}
           </SS.MessageAvatarCircle>
 
-          <SS.MessageContentBox isMine={isMine}>
+          <SS.MessageContentBox isMine={isMine} isEditing={isEditing}>
             <SS.MessageMetaRow isMine={isMine}>
               <SS.MessageSenderName>{item.actorUsername || 'Unknown'}</SS.MessageSenderName>
               <SS.MessageTimeText>{fmtTime(item.createdAt)}</SS.MessageTimeText>
@@ -408,36 +419,81 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             </SS.MessageMetaRow>
 
             {isEditing ? (
-              /* ── Inline edit mode ─────────────────────────────────── */
-              <SS.MessageEditInputRow>
-                <SS.MessageEditTextField
-                  size="small"
-                  value={editingContent}
-                  onChange={(e: any) => setEditingContent(e.target.value)}
-                  onKeyDown={(e: any) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
-                    if (e.key === 'Escape') cancelEdit();
-                  }}
-                  multiline
-                  maxRows={4}
-                  autoFocus
-                  fullWidth
-                />
-                <SS.MessageEditActions>
-                  <Tooltip title="Save (Enter)">
-                    <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
-                      {savingEdit
-                        ? <CircularProgress size={12} />
-                        : <SS.CheckIconStyled />}
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                  <Tooltip title="Cancel (Esc)">
-                    <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
-                      <SS.CloseIconStyled />
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                </SS.MessageEditActions>
-              </SS.MessageEditInputRow>
+              isRich ? (
+                /* ── Inline Rich Text Edit Mode for ADDITIONAL & COMPLAINT ── */
+                <SS.RichEditContainer>
+                  <StandaloneRichTextEditor
+                    value={editingContent}
+                    onChange={(val) => setEditingContent(val)}
+                    placeholder="Edit message..."
+                    minHeight={rem(120)}
+                  />
+                  <SS.RichEditActionsRow>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={cancelEdit}
+                      disabled={savingEdit}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={saveEdit}
+                      disabled={savingEdit || !editingContent.trim()}
+                      loading={savingEdit}
+                    >
+                      Save
+                    </Button>
+                  </SS.RichEditActionsRow>
+                </SS.RichEditContainer>
+              ) : (
+                /* ── Inline plain text edit mode for other comments ───── */
+                <SS.PlainEditContainer>
+                  <SS.PlainEditTextArea
+                    value={editingContent}
+                    onChange={(e: any) => setEditingContent(e.target.value)}
+                    onKeyDown={(e: any) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit();
+                      }
+                      if (e.key === 'Escape') cancelEdit();
+                    }}
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    autoFocus
+                    placeholder="Edit comment..."
+                    fullWidth
+                  />
+                  <SS.PlainEditActionsRow>
+                    <SS.PlainEditShortcutHint>
+                      Press <strong>Enter</strong> to save, <strong>Shift + Enter</strong> for new line, <strong>Esc</strong> to cancel
+                    </SS.PlainEditShortcutHint>
+                    <SS.PlainEditButtonsGroup>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={cancelEdit}
+                        disabled={savingEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={saveEdit}
+                        disabled={savingEdit || !editingContent.trim()}
+                        loading={savingEdit}
+                      >
+                        Save
+                      </Button>
+                    </SS.PlainEditButtonsGroup>
+                  </SS.PlainEditActionsRow>
+                </SS.PlainEditContainer>
+              )
             ) : (
               /* ── Normal display mode ──────────────────────────────── */
               <SS.MessageBubble isMine={isMine}>

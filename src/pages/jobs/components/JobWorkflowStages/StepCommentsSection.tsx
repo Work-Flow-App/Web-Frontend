@@ -11,6 +11,7 @@ import { Loader } from '../../../../components/UI/Loader/Loader';
 import { TextArea } from '../../../../components/UI/Forms/TextArea';
 import { VoiceInputSheet } from '../../../../components/UI/VoiceInputSheet';
 import { rem } from '../../../../components/UI/Typography/utility';
+import { isStepComment } from '../../utils/jobStepUtils';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentsSectionProps {
@@ -49,7 +50,7 @@ export const StepCommentsSection: React.FC<StepCommentsSectionProps> = ({ stepId
     try {
       setLoading(true);
       const response = await stepActivityService.getComments(stepId);
-      setComments(response.data || []);
+      setComments((response.data || []).filter(isStepComment));
     } catch (error) {
       console.error('Error fetching comments:', error);
       setComments([]);
