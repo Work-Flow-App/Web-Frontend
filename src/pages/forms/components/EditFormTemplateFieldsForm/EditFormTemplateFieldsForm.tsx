@@ -56,7 +56,10 @@ export const EditFormTemplateFieldsForm: React.FC<EditFormTemplateFieldsFormProp
     onConfirmRef.current = () => {
       handleSubmit(async (data) => {
         const fieldPayload = buildFieldPayload(data.fields, setError);
-        if (fieldPayload === null) return;
+        if (fieldPayload === null) {
+          showError('Please fill in all required fields before saving');
+          return;
+        }
         if (!template.id) return;
 
         updateGlobalModalInnerConfig({ isConfirmDisabled: true });

@@ -72,6 +72,7 @@ export const OptionsEditor: React.FC<OptionsEditorProps> = ({ value, onChange, e
     <S.OptionsContainer>
       {options.map((option, index) => {
         const isRowEmpty = touchedIndices.has(index) && !option.trim();
+        const hasRowError = isRowEmpty || (Boolean(error) && !option.trim());
         return (
           <div key={index}>
             <S.OptionRow>
@@ -81,7 +82,7 @@ export const OptionsEditor: React.FC<OptionsEditorProps> = ({ value, onChange, e
                   placeholder={`Option ${index + 1}`}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                   onBlur={() => setTouchedIndices((prev) => new Set(prev).add(index))}
-                  className={isRowEmpty ? 'has-error' : undefined}
+                  className={hasRowError ? 'has-error' : undefined}
                 />
               </S.OptionInputWrapper>
               <S.DeleteIconButton

@@ -120,11 +120,12 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
         </S.FieldRowTitle>
       </S.FieldRowHeader>
 
-      <FormField label={isSection ? 'Section Title' : 'Field Label'}>
+      <FormField label={isSection ? 'Section Title' : 'Field Label'} required>
         <Input
           name={`fields.${index}.label`}
           placeholder={isSection ? 'e.g. Site Safety Inspection' : 'e.g. Site safety checked'}
           hideErrorMessage={false}
+          error={rowErrors?.label}
         />
       </FormField>
 
@@ -142,7 +143,7 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
       </FormField>
 
       <FormRow>
-        <FormField label="Field Type">
+        <FormField label="Field Type" required>
           <Dropdown
             name={`fields.${index}.type`}
             preFetchedOptions={FORM_FIELD_TYPE_OPTIONS}
@@ -167,7 +168,7 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
       </FormRow>
 
       {!isSection && showOptions && (
-        <FormField label="Options">
+        <FormField label="Options" required>
           <Controller
             control={control}
             name={`fields.${index}.options`}

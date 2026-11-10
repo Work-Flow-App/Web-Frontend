@@ -78,7 +78,7 @@ export const FieldFormFields: React.FC = () => {
       </S.FormRowResponsive>
 
       {!isSection && showOptions && (
-        <FormField label={fieldLabels.options} required={isRequireds.options}>
+        <FormField label={fieldLabels.options} required={true}>
           <Controller
             control={control}
             name={fieldTitles.options}
