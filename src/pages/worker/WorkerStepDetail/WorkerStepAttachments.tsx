@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -80,7 +81,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
       onUpdate?.();
     } catch (error) {
       console.error('Error uploading attachment:', error);
-      showError('Failed to upload attachment');
+      showError(extractErrorMessage(error, 'Failed to upload attachment'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {

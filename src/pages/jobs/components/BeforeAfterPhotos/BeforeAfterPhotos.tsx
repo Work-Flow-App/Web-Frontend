@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { CircularProgress } from '@mui/material';
 import AddAPhotoOutlinedIcon from '@mui/icons-material/AddAPhotoOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -197,7 +198,7 @@ export const BeforeAfterPhotos: React.FC<BeforeAfterPhotosProps> = ({
       nextAttachments = await reloadAttachments();
     } catch (error) {
       console.error(`Error uploading ${kind} photo:`, error);
-      showError(`Failed to upload the ${kind} photo`);
+      showError(extractErrorMessage(error, `Failed to upload the ${kind} photo`));
       return;
     } finally {
       setBusyPhoto(null);

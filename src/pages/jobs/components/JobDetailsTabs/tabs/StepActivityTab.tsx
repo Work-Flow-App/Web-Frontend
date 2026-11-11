@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { extractErrorMessage } from '../../../../../utils/errorHandler';
 import DOMPurify from 'dompurify';
 import {
   Tooltip,
@@ -262,7 +263,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           );
         } catch (error) {
           console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -273,9 +274,9 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           showSuccess('All attachments uploaded');
         }
       } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       fetchAllTimelines(steps);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import DOMPurify from 'dompurify';
 import {
   Select,
@@ -152,8 +153,8 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
       );
       showSuccess('Attachment uploaded');
       fetchTimeline();
-    } catch {
-      showError('Failed to upload attachment');
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to upload attachment'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

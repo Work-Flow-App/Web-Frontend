@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -86,7 +87,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           await stepActivityService.uploadAttachment(stepId, file);
         } catch (error) {
           console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -97,9 +98,9 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           showSuccess('All attachments uploaded successfully');
         }
       } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       fetchAttachments();
