@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FileThumbnail } from '../../../../components/UI/FileThumbnail';
 import { CircularProgress } from '@mui/material';
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
@@ -92,7 +93,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({ assetId, ass
           <S.AttachmentList>
             {asset.attachments.map((file, idx) => (
               <S.AttachmentLink key={file.fileUrl || idx} href={file.fileUrl} target="_blank" rel="noreferrer">
-                <AttachFileOutlinedIcon fontSize="small" />
+                <FileThumbnail src={file.thumbnailUrl} size={20} fallback={<AttachFileOutlinedIcon fontSize="small" />} />
                 {file.fileName || `Attachment ${idx + 1}`}
               </S.AttachmentLink>
             ))}

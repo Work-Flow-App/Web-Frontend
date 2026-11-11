@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { FileThumbnail } from '../../../components/UI/FileThumbnail';
 import type { SyntheticEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
@@ -182,7 +183,7 @@ export const PublicCompanyProfile: React.FC = () => {
                     {documents.map((doc) => (
                       <DocumentRow key={doc.id} href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
                         <DocumentIconWrap>
-                          <InsertDriveFileOutlinedIcon />
+                          <FileThumbnail src={doc.thumbnailUrl} fallback={<InsertDriveFileOutlinedIcon />} />
                         </DocumentIconWrap>
                         <DocumentInfo>
                           <DocumentTitleRow>

@@ -58,7 +58,13 @@ const PhotoSlot: React.FC<PhotoSlotProps> = ({ label, timeLabel, photo, emptyHin
     {photo ? (
       <>
         <S.PhotoFrame href={photo.fileUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${label.toLowerCase()} photo`}>
-          <S.Photo src={photo.fileUrl} alt={`${label} photo`} />
+          <S.Photo
+            src={photo.thumbnailUrl || photo.fileUrl}
+            alt={`${label} photo`}
+            onError={(e) => {
+              if (photo.fileUrl && e.currentTarget.src !== photo.fileUrl) e.currentTarget.src = photo.fileUrl;
+            }}
+          />
           {busy && (
             <S.BusyOverlay>
               <CircularProgress size={22} />

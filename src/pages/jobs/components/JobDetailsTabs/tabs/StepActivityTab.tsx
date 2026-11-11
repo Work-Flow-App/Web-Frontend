@@ -501,8 +501,13 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
                   <>
-                    {item.fileUrl && isImageAttachment(undefined, fileName) && (
-                      <ImagePreview src={item.fileUrl} alt={item.description || fileName} />
+                    {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
+                      <ImagePreview
+                        src={item.fileUrl}
+                        thumbnailSrc={item.thumbnailUrl}
+                        srcIsImage={isImageAttachment(undefined, fileName)}
+                        alt={item.description || fileName}
+                      />
                     )}
                     <SS.AttachmentRow>
                       {getFileIcon(fileName)}

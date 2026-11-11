@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileThumbnail } from '../FileThumbnail';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
 import { partitionAttachmentsByType, getFileExtensionLabel } from '../../../utils/attachmentHelpers';
@@ -50,7 +51,14 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
                 rel="noopener noreferrer"
                 span={spanFull}
               >
-                <ImageGridImg src={image.fileUrl} alt={image.fileName || 'Post attachment'} />
+                <ImageGridImg
+                  // A full-width cell is wider than the 400px thumbnail, so it keeps the original
+                  src={spanFull ? image.fileUrl : image.thumbnailUrl || image.fileUrl}
+                  alt={image.fileName || 'Post attachment'}
+                  onError={(e) => {
+                    if (image.fileUrl && e.currentTarget.src !== image.fileUrl) e.currentTarget.src = image.fileUrl;
+                  }}
+                />
                 {isLastVisible && extraImagesCount > 0 && <ImageGridOverlay>+{extraImagesCount}</ImageGridOverlay>}
               </ImageGridItem>
             );
@@ -63,7 +71,7 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
           {files.map((file) => (
             <FileItem key={file.id} href={file.fileUrl} target="_blank" rel="noopener noreferrer">
               <FileIconWrap>
-                <InsertDriveFileOutlinedIcon />
+                <FileThumbnail src={file.thumbnailUrl} fallback={<InsertDriveFileOutlinedIcon />} />
               </FileIconWrap>
               <FileMeta>
                 <FileName>{file.fileName || 'Attachment'}</FileName>

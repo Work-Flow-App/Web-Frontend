@@ -11,6 +11,7 @@ export const isImageAttachment = (fileType?: string, fileName?: string): boolean
 export interface AttachmentLike {
   id?: number;
   fileUrl?: string;
+  thumbnailUrl?: string;
   fileName?: string;
   fileType?: string;
 }
