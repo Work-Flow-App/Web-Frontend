@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { CircularProgress } from '@mui/material';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
@@ -85,6 +86,7 @@ export const PublicCompanyProfile: React.FC = () => {
   const documents = useMemo(() => documentsData || [], [documentsData]);
 
   const addressLine = formatAddress(profile?.address);
+  const rateLimited = isAxiosError(profileError) && profileError.response?.status === 429;
 
   return (
     <PageContainer>
@@ -103,7 +105,11 @@ export const PublicCompanyProfile: React.FC = () => {
             <CircularProgress size={32} />
           </LoadingContainer>
         ) : profileError || !profile ? (
-          <NotFoundState>This company page isn&apos;t available.</NotFoundState>
+          <NotFoundState>
+            {rateLimited
+              ? 'Too many requests right now. Please try again in a minute.'
+              : "This company page isn't available."}
+          </NotFoundState>
         ) : (
           <>
             <ProfileCard>
