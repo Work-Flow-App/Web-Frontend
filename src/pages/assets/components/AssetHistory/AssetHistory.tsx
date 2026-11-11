@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { FilePreview } from '../../../../components/UI/FilePreview';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -384,6 +385,12 @@ export const AssetHistory: React.FC = () => {
                       <S.AttachmentsGrid>
                         {asset.attachments.map((att: AssetAttachmentDto, idx: number) => (
                           <S.AttachmentCard key={idx}>
+                            <FilePreview
+                              fileUrl={att.fileUrl}
+                              thumbnailUrl={att.thumbnailUrl}
+                              fileName={att.fileName}
+                              fileType={att.fileType}
+                            />
                             <S.AttachmentName 
                               variant="body2" 
                               noWrap 

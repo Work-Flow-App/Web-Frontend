@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { FilePreview } from '../../../../components/UI/FilePreview';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,21 +20,6 @@ interface StepAttachmentsSectionProps {
   refreshKey?: number;
   onUpdate?: () => void;
 }
-
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.StyledGenericFileIcon />;
-
-  if (fileType.startsWith('image/')) {
-    return <S.StyledImageIcon />;
-  }
-  if (fileType === 'application/pdf') {
-    return <S.StyledPdfIcon />;
-  }
-  if (fileType.includes('word') || fileType.includes('document')) {
-    return <S.StyledDocIcon />;
-  }
-  return <S.StyledGenericFileIcon />;
-};
 
 export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
   stepId,
@@ -182,18 +168,26 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
         </SPage.UploadDropzone>
       ) : (
         <SPage.AttachmentList>
+          <SPage.AttachmentTileGrid>
           {others.map((attachment) => (
-            <SPage.AttachmentItem key={attachment.id}>
-              {getFileIcon(attachment.fileType)}
+            <SPage.AttachmentTile key={attachment.id}>
+              <FilePreview
+                fileUrl={attachment.fileUrl}
+                thumbnailUrl={attachment.thumbnailUrl}
+                fileName={attachment.fileName}
+                fileType={attachment.fileType}
+                aspectRatio="4 / 3"
+              />
+              <SPage.AttachmentTileFooter>
               <SPage.AttachmentFileName>
-                <div className="name">{attachment.fileName || 'Unnamed file'}</div>
+                <div className="name" title={attachment.fileName}>{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
                   <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
                   </div>
                 )}
               </SPage.AttachmentFileName>
-              <SPage.AttachmentActions>
+              <SPage.AttachmentTileActions>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
@@ -216,9 +210,11 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </SPage.AttachmentActions>
-            </SPage.AttachmentItem>
+              </SPage.AttachmentTileActions>
+              </SPage.AttachmentTileFooter>
+            </SPage.AttachmentTile>
           ))}
+          </SPage.AttachmentTileGrid>
 
           <SPage.AddMoreButton onClick={handleUploadClick}>
             <S.StyledAttachFileSmallIcon />
@@ -229,4 +225,3 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
     </SPage.EventNoteBox>
   );
 };
-

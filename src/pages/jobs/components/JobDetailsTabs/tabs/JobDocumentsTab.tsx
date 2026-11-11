@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { FilePreview } from '../../../../../components/UI/FilePreview';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,14 +21,6 @@ interface DocumentWithStep extends StepAttachmentResponse {
   stepName?: string;
   stepId?: number;
 }
-
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.DocFileIcon />;
-  if (fileType.startsWith('image/')) return <S.DocImageIcon />;
-  if (fileType === 'application/pdf') return <S.DocPdfIcon />;
-  if (fileType.includes('word') || fileType.includes('document')) return <S.DocDescIcon />;
-  return <S.DocFileIcon />;
-};
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -224,8 +217,15 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
 
             {documents.map((document) => (
               <S.DocumentCard key={document.id}>
+                <S.DocumentPreview>
+                  <FilePreview
+                    fileUrl={document.fileUrl}
+                    thumbnailUrl={document.thumbnailUrl}
+                    fileName={document.fileName}
+                    fileType={document.fileType}
+                  />
+                </S.DocumentPreview>
                 <S.DocumentCardHeader>
-                  <S.DocumentIcon>{getFileIcon(document.fileType)}</S.DocumentIcon>
                   <S.DocumentInfo>
                     <S.DocumentName>{document.fileName || 'Unnamed file'}</S.DocumentName>
                     <S.DocumentMeta>{formatDate(document.createdAt)}</S.DocumentMeta>

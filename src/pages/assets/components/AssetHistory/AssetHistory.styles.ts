@@ -331,8 +331,8 @@ export const AttachmentCard = styled(Box)(({ theme }) => ({
   borderRadius: rem(6),
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
-  height: rem(110),
+  gap: rem(10),
+  minWidth: 0,
   backgroundColor: '#fafafa',
   transition: 'box-shadow 0.2s',
   '&:hover': {

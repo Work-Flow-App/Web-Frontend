@@ -1078,6 +1078,44 @@ export const AttachmentList = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+export const AttachmentTileGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+  gap: theme.spacing(1),
+}));
+
+export const AttachmentTile = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.75),
+  padding: theme.spacing(0.75),
+  borderRadius: theme.spacing(0.75),
+  border: `1px solid ${theme.palette.colors.grey_100}`,
+  minWidth: 0,
+}));
+
+/** Sits over the preview's top-right corner, so the file name gets the tile's full width. */
+export const AttachmentTileActions = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1.25),
+  right: theme.spacing(1.25),
+  display: 'flex',
+  gap: theme.spacing(0.5),
+  '& button': {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.15)',
+    '&:hover': { backgroundColor: '#fff' },
+  },
+}));
+
+export const AttachmentTileFooter = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  minWidth: 0,
+}));
+
 export const AttachmentItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -1330,6 +1368,10 @@ export const DocumentCard = styled(Box)(({ theme }) => ({
     borderColor: theme.palette.primary.main,
     boxShadow: `0 4px 12px ${floowColors.shadow.md}`,
   },
+}));
+
+export const DocumentPreview = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(1.5),
 }));
 
 export const DocumentCardHeader = styled(Box)(({ theme }) => ({
