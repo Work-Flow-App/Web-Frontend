@@ -584,6 +584,7 @@ export interface FieldValueResponse {
     'label'?: string;
     'type'?: FieldValueResponseTypeEnum;
     'value'?: any;
+    'deleted'?: boolean;
 }
 
 export const FieldValueResponseTypeEnum = {
@@ -9035,43 +9036,6 @@ export const EstimatesApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        estimateDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('estimateDelete', 'id', id)
-            const localVarPath = `/api/v1/estimates/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication bearerAuth required
-            // http bearer authentication required
-            await setBearerAuthToObject(localVarHeaderParameter, configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         estimateGet: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('estimateGet', 'id', id)
@@ -9387,18 +9351,6 @@ export const EstimatesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async estimateDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.estimateDelete(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['EstimatesApi.estimateDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         async estimateGet(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<EstimateResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.estimateGet(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
@@ -9509,15 +9461,6 @@ export const EstimatesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        estimateDelete(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.estimateDelete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
         estimateGet(id: number, options?: RawAxiosRequestConfig): AxiosPromise<EstimateResponse> {
             return localVarFp.estimateGet(id, options).then((request) => request(axios, basePath));
         },
@@ -9598,16 +9541,6 @@ export class EstimatesApi extends BaseAPI {
      */
     public estimateCreateAndLink(estimateId: number, lineItemCreateRequest: LineItemCreateRequest, options?: RawAxiosRequestConfig) {
         return EstimatesApiFp(this.configuration).estimateCreateAndLink(estimateId, lineItemCreateRequest, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public estimateDelete(id: number, options?: RawAxiosRequestConfig) {
-        return EstimatesApiFp(this.configuration).estimateDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
