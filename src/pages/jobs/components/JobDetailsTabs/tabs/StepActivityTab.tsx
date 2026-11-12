@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
 import { extractErrorMessage } from '../../../../../utils/errorHandler';
 import DOMPurify from 'dompurify';
 import {
@@ -205,6 +206,25 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   }, [visibleItems]);
 
   const lastReply = visibleItems.at(-1)?.createdAt;
+  // Attachments that show a preview in the timeline, in order, for the viewer
+  const previewItems = useMemo(
+    () =>
+      visibleItems.filter(
+        (item) =>
+          item.itemType === 'ATTACHMENT' &&
+          !!item.fileUrl &&
+          (!!item.thumbnailUrl || isImageAttachment(undefined, extractFileName(item.fileUrl)))
+      ),
+    [visibleItems]
+  );
+  const { openFile, viewer } = useFileViewer(
+    previewItems.map((item) => ({
+      fileUrl: item.fileUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      // An attachment's content is its original name; the link's name is the stored file's id
+      fileName: item.content || extractFileName(item.fileUrl),
+    }))
+  );
 
   const countByStep = useMemo(() => {
     const map: Record<number, number> = {};
@@ -507,6 +527,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                         thumbnailSrc={item.thumbnailUrl}
                         srcIsImage={isImageAttachment(undefined, fileName)}
                         alt={item.description || fileName}
+                        onOpen={() => openFile(previewItems.indexOf(item))}
                       />
                     )}
                     <SS.AttachmentRow>
@@ -790,6 +811,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         style={{ display: 'none' }}
         multiple
       />
+      {viewer}
     </>
   );
 };

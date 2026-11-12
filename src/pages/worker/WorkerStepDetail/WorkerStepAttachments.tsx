@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../components/UI/FileViewer';
 import { FilePreview } from '../../../components/UI/FilePreview';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
@@ -42,6 +43,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
   }, [stepId]);
 
   const { before, after, others } = splitAttachments(attachments);
+  const { openFile, viewer } = useFileViewer(others);
 
   useEffect(() => {
     fetchAttachments();
@@ -126,7 +128,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
       ) : (
         <S.AttachmentList>
           <S.AttachmentTileGrid>
-          {others.map((attachment) => (
+          {others.map((attachment, attachmentIndex) => (
             <S.AttachmentTile key={attachment.id}>
               <FilePreview
                 fileUrl={attachment.fileUrl}
@@ -134,6 +136,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
                 fileName={attachment.fileName}
                 fileType={attachment.fileType}
                 aspectRatio="4 / 3"
+                onOpen={() => openFile(attachmentIndex)}
               />
               <S.AttachmentTileFooter>
               <S.AttachmentFileName>
@@ -166,6 +169,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
           </S.AddMoreButton>
         </S.AttachmentList>
       )}
+      {viewer}
     </S.EventNoteBox>
   );
 };

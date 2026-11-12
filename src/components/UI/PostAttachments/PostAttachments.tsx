@@ -1,4 +1,5 @@
 import React from 'react';
+import { openOnPlainClick, useFileViewer } from '../FileViewer';
 import { FileThumbnail } from '../FileThumbnail';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
@@ -33,6 +34,8 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
   const { images, files } = partitionAttachmentsByType(attachments);
   const visibleImages = images.slice(0, MAX_VISIBLE_IMAGES);
   const extraImagesCount = images.length - visibleImages.length;
+  // Every image, including the ones hidden behind "+N", then the other files
+  const { openFile, viewer } = useFileViewer([...images, ...files]);
 
   if (images.length === 0 && files.length === 0) return null;
 
@@ -49,6 +52,7 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
                 href={image.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={openOnPlainClick(() => openFile(index))}
                 span={spanFull}
               >
                 <ImageGridImg
@@ -68,8 +72,14 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
 
       {files.length > 0 && (
         <FileList>
-          {files.map((file) => (
-            <FileItem key={file.id} href={file.fileUrl} target="_blank" rel="noopener noreferrer">
+          {files.map((file, fileIndex) => (
+            <FileItem
+              key={file.id}
+              href={file.fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={openOnPlainClick(() => openFile(images.length + fileIndex))}
+            >
               <FileIconWrap>
                 <FileThumbnail src={file.thumbnailUrl} fallback={<InsertDriveFileOutlinedIcon />} />
               </FileIconWrap>
@@ -82,6 +92,7 @@ export const PostAttachments: React.FC<PostAttachmentsProps> = ({ attachments })
           ))}
         </FileList>
       )}
+      {viewer}
     </>
   );
 };

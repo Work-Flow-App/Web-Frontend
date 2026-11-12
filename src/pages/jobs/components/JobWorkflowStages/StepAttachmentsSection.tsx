@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../../components/UI/FileViewer';
 import { FilePreview } from '../../../../components/UI/FilePreview';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
@@ -50,6 +51,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
   }, [stepId]);
 
   const { before, after, others } = splitAttachments(attachments);
+  const { openFile, viewer } = useFileViewer(others);
 
   useEffect(() => {
     fetchAttachments();
@@ -169,7 +171,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
       ) : (
         <SPage.AttachmentList>
           <SPage.AttachmentTileGrid>
-          {others.map((attachment) => (
+          {others.map((attachment, attachmentIndex) => (
             <SPage.AttachmentTile key={attachment.id}>
               <FilePreview
                 fileUrl={attachment.fileUrl}
@@ -177,6 +179,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
                 fileName={attachment.fileName}
                 fileType={attachment.fileType}
                 aspectRatio="4 / 3"
+                onOpen={() => openFile(attachmentIndex)}
               />
               <SPage.AttachmentTileFooter>
               <SPage.AttachmentFileName>
@@ -222,6 +225,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           </SPage.AddMoreButton>
         </SPage.AttachmentList>
       )}
+      {viewer}
     </SPage.EventNoteBox>
   );
 };

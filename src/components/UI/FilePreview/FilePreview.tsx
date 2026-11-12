@@ -6,6 +6,7 @@ import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import MovieOutlinedIcon from '@mui/icons-material/MovieOutlined';
 import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
 import { getFileExtensionLabel, getFileKind, type FileKind } from '../../../utils/attachmentHelpers';
+import { openOnPlainClick } from '../FileViewer';
 import * as S from './FilePreview.styles';
 
 const KIND_ICONS: Record<FileKind, React.ReactNode> = {
@@ -24,6 +25,8 @@ interface FilePreviewProps {
   fileType?: string;
   /** Width / height of the preview area. */
   aspectRatio?: string;
+  /** Opens the in-app viewer. Without it, or on a modified click, the file opens in a new tab. */
+  onOpen?: () => void;
 }
 
 /**
@@ -36,6 +39,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   fileName,
   fileType,
   aspectRatio = '16 / 10',
+  onOpen,
 }) => {
   const kind = getFileKind(fileType, fileName);
   // An image can fall back to the full file; anything else only has its thumbnail
@@ -51,6 +55,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`Open ${fileName || 'file'}`}
+      onClick={openOnPlainClick(onOpen)}
       kind={kind}
       aspectRatio={aspectRatio}
     >

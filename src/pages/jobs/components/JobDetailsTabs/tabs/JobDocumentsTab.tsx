@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
 import { FilePreview } from '../../../../../components/UI/FilePreview';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -34,6 +35,7 @@ const formatDate = (dateStr?: string) => {
 export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
   const { showSuccess, showError } = useSnackbar();
   const [documents, setDocuments] = useState<DocumentWithStep[]>([]);
+  const { openFile, viewer } = useFileViewer(documents);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
@@ -215,7 +217,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
               </S.DocumentsEmptyState>
             )}
 
-            {documents.map((document) => (
+            {documents.map((document, documentIndex) => (
               <S.DocumentCard key={document.id}>
                 <S.DocumentPreview>
                   <FilePreview
@@ -223,6 +225,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
                     thumbnailUrl={document.thumbnailUrl}
                     fileName={document.fileName}
                     fileType={document.fileType}
+                    onOpen={() => openFile(documentIndex)}
                   />
                 </S.DocumentPreview>
                 <S.DocumentCardHeader>
@@ -254,6 +257,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
           </S.DocumentsGrid>
         </S.AttachmentsSection>
       )}
+      {viewer}
     </S.DocumentsTabContainer>
   );
 };
