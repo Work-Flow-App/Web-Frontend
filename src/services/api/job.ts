@@ -5,6 +5,7 @@ import type {
   JobUpdateRequest,
   PagedModelJobResponse,
   JobGetAllStatusEnum,
+  Pageable,
   FormSubmissionResponse,
 } from '../../../workflow-api';
 import { env } from '../../config/env';
@@ -27,9 +28,12 @@ function getJobApi(): JobsApi {
 }
 
 export const jobService = {
-  async getAllJobs(filters?: JobFilters): Promise<{ data: JobResponse[] }> {
+  async getAllJobs(
+    filters?: JobFilters,
+    pageable: Pageable = { page: 0, size: 1000, sort: ['createdAt,desc'] }
+  ): Promise<{ data: JobResponse[] }> {
     const res = await getJobApi().jobGetAll(
-      { page: 0, size: 1000, sort: ['createdAt,desc'] },
+      pageable,
       filters?.search || undefined,
       filters?.customerName || undefined,
       filters?.clientName || undefined,

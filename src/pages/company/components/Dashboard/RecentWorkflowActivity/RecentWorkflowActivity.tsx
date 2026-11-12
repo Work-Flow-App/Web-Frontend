@@ -10,6 +10,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CachedIcon from '@mui/icons-material/Cached';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { htmlToPlainText } from '../../../../../utils/htmlToPlainText';
 import * as S from './RecentWorkflowActivity.styles';
 
 export interface RecentWorkflowActivityData {
@@ -145,6 +146,8 @@ export const RecentWorkflowActivity: React.FC<RecentWorkflowActivityProps> = ({
           activities.map((item, index) => {
             const badge = getActivityBadge(item);
             const timeAgo = getTimeAgo(item.updatedAt);
+            // Comments are stored as rich-text HTML
+            const message = item.message ? htmlToPlainText(item.message) : '';
 
             return (
               <S.TimelineItem
@@ -171,8 +174,8 @@ export const RecentWorkflowActivity: React.FC<RecentWorkflowActivityProps> = ({
                       {badge.label}
                     </S.StatusBadge>
                   </S.ActivityLine>
-                  {item.message && (
-                    <S.MessageText variant="body2">{item.message}</S.MessageText>
+                  {message && (
+                    <S.MessageText variant="body2">{message}</S.MessageText>
                   )}
                   {item.updatedAt && (
                     <S.MetaText variant="caption">

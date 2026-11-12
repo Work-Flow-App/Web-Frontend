@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
+import { FilePreview } from '../../../../../components/UI/FilePreview';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,14 +23,6 @@ interface DocumentWithStep extends StepAttachmentResponse {
   stepId?: number;
 }
 
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.DocFileIcon />;
-  if (fileType.startsWith('image/')) return <S.DocImageIcon />;
-  if (fileType === 'application/pdf') return <S.DocPdfIcon />;
-  if (fileType.includes('word') || fileType.includes('document')) return <S.DocDescIcon />;
-  return <S.DocFileIcon />;
-};
-
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -41,6 +35,7 @@ const formatDate = (dateStr?: string) => {
 export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
   const { showSuccess, showError } = useSnackbar();
   const [documents, setDocuments] = useState<DocumentWithStep[]>([]);
+  const { openFile, viewer } = useFileViewer(documents);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
@@ -222,10 +217,18 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
               </S.DocumentsEmptyState>
             )}
 
-            {documents.map((document) => (
+            {documents.map((document, documentIndex) => (
               <S.DocumentCard key={document.id}>
+                <S.DocumentPreview>
+                  <FilePreview
+                    fileUrl={document.fileUrl}
+                    thumbnailUrl={document.thumbnailUrl}
+                    fileName={document.fileName}
+                    fileType={document.fileType}
+                    onOpen={() => openFile(documentIndex)}
+                  />
+                </S.DocumentPreview>
                 <S.DocumentCardHeader>
-                  <S.DocumentIcon>{getFileIcon(document.fileType)}</S.DocumentIcon>
                   <S.DocumentInfo>
                     <S.DocumentName>{document.fileName || 'Unnamed file'}</S.DocumentName>
                     <S.DocumentMeta>{formatDate(document.createdAt)}</S.DocumentMeta>
@@ -254,6 +257,7 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
           </S.DocumentsGrid>
         </S.AttachmentsSection>
       )}
+      {viewer}
     </S.DocumentsTabContainer>
   );
 };

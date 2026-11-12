@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { FileThumbnail } from '../../../components/UI/FileThumbnail';
 import type { SyntheticEvent } from 'react';
 import { useParams } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { CircularProgress } from '@mui/material';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
@@ -59,35 +61,33 @@ const formatAddress = (address?: PublicCompanyProfileResponse['address']): strin
 const formatDate = (value?: string): string => (value ? new Date(value).toLocaleDateString() : '');
 
 export const PublicCompanyProfile: React.FC = () => {
-  const { companyId: companyIdParam } = useParams<{ companyId: string }>();
+  const { publicId = '' } = useParams<{ publicId: string }>();
   const [activeTab, setActiveTab] = useState(0);
 
-  const companyId = Number(companyIdParam);
-  const isValidCompanyId = Boolean(companyIdParam) && Number.isFinite(companyId);
-
-  const fetchProfile = useCallback(() => companyService.getPublicProfile(companyId), [companyId]);
+  const fetchProfile = useCallback(() => companyService.getPublicProfile(publicId), [publicId]);
   const {
     data: profile,
     loading: profileLoading,
     error: profileError,
-  } = useFetch<PublicCompanyProfileResponse>(fetchProfile, [companyId], { skip: !isValidCompanyId });
+  } = useFetch<PublicCompanyProfileResponse>(fetchProfile, [publicId], { skip: !publicId });
 
-  const fetchPosts = useCallback(() => companyService.getPublicPosts(companyId), [companyId]);
-  const { data: postsData, loading: postsLoading } = useFetch<CompanyPostResponse[]>(fetchPosts, [companyId], {
-    skip: !isValidCompanyId,
+  const fetchPosts = useCallback(() => companyService.getPublicPosts(publicId), [publicId]);
+  const { data: postsData, loading: postsLoading } = useFetch<CompanyPostResponse[]>(fetchPosts, [publicId], {
+    skip: !publicId,
   });
 
-  const fetchDocuments = useCallback(() => companyService.getPublicDocuments(companyId), [companyId]);
+  const fetchDocuments = useCallback(() => companyService.getPublicDocuments(publicId), [publicId]);
   const { data: documentsData, loading: documentsLoading } = useFetch<CompanyDocumentResponse[]>(
     fetchDocuments,
-    [companyId],
-    { skip: !isValidCompanyId }
+    [publicId],
+    { skip: !publicId }
   );
 
   const posts = useMemo(() => postsData || [], [postsData]);
   const documents = useMemo(() => documentsData || [], [documentsData]);
 
   const addressLine = formatAddress(profile?.address);
+  const rateLimited = isAxiosError(profileError) && profileError.response?.status === 429;
 
   return (
     <PageContainer>
@@ -99,14 +99,18 @@ export const PublicCompanyProfile: React.FC = () => {
       </TopBar>
 
       <Content>
-        {!isValidCompanyId ? (
+        {!publicId ? (
           <NotFoundState>This company page link is invalid.</NotFoundState>
         ) : profileLoading ? (
           <LoadingContainer>
             <CircularProgress size={32} />
           </LoadingContainer>
         ) : profileError || !profile ? (
-          <NotFoundState>This company page isn&apos;t available.</NotFoundState>
+          <NotFoundState>
+            {rateLimited
+              ? 'Too many requests right now. Please try again in a minute.'
+              : "This company page isn't available."}
+          </NotFoundState>
         ) : (
           <>
             <ProfileCard>
@@ -179,7 +183,7 @@ export const PublicCompanyProfile: React.FC = () => {
                     {documents.map((doc) => (
                       <DocumentRow key={doc.id} href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
                         <DocumentIconWrap>
-                          <InsertDriveFileOutlinedIcon />
+                          <FileThumbnail src={doc.thumbnailUrl} fallback={<InsertDriveFileOutlinedIcon />} />
                         </DocumentIconWrap>
                         <DocumentInfo>
                           <DocumentTitleRow>

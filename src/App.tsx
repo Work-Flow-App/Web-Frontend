@@ -89,8 +89,8 @@ function App() {
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/verify-email" element={<VerifyEmail />} />
                         <Route path="/resend-verification" element={<ResendVerification />} />
-                        <Route path="/public/company/:companyId" element={<PublicCompanyProfile />} />
-                        <Route path="/public/company/:companyId/:companySlug" element={<PublicCompanyProfile />} />
+                        <Route path="/public/company/:publicId" element={<PublicCompanyProfile />} />
+                        <Route path="/public/company/:publicId/:companySlug" element={<PublicCompanyProfile />} />
 
                         {/* Protected routes - With Layout (Sidebar + TopNav) */}
                         <Route element={<Layout />}>

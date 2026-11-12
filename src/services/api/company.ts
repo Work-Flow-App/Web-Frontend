@@ -123,8 +123,8 @@ export const companyService = {
   /**
    * Posts
    */
-  async getPosts(groupId?: number) {
-    return await getCompanyApi().companyGetCompanyPosts(groupId);
+  async getPosts(groupId?: number, size?: number) {
+    return await getCompanyApi().companyGetCompanyPosts(groupId, size);
   },
 
   async createPost(data: CompanyPostCreateRequest, files?: File[]) {
@@ -173,19 +173,24 @@ export const companyService = {
     return await axiosInstance.delete<void>(`/api/v1/companies/post-groups/${groupId}`);
   },
 
+  async setPublicProfileVisibility(enabled: boolean) {
+    return await getCompanyApi().companySetPublicProfileVisibility({ enabled });
+  },
+
   /**
-   * Public views — no authentication required, used for shareable company/post links
+   * Public views — no authentication required, used for shareable company/post links.
+   * The backend also accepts the numeric company id, which links shared before publicId existed use.
    */
-  async getPublicProfile(companyId: number) {
-    return await getPublicCompanyApi().publicCompanyGetPublicProfile(companyId);
+  async getPublicProfile(publicId: string) {
+    return await getPublicCompanyApi().publicCompanyGetPublicProfile(publicId);
   },
 
-  async getPublicPosts(companyId: number, groupId?: number) {
-    return await getPublicCompanyApi().publicCompanyGetPublicPosts(companyId, groupId);
+  async getPublicPosts(publicId: string, groupId?: number) {
+    return await getPublicCompanyApi().publicCompanyGetPublicPosts(publicId, groupId);
   },
 
-  async getPublicDocuments(companyId: number) {
-    return await getPublicCompanyApi().publicCompanyGetPublicDocuments(companyId);
+  async getPublicDocuments(publicId: string) {
+    return await getPublicCompanyApi().publicCompanyGetPublicDocuments(publicId);
   },
 };
 

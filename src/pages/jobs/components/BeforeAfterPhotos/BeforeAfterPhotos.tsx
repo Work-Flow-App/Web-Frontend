@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { openOnPlainClick, useFileViewer } from '../../../../components/UI/FileViewer';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { CircularProgress } from '@mui/material';
 import AddAPhotoOutlinedIcon from '@mui/icons-material/AddAPhotoOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -35,9 +37,10 @@ interface PhotoSlotProps {
   disabled: boolean;
   onPick: () => void;
   onRemove?: () => void;
+  onOpen?: () => void;
 }
 
-const PhotoSlot: React.FC<PhotoSlotProps> = ({ label, timeLabel, photo, emptyHint, busy, disabled, onPick, onRemove }) => (
+const PhotoSlot: React.FC<PhotoSlotProps> = ({ label, timeLabel, photo, emptyHint, busy, disabled, onPick, onRemove, onOpen }) => (
   <S.Slot>
     <S.SlotHeader>
       <S.SlotLabel>{label}</S.SlotLabel>
@@ -56,8 +59,14 @@ const PhotoSlot: React.FC<PhotoSlotProps> = ({ label, timeLabel, photo, emptyHin
     </S.SlotHeader>
     {photo ? (
       <>
-        <S.PhotoFrame href={photo.fileUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${label.toLowerCase()} photo`}>
-          <S.Photo src={photo.fileUrl} alt={`${label} photo`} />
+        <S.PhotoFrame href={photo.fileUrl} target="_blank" rel="noopener noreferrer" onClick={openOnPlainClick(onOpen)} aria-label={`Open ${label.toLowerCase()} photo`}>
+          <S.Photo
+            src={photo.thumbnailUrl || photo.fileUrl}
+            alt={`${label} photo`}
+            onError={(e) => {
+              if (photo.fileUrl && e.currentTarget.src !== photo.fileUrl) e.currentTarget.src = photo.fileUrl;
+            }}
+          />
           {busy && (
             <S.BusyOverlay>
               <CircularProgress size={22} />
@@ -117,6 +126,8 @@ export const BeforeAfterPhotos: React.FC<BeforeAfterPhotosProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pickingRef = useRef<PhotoKind>('before');
+  const photos = [before, after].filter((photo): photo is StepAttachmentResponse => Boolean(photo));
+  const { openFile, viewer } = useFileViewer(photos);
   // Photos picked in this session, by attachment id, so the AI can read them without downloading them again.
   const localFilesRef = useRef(new Map<number, File>());
   const generateAbortRef = useRef<AbortController | null>(null);
@@ -197,7 +208,7 @@ export const BeforeAfterPhotos: React.FC<BeforeAfterPhotosProps> = ({
       nextAttachments = await reloadAttachments();
     } catch (error) {
       console.error(`Error uploading ${kind} photo:`, error);
-      showError(`Failed to upload the ${kind} photo`);
+      showError(extractErrorMessage(error, `Failed to upload the ${kind} photo`));
       return;
     } finally {
       setBusyPhoto(null);
@@ -343,6 +354,7 @@ export const BeforeAfterPhotos: React.FC<BeforeAfterPhotosProps> = ({
           disabled={busy}
           onPick={() => handlePick('before')}
           onRemove={api.deletePhoto && before ? () => handleRemove('before', before) : undefined}
+          onOpen={() => openFile(0)}
         />
         <PhotoSlot
           label="After"
@@ -353,8 +365,10 @@ export const BeforeAfterPhotos: React.FC<BeforeAfterPhotosProps> = ({
           disabled={busy || (!before && !after)}
           onPick={() => handlePick('after')}
           onRemove={api.deletePhoto && after ? () => handleRemove('after', after) : undefined}
+          onOpen={() => openFile(before ? 1 : 0)}
         />
       </S.PhotoGrid>
+      {viewer}
       {renderWriteUp()}
 
       <VoiceInputSheet

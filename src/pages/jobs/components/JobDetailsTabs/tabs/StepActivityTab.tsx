@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
+import { extractErrorMessage } from '../../../../../utils/errorHandler';
+import DOMPurify from 'dompurify';
 import {
   Tooltip,
   CircularProgress,
@@ -203,6 +206,25 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   }, [visibleItems]);
 
   const lastReply = visibleItems.at(-1)?.createdAt;
+  // Attachments that show a preview in the timeline, in order, for the viewer
+  const previewItems = useMemo(
+    () =>
+      visibleItems.filter(
+        (item) =>
+          item.itemType === 'ATTACHMENT' &&
+          !!item.fileUrl &&
+          (!!item.thumbnailUrl || isImageAttachment(undefined, extractFileName(item.fileUrl)))
+      ),
+    [visibleItems]
+  );
+  const { openFile, viewer } = useFileViewer(
+    previewItems.map((item) => ({
+      fileUrl: item.fileUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      // An attachment's content is its original name; the link's name is the stored file's id
+      fileName: item.content || extractFileName(item.fileUrl),
+    }))
+  );
 
   const countByStep = useMemo(() => {
     const map: Record<number, number> = {};
@@ -261,7 +283,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           );
         } catch (error) {
           console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -272,9 +294,9 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           showSuccess('All attachments uploaded');
         }
       } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       fetchAllTimelines(steps);
@@ -499,8 +521,14 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
                   <>
-                    {item.fileUrl && isImageAttachment(undefined, fileName) && (
-                      <ImagePreview src={item.fileUrl} alt={item.description || fileName} />
+                    {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
+                      <ImagePreview
+                        src={item.fileUrl}
+                        thumbnailSrc={item.thumbnailUrl}
+                        srcIsImage={isImageAttachment(undefined, fileName)}
+                        alt={item.description || fileName}
+                        onOpen={() => openFile(previewItems.indexOf(item))}
+                      />
                     )}
                     <SS.AttachmentRow>
                       {getFileIcon(fileName)}
@@ -521,7 +549,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: item.content || item.description || '—',
+                      __html: DOMPurify.sanitize(item.content || item.description || '—'),
                     }}
                   />
                 )}
@@ -783,6 +811,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         style={{ display: 'none' }}
         multiple
       />
+      {viewer}
     </>
   );
 };

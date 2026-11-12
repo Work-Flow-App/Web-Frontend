@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { FileThumbnail } from '../../../../../components/UI/FileThumbnail';
 import {
   CircularProgress,
   Autocomplete,
@@ -528,7 +529,7 @@ export const JobEstimateTab: React.FC<JobEstimateTabProps> = ({ job }) => {
                     </ES.CheckboxTableCell>
                     <ES.CompactTableCell>
                       <ES.DocIconBox>
-                        <ES.PdfIcon />
+                        <FileThumbnail src={doc.thumbnailUrl} size={28} fallback={<ES.PdfIcon />} />
                         <ES.DocTitle variant="body2">
                           {doc.documentNumber || `#${doc.id}`}
                         </ES.DocTitle>

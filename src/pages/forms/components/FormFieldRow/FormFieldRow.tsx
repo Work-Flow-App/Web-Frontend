@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileThumbnail } from '../../../../components/UI/FileThumbnail';
 import ShortTextIcon from '@mui/icons-material/ShortText';
 import { FormFieldDtoTypeEnum, FormFieldDtoRoleTargetEnum } from '../../../../services/api';
 import type { FormFieldValueResponse } from '../../../../services/api';
@@ -72,6 +73,7 @@ export const FormFieldRow: React.FC<FormFieldRowProps> = ({ value, isEditable, u
         <S.FileRow>
           {value.fileUrl ? (
             <a href={value.fileUrl} target="_blank" rel="noreferrer">
+              <FileThumbnail src={value.thumbnailUrl} size={32} fallback={null} />
               {value.fileName || 'View file'}
             </a>
           ) : (

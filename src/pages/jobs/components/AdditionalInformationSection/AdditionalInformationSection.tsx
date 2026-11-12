@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FileThumbnail } from '../../../../components/UI/FileThumbnail';
+import DOMPurify from 'dompurify';
 import { Box, Tooltip } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import SaveIcon from '@mui/icons-material/Save';
@@ -217,7 +219,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
                 <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
                   {item.itemType === 'COMMENT' ? (
                     <>
-                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: item.content || '' }} />
+                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || '') }} />
                       {item.createdAt && (
                         <S.CommentTimestamp>
                           {new Date(item.createdAt).toLocaleString()}
@@ -227,7 +229,7 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
                   ) : (
                     <S.CommentContentRow>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getFileIconFromName(item.content || '')}
+                        <FileThumbnail src={item.thumbnailUrl} size={32} fallback={getFileIconFromName(item.content || '')} />
                         <S.AttachmentFileName>
                           <div className="name">{item.content || 'Unnamed file'}</div>
                           {item.createdAt && (
