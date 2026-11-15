@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../../components/UI/FileViewer';
+import { FilePreview } from '../../../../components/UI/FilePreview';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -26,21 +29,6 @@ interface StepAttachmentsSectionProps {
   refreshKey?: number;
   onUpdate?: () => void;
 }
-
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.StyledGenericFileIcon />;
-
-  if (fileType.startsWith('image/')) {
-    return <S.StyledImageIcon />;
-  }
-  if (fileType === 'application/pdf') {
-    return <S.StyledPdfIcon />;
-  }
-  if (fileType.includes('word') || fileType.includes('document')) {
-    return <S.StyledDocIcon />;
-  }
-  return <S.StyledGenericFileIcon />;
-};
 
 export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
   stepId,
@@ -75,6 +63,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
   }, [stepId]);
 
   const { before, after, others } = splitAttachments(attachments);
+  const { openFile, viewer } = useFileViewer(others);
 
   useEffect(() => {
     fetchAttachments();
@@ -111,7 +100,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           );
         } catch (error) {
           console.error(`Error uploading attachment ${item.file.name}:`, error);
-          failedUploads.push(item.file.name);
+          failedUploads.push(`${item.file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -122,9 +111,9 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           showSuccess('All attachments uploaded successfully');
         }
       } else if (failedUploads.length < items.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       setIsUploadDialogOpen(false);
@@ -224,13 +213,20 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
         </SPage.UploadDropzone>
       ) : (
         <SPage.AttachmentList>
-          {others.map((attachment) => (
-            <SPage.AttachmentItem key={attachment.id}>
-              {getFileIcon(attachment.fileType)}
+          <SPage.AttachmentTileGrid>
+          {others.map((attachment, attachmentIndex) => (
+            <SPage.AttachmentTile key={attachment.id}>
+              <FilePreview
+                fileUrl={attachment.fileUrl}
+                thumbnailUrl={attachment.thumbnailUrl}
+                fileName={attachment.fileName}
+                fileType={attachment.fileType}
+                aspectRatio="4 / 3"
+                onOpen={() => openFile(attachmentIndex)}
+              />
+              <SPage.AttachmentTileFooter>
               <SPage.AttachmentFileName>
-                <div className="name">
-                  {attachment.fileName || 'Unnamed file'}
-                </div>
+                <div className="name" title={attachment.fileName}>{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
                   <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
@@ -238,7 +234,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
                 )}
                 <ExpandableDescription description={attachment.description} />
               </SPage.AttachmentFileName>
-              <SPage.AttachmentActions>
+              <SPage.AttachmentTileActions>
                 <Tooltip title="Edit description">
                   <IconButton
                     size="small"
@@ -275,9 +271,11 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </SPage.AttachmentActions>
-            </SPage.AttachmentItem>
+              </SPage.AttachmentTileActions>
+              </SPage.AttachmentTileFooter>
+            </SPage.AttachmentTile>
           ))}
+          </SPage.AttachmentTileGrid>
 
           <SPage.AddMoreButton onClick={handleUploadClick}>
             <S.StyledAttachFileSmallIcon />
@@ -285,7 +283,6 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           </SPage.AddMoreButton>
         </SPage.AttachmentList>
       )}
-
       <AttachmentUploadDialog
         open={isUploadDialogOpen}
         files={selectedFiles}
@@ -310,7 +307,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
         onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
         onClose={() => setEditingAttachment(null)}
       />
+      {viewer}
     </SPage.EventNoteBox>
   );
 };
-

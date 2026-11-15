@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { FileThumbnail } from '../../../../../components/UI/FileThumbnail';
 import { CircularProgress, Menu, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -172,7 +173,7 @@ export const DocumentsTab: React.FC = () => {
                   <TableCell>
                     <DocNameCell>
                       <DocIconBadge>
-                        <InsertDriveFileOutlinedIcon />
+                        <FileThumbnail src={doc.thumbnailUrl} fallback={<InsertDriveFileOutlinedIcon />} />
                       </DocIconBadge>
                       <CellStack>
                         <CellPrimaryText>{doc.title}</CellPrimaryText>

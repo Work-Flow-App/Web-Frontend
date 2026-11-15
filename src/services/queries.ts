@@ -1,24 +1,17 @@
 import { queryOptions } from '@tanstack/react-query';
-import { isAxiosError } from 'axios';
 import {
   companyService,
-  companyClientService,
-  customerService,
   dashboardService,
   jobService,
-  jobWorkflowService,
-  stepActivityService,
   workerJobWorkflowService,
-  workerService,
   workflowService,
 } from './api';
-import type { JobWorkflowResponse, StepActivityResponse, WorkflowStepResponse } from './api';
 
 /**
  * Shared query definitions. Components that need the same data must use the
  * same entry here so TanStack Query de-duplicates the request and shares the
  * cached result (e.g. the dashboard page and the Workfloow Event widget both
- * read `queries.jobs()`).
+ * read `queries.jobStats()`).
  */
 export const queries = {
   companyProfile: () =>
@@ -27,10 +20,10 @@ export const queries = {
       queryFn: async () => (await companyService.getProfile()).data,
     }),
 
-  companyPosts: () =>
+  companyPosts: (size?: number) =>
     queryOptions({
-      queryKey: ['company', 'posts'],
-      queryFn: async () => (await companyService.getPosts()).data ?? [],
+      queryKey: ['company', 'posts', size],
+      queryFn: async () => (await companyService.getPosts(undefined, size)).data ?? [],
     }),
 
   financialSummary: () =>
@@ -39,34 +32,48 @@ export const queries = {
       queryFn: async () => (await dashboardService.getFinancialSummary()).data,
     }),
 
-  jobs: () =>
+  jobStats: () =>
     queryOptions({
-      queryKey: ['jobs', 'list'],
-      queryFn: async () => (await jobService.getAllJobs()).data ?? [],
+      queryKey: ['dashboard', 'job-stats'],
+      queryFn: async () => (await dashboardService.getJobStats()).data,
     }),
 
-  archivedJobs: () =>
+  recentWorkflowActivity: (limit: number) =>
     queryOptions({
-      queryKey: ['jobs', 'archived'],
-      queryFn: async () => (await jobService.getArchivedJobs()).data ?? [],
+      queryKey: ['dashboard', 'recent-workflow-activity', limit],
+      queryFn: async () => (await dashboardService.getRecentWorkflowActivity(limit)).data ?? [],
     }),
 
-  workers: () =>
+  jobLocations: () =>
     queryOptions({
-      queryKey: ['workers', 'list'],
-      queryFn: async () => (await workerService.getAllWorkers()).data ?? [],
+      queryKey: ['dashboard', 'job-locations'],
+      queryFn: async () => (await dashboardService.getJobLocations()).data ?? [],
     }),
 
-  clients: () =>
+  workflowEvents: (workflowId: number) =>
     queryOptions({
-      queryKey: ['clients', 'list'],
-      queryFn: async () => (await companyClientService.getAllClients()).data ?? [],
+      queryKey: ['dashboard', 'workflow-events', workflowId],
+      queryFn: async () => (await dashboardService.getWorkflowEvents(workflowId)).data,
     }),
 
-  customers: () =>
+  dashboardPreferences: () =>
     queryOptions({
-      queryKey: ['customers', 'list'],
-      queryFn: async () => (await customerService.getAllCustomers()).data ?? [],
+      queryKey: ['dashboard', 'preferences'],
+      queryFn: async () => (await dashboardService.getPreferences()).data,
+    }),
+
+  recentlyUpdatedJobs: (size: number) =>
+    queryOptions({
+      queryKey: ['jobs', 'recently-updated', size],
+      queryFn: async () =>
+        (await jobService.getAllJobs(undefined, { page: 0, size, sort: ['updatedAt,desc'] })).data,
+    }),
+
+  newestInProgressJobs: (size: number) =>
+    queryOptions({
+      queryKey: ['jobs', 'newest-in-progress', size],
+      queryFn: async () =>
+        (await jobService.getAllJobs({ status: 'IN_PROGRESS' }, { page: 0, size, sort: ['createdAt,desc'] })).data,
     }),
 
   workflows: () =>
@@ -76,36 +83,6 @@ export const queries = {
         const res = await workflowService.getAllWorkflows();
         return Array.isArray(res.data) ? res.data : [];
       },
-    }),
-
-  workflowSteps: (workflowId: number) =>
-    queryOptions({
-      queryKey: ['workflows', workflowId, 'steps'],
-      queryFn: async (): Promise<WorkflowStepResponse[]> => {
-        const res = await workflowService.getWorkflowSteps(workflowId);
-        return Array.isArray(res.data) ? res.data : [];
-      },
-    }),
-
-  /** Resolves to null when the job has no workflow (404), so that result is cached too. */
-  jobWorkflow: (jobId: number) =>
-    queryOptions({
-      queryKey: ['job-workflows', jobId],
-      queryFn: async (): Promise<JobWorkflowResponse | null> => {
-        try {
-          return (await jobWorkflowService.getJobWorkflowByJobId(jobId)).data ?? null;
-        } catch (err) {
-          if (isAxiosError(err) && err.response?.status === 404) return null;
-          throw err;
-        }
-      },
-    }),
-
-  stepTimeline: (stepId: number) =>
-    queryOptions({
-      queryKey: ['job-workflow-steps', stepId, 'timeline'],
-      queryFn: async (): Promise<StepActivityResponse[]> =>
-        ((await stepActivityService.getTimeline(stepId)).data ?? []) as StepActivityResponse[],
     }),
 
   myAssignedSteps: () =>

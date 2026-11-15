@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { PROFILE_IMAGE_TYPES } from '../../../../../config/uploads';
 import { Menu, MenuItem } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import {
@@ -15,7 +16,6 @@ import { getInitials } from '../../../../../utils/getInitials';
 import { LogoBox, LogoImage, LogoInitials, LogoEditButton } from './LogoUpload.styles';
 
 const MAX_LOGO_SIZE_MB = 5;
-const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
 interface LogoUploadProps {
   logoUrl?: string;
@@ -46,7 +46,7 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({ logoUrl, companyName, ed
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (!file) return;
 
-    const typeError = ValidationRules.fileType(ALLOWED_LOGO_TYPES)(file);
+    const typeError = ValidationRules.fileType(PROFILE_IMAGE_TYPES)(file);
     if (typeError) {
       showError(typeError);
       return;
@@ -112,7 +112,7 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({ logoUrl, companyName, ed
           <input
             type="file"
             ref={fileInputRef}
-            accept="image/*"
+            accept={PROFILE_IMAGE_TYPES.join(',')}
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />

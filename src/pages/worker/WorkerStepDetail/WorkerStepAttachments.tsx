@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../components/UI/FileViewer';
+import { FilePreview } from '../../../components/UI/FilePreview';
+import { extractErrorMessage } from '../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import DescriptionIcon from '@mui/icons-material/Description';
 import { workerJobWorkflowService } from '../../../services/api';
 import type { StepAttachmentResponse } from '../../../services/api';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
@@ -27,20 +26,6 @@ interface WorkerStepAttachmentsProps {
   stepName?: string;
   onUpdate?: () => void;
 }
-
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <InsertDriveFileIcon fontSize="small" />;
-  if (fileType.startsWith('image/')) {
-    return <ImageIcon fontSize="small" sx={{ color: 'success.main' }} />;
-  }
-  if (fileType === 'application/pdf') {
-    return <PictureAsPdfIcon fontSize="small" sx={{ color: 'error.main' }} />;
-  }
-  if (fileType.includes('word') || fileType.includes('document')) {
-    return <DescriptionIcon fontSize="small" sx={{ color: 'info.main' }} />;
-  }
-  return <InsertDriveFileIcon fontSize="small" sx={{ color: 'text.secondary' }} />;
-};
 
 export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ stepId, stepName, onUpdate }) => {
   const { showSuccess, showError } = useSnackbar();
@@ -70,6 +55,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
   }, [stepId]);
 
   const { before, after, others } = splitAttachments(attachments);
+  const { openFile, viewer } = useFileViewer(others);
 
   useEffect(() => {
     fetchAttachments();
@@ -128,7 +114,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
       onUpdate?.();
     } catch (error) {
       console.error('Error uploading attachment:', error);
-      showError('Failed to upload attachment');
+      showError(extractErrorMessage(error, 'Failed to upload attachment'));
     } finally {
       setUploading(false);
     }
@@ -205,19 +191,26 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
         </S.UploadDropzone>
       ) : (
         <S.AttachmentList>
-          {others.map((attachment) => (
-            <S.AttachmentItem key={attachment.id}>
-              {getFileIcon(attachment.fileType)}
+          <S.AttachmentTileGrid>
+          {others.map((attachment, attachmentIndex) => (
+            <S.AttachmentTile key={attachment.id}>
+              <FilePreview
+                fileUrl={attachment.fileUrl}
+                thumbnailUrl={attachment.thumbnailUrl}
+                fileName={attachment.fileName}
+                fileType={attachment.fileType}
+                aspectRatio="4 / 3"
+                onOpen={() => openFile(attachmentIndex)}
+              />
+              <S.AttachmentTileFooter>
               <S.AttachmentFileName>
-                <div className="name">
-                  {attachment.fileName || 'Unnamed file'}
-                </div>
+                <div className="name" title={attachment.fileName}>{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
                   <div className="date">{new Date(attachment.createdAt).toLocaleDateString()}</div>
                 )}
                 <ExpandableDescription description={attachment.description} />
               </S.AttachmentFileName>
-              <S.AttachmentActions>
+              <S.AttachmentTileActions>
                 <Tooltip title="Edit description">
                   <IconButton
                     size="small"
@@ -243,9 +236,11 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
                     <DownloadIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </S.AttachmentActions>
-            </S.AttachmentItem>
+              </S.AttachmentTileActions>
+              </S.AttachmentTileFooter>
+            </S.AttachmentTile>
           ))}
+          </S.AttachmentTileGrid>
 
           <S.AddMoreButton onClick={handleUploadClick}>
             <AttachFileIcon sx={{ fontSize: 14 }} />
@@ -253,7 +248,6 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
           </S.AddMoreButton>
         </S.AttachmentList>
       )}
-
       <AttachmentUploadDialog
         open={isUploadDialogOpen}
         files={selectedFiles}
@@ -278,6 +272,7 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
         onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
         onClose={() => setEditingAttachment(null)}
       />
+      {viewer}
     </S.EventNoteBox>
   );
 };

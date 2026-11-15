@@ -32,6 +32,15 @@ export interface TaskData {
   dueDate: string;
 }
 
+export interface InProgressJobData {
+  id: number;
+  jobId?: number;
+  name: string;
+  status: string;
+  /** e.g. "Aug 24" */
+  createdDate: string;
+}
+
 export interface ActivityLog {
   id: number;
   jobId?: number;

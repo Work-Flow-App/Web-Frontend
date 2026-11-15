@@ -105,6 +105,9 @@ export const FileRow = styled(Box)(({ theme }) => ({
   fontSize: rem(13.5),
   paddingLeft: rem(40),
   '& a': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: rem(8),
     color: theme.palette.success.main,
     fontWeight: Bold._600,
     textDecoration: 'none',

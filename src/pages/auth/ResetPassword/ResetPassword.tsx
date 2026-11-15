@@ -41,6 +41,7 @@ export const ResetPassword: React.FC = () => {
     handleSubmit,
     formState: { errors },
     trigger,
+    getValues,
   } = methods;
 
   const navigate = useNavigate();
@@ -54,6 +55,9 @@ export const ResetPassword: React.FC = () => {
     message: '',
     variant: 'success',
   });
+  // A wrong, expired or replaced code comes back as 400
+  const [codeRejected, setCodeRejected] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
@@ -78,6 +82,7 @@ export const ResetPassword: React.FC = () => {
     } catch (error: unknown) {
       console.error('Password reset failed:', error);
       const errorMessage = extractErrorMessage(error, 'Failed to reset password. Please try again.');
+      setCodeRejected((error as { status?: number }).status === 400);
 
       setSnackbar({
         open: true,
@@ -86,6 +91,32 @@ export const ResetPassword: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendNewCode = async () => {
+    const email = getValues('email');
+    if (!email) {
+      trigger('email');
+      return;
+    }
+    setSendingCode(true);
+    try {
+      const response = await authService.forgotPassword({ email });
+      setCodeRejected(false);
+      setSnackbar({
+        open: true,
+        message: response.data.message || 'We sent a new code to your email. Only the newest code works.',
+        variant: 'success',
+      });
+    } catch (error: unknown) {
+      setSnackbar({
+        open: true,
+        message: extractErrorMessage(error, 'Failed to send a new code. Please try again.'),
+        variant: 'error',
+      });
+    } finally {
+      setSendingCode(false);
     }
   };
 
@@ -102,7 +133,8 @@ export const ResetPassword: React.FC = () => {
               <FloowLogo variant="light" showText={true} />
               <Title>Reset Password</Title>
               <Subtitle>
-                Enter the verification code sent to your email and create a new password.
+                Enter the verification code sent to your email and create a new password. The code
+                expires after 15 minutes.
               </Subtitle>
             </HeaderSection>
 
@@ -155,6 +187,12 @@ export const ResetPassword: React.FC = () => {
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
               </Button>
+
+              {codeRejected && (
+                <BackToLoginLink onClick={sendingCode ? undefined : handleSendNewCode}>
+                  {sendingCode ? 'Sending a new code...' : 'Code not working? Send a new code'}
+                </BackToLoginLink>
+              )}
 
               <BackToLoginLink onClick={handleBackToLogin}>
                 Back to Login

@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useFileViewer } from '../../../components/UI/FileViewer';
+import { extractErrorMessage } from '../../../utils/errorHandler';
+import DOMPurify from 'dompurify';
 import {
   TextField,
   Tooltip,
@@ -88,6 +91,25 @@ const mapPostTypeToAttachmentType = (postType: string): WorkerJobWorkflowUploadA
 export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ stepId }) => {
   const { showSuccess, showError } = useSnackbar();
   const [timeline, setTimeline] = useState<StepTimelineItemResponse[]>([]);
+  // Attachments that show a preview in the timeline, in order, for the viewer
+  const previewItems = useMemo(
+    () =>
+      timeline.filter(
+        (item) =>
+          item.itemType === 'ATTACHMENT' &&
+          !!item.fileUrl &&
+          (!!item.thumbnailUrl || isImageAttachment(undefined, extractFileName(item.fileUrl)))
+      ),
+    [timeline]
+  );
+  const { openFile, viewer } = useFileViewer(
+    previewItems.map((item) => ({
+      fileUrl: item.fileUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      // An attachment's content is its original name; the link's name is the stored file's id
+      fileName: item.content || extractFileName(item.fileUrl),
+    }))
+  );
   const [loadingTimeline, setLoadingTimeline] = useState(true);
   const [message, setMessage] = useState('');
   const [postType, setPostType] = useState<string>(StepCommentCreateRequestTypeEnum.General);
@@ -189,8 +211,8 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
       setIsUploadDialogOpen(false);
       setSelectedFiles([]);
       fetchTimeline();
-    } catch {
-      showError('Failed to upload attachments');
+    } catch (error) {
+      showError(extractErrorMessage(error, 'Failed to upload attachments'));
     } finally {
       setUploading(false);
     }
@@ -250,8 +272,14 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
                     <S.ActivityBubble>
                       {isAttachment ? (
                         <WS.AttachmentDiscussionBox>
-                          {item.fileUrl && isImageAttachment(undefined, fileName) && (
-                            <ImagePreview src={item.fileUrl} alt={item.description || fileName} />
+                          {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
+                            <ImagePreview
+                              src={item.fileUrl}
+                              thumbnailSrc={item.thumbnailUrl}
+                              srcIsImage={isImageAttachment(undefined, fileName)}
+                              alt={item.description || fileName}
+                              onOpen={() => openFile(previewItems.indexOf(item))}
+                            />
                           )}
                           <S.ActivityAttachmentRow>
                             {getFileIcon(fileName)}
@@ -279,7 +307,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
                         </WS.AttachmentDiscussionBox>
                       ) : (
                         <S.ActivityBubbleHtml
-                          dangerouslySetInnerHTML={{ __html: item.content || item.description || '—' }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || item.description || '—') }}
                         />
                       )}
                     </S.ActivityBubble>
@@ -367,7 +395,6 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
           </Button>
         </S.ActivityInputBar>
       </S.ActivityChatContainer>
-
       <AttachmentUploadDialog
         open={isUploadDialogOpen}
         files={selectedFiles}
@@ -392,6 +419,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
         onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
         onClose={() => setEditingAttachment(null)}
       />
+      {viewer}
     </WS.DiscussionContainer>
   );
 };
