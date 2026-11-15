@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Tooltip } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import DownloadIcon from '@mui/icons-material/Download';
+import EditIcon from '@mui/icons-material/Edit';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -12,6 +13,13 @@ import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { Loader } from '../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../components/UI/Button/IconButton';
 import { BeforeAfterPhotos, splitAttachments, workerBeforeAfterPhotosApi } from '../../jobs/components/BeforeAfterPhotos';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../components/UI/AttachmentUploadDialog';
 import * as S from '../../jobs/JobDetailsPage.styles';
 
 interface WorkerStepAttachmentsProps {
@@ -39,6 +47,10 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<StepAttachmentResponse | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Only the first load shows the loader; reloads keep the section mounted so an unsaved photo write-up survives.
@@ -68,14 +80,50 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
     try {
       setUploading(true);
-      await workerJobWorkflowService.uploadAttachment(stepId, file);
-      showSuccess('Attachment uploaded');
+      const failedUploads: string[] = [];
+
+      for (const item of items) {
+        try {
+          await workerJobWorkflowService.uploadAttachment(
+            stepId,
+            item.file,
+            item.type as any,
+            item.description || undefined
+          );
+        } catch (error) {
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(item.file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (items.length === 1) {
+          showSuccess('Attachment uploaded');
+        } else {
+          showSuccess('All attachments uploaded');
+        }
+      } else if (failedUploads.length < items.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
       fetchAttachments();
       onUpdate?.();
     } catch (error) {
@@ -83,9 +131,6 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
       showError('Failed to upload attachment');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -93,6 +138,25 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
     e.stopPropagation();
     if (attachment.fileUrl) {
       window.open(attachment.fileUrl, '_blank');
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await workerJobWorkflowService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchAttachments();
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
@@ -116,12 +180,12 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
         </S.EventNoteEditButton>
       </S.EventNoteHeader>
 
-      <input
+      <S.HiddenFileInput
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        style={{ display: 'none' }}
         onClick={(e) => e.stopPropagation()}
+        multiple
       />
 
       {/* No onUpdate: the page's reload would unmount this tab and lose an unsaved write-up. */}
@@ -145,12 +209,29 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
             <S.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
               <S.AttachmentFileName>
-                <div className="name">{attachment.fileName || 'Unnamed file'}</div>
+                <div className="name">
+                  {attachment.fileName || 'Unnamed file'}
+                </div>
                 {attachment.createdAt && (
                   <div className="date">{new Date(attachment.createdAt).toLocaleDateString()}</div>
                 )}
+                <ExpandableDescription description={attachment.description} />
               </S.AttachmentFileName>
               <S.AttachmentActions>
+                <Tooltip title="Edit description">
+                  <IconButton
+                    size="small"
+                    variant="text"
+                    color="secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingAttachment(attachment);
+                    }}
+                    aria-label="Edit description"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
@@ -172,6 +253,31 @@ export const WorkerStepAttachments: React.FC<WorkerStepAttachmentsProps> = ({ st
           </S.AddMoreButton>
         </S.AttachmentList>
       )}
+
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={UploadAttachmentTypeEnum.General}
+        allowTypeChange={false}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={editingAttachment?.fileName || 'Attachment'}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
     </S.EventNoteBox>
   );
 };

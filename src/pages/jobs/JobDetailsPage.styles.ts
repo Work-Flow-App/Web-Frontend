@@ -6,6 +6,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -829,6 +830,13 @@ export const CollapsibleSectionActions = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+export const SectionExpandArrow = styled(ExpandMoreIcon, {
+  shouldForwardProp: (prop) => prop !== 'isExpanded',
+})<{ isExpanded?: boolean }>(({ isExpanded }) => ({
+  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+  transition: 'transform 0.2s ease',
+}));
+
 export const CollapsibleSectionContent = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
@@ -1103,6 +1111,13 @@ export const AttachmentFileName = styled(Box)(({ theme }) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  '& .desc': {
+    fontSize: rem(11),
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   '& .date': {
     fontSize: rem(10),
     color: theme.palette.text.secondary,
@@ -1164,6 +1179,18 @@ export const CommentContentRow = styled(Box)(() => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'flex-start',
+}));
+
+export const HiddenFileInput = styled('input')({
+  display: 'none',
+});
+
+export const AttachmentInfoWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  minWidth: 0,
+  flex: 1,
 }));
 
 export const CommentActionsRow = styled(Box)(({ theme }) => ({

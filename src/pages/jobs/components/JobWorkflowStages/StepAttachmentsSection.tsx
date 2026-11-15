@@ -2,12 +2,20 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
+import EditIcon from '@mui/icons-material/Edit';
 import { stepActivityService } from '../../../../services/api';
 import type { StepAttachmentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
 import { BeforeAfterPhotos, companyBeforeAfterPhotosApi, splitAttachments } from '../BeforeAfterPhotos';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../../components/UI/AttachmentUploadDialog';
 import * as SPage from '../../JobDetailsPage.styles';
 import * as S from './JobWorkflowStages.styles';
 
@@ -44,6 +52,10 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<StepAttachmentResponse | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Only the first load shows the loader; reloads keep the section mounted so an unsaved photo write-up survives.
@@ -73,35 +85,50 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
     try {
       setUploading(true);
       const failedUploads: string[] = [];
 
-      for (const file of files) {
+      for (const item of items) {
         try {
-          await stepActivityService.uploadAttachment(stepId, file);
+          await stepActivityService.uploadAttachment(
+            stepId,
+            item.file,
+            item.type,
+            item.description || undefined
+          );
         } catch (error) {
-          console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(item.file.name);
         }
       }
 
       if (failedUploads.length === 0) {
-        if (files.length === 1) {
+        if (items.length === 1) {
           showSuccess('Attachment uploaded successfully');
         } else {
           showSuccess('All attachments uploaded successfully');
         }
-      } else if (failedUploads.length < files.length) {
+      } else if (failedUploads.length < items.length) {
         showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
       } else {
         showError('Failed to upload attachments');
       }
 
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
       fetchAttachments();
       onUpdate?.();
     } catch (error) {
@@ -109,9 +136,6 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
       showError('Failed to upload attachments');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -125,6 +149,25 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
     } catch (error) {
       console.error('Error deleting attachment:', error);
       showError('Failed to delete attachment');
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchAttachments();
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
@@ -185,14 +228,31 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
             <SPage.AttachmentItem key={attachment.id}>
               {getFileIcon(attachment.fileType)}
               <SPage.AttachmentFileName>
-                <div className="name">{attachment.fileName || 'Unnamed file'}</div>
+                <div className="name">
+                  {attachment.fileName || 'Unnamed file'}
+                </div>
                 {attachment.createdAt && (
                   <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
                   </div>
                 )}
+                <ExpandableDescription description={attachment.description} />
               </SPage.AttachmentFileName>
               <SPage.AttachmentActions>
+                <Tooltip title="Edit description">
+                  <IconButton
+                    size="small"
+                    variant="text"
+                    color="secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingAttachment(attachment);
+                    }}
+                    aria-label="Edit description"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
@@ -225,6 +285,31 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
           </SPage.AddMoreButton>
         </SPage.AttachmentList>
       )}
+
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={UploadAttachmentTypeEnum.General}
+        allowTypeChange={false}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={editingAttachment?.fileName || 'Attachment'}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
     </SPage.EventNoteBox>
   );
 };
