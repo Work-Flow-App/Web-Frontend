@@ -621,11 +621,32 @@ export const MessageBubble = styled(Box, {
   },
 }));
 
+export const HiddenFileInput = styled('input')({
+  display: 'none',
+});
+
+export const AttachmentContainer = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  maxWidth: rem(360),
+  minWidth: rem(180),
+}));
+
 export const AttachmentRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'space-between',
   gap: theme.spacing(1),
-  minWidth: rem(180),
+  width: '100%',
+}));
+
+export const AttachmentRowLeft = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  minWidth: 0,
+  flex: 1,
 }));
 
 export const AttachmentFileName = styled(Typography, {

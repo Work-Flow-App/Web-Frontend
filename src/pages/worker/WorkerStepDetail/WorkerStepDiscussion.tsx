@@ -3,15 +3,10 @@ import { useFileViewer } from '../../../components/UI/FileViewer';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 import DOMPurify from 'dompurify';
 import {
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   TextField,
   Tooltip,
   IconButton as MuiIconButton,
   CircularProgress,
-  Box,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -28,17 +23,24 @@ import { Loader } from '../../../components/UI/Loader/Loader';
 import { Button } from '../../../components/UI/Button';
 import { ImagePreview } from '../../../components/UI/ImagePreview';
 import { isImageAttachment } from '../../../utils/attachmentHelpers';
+import {
+  AttachmentUploadDialog,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../components/UI/AttachmentUploadDialog';
 import * as S from '../../jobs/JobDetailsPage.styles';
+import * as WS from './WorkerStepDiscussion.styles';
 
 interface WorkerStepDiscussionProps {
   stepId: number;
 }
 
 const POST_TYPES = [
-  { value: StepCommentCreateRequestTypeEnum.General, label: 'GENERAL' },
-  { value: StepCommentCreateRequestTypeEnum.Additional, label: 'ADDITIONAL' },
-  { value: StepCommentCreateRequestTypeEnum.Complaint, label: 'COMPLAINT' },
-  { value: StepCommentCreateRequestTypeEnum.InternalNote, label: 'INTERNAL NOTE' },
+  { value: StepCommentCreateRequestTypeEnum.General, label: 'GENERAL', dotColor: '#1E88E5' },
+  { value: StepCommentCreateRequestTypeEnum.Additional, label: 'ADDITIONAL', dotColor: '#8E24AA' },
+  { value: StepCommentCreateRequestTypeEnum.Complaint, label: 'COMPLAINT', dotColor: '#FB8C00' },
+  { value: StepCommentCreateRequestTypeEnum.InternalNote, label: 'INTERNAL NOTE', dotColor: '#FDD835' },
 ];
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
@@ -113,6 +115,10 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
   const [postType, setPostType] = useState<string>(StepCommentCreateRequestTypeEnum.General);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<StepTimelineItemResponse | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -161,28 +167,77 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
     try {
       setUploading(true);
-      await workerJobWorkflowService.uploadAttachment(
-        stepId,
-        file,
-        mapPostTypeToAttachmentType(postType),
-      );
-      showSuccess('Attachment uploaded');
+      const failedUploads: string[] = [];
+
+      for (const item of items) {
+        try {
+          await workerJobWorkflowService.uploadAttachment(
+            stepId,
+            item.file,
+            item.type as any,
+            item.description || undefined
+          );
+        } catch (error) {
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(item.file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (items.length === 1) {
+          showSuccess('Attachment uploaded');
+        } else {
+          showSuccess('All attachments uploaded');
+        }
+      } else if (failedUploads.length < items.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
       fetchTimeline();
     } catch (error) {
-      showError(extractErrorMessage(error, 'Failed to upload attachment'));
+      showError(extractErrorMessage(error, 'Failed to upload attachments'));
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await workerJobWorkflowService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchTimeline();
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <WS.DiscussionContainer>
       <S.ActivityChatContainer>
         <S.ActivityChatHeader>
           <ChatBubbleOutlineIcon fontSize="small" color="primary" />
@@ -216,7 +271,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
 
                     <S.ActivityBubble>
                       {isAttachment ? (
-                        <>
+                        <WS.AttachmentDiscussionBox>
                           {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
                             <ImagePreview
                               src={item.fileUrl}
@@ -228,7 +283,7 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
                           )}
                           <S.ActivityAttachmentRow>
                             {getFileIcon(fileName)}
-                            <S.ActivityAttachmentName>{item.description || fileName}</S.ActivityAttachmentName>
+                            <S.ActivityAttachmentName title={fileName}>{fileName}</S.ActivityAttachmentName>
                             {item.fileUrl && (
                               <Tooltip title="Download">
                                 <MuiIconButton
@@ -239,8 +294,17 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
                                 </MuiIconButton>
                               </Tooltip>
                             )}
+                            <Tooltip title="Edit description">
+                              <MuiIconButton
+                                size="small"
+                                onClick={() => setEditingAttachment(item)}
+                              >
+                                <WS.EditIconStyled />
+                              </MuiIconButton>
+                            </Tooltip>
                           </S.ActivityAttachmentRow>
-                        </>
+                          <ExpandableDescription description={item.description} />
+                        </WS.AttachmentDiscussionBox>
                       ) : (
                         <S.ActivityBubbleHtml
                           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || item.description || '—') }}
@@ -279,21 +343,28 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
             }}
           />
 
-          <FormControl size="small" sx={{ minWidth: 130, flexShrink: 0 }}>
-            <InputLabel sx={{ fontSize: 12 }}>Post Type</InputLabel>
-            <Select
+          <WS.TypeSelectFormControl size="small">
+            <WS.TypeSelectInput
               value={postType}
               onChange={(e) => setPostType(e.target.value as string)}
-              label="Post Type"
-              sx={{ fontSize: 12 }}
+              renderValue={(val) => {
+                const cfg = POST_TYPES.find((p) => p.value === val) || POST_TYPES[0];
+                return (
+                  <>
+                    <WS.TypeDot dotColor={cfg.dotColor} />
+                    {cfg.label}
+                  </>
+                );
+              }}
             >
               {POST_TYPES.map((pt) => (
-                <MenuItem key={pt.value} value={pt.value} sx={{ fontSize: 12 }}>
+                <WS.TypeMenuItem key={pt.value} value={pt.value}>
+                  <WS.TypeDot dotColor={pt.dotColor} />
                   {pt.label}
-                </MenuItem>
+                </WS.TypeMenuItem>
               ))}
-            </Select>
-          </FormControl>
+            </WS.TypeSelectInput>
+          </WS.TypeSelectFormControl>
 
           <Tooltip title={uploading ? 'Uploading...' : 'Attach file'}>
             <span>
@@ -307,11 +378,11 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
               </MuiIconButton>
             </span>
           </Tooltip>
-          <input
+          <WS.HiddenFileInput
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            style={{ display: 'none' }}
+            multiple
           />
 
           <Button
@@ -324,7 +395,31 @@ export const WorkerStepDiscussion: React.FC<WorkerStepDiscussionProps> = ({ step
           </Button>
         </S.ActivityInputBar>
       </S.ActivityChatContainer>
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={mapPostTypeToAttachmentType(postType) as any}
+        allowTypeChange={true}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={extractFileName(editingAttachment?.fileUrl)}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
       {viewer}
-    </Box>
+    </WS.DiscussionContainer>
   );
 };

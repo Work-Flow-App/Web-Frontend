@@ -53,7 +53,6 @@ export const buildFieldPayload = (
   rows.forEach((row, index) => {
     const label = row.label?.trim();
     const type = resolveFieldEnum(row.type);
-    if (!label && !type) return;
 
     if (!label) {
       setError(`fields.${index}.label`, { message: type === FormFieldDtoTypeEnum.Section ? 'Section title is required' : 'Field label is required' });
@@ -67,7 +66,7 @@ export const buildFieldPayload = (
     if (type === FormFieldDtoTypeEnum.Dropdown || type === FormFieldDtoTypeEnum.MultiSelect) {
       const opts = (row.options || '').split(',').map((s) => s.trim());
       const hasEmpty = opts.some((o) => !o);
-      if (hasEmpty || opts.length === 0) {
+      if (hasEmpty || opts.length === 0 || opts.every((o) => !o)) {
         setError(`fields.${index}.options`, { message: 'Please fill in all options or remove empty ones' });
         hasRowErrors = true;
       }
