@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../../components/UI/FileViewer';
+import { FilePreview } from '../../../../components/UI/FilePreview';
+import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -7,48 +10,48 @@ import type { StepAttachmentResponse } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../components/UI/Loader/Loader';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
+import { BeforeAfterPhotos, companyBeforeAfterPhotosApi, splitAttachments } from '../BeforeAfterPhotos';
 import * as SPage from '../../JobDetailsPage.styles';
 import * as S from './JobWorkflowStages.styles';
 
 interface StepAttachmentsSectionProps {
   stepId: number;
+  stepName?: string;
+  /** Change it to reload the before/after photos' saved write-up after the step's comments change. */
+  refreshKey?: number;
   onUpdate?: () => void;
 }
 
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.StyledGenericFileIcon />;
-
-  if (fileType.startsWith('image/')) {
-    return <S.StyledImageIcon />;
-  }
-  if (fileType === 'application/pdf') {
-    return <S.StyledPdfIcon />;
-  }
-  if (fileType.includes('word') || fileType.includes('document')) {
-    return <S.StyledDocIcon />;
-  }
-  return <S.StyledGenericFileIcon />;
-};
-
-export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ stepId, onUpdate }) => {
+export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({
+  stepId,
+  stepName,
+  refreshKey,
+  onUpdate,
+}) => {
   const { showSuccess, showError } = useSnackbar();
   const [attachments, setAttachments] = useState<StepAttachmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Only the first load shows the loader; reloads keep the section mounted so an unsaved photo write-up survives.
   const fetchAttachments = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await stepActivityService.getAttachments(stepId);
-      setAttachments(response.data || []);
+      const nextAttachments = response.data || [];
+      setAttachments(nextAttachments);
+      return nextAttachments;
     } catch (error) {
       console.error('Error fetching attachments:', error);
       setAttachments([]);
+      return null;
     } finally {
       setLoading(false);
     }
   }, [stepId]);
+
+  const { before, after, others } = splitAttachments(attachments);
+  const { openFile, viewer } = useFileViewer(others);
 
   useEffect(() => {
     fetchAttachments();
@@ -72,7 +75,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
           await stepActivityService.uploadAttachment(stepId, file);
         } catch (error) {
           console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -83,9 +86,9 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
           showSuccess('All attachments uploaded successfully');
         }
       } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       fetchAttachments();
@@ -149,25 +152,45 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
         multiple
       />
 
-      {attachments.length === 0 ? (
+      <BeforeAfterPhotos
+        stepId={stepId}
+        stepName={stepName}
+        api={companyBeforeAfterPhotosApi}
+        before={before}
+        after={after}
+        reloadAttachments={fetchAttachments}
+        refreshKey={refreshKey}
+        onUpdate={onUpdate}
+      />
+
+      {others.length === 0 ? (
         <SPage.UploadDropzone onClick={handleUploadClick}>
           <S.StyledAttachFileIcon />
           <SPage.EventNoteContent>Click to upload attachments</SPage.EventNoteContent>
         </SPage.UploadDropzone>
       ) : (
         <SPage.AttachmentList>
-          {attachments.map((attachment) => (
-            <SPage.AttachmentItem key={attachment.id}>
-              {getFileIcon(attachment.fileType)}
+          <SPage.AttachmentTileGrid>
+          {others.map((attachment, attachmentIndex) => (
+            <SPage.AttachmentTile key={attachment.id}>
+              <FilePreview
+                fileUrl={attachment.fileUrl}
+                thumbnailUrl={attachment.thumbnailUrl}
+                fileName={attachment.fileName}
+                fileType={attachment.fileType}
+                aspectRatio="4 / 3"
+                onOpen={() => openFile(attachmentIndex)}
+              />
+              <SPage.AttachmentTileFooter>
               <SPage.AttachmentFileName>
-                <div className="name">{attachment.fileName || 'Unnamed file'}</div>
+                <div className="name" title={attachment.fileName}>{attachment.fileName || 'Unnamed file'}</div>
                 {attachment.createdAt && (
                   <div className="date">
                     {new Date(attachment.createdAt).toLocaleDateString()}
                   </div>
                 )}
               </SPage.AttachmentFileName>
-              <SPage.AttachmentActions>
+              <SPage.AttachmentTileActions>
                 <Tooltip title="Download">
                   <IconButton
                     size="small"
@@ -190,9 +213,11 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-              </SPage.AttachmentActions>
-            </SPage.AttachmentItem>
+              </SPage.AttachmentTileActions>
+              </SPage.AttachmentTileFooter>
+            </SPage.AttachmentTile>
           ))}
+          </SPage.AttachmentTileGrid>
 
           <SPage.AddMoreButton onClick={handleUploadClick}>
             <S.StyledAttachFileSmallIcon />
@@ -200,7 +225,7 @@ export const StepAttachmentsSection: React.FC<StepAttachmentsSectionProps> = ({ 
           </SPage.AddMoreButton>
         </SPage.AttachmentList>
       )}
+      {viewer}
     </SPage.EventNoteBox>
   );
 };
-

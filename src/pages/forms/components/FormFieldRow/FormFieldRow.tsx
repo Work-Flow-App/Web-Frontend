@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileThumbnail } from '../../../../components/UI/FileThumbnail';
 import ShortTextIcon from '@mui/icons-material/ShortText';
 import { FormFieldDtoTypeEnum, FormFieldDtoRoleTargetEnum } from '../../../../services/api';
 import type { FormFieldValueResponse } from '../../../../services/api';
@@ -25,27 +26,44 @@ export interface FormFieldRowProps {
  * Renders one field of a form submission - editable input, read-only display, or a file
  * upload slot, plus a colored type icon and role tag. Shared by the company submission view
  * and the worker fill-out view so both sides render fields identically.
+ *
+ * For SECTION fields, renders an Option B minimal divider with title and description.
  */
 export const FormFieldRow: React.FC<FormFieldRowProps> = ({ value, isEditable, uploading, onUploadFile }) => {
   const label = value.fieldLabel || value.fieldName || 'Field';
+
+  // Section Header Divider (Option B: Minimal divider line with bold title and subtext)
+  if (value.fieldType === FormFieldDtoTypeEnum.Section) {
+    return (
+      <S.SectionDividerWrapper>
+        <S.SectionDividerLine />
+        <S.SectionHeaderTitle>{label}</S.SectionHeaderTitle>
+        {value.description && <S.SectionHeaderDesc>{value.description}</S.SectionHeaderDesc>}
+      </S.SectionDividerWrapper>
+    );
+  }
+
   const roleTarget = value.roleTarget || FormFieldDtoRoleTargetEnum.Both;
   const TypeIcon = TYPE_ICON[value.fieldType || ''] || ShortTextIcon;
   const typeColor = TYPE_COLOR[value.fieldType || ''] || floowColors.slate.main;
   const roleColor = ROLE_COLOR[roleTarget] || floowColors.slate.main;
 
   const header = (
-    <S.LabelRow>
-      <S.LabelGroup>
-        <S.TypeIconBadge tint={typeColor} title={typeLabel(value.fieldType)}>
-          <TypeIcon />
-        </S.TypeIconBadge>
-        <S.Label>
-          {label}
-          {value.required && <S.RequiredMark>*</S.RequiredMark>}
-        </S.Label>
-      </S.LabelGroup>
-      <S.RoleTag tint={roleColor}>{ROLE_CHIP_LABEL[roleTarget] ?? 'Either can fill this'}</S.RoleTag>
-    </S.LabelRow>
+    <>
+      <S.LabelRow>
+        <S.LabelGroup>
+          <S.TypeIconBadge tint={typeColor} title={typeLabel(value.fieldType)}>
+            <TypeIcon />
+          </S.TypeIconBadge>
+          <S.Label>
+            {label}
+            {value.required && <S.RequiredMark>*</S.RequiredMark>}
+          </S.Label>
+        </S.LabelGroup>
+        <S.RoleTag tint={roleColor}>{ROLE_CHIP_LABEL[roleTarget] ?? 'Either can fill this'}</S.RoleTag>
+      </S.LabelRow>
+      {value.description && <S.FieldDescription>{value.description}</S.FieldDescription>}
+    </>
   );
 
   if (value.fieldType === FormFieldDtoTypeEnum.File) {
@@ -55,6 +73,7 @@ export const FormFieldRow: React.FC<FormFieldRowProps> = ({ value, isEditable, u
         <S.FileRow>
           {value.fileUrl ? (
             <a href={value.fileUrl} target="_blank" rel="noreferrer">
+              <FileThumbnail src={value.thumbnailUrl} size={32} fallback={null} />
               {value.fileName || 'View file'}
             </a>
           ) : (

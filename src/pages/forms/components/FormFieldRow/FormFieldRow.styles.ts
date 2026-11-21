@@ -105,6 +105,9 @@ export const FileRow = styled(Box)(({ theme }) => ({
   fontSize: rem(13.5),
   paddingLeft: rem(40),
   '& a': {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: rem(8),
     color: theme.palette.success.main,
     fontWeight: Bold._600,
     textDecoration: 'none',
@@ -119,4 +122,58 @@ export const NoFileText = styled('span')(({ theme }) => ({
 
 export const FieldContent = styled(Box)(() => ({
   paddingLeft: rem(40),
+}));
+
+export const SectionDividerWrapper = styled(Box)(({ theme }) => ({
+  width: '100%',
+  paddingTop: rem(20),
+  paddingBottom: rem(8),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(6),
+  [theme.breakpoints.down('sm')]: {
+    paddingTop: rem(16),
+    paddingBottom: rem(6),
+  },
+}));
+
+export const SectionDividerLine = styled('hr')(({ theme }) => ({
+  border: 'none',
+  borderTop: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : floowColors.slate.light}`,
+  margin: 0,
+  marginBottom: rem(8),
+  width: '100%',
+}));
+
+export const SectionHeaderTitle = styled('h3')(({ theme }) => ({
+  margin: 0,
+  fontSize: rem(17),
+  fontWeight: Bold._700,
+  color: theme.palette.text.primary,
+  lineHeight: 1.35,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: rem(15.5),
+  },
+}));
+
+export const SectionHeaderDesc = styled(Box)(({ theme }) => ({
+  fontSize: rem(13),
+  fontWeight: Bold._400,
+  color: theme.palette.text.secondary,
+  lineHeight: 1.45,
+  [theme.breakpoints.down('sm')]: {
+    fontSize: rem(12),
+  },
+}));
+
+export const FieldDescription = styled(Box)(({ theme }) => ({
+  fontSize: rem(12.5),
+  fontWeight: Bold._400,
+  color: theme.palette.text.secondary,
+  paddingLeft: rem(40),
+  lineHeight: 1.4,
+  [theme.breakpoints.down('sm')]: {
+    paddingLeft: 0,
+    fontSize: rem(12),
+  },
 }));

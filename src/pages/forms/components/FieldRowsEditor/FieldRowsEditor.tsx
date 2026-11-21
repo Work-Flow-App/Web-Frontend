@@ -1,11 +1,11 @@
 import React from 'react';
-import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
+import { useFormContext, useFieldArray, useWatch, Controller } from 'react-hook-form';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
-import { Input, Checkbox, Dropdown } from '../../../../components/UI/Forms';
+import { Input, TextArea, Checkbox, Dropdown } from '../../../../components/UI/Forms';
 import { FormField, FormRow } from '../../../../components/UI/FormComponents';
 import { STEP_COLORS } from '../../../../enums';
 import { floowColors } from '../../../../theme/colors';
@@ -14,9 +14,11 @@ import {
   FORM_FIELD_TYPE_OPTIONS,
   FORM_FIELD_ROLE_TARGET_OPTIONS,
   FORM_FIELD_TYPES_WITH_OPTIONS,
+  FormFieldDtoTypeEnum,
 } from '../../../../services/api';
 import * as S from './FieldRowsEditor.styles';
 import { emptyFieldRow, resolveFieldEnum, type FieldRowsFormShape } from './FieldRowsEditor.utils';
+import { OptionsEditor } from '../OptionsEditor';
 
 export interface FieldRowsSectionProps {
   title?: string;
@@ -89,6 +91,7 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
   const typeValue = useWatch({ control, name: `fields.${index}.type` });
   const labelValue = useWatch({ control, name: `fields.${index}.label` });
   const resolvedType = resolveFieldEnum(typeValue);
+  const isSection = resolvedType === FormFieldDtoTypeEnum.Section;
   const showOptions = resolvedType ? FORM_FIELD_TYPES_WITH_OPTIONS.includes(resolvedType) : false;
   const rowErrors = formState.errors.fields?.[index];
 
@@ -113,12 +116,29 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
         <S.FieldNumberBadge accentcolor={accentColor}>{index + 1}</S.FieldNumberBadge>
         <S.FieldRowTitle>
           <TypeIcon style={{ color: (resolvedType && TYPE_COLOR[resolvedType]) || undefined }} />
-          <span>{labelValue?.trim() || `Field ${index + 1}`}</span>
+          <span>{labelValue?.trim() || (isSection ? `Section ${index + 1}` : `Field ${index + 1}`)}</span>
         </S.FieldRowTitle>
       </S.FieldRowHeader>
 
-      <FormField label="Field Label">
-        <Input name={`fields.${index}.label`} placeholder="e.g. Site safety checked" hideErrorMessage={false} />
+      <FormField label={isSection ? 'Section Title' : 'Field Label'}>
+        <Input
+          name={`fields.${index}.label`}
+          placeholder={isSection ? 'e.g. Site Safety Inspection' : 'e.g. Site safety checked'}
+          hideErrorMessage={false}
+        />
+      </FormField>
+
+      <FormField label={isSection ? 'Section Subtext (Optional)' : 'Description / Instructions (Optional)'}>
+        <TextArea
+          name={`fields.${index}.description`}
+          placeholder={
+            isSection
+              ? 'Add section instructions or guidance (optional)'
+              : 'Add instructions or help text for this field (optional)'
+          }
+          hideErrorMessage={false}
+          rows={2}
+        />
       </FormField>
 
       <FormRow>
@@ -133,28 +153,36 @@ const FieldRow: React.FC<FieldRowProps> = ({ index, canMoveUp, canMoveDown, onRe
             hideErrorMessage={false}
           />
         </FormField>
-        <FormField label="Filled By">
-          <Dropdown
-            name={`fields.${index}.roleTarget`}
-            preFetchedOptions={FORM_FIELD_ROLE_TARGET_OPTIONS}
-            placeHolder="Select who fills this field"
-            fullWidth
-            disableClearable
-          />
-        </FormField>
+        {!isSection && (
+          <FormField label="Filled By">
+            <Dropdown
+              name={`fields.${index}.roleTarget`}
+              preFetchedOptions={FORM_FIELD_ROLE_TARGET_OPTIONS}
+              placeHolder="Select who fills this field"
+              fullWidth
+              disableClearable
+            />
+          </FormField>
+        )}
       </FormRow>
 
-      {showOptions && (
+      {!isSection && showOptions && (
         <FormField label="Options">
-          <Input
+          <Controller
+            control={control}
             name={`fields.${index}.options`}
-            placeholder="Comma-separated choices, e.g. Yes, No, N/A"
-            hideErrorMessage={false}
+            render={({ field, fieldState }) => (
+              <OptionsEditor
+                value={field.value}
+                onChange={field.onChange}
+                error={fieldState.error?.message || rowErrors?.options?.message}
+              />
+            )}
           />
         </FormField>
       )}
 
-      <Checkbox name={`fields.${index}.required`} label="Required field" />
+      {!isSection && <Checkbox name={`fields.${index}.required`} label="Required field" />}
     </S.FieldRowCard>
   );
 };

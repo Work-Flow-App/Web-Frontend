@@ -402,26 +402,97 @@ export const MessageDeleteIconBtn = styled('button')(({ theme }) => ({
   },
 }));
 
-export const MessageEditInputRow = styled(Box)(({ theme }) => ({
+export const PlainEditContainer = styled(Box)(() => ({
+  width: '100%',
+  minWidth: 0,
+  marginTop: rem(6),
   display: 'flex',
-  gap: theme.spacing(1),
-  alignItems: 'flex-end',
-  marginTop: theme.spacing(0.5),
+  flexDirection: 'column',
+  gap: rem(8),
 }));
 
-export const MessageEditTextField = styled(TextField)(({ theme }) => ({
+export const PlainEditTextArea = styled(TextField)(({ theme }) => ({
+  width: '100%',
   '& .MuiOutlinedInput-root': {
-    fontSize: rem(13),
+    fontSize: rem(13.5),
+    lineHeight: 1.5,
     borderRadius: rem(8),
     backgroundColor: theme.palette.colors.white,
-    minWidth: rem(200),
+    border: `${rem(1)} solid ${theme.palette.border?.main || theme.palette.colors.grey_300}`,
+    padding: rem(10),
+    transition: 'border-color 0.2s ease',
+    '&:hover': {
+      borderColor: theme.palette.colors.grey_400,
+    },
+    '&.Mui-focused': {
+      borderColor: theme.palette.primary.main,
+    },
+    '& fieldset': {
+      border: 'none',
+    },
+    '& textarea': {
+      padding: 0,
+      minHeight: rem(60),
+      maxHeight: rem(180),
+      overflowY: 'auto !important',
+      fontFamily: theme.typography.fontFamily,
+      fontSize: rem(13.5),
+      lineHeight: 1.5,
+      color: theme.palette.colors.grey_900,
+      '&::-webkit-scrollbar': {
+        width: rem(6),
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: theme.palette.colors.grey_300,
+        borderRadius: rem(3),
+      },
+    },
   },
 }));
 
-export const MessageEditActions = styled(Box)(({ theme }) => ({
+export const PlainEditActionsRow = styled(Box)(() => ({
   display: 'flex',
-  gap: theme.spacing(0.5),
-  flexShrink: 0,
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: rem(8),
+  marginTop: rem(2),
+}));
+
+export const PlainEditButtonsGroup = styled(Box)(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: rem(8),
+  marginLeft: 'auto',
+}));
+
+export const PlainEditShortcutHint = styled(Typography)(({ theme }) => ({
+  fontSize: rem(11),
+  color: theme.palette.text.secondary,
+  lineHeight: rem(16),
+  [theme.breakpoints.down('sm')]: {
+    display: 'none',
+  },
+  '& strong': {
+    fontWeight: Bold._700,
+    color: theme.palette.colors.grey_700,
+  },
+}));
+
+export const RichEditContainer = styled(Box)(() => ({
+  width: '100%',
+  minWidth: 0,
+  marginTop: rem(6),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(8),
+}));
+
+export const RichEditActionsRow = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  gap: rem(8),
+  marginTop: rem(4),
 }));
 
 export const DateGroupLine = styled(Box)(({ theme }) => ({
@@ -467,14 +538,16 @@ export const MessageAvatarCircle = styled(Box, {
 }));
 
 export const MessageContentBox = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isMine',
-})<MessageProps>(({ theme, isMine }) => ({
-  maxWidth: '65%',
+  shouldForwardProp: (prop) => prop !== 'isMine' && prop !== 'isEditing',
+})<MessageProps & { isEditing?: boolean }>(({ theme, isMine, isEditing }) => ({
+  maxWidth: isEditing ? '100%' : '65%',
+  width: isEditing ? '100%' : 'auto',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: isMine ? 'flex-end' : 'flex-start',
+  alignItems: isEditing ? 'stretch' : isMine ? 'flex-end' : 'flex-start',
   [theme.breakpoints.down('md')]: {
     maxWidth: '100%',
+    width: '100%',
     flex: 1,
     minWidth: 0,
     alignItems: 'stretch',

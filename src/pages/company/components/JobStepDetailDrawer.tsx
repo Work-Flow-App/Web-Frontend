@@ -7,17 +7,15 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from 'react-router-dom';
-import type { JobResponse, CustomerResponse } from '../../../services/api';
+import type { AddressResponse, WorkflowEventJobResponse } from '../../../services/api';
 import { rem } from '../../../components/UI/Typography/utility';
 import { floowColors } from '../../../theme/colors';
-import type { StepEventGroup } from './JobEventsSection';
+import type { StepEventGroup } from '../dashboardMappers';
 
 interface JobStepDetailDrawerProps {
   open: boolean;
   onClose: () => void;
   stepGroup: StepEventGroup;
-  jobsMap: Map<number, JobResponse>;
-  customersMap: Map<number, CustomerResponse>;
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -40,15 +38,8 @@ const STATUS_LABELS: Record<string, string> = {
   SKIPPED:     'Skipped',
 };
 
-function getJobTitle(job: JobResponse | undefined, jobId: number): string {
-  if (!job) return `Job #${jobId}`;
-  if (job.fieldValues) {
-    const titleField = Object.entries(job.fieldValues).find(
-      ([key]) => key.toLowerCase().includes('title') || key.toLowerCase().includes('name')
-    );
-    if (titleField && titleField[1]?.value) return String(titleField[1].value);
-  }
-  return `Job #${jobId}`;
+function getJobTitle(job: WorkflowEventJobResponse): string {
+  return job.jobTitle || `Job #${job.jobRef ?? job.jobId}`;
 }
 
 function formatDate(dateStr: string): string {
@@ -60,8 +51,7 @@ function daysSince(dateStr: string): number {
   return Math.floor(ms / (1000 * 60 * 60 * 24));
 }
 
-function formatAddress(job: JobResponse): string | null {
-  const a = job.address;
+function formatAddress(a?: AddressResponse): string | null {
   if (!a) return null;
   const parts = [a.street, a.city, a.state, a.postalCode, a.country].filter(Boolean);
   return parts.length > 0 ? parts.join(', ') : null;
@@ -71,18 +61,16 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
   open,
   onClose,
   stepGroup,
-  jobsMap,
-  customersMap,
 }) => {
   const navigate = useNavigate();
 
-  const activeCount = stepGroup.jobWorkflows.filter(
-    ({ currentStep }) => currentStep.status === 'STARTED' || currentStep.status === 'ONGOING'
+  const activeCount = stepGroup.jobs.filter(
+    (job) => job.currentStepStatus === 'STARTED' || job.currentStepStatus === 'ONGOING'
   ).length;
   const waitingCount = stepGroup.count - activeCount;
 
-  const statusBreakdown = stepGroup.jobWorkflows.reduce<Record<string, number>>((acc, { currentStep }) => {
-    const s = currentStep.status ?? 'UNKNOWN';
+  const statusBreakdown = stepGroup.jobs.reduce<Record<string, number>>((acc, job) => {
+    const s = job.currentStepStatus ?? 'UNKNOWN';
     acc[s] = (acc[s] ?? 0) + 1;
     return acc;
   }, {});
@@ -176,7 +164,7 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
             gap: rem(8),
           }}
         >
-          {stepGroup.jobWorkflows.length === 0 ? (
+          {stepGroup.jobs.length === 0 ? (
             <Box
               sx={{
                 flex: 1,
@@ -193,15 +181,13 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
               <Typography sx={{ fontSize: rem(14) }}>No jobs at this step</Typography>
             </Box>
           ) : (
-            stepGroup.jobWorkflows.map(({ jobWorkflow, currentStep }, index) => {
-              const jobId = jobWorkflow.jobId!;
-              const job = jobsMap.get(jobId);
-              const customer = job?.customerId != null ? customersMap.get(job.customerId) : undefined;
-              const addressStr = job ? formatAddress(job) : null;
-              const days = job?.createdAt ? daysSince(job.createdAt) : null;
-              const statusStyle = STATUS_COLORS[currentStep.status ?? ''] ?? STATUS_COLORS.NOT_STARTED;
-              const statusLabel = STATUS_LABELS[currentStep.status ?? ''] ?? currentStep.status ?? '';
-              const title = getJobTitle(job, jobId);
+            stepGroup.jobs.map((job, index) => {
+              const jobId = job.jobId!;
+              const addressStr = formatAddress(job.address);
+              const days = job.createdAt ? daysSince(job.createdAt) : null;
+              const statusStyle = STATUS_COLORS[job.currentStepStatus ?? ''] ?? STATUS_COLORS.NOT_STARTED;
+              const statusLabel = STATUS_LABELS[job.currentStepStatus ?? ''] ?? job.currentStepStatus ?? '';
+              const title = getJobTitle(job);
 
               return (
                 <Box
@@ -262,7 +248,7 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
 
                     {/* Meta row */}
                     <Box sx={{ display: 'flex', gap: rem(12), alignItems: 'center' }}>
-                      {job?.status && (
+                      {job.status && (
                         <Typography
                           sx={{
                             fontSize: rem(11),
@@ -280,13 +266,13 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                     </Box>
 
                     {/* Customer / Address */}
-                    {(customer?.name || addressStr) && (
+                    {(job.customerName || addressStr) && (
                       <Box sx={{ mt: rem(6), display: 'flex', flexDirection: 'column', gap: rem(2) }}>
-                        {customer?.name && (
+                        {job.customerName && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(4) }}>
                             <PersonOutlineIcon sx={{ fontSize: rem(12), color: floowColors.text.muted, flexShrink: 0 }} />
                             <Typography sx={{ fontSize: rem(12), fontWeight: 600, color: floowColors.text.primary }}>
-                              {customer.name}
+                              {job.customerName}
                             </Typography>
                           </Box>
                         )}
@@ -302,7 +288,7 @@ export const JobStepDetailDrawer: React.FC<JobStepDetailDrawerProps> = ({
                     )}
 
                     {/* Date received + days timer */}
-                    {job?.createdAt && (
+                    {job.createdAt && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: rem(4), mt: rem(4) }}>
                         <AccessTimeIcon sx={{ fontSize: rem(12), color: floowColors.text.disabled, flexShrink: 0 }} />
                         <Typography sx={{ fontSize: rem(11), color: floowColors.text.disabled }}>

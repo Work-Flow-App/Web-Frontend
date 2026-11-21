@@ -14,6 +14,7 @@ import { extractErrorMessage } from '../../../utils/errorHandler';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSchema } from '../../../utils/validation';
 import { LoginFormSchema } from './LoginSchema';
+import { DesktopAlert } from '../../DesktopAlert';
 import {
   LoginContainer,
   LeftSection,
@@ -201,6 +202,7 @@ export const Login: React.FC = () => {
           variant={snackbar.variant}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
         />
+        <DesktopAlert />
       </LoginContainer>
     </FormProvider>
   );

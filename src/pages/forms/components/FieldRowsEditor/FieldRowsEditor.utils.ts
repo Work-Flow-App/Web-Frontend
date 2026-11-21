@@ -1,10 +1,11 @@
-import { FormFieldDtoRoleTargetEnum } from '../../../../services/api';
-import type { FormFieldDto, FormFieldDtoTypeEnum } from '../../../../services/api';
+import { FormFieldDtoRoleTargetEnum, FormFieldDtoTypeEnum } from '../../../../services/api';
+import type { FormFieldDto } from '../../../../services/api';
 
 export type EnumOrOption<T> = T | { label: string; value: T } | null;
 
 export interface FieldRowData {
   label: string;
+  description?: string;
   type: EnumOrOption<FormFieldDtoTypeEnum>;
   roleTarget: EnumOrOption<FormFieldDtoRoleTargetEnum>;
   required: boolean;
@@ -19,6 +20,7 @@ export interface FieldRowsFormShape {
 
 export const emptyFieldRow = (): FieldRowData => ({
   label: '',
+  description: '',
   type: null,
   roleTarget: FormFieldDtoRoleTargetEnum.Both,
   required: false,
@@ -44,7 +46,7 @@ const generateFieldName = (label: string) =>
  */
 export const buildFieldPayload = (
   rows: FieldRowData[],
-  setError: (name: `fields.${number}.${'label' | 'type'}`, error: { message: string }) => void
+  setError: (name: `fields.${number}.${'label' | 'type' | 'options'}`, error: { message: string }) => void
 ): FormFieldDto[] | null => {
   let hasRowErrors = false;
   const payload: FormFieldDto[] = [];
@@ -54,21 +56,33 @@ export const buildFieldPayload = (
     if (!label && !type) return;
 
     if (!label) {
-      setError(`fields.${index}.label`, { message: 'Field label is required' });
+      setError(`fields.${index}.label`, { message: type === FormFieldDtoTypeEnum.Section ? 'Section title is required' : 'Field label is required' });
       hasRowErrors = true;
     }
     if (!type) {
       setError(`fields.${index}.type`, { message: 'Field type is required' });
       hasRowErrors = true;
     }
+
+    if (type === FormFieldDtoTypeEnum.Dropdown || type === FormFieldDtoTypeEnum.MultiSelect) {
+      const opts = (row.options || '').split(',').map((s) => s.trim());
+      const hasEmpty = opts.some((o) => !o);
+      if (hasEmpty || opts.length === 0) {
+        setError(`fields.${index}.options`, { message: 'Please fill in all options or remove empty ones' });
+        hasRowErrors = true;
+      }
+    }
+
     if (label && type) {
+      const isSection = type === FormFieldDtoTypeEnum.Section;
       payload.push({
         name: generateFieldName(label),
         label,
+        description: row.description ? row.description.trim() : undefined,
         type,
-        roleTarget: resolveFieldEnum(row.roleTarget) || FormFieldDtoRoleTargetEnum.Both,
-        required: !!row.required,
-        options: row.options || undefined,
+        roleTarget: isSection ? FormFieldDtoRoleTargetEnum.Both : resolveFieldEnum(row.roleTarget) || FormFieldDtoRoleTargetEnum.Both,
+        required: isSection ? false : !!row.required,
+        options: isSection ? undefined : row.options || undefined,
         orderIndex: payload.length,
       });
     }

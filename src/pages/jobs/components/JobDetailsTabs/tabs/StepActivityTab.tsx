@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
+import { extractErrorMessage } from '../../../../../utils/errorHandler';
+import DOMPurify from 'dompurify';
 import {
   Tooltip,
   CircularProgress,
@@ -30,11 +33,14 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import { getUserIdFromToken } from '../../../../../utils/jwt';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
+import { ImagePreview } from '../../../../../components/UI/ImagePreview';
+import { StandaloneRichTextEditor } from '../../../../../components/UI/Forms/RichTextEditor';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
 } from '../../../../../components/UI/GlobalModal';
 import { rem } from '../../../../../components/UI/Typography/utility';
+import { isImageAttachment } from '../../../../../utils/attachmentHelpers';
 
 import { FilterByTypeScreen } from './FilterByTypeScreen';
 import * as SS from './StepActivityTab.styles';
@@ -62,6 +68,11 @@ interface CombinedTimelineItem extends StepTimelineItemResponse {
   stepId: number;
   stepOrderIndex: number;
 }
+
+const isRichTextDiscussion = (discussionType?: string) => {
+  const t = discussionType?.toUpperCase();
+  return t === 'ADDITIONAL' || t === 'COMPLAINT';
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -92,6 +103,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
 
   // ── Edit / delete state ──────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<CombinedTimelineItem | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -194,6 +206,25 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   }, [visibleItems]);
 
   const lastReply = visibleItems.at(-1)?.createdAt;
+  // Attachments that show a preview in the timeline, in order, for the viewer
+  const previewItems = useMemo(
+    () =>
+      visibleItems.filter(
+        (item) =>
+          item.itemType === 'ATTACHMENT' &&
+          !!item.fileUrl &&
+          (!!item.thumbnailUrl || isImageAttachment(undefined, extractFileName(item.fileUrl)))
+      ),
+    [visibleItems]
+  );
+  const { openFile, viewer } = useFileViewer(
+    previewItems.map((item) => ({
+      fileUrl: item.fileUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      // An attachment's content is its original name; the link's name is the stored file's id
+      fileName: item.content || extractFileName(item.fileUrl),
+    }))
+  );
 
   const countByStep = useMemo(() => {
     const map: Record<number, number> = {};
@@ -252,7 +283,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           );
         } catch (error) {
           console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
@@ -263,9 +294,9 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           showSuccess('All attachments uploaded');
         }
       } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
       fetchAllTimelines(steps);
@@ -298,11 +329,13 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   // ── Edit / delete handlers ──────────────────────────────────────────────────
 
   const startEdit = (item: CombinedTimelineItem) => {
+    setEditingItem(item);
     setEditingId(item.id ?? null);
     setEditingContent(item.content || '');
   };
 
   const cancelEdit = () => {
+    setEditingItem(null);
     setEditingId(null);
     setEditingContent('');
   };
@@ -311,9 +344,10 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!editingId || !editingContent.trim()) return;
     setSavingEdit(true);
     try {
+      const commentType = (editingItem?.discussionType || postType || StepCommentCreateRequestTypeEnum.General) as StepCommentCreateRequestTypeEnum;
       await stepActivityService.updateComment(editingId, {
         content: editingContent.trim(),
-        type: postType as StepCommentCreateRequestTypeEnum,
+        type: commentType,
       });
       showSuccess('Message updated');
       cancelEdit();
@@ -381,6 +415,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
       const isAttachment = item.itemType === 'ATTACHMENT';
       const isComment = item.itemType === 'COMMENT' || !isAttachment;
       const isEditing = editingId === item.id;
+      const isRich = isRichTextDiscussion(item.discussionType);
       const isDeleting = deletingId === item.id;
       const fileName = extractFileName(item.fileUrl);
       const ts = getTypeStyle(item.discussionType as string);
@@ -391,7 +426,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             {getInitials(item.actorUsername)}
           </SS.MessageAvatarCircle>
 
-          <SS.MessageContentBox isMine={isMine}>
+          <SS.MessageContentBox isMine={isMine} isEditing={isEditing}>
             <SS.MessageMetaRow isMine={isMine}>
               <SS.MessageSenderName>{item.actorUsername || 'Unknown'}</SS.MessageSenderName>
               <SS.MessageTimeText>{fmtTime(item.createdAt)}</SS.MessageTimeText>
@@ -406,59 +441,115 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             </SS.MessageMetaRow>
 
             {isEditing ? (
-              /* ── Inline edit mode ─────────────────────────────────── */
-              <SS.MessageEditInputRow>
-                <SS.MessageEditTextField
-                  size="small"
-                  value={editingContent}
-                  onChange={(e: any) => setEditingContent(e.target.value)}
-                  onKeyDown={(e: any) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
-                    if (e.key === 'Escape') cancelEdit();
-                  }}
-                  multiline
-                  maxRows={4}
-                  autoFocus
-                  fullWidth
-                />
-                <SS.MessageEditActions>
-                  <Tooltip title="Save (Enter)">
-                    <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
-                      {savingEdit
-                        ? <CircularProgress size={12} />
-                        : <SS.CheckIconStyled />}
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                  <Tooltip title="Cancel (Esc)">
-                    <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
-                      <SS.CloseIconStyled />
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                </SS.MessageEditActions>
-              </SS.MessageEditInputRow>
+              isRich ? (
+                /* ── Inline Rich Text Edit Mode for ADDITIONAL & COMPLAINT ── */
+                <SS.RichEditContainer>
+                  <StandaloneRichTextEditor
+                    value={editingContent}
+                    onChange={(val) => setEditingContent(val)}
+                    placeholder="Edit message..."
+                    minHeight={rem(120)}
+                  />
+                  <SS.RichEditActionsRow>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={cancelEdit}
+                      disabled={savingEdit}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={saveEdit}
+                      disabled={savingEdit || !editingContent.trim()}
+                      loading={savingEdit}
+                    >
+                      Save
+                    </Button>
+                  </SS.RichEditActionsRow>
+                </SS.RichEditContainer>
+              ) : (
+                /* ── Inline plain text edit mode for other comments ───── */
+                <SS.PlainEditContainer>
+                  <SS.PlainEditTextArea
+                    value={editingContent}
+                    onChange={(e: any) => setEditingContent(e.target.value)}
+                    onKeyDown={(e: any) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit();
+                      }
+                      if (e.key === 'Escape') cancelEdit();
+                    }}
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    autoFocus
+                    placeholder="Edit comment..."
+                    fullWidth
+                  />
+                  <SS.PlainEditActionsRow>
+                    <SS.PlainEditShortcutHint>
+                      Press <strong>Enter</strong> to save, <strong>Shift + Enter</strong> for new line, <strong>Esc</strong> to cancel
+                    </SS.PlainEditShortcutHint>
+                    <SS.PlainEditButtonsGroup>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={cancelEdit}
+                        disabled={savingEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={saveEdit}
+                        disabled={savingEdit || !editingContent.trim()}
+                        loading={savingEdit}
+                      >
+                        Save
+                      </Button>
+                    </SS.PlainEditButtonsGroup>
+                  </SS.PlainEditActionsRow>
+                </SS.PlainEditContainer>
+              )
             ) : (
               /* ── Normal display mode ──────────────────────────────── */
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
-                  <SS.AttachmentRow>
-                    {getFileIcon(fileName)}
-                    <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
-                    {item.fileUrl && (
-                      <Tooltip title="Download">
-                        <SS.DownloadIconButton
-                          size="small"
-                          onClick={() => window.open(item.fileUrl, '_blank')}
-                          isMine={isMine}
-                        >
-                          <DownloadIcon fontSize="small" />
-                        </SS.DownloadIconButton>
-                      </Tooltip>
+                  <>
+                    {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
+                      <ImagePreview
+                        src={item.fileUrl}
+                        thumbnailSrc={item.thumbnailUrl}
+                        srcIsImage={isImageAttachment(undefined, fileName)}
+                        alt={item.description || fileName}
+                        onOpen={() => openFile(previewItems.indexOf(item))}
+                      />
                     )}
-                  </SS.AttachmentRow>
+                    <SS.AttachmentRow>
+                      {getFileIcon(fileName)}
+                      <SS.AttachmentFileName isMine={isMine}>{item.description || fileName}</SS.AttachmentFileName>
+                      {item.fileUrl && (
+                        <Tooltip title="Download">
+                          <SS.DownloadIconButton
+                            size="small"
+                            onClick={() => window.open(item.fileUrl, '_blank')}
+                            isMine={isMine}
+                          >
+                            <DownloadIcon fontSize="small" />
+                          </SS.DownloadIconButton>
+                        </Tooltip>
+                      )}
+                    </SS.AttachmentRow>
+                  </>
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: item.content || item.description || '—',
+                      __html: DOMPurify.sanitize(item.content || item.description || '—'),
                     }}
                   />
                 )}
@@ -720,6 +811,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         style={{ display: 'none' }}
         multiple
       />
+      {viewer}
     </>
   );
 };

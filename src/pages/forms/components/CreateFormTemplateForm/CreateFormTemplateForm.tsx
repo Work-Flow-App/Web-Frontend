@@ -1,15 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Collapse } from '@mui/material';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Input, TextArea } from '../../../../components/UI/Forms';
 import { FormField } from '../../../../components/UI/FormComponents';
 import { useGlobalModalInnerContext } from '../../../../components/UI/GlobalModal/context';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { extractErrorMessage } from '../../../../utils/errorHandler';
 import { floowColors } from '../../../../theme/colors';
-import { FieldRowsSection, emptyFieldRow, buildFieldPayload, type FieldRowData } from '../FieldRowsEditor';
+import { FieldRowsSection, buildFieldPayload, type FieldRowData } from '../FieldRowsEditor';
 import { formService } from '../../../../services/api';
 import type { FormTemplateRequest } from '../../../../services/api';
 import * as S from './CreateFormTemplateForm.styles';
@@ -26,30 +24,20 @@ interface CreateFormTemplateData {
 }
 
 /**
- * Creating a form template used to be two separate modals: name/description here, then a
- * redirect to the builder page just to add fields one at a time (each staged locally until a
- * second, separate "Create Template" click at the top of that page). This collapses both into
- * one modal and one submit — the same single-call batched create the builder page already used
- * once you got there, just reached without the extra hop.
- *
- * The Fields section stays hidden until you finish typing a name and move on (blur) — not on
- * every keystroke, so the layout doesn't jump around while you're still typing the name itself.
+ * Creates a new form template with a name, description, and an interactive field list.
+ * The "Add Field" button is immediately visible at the bottom so users can add fields
+ * as needed without any awkward blur or hidden states.
  */
 export const CreateFormTemplateForm: React.FC<CreateFormTemplateFormProps> = ({ isModal = true, onSuccess }) => {
   const { showSuccess, showError } = useSnackbar();
   const { updateModalTitle, updateGlobalModalInnerConfig, updateOnConfirm, setSkipResetModal } =
     useGlobalModalInnerContext();
-  const [fieldsUnlocked, setFieldsUnlocked] = useState(false);
 
   const methods = useForm<CreateFormTemplateData>({
-    defaultValues: { name: '', description: '', fields: [emptyFieldRow()] },
+    defaultValues: { name: '', description: '', fields: [] },
     mode: 'onChange',
   });
-  const { handleSubmit, setError, getValues } = methods;
-
-  const handleNameBlur = () => {
-    if (getValues('name')?.trim()) setFieldsUnlocked(true);
-  };
+  const { handleSubmit, setError } = methods;
 
   const onConfirmRef = useRef<() => void>(() => {});
 
@@ -109,7 +97,7 @@ export const CreateFormTemplateForm: React.FC<CreateFormTemplateFormProps> = ({ 
           </S.SectionHeader>
 
           <FormField label="Template Name" required>
-            <Input name="name" placeholder="Enter form template name" onBlur={handleNameBlur} hideErrorMessage={false} />
+            <Input name="name" placeholder="Enter form template name" hideErrorMessage={false} />
           </FormField>
 
           <FormField label="Description">
@@ -117,17 +105,10 @@ export const CreateFormTemplateForm: React.FC<CreateFormTemplateFormProps> = ({ 
           </FormField>
         </S.SectionCard>
 
-        <Collapse in={fieldsUnlocked} unmountOnExit>
-          <FieldRowsSection />
-        </Collapse>
-
-        {!fieldsUnlocked && (
-          <S.HintBox>
-            <InfoOutlinedIcon />
-            Enter a template name above, then click elsewhere to start adding fields
-          </S.HintBox>
-        )}
+        <FieldRowsSection />
       </S.FormBody>
     </FormProvider>
   );
 };
+
+export default CreateFormTemplateForm;

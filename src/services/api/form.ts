@@ -24,6 +24,7 @@ export type {
 };
 
 export const FORM_FIELD_TYPE_OPTIONS: { value: FormFieldDtoTypeEnum; label: string }[] = [
+  { value: FormFieldDtoTypeEnum.Section, label: 'Section Header' },
   { value: FormFieldDtoTypeEnum.Text, label: 'Text' },
   { value: FormFieldDtoTypeEnum.TextArea, label: 'Text Area' },
   { value: FormFieldDtoTypeEnum.Date, label: 'Date' },
