@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { Alert } from '@mui/material';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
 import { Button } from '../../../components/UI/Button';
@@ -8,10 +9,13 @@ import { Input } from '../../../components/UI/Forms/Input';
 import { PasswordInput } from '../../../components/UI/Forms/PasswordInput';
 import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
+import { ResendConfirmationButton } from '../../../components/Auth/ResendConfirmationButton';
 import { authService } from '../../../services/api';
 import { UserRole } from '../../../types/auth';
 import { useSchema } from '../../../utils/validation';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { getErrorCode, getErrorStatus } from '../../../utils/authFlow';
+import { AuthErrorCode } from '../../../enums/AuthErrorCode';
 import { SignupFormSchema } from './SignupSchema';
 import {
   SignupContainer,
@@ -25,6 +29,8 @@ import {
   DividerLine,
   DividerText,
   SignInLink,
+  InboxDetails,
+  ConflictActions,
   // FooterText,
   // GoogleButton,
 } from './Signup.styles';
@@ -65,10 +71,13 @@ export const Signup: React.FC = () => {
     handleSubmit,
     formState: { errors },
     trigger,
+    setError,
   } = methods;
 
   const [isLoading, setIsLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [emailConflict, setEmailConflict] = useState<{ code: string; message: string } | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -82,6 +91,7 @@ export const Signup: React.FC = () => {
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
     setSnackbar({ open: false, message: '', variant: 'success' });
+    setEmailConflict(null);
 
     try {
       await authService.signup({
@@ -91,16 +101,25 @@ export const Signup: React.FC = () => {
         role: UserRole.COMPANY,
       });
 
+      setSubmittedEmail(data.email);
       setSignupSuccess(true);
     } catch (error: unknown) {
       console.error('Signup failed:', error);
       const errorMessage = extractErrorMessage(error, 'Failed to create account. Please try again.');
+      const code = getErrorCode(error);
 
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        variant: 'error',
-      });
+      if (code === AuthErrorCode.USERNAME_TAKEN) {
+        setError('username', { message: errorMessage }, { shouldFocus: true });
+      } else if (code === AuthErrorCode.EMAIL_ALREADY_REGISTERED || code === AuthErrorCode.EMAIL_NOT_VERIFIED) {
+        setSubmittedEmail(data.email);
+        setEmailConflict({ code, message: errorMessage });
+      } else {
+        setSnackbar({
+          open: true,
+          message: errorMessage,
+          variant: getErrorStatus(error) === 429 ? 'warning' : 'error',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -118,13 +137,32 @@ export const Signup: React.FC = () => {
           <FormContainer>
             <HeaderSection>
               <FloowLogo variant="light" showText={true} />
-              <Title>Check your email</Title>
+              <Title>Check your inbox</Title>
               <Subtitle>
-                We've sent you a verification link. Please check your inbox and click the link to activate your account.
+                We've sent a confirmation link to <strong>{submittedEmail}</strong>. Click it to activate your account.
               </Subtitle>
             </HeaderSection>
+            <InboxDetails>
+              <li>Your 14-day free trial starts when you confirm your email.</li>
+              <li>The link works for 24 hours.</li>
+              <li>Can't find it? Check your spam or junk folder.</li>
+              <li>If you don't confirm within 7 days, the signup is removed and you can start again.</li>
+            </InboxDetails>
+            <ResendConfirmationButton email={submittedEmail} />
             <SignInLink>
-              Already verified? <Link to="/login">Sign in</Link>
+              Wrong email?{' '}
+              <Link
+                to="/signup"
+                onClick={() => {
+                  setSignupSuccess(false);
+                  setSubmittedEmail('');
+                }}
+              >
+                Sign up again
+              </Link>
+            </SignInLink>
+            <SignInLink>
+              Already confirmed? <Link to="/login">Sign in</Link>
             </SignInLink>
           </FormContainer>
         </LeftSection>
@@ -184,6 +222,26 @@ export const Signup: React.FC = () => {
                 fullWidth
                 error={errors.confirmPassword}
               />
+
+              {emailConflict && (
+                <Alert
+                  severity={emailConflict.code === AuthErrorCode.EMAIL_NOT_VERIFIED ? 'warning' : 'info'}
+                  onClose={() => setEmailConflict(null)}
+                  sx={{ color: 'text.primary', '& .MuiAlert-message': { width: '100%' } }}
+                >
+                  {emailConflict.message}
+                  <ConflictActions>
+                    {emailConflict.code === AuthErrorCode.EMAIL_NOT_VERIFIED ? (
+                      <ResendConfirmationButton email={submittedEmail} label="Send it again" />
+                    ) : (
+                      <>
+                        <Link to="/login">Log in</Link>
+                        <Link to="/forgot-password">Reset my password</Link>
+                      </>
+                    )}
+                  </ConflictActions>
+                </Alert>
+              )}
 
               <Button
                 type="submit"
