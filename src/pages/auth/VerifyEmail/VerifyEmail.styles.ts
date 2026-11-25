@@ -156,6 +156,7 @@ export const Subtitle = styled(Typography)(() => ({
 }));
 
 export const ActionContainer = styled(Box)({
+  order: 3,
   display: 'flex',
   flexDirection: 'column',
   gap: rem(12),
