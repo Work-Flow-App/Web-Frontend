@@ -578,3 +578,26 @@ export const GoogleButton = styled(Box)(({ theme }) => ({
     },
   },
 }));
+
+export const InboxDetails = styled('ul')(({ theme }) => ({
+  margin: 0,
+  paddingLeft: rem(20),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: rem(6),
+  fontSize: rem(14),
+  lineHeight: 1.5,
+  color: theme.palette.text.secondary,
+}));
+
+export const ConflictActions = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: rem(16),
+  marginTop: rem(12),
+  fontWeight: 600,
+  '& a': {
+    color: theme.palette.primary.main,
+  },
+}));

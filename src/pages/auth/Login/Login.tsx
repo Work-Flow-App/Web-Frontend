@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { GoogleLogin } from '@react-oauth/google';
 import { FloowLogo } from '../../../components/UI/FloowLogo';
@@ -11,6 +11,7 @@ import { Snackbar } from '../../../components/UI/Snackbar';
 import { AuthRightSection } from '../../../components/Auth/AuthRightSection';
 import { getRoleFromToken } from '../../../utils/jwt';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { safeRedirectPath } from '../../../utils/authFlow';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSchema } from '../../../utils/validation';
 import { LoginFormSchema } from './LoginSchema';
@@ -47,6 +48,8 @@ export const Login: React.FC = () => {
   } = methods;
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get('redirect'));
   const { login, loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showResendLink, setShowResendLink] = useState(false);
@@ -61,7 +64,10 @@ export const Login: React.FC = () => {
   });
 
   const redirectByRole = (role: string | null) => {
-    if (role === 'ROLE_COMPANY' || role === 'COMPANY') {
+    // e.g. the Upgrade button in a trial email, opened while logged out
+    if (redirectTo) {
+      navigate(redirectTo);
+    } else if (role === 'ROLE_COMPANY' || role === 'COMPANY') {
       navigate('/company');
     } else if (role === 'ROLE_WORKER' || role === 'WORKER') {
       navigate('/worker');
@@ -87,7 +93,11 @@ export const Login: React.FC = () => {
 
       if (errorMessage === 'User is disabled') {
         setShowResendLink(true);
-        setSnackbar({ open: true, message: 'Please verify your email before logging in.', variant: 'warning' });
+        setSnackbar({
+          open: true,
+          message: "Your email isn't confirmed yet. Click the link in the email we sent you, or send a new one below.",
+          variant: 'warning',
+        });
       } else {
         setShowResendLink(false);
         setSnackbar({ open: true, message: errorMessage, variant: 'error' });
@@ -183,7 +193,7 @@ export const Login: React.FC = () => {
 
               {showResendLink && (
                 <SignUpLink>
-                  <Link to="/resend-verification">Resend verification email</Link>
+                  <Link to="/resend-verification">Send the confirmation email again</Link>
                 </SignUpLink>
               )}
 
