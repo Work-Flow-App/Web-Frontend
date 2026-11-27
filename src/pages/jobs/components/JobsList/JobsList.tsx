@@ -21,7 +21,6 @@ import type {
   JobCreateRequest,
   JobTemplateFieldResponse,
   AssetResponse,
-  PagedModelAssetResponse,
   CustomerResponse,
   ClientResponse,
   WorkflowResponse,
@@ -105,10 +104,10 @@ export const JobsList: React.FC = () => {
   });
   const templates = useMemo(() => templatesData ?? [], [templatesData]);
 
-  const { data: assetsPage } = useFetch<PagedModelAssetResponse>(() => assetService.getAllAssets(0, 1000), [], {
+  const { data: assetsData } = useFetch<AssetResponse[]>(() => assetService.getAllAssetPages(), [], {
     onError: (error) => console.error('Error fetching assets:', error),
   });
-  const assets = useMemo<AssetResponse[]>(() => assetsPage?.content ?? [], [assetsPage]);
+  const assets = useMemo<AssetResponse[]>(() => assetsData ?? [], [assetsData]);
 
   const { data: customersData } = useFetch<CustomerResponse[]>(() => customerService.getAllCustomers(), [], {
     onError: (error) => console.error('Error fetching customers:', error),

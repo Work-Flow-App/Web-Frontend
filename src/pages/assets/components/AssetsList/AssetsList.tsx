@@ -98,8 +98,11 @@ export const AssetsList: React.FC = () => {
         archived = true;
       }
 
-      const response = await assetService.getAllAssets(0, 100, archived, available, groupFilter || undefined);
-      const assetsData = response.data.content ? (Array.isArray(response.data.content) ? response.data.content : []) : [];
+      const { data: assetsData } = await assetService.getAllAssetPages({
+        archived,
+        available,
+        groupId: groupFilter || undefined,
+      });
 
       // Transform API response to table format
       const transformedData: AssetTableRow[] = assetsData.map((asset: AssetResponse) => {

@@ -52,12 +52,12 @@ export const JobForm: React.FC<JobFormProps> = ({ isModal = false, jobId, onSucc
             // Fetch all required data in parallel
             const [fieldsResponse, assetsResponse, workflowsResponse] = await Promise.all([
               jobTemplateService.getTemplateFields(job.templateId),
-              assetService.getAllAssets(0, 200, false),
+              assetService.getAllAssetPages(),
               workflowService.getAllWorkflows(),
             ]);
 
             const fields = Array.isArray(fieldsResponse.data) ? fieldsResponse.data : [];
-            const assetsData = (assetsResponse.data.content || []).filter((a: any) => a.archived !== true);
+            const assetsData = assetsResponse.data;
             const workflowsData = Array.isArray(workflowsResponse.data) ? workflowsResponse.data : [];
 
             // Convert assetIds to dropdown format { label, value }

@@ -41,7 +41,7 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
     data: allAssets,
     loading: loadingAssets,
     refetch: refetchAssets,
-  } = useFetch(() => assetService.getAllAssets(0, 200), [], {
+  } = useFetch(() => assetService.getAllAssetPages(), [], {
     onError: (error) => console.error('Failed to load assets for value calculation:', error),
   });
 
@@ -50,7 +50,7 @@ export const JobAssetsSection: React.FC<JobAssetsSectionProps> = ({ jobId }) => 
   // "Available" isn't meaningful scoped to a single job (an asset not on this job could be on
   // another job or in the warehouse) — everything currently assigned here is, by definition, in use.
   const stats = useMemo(() => {
-    const assetsById = new Map((allAssets?.content ?? []).map((asset) => [asset.id, asset]));
+    const assetsById = new Map((allAssets ?? []).map((asset) => [asset.id, asset]));
     const activeAssetIds = Array.from(
       new Set(assignments.map((a) => a.assetId).filter((id): id is number => id != null))
     );

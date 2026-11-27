@@ -56,9 +56,45 @@ function getWorkerAssetSelfApi(): WorkerAssetsApi {
   return new WorkerAssetsApi(config, env.apiBaseUrl, axiosInstance);
 }
 
+// The most the backend returns per page, whatever size is asked for
+const ASSET_PAGE_SIZE = 100;
+const PAGES_PER_BATCH = 5;
+
+export interface AssetListFilters {
+  /** True for archived assets only; otherwise only active assets are returned. */
+  archived?: boolean;
+  /** Active assets that are (true) or are not (false) available. */
+  available?: boolean;
+  groupId?: number;
+}
+
 export const assetService = {
+  /** One page of assets. Use `getAllAssetPages` for screens that list or look up assets. */
   async getAllAssets(page = 0, size = 20, archived?: boolean, available?: boolean, groupId?: number, sort?: string, dir?: string) {
     return await getAssetApi().assetList(page, size, archived, available, groupId, sort, dir);
+  },
+
+  /**
+   * Every asset matching the filters, from all pages. The list endpoint has no search,
+   * so screens load the whole list and search it in the browser.
+   */
+  async getAllAssetPages({ archived, available, groupId }: AssetListFilters = {}): Promise<{ data: AssetResponse[] }> {
+    // GET /assets ignores `available` whenever `archived` is sent, and archived=true also
+    // returns active assets, so send only one of the two and filter archived ones here.
+    const archivedParam = available == null ? archived : undefined;
+    const fetchPage = async (page: number) =>
+      (await getAssetApi().assetList(page, ASSET_PAGE_SIZE, archivedParam, available, groupId)).data;
+
+    const first = await fetchPage(0);
+    const pages = [first];
+    const totalPages = first.page?.totalPages ?? 1;
+    for (let start = 1; start < totalPages; start += PAGES_PER_BATCH) {
+      const batch = Array.from({ length: Math.min(PAGES_PER_BATCH, totalPages - start) }, (_, i) => start + i);
+      pages.push(...(await Promise.all(batch.map(fetchPage))));
+    }
+
+    const assets = pages.flatMap((page) => page.content ?? []);
+    return { data: archived ? assets.filter((asset) => asset.archived) : assets };
   },
 
   async getAssetById(id: number) {

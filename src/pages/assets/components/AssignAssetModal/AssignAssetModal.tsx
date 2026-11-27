@@ -205,12 +205,7 @@ export const AssignAssetModal: React.FC<AssignAssetModalProps> = ({ jobId, onSuc
       try {
         setLoading(true);
         if (!isEditMode) {
-          const assetsResponse = await assetService.getAllAssets(0, 100, false, true);
-          const assetsData = assetsResponse.data.content
-            ? Array.isArray(assetsResponse.data.content)
-              ? assetsResponse.data.content
-              : []
-            : [];
+          const { data: assetsData } = await assetService.getAllAssetPages({ available: true });
           setAssets(assetsData);
         }
 

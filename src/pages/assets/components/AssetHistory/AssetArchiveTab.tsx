@@ -16,15 +16,7 @@ export const AssetArchiveTab: React.FC = () => {
   const fetchArchivedAssets = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await assetService.getAllAssets(0, 100, true);
-      const assetsData = response.data.content
-        ? Array.isArray(response.data.content)
-          ? response.data.content
-          : []
-        : [];
-
-      // Filter only assets where archived is true
-      const archivedOnly = assetsData.filter((asset: AssetResponse) => asset.archived === true);
+      const { data: archivedOnly } = await assetService.getAllAssetPages({ archived: true });
 
       const transformedData: AssetArchiveRow[] = archivedOnly.map((asset: AssetResponse) => ({
         id: asset.id || 0,
