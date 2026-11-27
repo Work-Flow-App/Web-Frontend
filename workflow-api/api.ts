@@ -490,6 +490,22 @@ export interface DashboardPreferencesUpdateRequest {
     'widgets'?: Array<WidgetPreference>;
     'quickActions'?: Array<QuickActionPreference>;
 }
+export interface DeviceTokenRegisterRequest {
+    'pushToken': string;
+    'platform': DeviceTokenRegisterRequestPlatformEnum;
+}
+
+export const DeviceTokenRegisterRequestPlatformEnum = {
+    Android: 'ANDROID',
+    Ios: 'IOS',
+    Web: 'WEB'
+} as const;
+
+export type DeviceTokenRegisterRequestPlatformEnum = typeof DeviceTokenRegisterRequestPlatformEnum[keyof typeof DeviceTokenRegisterRequestPlatformEnum];
+
+export interface DeviceTokenUnregisterRequest {
+    'pushToken': string;
+}
 export interface EstimateDocumentCreateRequest {
     'lineItemIds': Array<number>;
     'validUntil'?: string;
@@ -776,6 +792,7 @@ export interface JobLocationResponse {
     'clientName'?: string;
     'customerName'?: string;
     'workerNames'?: Array<string>;
+    'scheduledTime'?: string;
 }
 
 export const JobLocationResponseStatusEnum = {
@@ -1281,6 +1298,75 @@ export const MemberSignupResponseCompanyRoleEnum = {
 
 export type MemberSignupResponseCompanyRoleEnum = typeof MemberSignupResponseCompanyRoleEnum[keyof typeof MemberSignupResponseCompanyRoleEnum];
 
+export interface NotificationPreferenceResponse {
+    'notificationType'?: NotificationPreferenceResponseNotificationTypeEnum;
+    'inAppEnabled'?: boolean;
+    'emailEnabled'?: boolean;
+    'pushEnabled'?: boolean;
+}
+
+export const NotificationPreferenceResponseNotificationTypeEnum = {
+    ForceLogout: 'FORCE_LOGOUT',
+    VisitLogAdded: 'VISIT_LOG_ADDED',
+    StepStatusChanged: 'STEP_STATUS_CHANGED',
+    StepCompleted: 'STEP_COMPLETED',
+    StepCommentAdded: 'STEP_COMMENT_ADDED',
+    StepAttachmentAdded: 'STEP_ATTACHMENT_ADDED',
+    StepCommentUpdated: 'STEP_COMMENT_UPDATED',
+    StepAttachmentUpdated: 'STEP_ATTACHMENT_UPDATED',
+    WorkerAssigned: 'WORKER_ASSIGNED',
+    WorkerUnassigned: 'WORKER_UNASSIGNED',
+    AssetSlaBreached: 'ASSET_SLA_BREACHED',
+    StepSlaBreached: 'STEP_SLA_BREACHED',
+    UserMentioned: 'USER_MENTIONED',
+    MentionSent: 'MENTION_SENT',
+    FormAssigned: 'FORM_ASSIGNED',
+    FormUnassigned: 'FORM_UNASSIGNED',
+    FormSubmitted: 'FORM_SUBMITTED',
+    AssetAssigned: 'ASSET_ASSIGNED',
+    AssetReturned: 'ASSET_RETURNED',
+    AssetAssignmentUpdated: 'ASSET_ASSIGNMENT_UPDATED',
+    AssetLocationUpdated: 'ASSET_LOCATION_UPDATED'
+} as const;
+
+export type NotificationPreferenceResponseNotificationTypeEnum = typeof NotificationPreferenceResponseNotificationTypeEnum[keyof typeof NotificationPreferenceResponseNotificationTypeEnum];
+
+export interface NotificationPreferenceUpdateRequest {
+    'notificationType': NotificationPreferenceUpdateRequestNotificationTypeEnum;
+    'inAppEnabled'?: boolean;
+    'emailEnabled'?: boolean;
+    'pushEnabled'?: boolean;
+}
+
+export const NotificationPreferenceUpdateRequestNotificationTypeEnum = {
+    ForceLogout: 'FORCE_LOGOUT',
+    VisitLogAdded: 'VISIT_LOG_ADDED',
+    StepStatusChanged: 'STEP_STATUS_CHANGED',
+    StepCompleted: 'STEP_COMPLETED',
+    StepCommentAdded: 'STEP_COMMENT_ADDED',
+    StepAttachmentAdded: 'STEP_ATTACHMENT_ADDED',
+    StepCommentUpdated: 'STEP_COMMENT_UPDATED',
+    StepAttachmentUpdated: 'STEP_ATTACHMENT_UPDATED',
+    WorkerAssigned: 'WORKER_ASSIGNED',
+    WorkerUnassigned: 'WORKER_UNASSIGNED',
+    AssetSlaBreached: 'ASSET_SLA_BREACHED',
+    StepSlaBreached: 'STEP_SLA_BREACHED',
+    UserMentioned: 'USER_MENTIONED',
+    MentionSent: 'MENTION_SENT',
+    FormAssigned: 'FORM_ASSIGNED',
+    FormUnassigned: 'FORM_UNASSIGNED',
+    FormSubmitted: 'FORM_SUBMITTED',
+    AssetAssigned: 'ASSET_ASSIGNED',
+    AssetReturned: 'ASSET_RETURNED',
+    AssetAssignmentUpdated: 'ASSET_ASSIGNMENT_UPDATED',
+    AssetLocationUpdated: 'ASSET_LOCATION_UPDATED'
+} as const;
+
+export type NotificationPreferenceUpdateRequestNotificationTypeEnum = typeof NotificationPreferenceUpdateRequestNotificationTypeEnum[keyof typeof NotificationPreferenceUpdateRequestNotificationTypeEnum];
+
+export interface NotificationPreferencesUpdateRequest {
+    'preferences': Array<NotificationPreferenceUpdateRequest>;
+}
 export interface NotificationResponse {
     'id'?: number;
     'type'?: NotificationResponseTypeEnum;
@@ -1303,10 +1389,18 @@ export const NotificationResponseTypeEnum = {
     StepCommentUpdated: 'STEP_COMMENT_UPDATED',
     StepAttachmentUpdated: 'STEP_ATTACHMENT_UPDATED',
     WorkerAssigned: 'WORKER_ASSIGNED',
+    WorkerUnassigned: 'WORKER_UNASSIGNED',
     AssetSlaBreached: 'ASSET_SLA_BREACHED',
     StepSlaBreached: 'STEP_SLA_BREACHED',
     UserMentioned: 'USER_MENTIONED',
-    MentionSent: 'MENTION_SENT'
+    MentionSent: 'MENTION_SENT',
+    FormAssigned: 'FORM_ASSIGNED',
+    FormUnassigned: 'FORM_UNASSIGNED',
+    FormSubmitted: 'FORM_SUBMITTED',
+    AssetAssigned: 'ASSET_ASSIGNED',
+    AssetReturned: 'ASSET_RETURNED',
+    AssetAssignmentUpdated: 'ASSET_ASSIGNMENT_UPDATED',
+    AssetLocationUpdated: 'ASSET_LOCATION_UPDATED'
 } as const;
 
 export type NotificationResponseTypeEnum = typeof NotificationResponseTypeEnum[keyof typeof NotificationResponseTypeEnum];
@@ -12814,6 +12908,40 @@ export const NotificationsApiAxiosParamCreator = function (configuration?: Confi
         },
         /**
          * 
+         * @summary Get notification delivery preferences (one entry per notification type)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetPreferences: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/notifications/preferences`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @summary Get unread notification count
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -12918,6 +13046,126 @@ export const NotificationsApiAxiosParamCreator = function (configuration?: Confi
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @summary Register or refresh FCM device token for Android/iOS/Web
+         * @param {DeviceTokenRegisterRequest} deviceTokenRegisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationRegisterDeviceToken: async (deviceTokenRegisterRequest: DeviceTokenRegisterRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'deviceTokenRegisterRequest' is not null or undefined
+            assertParamExists('notificationRegisterDeviceToken', 'deviceTokenRegisterRequest', deviceTokenRegisterRequest)
+            const localVarPath = `/api/v1/notifications/device-tokens`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deviceTokenRegisterRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Unregister/deactivate FCM device token on logout
+         * @param {DeviceTokenUnregisterRequest} deviceTokenUnregisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationUnregisterDeviceToken: async (deviceTokenUnregisterRequest: DeviceTokenUnregisterRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'deviceTokenUnregisterRequest' is not null or undefined
+            assertParamExists('notificationUnregisterDeviceToken', 'deviceTokenUnregisterRequest', deviceTokenUnregisterRequest)
+            const localVarPath = `/api/v1/notifications/device-tokens`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deviceTokenUnregisterRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Update notification delivery preferences for one or more types
+         * @param {NotificationPreferencesUpdateRequest} notificationPreferencesUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationUpdatePreferences: async (notificationPreferencesUpdateRequest: NotificationPreferencesUpdateRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'notificationPreferencesUpdateRequest' is not null or undefined
+            assertParamExists('notificationUpdatePreferences', 'notificationPreferencesUpdateRequest', notificationPreferencesUpdateRequest)
+            const localVarPath = `/api/v1/notifications/preferences`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(notificationPreferencesUpdateRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -12940,6 +13188,18 @@ export const NotificationsApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetNotifications(unreadOnly, cursor, size, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetNotifications']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Get notification delivery preferences (one entry per notification type)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationGetPreferences(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<NotificationPreferenceResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationGetPreferences(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationGetPreferences']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -12979,6 +13239,45 @@ export const NotificationsApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationMarkAsRead']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @summary Register or refresh FCM device token for Android/iOS/Web
+         * @param {DeviceTokenRegisterRequest} deviceTokenRegisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationRegisterDeviceToken(deviceTokenRegisterRequest: DeviceTokenRegisterRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationRegisterDeviceToken(deviceTokenRegisterRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationRegisterDeviceToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Unregister/deactivate FCM device token on logout
+         * @param {DeviceTokenUnregisterRequest} deviceTokenUnregisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationUnregisterDeviceToken(deviceTokenUnregisterRequest: DeviceTokenUnregisterRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationUnregisterDeviceToken(deviceTokenUnregisterRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationUnregisterDeviceToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Update notification delivery preferences for one or more types
+         * @param {NotificationPreferencesUpdateRequest} notificationPreferencesUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notificationUpdatePreferences(notificationPreferencesUpdateRequest: NotificationPreferencesUpdateRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<NotificationPreferenceResponse>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notificationUpdatePreferences(notificationPreferencesUpdateRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['NotificationsApi.notificationUpdatePreferences']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -12999,6 +13298,15 @@ export const NotificationsApiFactory = function (configuration?: Configuration, 
          */
         notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig): AxiosPromise<CursorPagedResponseNotificationResponse> {
             return localVarFp.notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Get notification delivery preferences (one entry per notification type)
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationGetPreferences(options?: RawAxiosRequestConfig): AxiosPromise<Array<NotificationPreferenceResponse>> {
+            return localVarFp.notificationGetPreferences(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -13028,6 +13336,36 @@ export const NotificationsApiFactory = function (configuration?: Configuration, 
         notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.notificationMarkAsRead(id, options).then((request) => request(axios, basePath));
         },
+        /**
+         * 
+         * @summary Register or refresh FCM device token for Android/iOS/Web
+         * @param {DeviceTokenRegisterRequest} deviceTokenRegisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationRegisterDeviceToken(deviceTokenRegisterRequest: DeviceTokenRegisterRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.notificationRegisterDeviceToken(deviceTokenRegisterRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Unregister/deactivate FCM device token on logout
+         * @param {DeviceTokenUnregisterRequest} deviceTokenUnregisterRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationUnregisterDeviceToken(deviceTokenUnregisterRequest: DeviceTokenUnregisterRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.notificationUnregisterDeviceToken(deviceTokenUnregisterRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Update notification delivery preferences for one or more types
+         * @param {NotificationPreferencesUpdateRequest} notificationPreferencesUpdateRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notificationUpdatePreferences(notificationPreferencesUpdateRequest: NotificationPreferencesUpdateRequest, options?: RawAxiosRequestConfig): AxiosPromise<Array<NotificationPreferenceResponse>> {
+            return localVarFp.notificationUpdatePreferences(notificationPreferencesUpdateRequest, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -13046,6 +13384,16 @@ export class NotificationsApi extends BaseAPI {
      */
     public notificationGetNotifications(unreadOnly?: boolean, cursor?: number, size?: number, options?: RawAxiosRequestConfig) {
         return NotificationsApiFp(this.configuration).notificationGetNotifications(unreadOnly, cursor, size, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Get notification delivery preferences (one entry per notification type)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationGetPreferences(options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationGetPreferences(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -13077,6 +13425,39 @@ export class NotificationsApi extends BaseAPI {
      */
     public notificationMarkAsRead(id: number, options?: RawAxiosRequestConfig) {
         return NotificationsApiFp(this.configuration).notificationMarkAsRead(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Register or refresh FCM device token for Android/iOS/Web
+     * @param {DeviceTokenRegisterRequest} deviceTokenRegisterRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationRegisterDeviceToken(deviceTokenRegisterRequest: DeviceTokenRegisterRequest, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationRegisterDeviceToken(deviceTokenRegisterRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Unregister/deactivate FCM device token on logout
+     * @param {DeviceTokenUnregisterRequest} deviceTokenUnregisterRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationUnregisterDeviceToken(deviceTokenUnregisterRequest: DeviceTokenUnregisterRequest, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationUnregisterDeviceToken(deviceTokenUnregisterRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Update notification delivery preferences for one or more types
+     * @param {NotificationPreferencesUpdateRequest} notificationPreferencesUpdateRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public notificationUpdatePreferences(notificationPreferencesUpdateRequest: NotificationPreferencesUpdateRequest, options?: RawAxiosRequestConfig) {
+        return NotificationsApiFp(this.configuration).notificationUpdatePreferences(notificationPreferencesUpdateRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
