@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { NavigateFunction } from 'react-router-dom';
 import { redirectByRole } from './Login';
 
 describe('redirectByRole', () => {
@@ -33,5 +34,18 @@ describe('redirectByRole', () => {
 
     redirectByRole('UNKNOWN_ROLE', navigate as any);
     expect(navigate).toHaveBeenCalledWith('/company');
+  });
+
+  it('sends the user back to the requested page when one is given', () => {
+    const navigate = vi.fn();
+    redirectByRole('ROLE_WORKER', navigate as unknown as NavigateFunction, '/subscribe?utm_source=email');
+    expect(navigate).toHaveBeenCalledWith('/subscribe?utm_source=email');
+    expect(navigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the role page when no redirect is given', () => {
+    const navigate = vi.fn();
+    redirectByRole('ROLE_WORKER', navigate as unknown as NavigateFunction, null);
+    expect(navigate).toHaveBeenCalledWith('/worker');
   });
 });

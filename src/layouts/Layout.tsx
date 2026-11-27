@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Outlet, useNavigate, Navigate } from 'react-router-dom';
+import { Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Menu, MenuItem, ListItemIcon, ListItemText, Badge, Box } from '@mui/material';
 import { TopNav } from '../components/UI/TopNav';
 import { Sidebar, BottomTab } from '../components/UI/Sidebar';
@@ -25,6 +25,7 @@ import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { Loader } from '../components/UI/Loader';
+import { loginPathFor } from '../utils/authFlow';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
 import { NotificationDropdown, resolveNotificationTargetUrl } from '../components/UI/NotificationList';
 import type { INotification } from '../components/UI/NotificationList';
@@ -239,6 +240,7 @@ const NotificationBell = () => {
 export const Layout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Wait for session restoration before rendering protected content
   const { isRestoring, hasSession } = useSessionRestore();
@@ -379,7 +381,7 @@ export const Layout: React.FC = () => {
 
   // Redirect to login if no session after restoration
   if (!hasSession) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={loginPathFor(location)} replace />;
   }
 
   return (

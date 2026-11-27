@@ -189,10 +189,10 @@ test.describe('Login Page — Authentication & Error Handling', () => {
     await page.getByRole('button', { name: /Log in|Sign in/i }).click();
 
     await expect(
-      page.getByText('Please verify your email before logging in.')
+      page.getByText("Your email isn't confirmed yet.", { exact: false })
     ).toBeVisible();
 
-    const resendLink = page.getByRole('link', { name: 'Resend verification email' });
+    const resendLink = page.getByRole('link', { name: 'Send the confirmation email again' });
     await expect(resendLink).toBeVisible();
   });
 });

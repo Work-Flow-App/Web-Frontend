@@ -17,6 +17,8 @@ export interface ApiError {
   message: string;
   status: number;
   errors?: Record<string, string[]>;
+  /** Machine-readable reason from the backend, e.g. EMAIL_NOT_VERIFIED */
+  code?: string;
 }
 
 export interface ApiClientOptions {
@@ -393,6 +395,7 @@ export class ApiClient {
         const errorData = await response.json();
         error.message = errorData.message || error.message;
         error.errors = errorData.errors;
+        if (typeof errorData.code === 'string') error.code = errorData.code;
       } else {
         error.message = response.statusText;
       }

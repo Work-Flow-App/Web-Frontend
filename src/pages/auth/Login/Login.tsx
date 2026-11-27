@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import type { ObjectSchema } from 'yup';
 import { GoogleLogin } from '@react-oauth/google';
 import { Box, Link, useMediaQuery, useTheme } from '@mui/material';
 import { getRoleFromToken } from '../../../utils/jwt';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import { safeRedirectPath } from '../../../utils/authFlow';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSchema } from '../../../utils/validation';
 import { LoginFormSchema } from './LoginSchema';
@@ -22,8 +23,15 @@ import type { LoginFormData } from './ILogin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export function redirectByRole(role: string | null, navigate: ReturnType<typeof useNavigate>): void {
-  if (role === 'ROLE_COMPANY' || role === 'COMPANY') {
+export function redirectByRole(
+  role: string | null,
+  navigate: ReturnType<typeof useNavigate>,
+  redirectTo?: string | null
+): void {
+  // e.g. the Upgrade button in a trial email, opened while logged out
+  if (redirectTo) {
+    navigate(redirectTo);
+  } else if (role === 'ROLE_COMPANY' || role === 'COMPANY') {
     navigate('/company');
   } else if (role === 'ROLE_WORKER' || role === 'WORKER') {
     navigate('/worker');
@@ -74,6 +82,8 @@ export const Login: React.FC = () => {
   } = methods;
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get('redirect'));
   const { login, loginWithGoogle } = useAuth();
   const theme = useTheme();
   const isPhone = useMediaQuery(theme.breakpoints.down('md'));
@@ -156,13 +166,14 @@ export const Login: React.FC = () => {
         : null;
       if (role) localStorage.setItem('user_role', role);
 
-      // Directly redirect to dashboard
-      redirectByRole(role, navigate);
+      redirectByRole(role, navigate, redirectTo);
     } catch (error: unknown) {
       const msg = extractErrorMessage(error, 'Failed to sign in. Please try again.');
       if (msg === 'User is disabled') {
         setShowResendLink(true);
-        setErrorMsg('Please verify your email before logging in.');
+        setErrorMsg(
+          "Your email isn't confirmed yet. Click the link in the email we sent you, or send a new one."
+        );
       } else {
         setErrorMsg(msg);
       }
@@ -181,8 +192,7 @@ export const Login: React.FC = () => {
         : null;
       if (role) localStorage.setItem('user_role', role);
 
-      // Directly redirect to dashboard
-      redirectByRole(role, navigate);
+      redirectByRole(role, navigate, redirectTo);
     } catch (error: unknown) {
       setErrorMsg(extractErrorMessage(error, 'Google sign-in failed. Please try again.'));
     } finally {
@@ -361,7 +371,7 @@ export const Login: React.FC = () => {
                     href={`/resend-verification?email=${encodeURIComponent(watchedUserName)}`}
                     sx={styles.resendLink}
                   >
-                    Resend verification email
+                    Send the confirmation email again
                   </Link>
                 </>
               )}

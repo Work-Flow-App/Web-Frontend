@@ -88,25 +88,30 @@ export const VerifyEmail: React.FC = () => {
 
             {status === 'loading' && (
               <>
-                <Title>Verifying your email...</Title>
+                <Title>Confirming your email...</Title>
                 <Subtitle>Please wait while we verify your email address.</Subtitle>
               </>
             )}
 
             {status === 'success' && (
               <>
-                <Title>Email Verified!</Title>
+                <Title>Email confirmed!</Title>
                 <Subtitle>
-                  Your email has been verified successfully.{' '}
-                  {isCompanyRole ? 'Redirecting you to your plan options...' : 'Redirecting you to your dashboard...'}
+                  {isCompanyRole
+                    ? 'Your 14-day free trial has started. Taking you to your plan options...'
+                    : 'Your email is confirmed. Taking you to your dashboard...'}
                 </Subtitle>
               </>
             )}
 
             {status === 'error' && (
               <>
-                <Title>Verification Failed</Title>
+                <Title>This link didn't work</Title>
                 <Subtitle>{errorMessage}</Subtitle>
+                <Subtitle>
+                  Confirmation links work once and expire after 24 hours. If you've already confirmed, just log in.
+                  Otherwise, ask for a new link below.
+                </Subtitle>
                 <ActionContainer>
                   <Button
                     variant="contained"
@@ -115,7 +120,7 @@ export const VerifyEmail: React.FC = () => {
                     fullWidth
                     onClick={handleResend}
                   >
-                    Resend Verification Email
+                    Send me a new link
                   </Button>
                   <BackToLoginLink onClick={handleBackToLogin}>
                     Back to Login
