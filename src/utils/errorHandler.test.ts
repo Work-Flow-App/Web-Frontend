@@ -44,4 +44,11 @@ describe('extractErrorMessage', () => {
     const error = { unknownProperty: 'value' };
     expect(extractErrorMessage(error)).toBe('An unexpected error occurred. Please try again.');
   });
+
+  it('should explain a Pro-only feature in plain words instead of the plan enum', () => {
+    const error = {
+      response: { data: { message: 'This feature requires the PROFESSIONAL plan.', code: 'PLAN_UPGRADE_REQUIRED' } },
+    };
+    expect(extractErrorMessage(error)).toBe('This is a Pro feature. Upgrade to the Professional plan to use it.');
+  });
 });

@@ -26,6 +26,7 @@ import { extractErrorMessage } from '../../utils/errorHandler';
 import { isPaymentRequiredError } from '../../utils/subscriptionErrors';
 import {
   inferPlanTierFromJobsLimit,
+  PLAN_TIERS,
   computeCurrentStorageBlocks,
   computeCurrentExtraSeats,
 } from '../../utils/subscriptionPricing';
@@ -146,9 +147,12 @@ export const BillingSettings: React.FC = () => {
 
   const canUpgrade = currentStatus ? UPGRADE_STATUSES.includes(currentStatus) : false;
 
-  // The API doesn't expose which paid tier a company is on directly, but each tier has
-  // a distinct jobs limit, so it can be identified from the usage summary.
-  const currentTier = inferPlanTierFromJobsLimit(usage?.jobsLimit);
+  // Backends before #363 don't send planType; each tier has a distinct jobs limit, so
+  // fall back to identifying it from the usage summary.
+  const currentTier =
+    status.planType && status.planType !== 'FREE'
+      ? PLAN_TIERS[status.planType]
+      : inferPlanTierFromJobsLimit(usage?.jobsLimit);
   // PAST_DUE still has a grace window while accessAllowed stays true; once the grace
   // period lapses the backend flips accessAllowed to false ahead of a full status change.
   const withinPastDueGrace =

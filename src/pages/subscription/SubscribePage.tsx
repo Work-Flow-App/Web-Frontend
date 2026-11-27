@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
-import { Typography, TableContainer, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import {
+  Typography,
+  TableContainer,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CheckIcon from '@mui/icons-material/Check';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -112,9 +126,16 @@ export const SubscribePage: React.FC = () => {
   const [loadingPlan, setLoadingPlan] = useState<PlanType | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>('PROFESSIONAL');
   const [headcount, setHeadcount] = useState<number>(PLAN_CONFIG.PROFESSIONAL.baseSeats);
+  const [confirmPlanChange, setConfirmPlanChange] = useState(false);
+  const [changingPlan, setChangingPlan] = useState(false);
   const navigate = useNavigate();
-  const { refresh } = useSubscription();
-  const { showError } = useSnackbar();
+  const { status, refresh } = useSubscription();
+  const { showError, showSuccess } = useSnackbar();
+
+  // A company with a live Paddle subscription switches plan on it; a second checkout
+  // would bill them twice (the backend refuses it with 409).
+  const hasSubscription = status?.hasPaddleSubscription === true;
+  const currentPlan = hasSubscription ? status?.planType : undefined;
 
   // The slider's single headcount value is shared across every card — each plan just
   // applies it against its own base seats and extra-seat price, so moving the slider
@@ -134,7 +155,32 @@ export const SubscribePage: React.FC = () => {
     return { extraSeats, totalSeats, monthlyTotal };
   };
 
-  const handleSubscribe = async () => {
+  const handleOrder = () => {
+    if (hasSubscription) {
+      setConfirmPlanChange(true);
+    } else {
+      void startCheckout();
+    }
+  };
+
+  const handleChangePlan = async () => {
+    setChangingPlan(true);
+    try {
+      await subscriptionService.changePlan(selectedPlan);
+      showSuccess(`You're now on the ${PLAN_CONFIG[selectedPlan].label} plan.`);
+      setConfirmPlanChange(false);
+      await refresh();
+      navigate('/company/profile?tab=billing');
+    } catch (error) {
+      // 409: the downgrade doesn't fit the seats or storage in use. 400: too many seats for
+      // the plan. 402: the subscription isn't active. The backend message says which.
+      showError(extractErrorMessage(error, 'Could not change your plan. Please try again.'));
+    } finally {
+      setChangingPlan(false);
+    }
+  };
+
+  const startCheckout = async () => {
     const planType = PLAN_TYPE_BY_KEY[selectedPlan];
     const info = getPricingInfo(selectedPlan);
     setLoadingPlan(planType);
@@ -175,6 +221,12 @@ export const SubscribePage: React.FC = () => {
         },
       });
     } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 409) {
+        // Already subscribed (the status we had was stale): switch plan instead
+        void refresh();
+        setConfirmPlanChange(true);
+        return;
+      }
       showError(extractErrorMessage(error, 'Failed to start checkout. Please try again.'));
     } finally {
       setLoadingPlan(null);
@@ -183,13 +235,19 @@ export const SubscribePage: React.FC = () => {
 
   const selectedConfig = PLAN_CONFIG[selectedPlan];
   const isLoadingSelected = loadingPlan === PLAN_TYPE_BY_KEY[selectedPlan];
-  const selectedExceedsLimit = headcount > selectedConfig.maxSeats;
-  const orderDisabled = isLoadingSelected || selectedExceedsLimit;
-  const orderButtonText = selectedExceedsLimit
-    ? 'Exceeds Plan Limit'
-    : isLoadingSelected
-      ? 'Loading...'
-      : 'Order';
+  const isCurrentPlan = selectedPlan === currentPlan;
+  // A plan switch keeps the subscription's seats, so the slider only matters for a new checkout
+  const selectedExceedsLimit = !hasSubscription && headcount > selectedConfig.maxSeats;
+  const orderDisabled = isLoadingSelected || selectedExceedsLimit || isCurrentPlan;
+  const orderButtonText = isCurrentPlan
+    ? 'Current Plan'
+    : selectedExceedsLimit
+      ? 'Exceeds Plan Limit'
+      : isLoadingSelected
+        ? 'Loading...'
+        : hasSubscription
+          ? `Switch to ${selectedConfig.label}`
+          : 'Order';
 
   return (
     <S.PageWrapper>
@@ -234,7 +292,7 @@ export const SubscribePage: React.FC = () => {
           />
         </S.SliderWrapper>
 
-        <S.OrderButton onClick={handleSubscribe} disabled={orderDisabled}>
+        <S.OrderButton onClick={handleOrder} disabled={orderDisabled}>
           {orderButtonText}
         </S.OrderButton>
       </S.UniversalControlBar>
@@ -322,6 +380,24 @@ export const SubscribePage: React.FC = () => {
           </TableContainer>
         </S.ComparisonCard>
       </S.ComparisonSection>
+
+      <Dialog open={confirmPlanChange} onClose={() => !changingPlan && setConfirmPlanChange(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Switch to {selectedConfig.label}?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your plan changes right away. Paddle charges or credits the difference for the rest of this billing period
+            to your saved payment method. Your extra seats and storage carry over.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmPlanChange(false)} disabled={changingPlan}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleChangePlan} disabled={changingPlan}>
+            {changingPlan ? 'Switching...' : `Switch to ${selectedConfig.label}`}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </S.PageWrapper>
   );
 };
