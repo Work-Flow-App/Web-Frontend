@@ -6,6 +6,10 @@ async function prepareLoginPage(page: Page) {
   await page.goto('/login');
 }
 
+// Anchored so it never matches Google's "Sign in with Google" button, which renders
+// once Google's script loads and would otherwise make the locator ambiguous.
+const submitButton = (page: Page) => page.getByRole('button', { name: /^(Log in|Sign in)$/i });
+
 test.describe('Login Page — UI Elements & Layout', () => {
   test.beforeEach(async ({ page }) => {
     await prepareLoginPage(page);
@@ -15,7 +19,7 @@ test.describe('Login Page — UI Elements & Layout', () => {
     // Universal elements across both versions
     await expect(page.locator('[name="userName"]')).toBeVisible();
     await expect(page.locator('[name="password"]')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Log in|Sign in/i })).toBeVisible();
+    await expect(submitButton(page)).toBeVisible();
 
     // Features specific to the updated Login design
     const isNewUi = await page.locator('#rl-user').isVisible();
@@ -151,7 +155,7 @@ test.describe('Login Page — Authentication & Error Handling', () => {
   });
 
   test('validates empty submission in login mode', async ({ page }) => {
-    await page.getByRole('button', { name: /Log in|Sign in/i }).click();
+    await submitButton(page).click();
     // In both versions, validation errors are displayed (via alert role or helper text)
     const errorNotice = page.locator('[role="alert"], [class*="error"], [aria-invalid="true"]');
     await expect(errorNotice.first()).toBeVisible();
@@ -168,7 +172,7 @@ test.describe('Login Page — Authentication & Error Handling', () => {
 
     await page.locator('[name="userName"]').fill('nonexistent_user');
     await page.locator('[name="password"]').fill('incorrect_password');
-    await page.getByRole('button', { name: /Log in|Sign in/i }).click();
+    await submitButton(page).click();
 
     await expect(page.getByText('Invalid username or password')).toBeVisible();
   });
@@ -186,7 +190,7 @@ test.describe('Login Page — Authentication & Error Handling', () => {
 
     await page.locator('[name="userName"]').fill('unverified@example.com');
     await page.locator('[name="password"]').fill('password123');
-    await page.getByRole('button', { name: /Log in|Sign in/i }).click();
+    await submitButton(page).click();
 
     await expect(
       page.getByText("Your email isn't confirmed yet.", { exact: false })
