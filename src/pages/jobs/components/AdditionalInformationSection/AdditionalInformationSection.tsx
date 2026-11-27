@@ -11,18 +11,25 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
+import EditIcon from '@mui/icons-material/Edit';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import type { JobResponse, StepTimelineItemResponse } from '../../../../services/api';
 import {
   jobWorkflowService,
   stepActivityService,
-  UploadAttachmentTypeEnum,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Button } from '../../../../components/UI/Button';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
 import { RichTextEditor } from '../../../../components/UI/Forms/RichTextEditor';
 import { Loader } from '../../../../components/UI/Loader/Loader';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../../components/UI/AttachmentUploadDialog';
 import * as S from '../../JobDetailsPage.styles';
 
 interface AdditionalInformationSectionProps {
@@ -84,8 +91,12 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
   const [existingItems, setExistingItems] = useState<StepTimelineItemResponse[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<StepTimelineItemResponse | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const methods = useForm<AdditionalInfoFormValues>({
@@ -118,24 +129,18 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
     fetchWorkflowAndItems();
   }, [fetchWorkflowAndItems]);
 
-  const addFiles = (files: File[]) => {
-    const newFiles: PendingFile[] = files.map((file) => ({
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      file,
-    }));
-    setPendingFiles((prev) => [...prev, ...newFiles]);
+  const openUploadDialog = (files: File[]) => {
+    if (!firstStepId) {
+      showError('No workflow step found for this job');
+      return;
+    }
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) addFiles(Array.from(event.target.files));
+    if (event.target.files) openUploadDialog(Array.from(event.target.files));
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleRemovePendingFile = (id: string) => {
-    setPendingFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -151,42 +156,77 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
-    if (event.dataTransfer.files) addFiles(Array.from(event.dataTransfer.files));
+    if (event.dataTransfer.files) openUploadDialog(Array.from(event.dataTransfer.files));
   };
 
   const handleUploadClick = () => fileInputRef.current?.click();
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
+    if (!firstStepId) {
+      showError('No workflow step found for this job');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const failedUploads: string[] = [];
+
+      for (const item of items) {
+        try {
+          await stepActivityService.uploadAttachment(
+            firstStepId,
+            item.file,
+            UploadAttachmentTypeEnum.Additional,
+            item.description || undefined
+          );
+        } catch (error) {
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(item.file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (items.length === 1) {
+          showSuccess('Attachment uploaded successfully');
+        } else {
+          showSuccess('All attachments uploaded successfully');
+        }
+      } else if (failedUploads.length < items.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
+      fetchWorkflowAndItems();
+    } catch (error) {
+      console.error('Error during attachments upload:', error);
+      showError('Failed to upload attachments');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async (data: AdditionalInfoFormValues) => {
     if (!firstStepId) {
       showError('No workfloow step found for this job');
       return;
     }
-    if (!data.description.trim() && pendingFiles.length === 0) {
-      showError('Please add a description or attachment');
+    if (!data.description.trim()) {
+      showError('Please add a description');
       return;
     }
 
     try {
       setSaving(true);
-
-      if (data.description.trim()) {
-        await stepActivityService.addComment(firstStepId, {
-          content: data.description.trim(),
-          type: 'ADDITIONAL',
-        });
-      }
-
-      for (const pending of pendingFiles) {
-        await stepActivityService.uploadAttachment(
-          firstStepId,
-          pending.file,
-          UploadAttachmentTypeEnum.Additional
-        );
-      }
+      await stepActivityService.addComment(firstStepId, {
+        content: data.description.trim(),
+        type: 'ADDITIONAL',
+      });
 
       showSuccess('Additional information saved successfully');
       methods.reset();
-      setPendingFiles([]);
       fetchWorkflowAndItems();
     } catch (error) {
       console.error('Error saving additional information:', error);
@@ -195,50 +235,82 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
       setSaving(false);
     }
   };
-
   const handleDownload = (item: StepTimelineItemResponse) => {
     if (item.fileUrl) window.open(item.fileUrl, '_blank');
   };
 
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchWorkflowAndItems();
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
+    }
+  };
+
   return (
     <S.CollapsibleSection>
-      <S.CollapsibleSectionHeader sx={{ cursor: 'default' }}>
+      <S.CollapsibleSectionHeader>
         <S.CollapsibleSectionTitle>Additional Information</S.CollapsibleSectionTitle>
       </S.CollapsibleSectionHeader>
 
       <S.CollapsibleSectionContent>
-          {/* Existing saved ADDITIONAL items */}
-          {loadingItems ? (
-            <Loader size={20} centered minHeight="60px" />
-          ) : existingItems.length > 0 ? (
-            <S.EventNoteBox>
-              <S.EventNoteHeader>
-                <S.EventNoteTitle>Saved Information</S.EventNoteTitle>
-              </S.EventNoteHeader>
-              {existingItems.map((item) => (
-                <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
-                  {item.itemType === 'COMMENT' ? (
-                    <>
-                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || '') }} />
-                      {item.createdAt && (
-                        <S.CommentTimestamp>
-                          {new Date(item.createdAt).toLocaleString()}
-                        </S.CommentTimestamp>
-                      )}
-                    </>
-                  ) : (
-                    <S.CommentContentRow>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FileThumbnail src={item.thumbnailUrl} size={32} fallback={getFileIconFromName(item.content || '')} />
-                        <S.AttachmentFileName>
-                          <div className="name">{item.content || 'Unnamed file'}</div>
-                          {item.createdAt && (
-                            <div className="date">
-                              {new Date(item.createdAt).toLocaleDateString()}
-                            </div>
-                          )}
-                        </S.AttachmentFileName>
-                      </Box>
+        {/* Existing saved ADDITIONAL items */}
+        {loadingItems ? (
+          <Loader size={20} centered minHeight="60px" />
+        ) : existingItems.length > 0 ? (
+          <S.EventNoteBox>
+            <S.EventNoteHeader>
+              <S.EventNoteTitle>Saved Information</S.EventNoteTitle>
+            </S.EventNoteHeader>
+            {existingItems.map((item) => (
+              <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
+                {item.itemType === 'COMMENT' ? (
+                  <>
+                    <S.EventNoteContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || '') }} />
+                    {item.createdAt && (
+                      <S.CommentTimestamp>
+                        {new Date(item.createdAt).toLocaleString()}
+                      </S.CommentTimestamp>
+                    )}
+                  </>
+                ) : (
+                  <S.CommentContentRow>
+                    <S.AttachmentInfoWrapper>
+                      <FileThumbnail src={item.thumbnailUrl} size={32} fallback={getFileIconFromName(item.content || item.description || '')} />
+                      <S.AttachmentFileName>
+                        <div className="name">
+                          {item.content || 'Unnamed file'}
+                        </div>
+                        {item.createdAt && (
+                          <div className="date">
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </div>
+                        )}
+                        <ExpandableDescription description={item.description} />
+                      </S.AttachmentFileName>
+                    </S.AttachmentInfoWrapper>
+                    <S.CommentActionsRow>
+                      <Tooltip title="Edit attachment">
+                        <IconButton
+                          size="small"
+                          variant="text"
+                          color="secondary"
+                          onClick={() => setEditingAttachment(item)}
+                          aria-label="Edit attachment"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       {item.fileUrl && (
                         <Tooltip title="Download">
                           <IconButton
@@ -252,97 +324,89 @@ export const AdditionalInformationSection: React.FC<AdditionalInformationSection
                           </IconButton>
                         </Tooltip>
                       )}
-                    </S.CommentContentRow>
-                  )}
-                </S.CommentItemBox>
-              ))}
-            </S.EventNoteBox>
-          ) : null}
+                    </S.CommentActionsRow>
+                  </S.CommentContentRow>
+                )}
+              </S.CommentItemBox>
+            ))}
+          </S.EventNoteBox>
+        ) : null}
 
-          {/* Add new information form */}
-          <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(handleSave)}>
-              <S.AdditionalInfoContainer>
-                <RichTextEditor
-                  name="description"
-                  label="Description"
-                  placeholder="Enter additional information or notes about this job..."
+        {/* Add new information form */}
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(handleSave)}>
+            <S.AdditionalInfoContainer>
+              <RichTextEditor
+                name="description"
+                label="Description"
+                placeholder="Enter additional information or notes about this job..."
+              />
+
+              <div>
+                <S.FormLabel>Attachments</S.FormLabel>
+                <S.HiddenFileInput
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  multiple
                 />
 
-                <div>
-                  <S.FormLabel>Attachments</S.FormLabel>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    multiple
-                    style={{ display: 'none' }}
-                  />
+                <S.UploadArea
+                  onClick={handleUploadClick}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  isDragging={isDragging}
+                >
+                  <CloudUploadIcon />
+                  <S.UploadText>
+                    <S.UploadHighlight>Click to upload</S.UploadHighlight> or drag and drop
+                  </S.UploadText>
+                  <S.UploadSubtext>Any file type supported</S.UploadSubtext>
+                </S.UploadArea>
+              </div>
 
-                  {pendingFiles.length === 0 ? (
-                    <S.UploadArea
-                      onClick={handleUploadClick}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      isDragging={isDragging}
-                    >
-                      <CloudUploadIcon sx={{ fontSize: 32, color: 'grey.400', mb: 1 }} />
-                      <S.UploadText>
-                        <S.UploadHighlight>Click to upload</S.UploadHighlight> or drag and drop
-                      </S.UploadText>
-                      <S.UploadSubtext>Any file type supported</S.UploadSubtext>
-                    </S.UploadArea>
-                  ) : (
-                    <>
-                      <S.AttachmentList>
-                        {pendingFiles.map((pending) => (
-                          <S.AttachmentItem key={pending.id}>
-                            {getFileIconFromType(pending.type)}
-                            <S.AttachmentFileName>
-                              <div className="name">{pending.name}</div>
-                              <div className="date">{formatFileSize(pending.size)}</div>
-                            </S.AttachmentFileName>
-                            <S.AttachmentActions>
-                              <Tooltip title="Remove">
-                                <IconButton
-                                  size="small"
-                                  variant="text"
-                                  color="error"
-                                  onClick={() => handleRemovePendingFile(pending.id)}
-                                  aria-label="Remove attachment"
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </S.AttachmentActions>
-                          </S.AttachmentItem>
-                        ))}
-                      </S.AttachmentList>
-                      <S.AddMoreButton onClick={handleUploadClick}>
-                        <AttachFileIcon sx={{ fontSize: 14 }} />
-                        Add more
-                      </S.AddMoreButton>
-                    </>
-                  )}
-                </div>
-
-                <S.ButtonActionsRow>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="medium"
-                    type="submit"
-                    startIcon={<SaveIcon />}
-                    disabled={saving || (!firstStepId && !loadingItems)}
-                  >
-                    {saving ? 'Saving...' : 'Save'}
-                  </Button>
-                </S.ButtonActionsRow>
-              </S.AdditionalInfoContainer>
-            </form>
-          </FormProvider>
+              <S.ButtonActionsRow>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="medium"
+                  type="submit"
+                  startIcon={<SaveIcon />}
+                  disabled={saving || (!firstStepId && !loadingItems)}
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+              </S.ButtonActionsRow>
+            </S.AdditionalInfoContainer>
+          </form>
+        </FormProvider>
       </S.CollapsibleSectionContent>
+
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={UploadAttachmentTypeEnum.Additional}
+        allowTypeChange={false}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={editingAttachment?.content || 'Attachment'}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
     </S.CollapsibleSection>
   );
 };

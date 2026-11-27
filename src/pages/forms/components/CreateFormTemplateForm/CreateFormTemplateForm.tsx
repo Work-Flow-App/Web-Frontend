@@ -45,13 +45,22 @@ export const CreateFormTemplateForm: React.FC<CreateFormTemplateFormProps> = ({ 
     onConfirmRef.current = () => {
       handleSubmit(async (data) => {
         const name = data.name?.trim();
+        let hasError = false;
+
         if (!name) {
           setError('name', { message: 'Template name is required' });
-          return;
+          hasError = true;
         }
 
         const fieldPayload = buildFieldPayload(data.fields, setError);
-        if (fieldPayload === null) return;
+        if (fieldPayload === null) {
+          hasError = true;
+        }
+
+        if (hasError || !name || fieldPayload === null) {
+          showError('Please fill in all required fields before saving');
+          return;
+        }
 
         updateGlobalModalInnerConfig({ isConfirmDisabled: true });
         try {

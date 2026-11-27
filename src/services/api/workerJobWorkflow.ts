@@ -17,6 +17,7 @@ import type {
 } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
+import { stepActivityService } from './stepActivity';
 
 export { WorkerJobWorkflowUploadAttachmentTypeEnum };
 export type {
@@ -93,6 +94,13 @@ export const workerJobWorkflowService = {
     description?: string,
   ) {
     return await getWorkerJobWorkflowApi().workerJobWorkflowUploadAttachment(stepId, type, file, description);
+  },
+
+  async updateAttachment(
+    attachmentId: number,
+    data: { fileName?: string; description?: string; type?: any }
+  ) {
+    return await stepActivityService.updateAttachment(attachmentId, data);
   },
 
   async getStepVisits(stepId: number) {

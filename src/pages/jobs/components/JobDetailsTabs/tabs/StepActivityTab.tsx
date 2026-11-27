@@ -26,7 +26,6 @@ import type {
 import {
   jobWorkflowService,
   stepActivityService,
-  UploadAttachmentTypeEnum,
 } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useAuth } from '../../../../../contexts/AuthContext';
@@ -41,6 +40,13 @@ import {
 } from '../../../../../components/UI/GlobalModal';
 import { rem } from '../../../../../components/UI/Typography/utility';
 import { isImageAttachment } from '../../../../../utils/attachmentHelpers';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../../../components/UI/AttachmentUploadDialog';
 
 import { FilterByTypeScreen } from './FilterByTypeScreen';
 import * as SS from './StepActivityTab.styles';
@@ -107,6 +113,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   const [editingContent, setEditingContent] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingAttachment, setEditingAttachment] = useState<CombinedTimelineItem | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
 
   // When viewFilter changes: if a specific step is selected, lock target step to viewFilter.
   // When 'all' is selected, use selectedPostToStepId (or default to first step).
@@ -120,6 +128,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   const [postType, setPostType] = useState<string>(StepCommentCreateRequestTypeEnum.General);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -266,48 +276,58 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !postToStepId) return;
+
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
+    if (!postToStepId) return;
 
     try {
       setUploading(true);
       const failedUploads: string[] = [];
 
-      for (const file of files) {
+      for (const item of items) {
         try {
           await stepActivityService.uploadAttachment(
             postToStepId,
-            file,
-            postType as UploadAttachmentTypeEnum
+            item.file,
+            item.type,
+            item.description || undefined
           );
         } catch (error) {
-          console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(`${file.name} (${extractErrorMessage(error, 'upload failed')})`);
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(`${item.file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
       if (failedUploads.length === 0) {
-        if (files.length === 1) {
+        if (items.length === 1) {
           showSuccess('Attachment uploaded');
         } else {
           showSuccess('All attachments uploaded');
         }
-      } else if (failedUploads.length < files.length) {
+      } else if (failedUploads.length < items.length) {
         showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded.`);
       } else {
         showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
       fetchAllTimelines(steps);
     } catch (error) {
       console.error('Error during attachments upload:', error);
       showError('Failed to upload attachments');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -363,13 +383,40 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!item.id) return;
     setDeletingId(item.id);
     try {
-      await stepActivityService.deleteComment(item.id);
-      showSuccess('Message deleted');
+      if (item.itemType === 'ATTACHMENT') {
+        await stepActivityService.deleteAttachment(item.id);
+        showSuccess('Attachment deleted');
+      } else {
+        await stepActivityService.deleteComment(item.id);
+        showSuccess('Message deleted');
+      }
       fetchAllTimelines(steps);
     } catch {
-      showError('Failed to delete message');
+      showError(item.itemType === 'ATTACHMENT' ? 'Failed to delete attachment' : 'Failed to delete message');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (
+    newDescription: string,
+    newType: UploadAttachmentTypeEnum
+  ) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+        type: newType as any,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchAllTimelines(steps);
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
@@ -520,7 +567,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
               /* ── Normal display mode ──────────────────────────────── */
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
-                  <>
+                  <SS.AttachmentContainer>
                     {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
                       <ImagePreview
                         src={item.fileUrl}
@@ -531,8 +578,12 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                       />
                     )}
                     <SS.AttachmentRow>
-                      {getFileIcon(fileName)}
-                      <SS.AttachmentFileName isMine={isMine}>{item.description || fileName}</SS.AttachmentFileName>
+                      <SS.AttachmentRowLeft>
+                        {getFileIcon(fileName)}
+                        <SS.AttachmentFileName isMine={isMine} title={fileName}>
+                          {fileName}
+                        </SS.AttachmentFileName>
+                      </SS.AttachmentRowLeft>
                       {item.fileUrl && (
                         <Tooltip title="Download">
                           <SS.DownloadIconButton
@@ -545,7 +596,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
                         </Tooltip>
                       )}
                     </SS.AttachmentRow>
-                  </>
+                    <ExpandableDescription description={item.description} isMine={isMine} />
+                  </SS.AttachmentContainer>
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
@@ -558,14 +610,16 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           </SS.MessageContentBox>
 
           {/* ── Edit / Delete action buttons (visible on row hover) ── */}
-          {isComment && !isEditing && (
+          {!isEditing && (
             <SS.MessageActionGroup className="msg-action-group">
-              <Tooltip title="Edit message">
-                <SS.MessageEditIconBtn onClick={() => startEdit(item)}>
+              <Tooltip title={isAttachment ? 'Edit attachment' : 'Edit message'}>
+                <SS.MessageEditIconBtn
+                  onClick={() => (isAttachment ? setEditingAttachment(item) : startEdit(item))}
+                >
                   <SS.MessageEditIcon />
                 </SS.MessageEditIconBtn>
               </Tooltip>
-              <Tooltip title="Delete message">
+              <Tooltip title={isAttachment ? 'Delete attachment' : 'Delete message'}>
                 <SS.MessageDeleteIconBtn
                   onClick={() => handleDelete(item)}
                   disabled={isDeleting}
@@ -804,12 +858,39 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         </SS.ChatPanel>
       </SS.StepActivityLayout>
 
-      <input
+      <SS.HiddenFileInput
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        style={{ display: 'none' }}
         multiple
+      />
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={(postType as UploadAttachmentTypeEnum) || UploadAttachmentTypeEnum.General}
+        allowTypeChange={true}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={extractFileName(editingAttachment?.fileUrl)}
+        initialDescription={editingAttachment?.description || ''}
+        initialType={
+          (editingAttachment?.discussionType as UploadAttachmentTypeEnum) ||
+          UploadAttachmentTypeEnum.General
+        }
+        allowTypeChange={true}
+        isSaving={savingAttachment}
+        onSave={handleSaveAttachmentEdit}
+        onClose={() => setEditingAttachment(null)}
       />
       {viewer}
     </>
