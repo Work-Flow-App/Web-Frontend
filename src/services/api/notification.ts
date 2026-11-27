@@ -2,9 +2,14 @@ import { NotificationsApi, Configuration } from '../../../workflow-api';
 import { env } from '../../config/env';
 import { axiosInstance } from './axiosConfig';
 
+import type { NotificationPreferencesUpdateRequest } from '../../../workflow-api';
+
 export type {
   NotificationResponse,
   CursorPagedResponseNotificationResponse,
+  NotificationPreferenceResponse,
+  NotificationPreferenceUpdateRequest,
+  NotificationPreferencesUpdateRequest,
 } from '../../../workflow-api';
 export {
   NotificationResponseTypeEnum,
@@ -41,5 +46,15 @@ export const notificationService = {
 
   async markAllAsRead() {
     return await getNotificationApi().notificationMarkAllAsRead();
+  },
+
+  /** One entry per notification type; types the user never changed are all on. */
+  async getPreferences() {
+    return await getNotificationApi().notificationGetPreferences();
+  },
+
+  /** Saves the listed types (fields left out stay as they are) and returns the full list. */
+  async updatePreferences(request: NotificationPreferencesUpdateRequest) {
+    return await getNotificationApi().notificationUpdatePreferences(request);
   },
 };

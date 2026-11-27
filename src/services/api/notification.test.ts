@@ -4,6 +4,8 @@ const notificationGetNotifications = vi.fn();
 const notificationGetUnreadCount = vi.fn();
 const notificationMarkAsRead = vi.fn();
 const notificationMarkAllAsRead = vi.fn();
+const notificationGetPreferences = vi.fn();
+const notificationUpdatePreferences = vi.fn();
 
 vi.mock('../../../workflow-api', () => ({
   Configuration: vi.fn(),
@@ -12,6 +14,8 @@ vi.mock('../../../workflow-api', () => ({
     notificationGetUnreadCount,
     notificationMarkAsRead,
     notificationMarkAllAsRead,
+    notificationGetPreferences,
+    notificationUpdatePreferences,
   })),
 }));
 
@@ -67,5 +71,21 @@ describe('notificationService', () => {
     await notificationService.markAllAsRead();
 
     expect(notificationMarkAllAsRead).toHaveBeenCalledWith();
+  });
+
+  it('getPreferences() calls through and returns the response', async () => {
+    const response = { data: [{ notificationType: 'USER_MENTIONED', inAppEnabled: true }] };
+    notificationGetPreferences.mockResolvedValue(response);
+
+    expect(await notificationService.getPreferences()).toBe(response);
+  });
+
+  it('updatePreferences() sends the request as given', async () => {
+    const request = { preferences: [{ notificationType: 'USER_MENTIONED' as const, pushEnabled: false }] };
+    notificationUpdatePreferences.mockResolvedValue({ data: [] });
+
+    await notificationService.updatePreferences(request);
+
+    expect(notificationUpdatePreferences).toHaveBeenCalledWith(request);
   });
 });

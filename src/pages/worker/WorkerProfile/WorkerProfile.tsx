@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { CircularProgress } from '@mui/material';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Table from '../../../components/UI/Table/Table';
+import { NotificationSettings } from '../../settings/NotificationSettings';
 import type { ITableAction } from '../../../components/UI/Table/ITable';
 import { Button } from '../../../components/UI/Button';
 import { useGlobalModalOuterContext, ModalSizes, ConfirmationModal } from '../../../components/UI/GlobalModal';
@@ -278,11 +280,12 @@ export const WorkerProfile: React.FC = () => {
             </S.IdBlock>
 
             <S.HeaderActionsRow>
-              {activeTab === 0 ? (
+              {activeTab === 0 && (
                 <Button variant="contained" color="primary" onClick={handleUploadCertificate}>
                   Upload Certificate
                 </Button>
-              ) : (
+              )}
+              {activeTab === 1 && (
                 <Button variant="contained" color="primary" onClick={handleRequestLeave}>
                   Request Leave
                 </Button>
@@ -295,6 +298,11 @@ export const WorkerProfile: React.FC = () => {
           <S.StyledTabs value={activeTab} onChange={(_, v) => setActiveTab(v)}>
             <S.StyledTab icon={<WorkspacePremiumOutlinedIcon fontSize="small" />} iconPosition="start" label="Certificates" />
             <S.StyledTab icon={<EventAvailableOutlinedIcon fontSize="small" />} iconPosition="start" label="Leave" />
+            <S.StyledTab
+              icon={<NotificationsNoneOutlinedIcon fontSize="small" />}
+              iconPosition="start"
+              label="Notifications"
+            />
           </S.StyledTabs>
         </S.TabsWrapper>
       </S.ProfileHeaderCard>
@@ -326,6 +334,8 @@ export const WorkerProfile: React.FC = () => {
           showPagination
         />
       )}
+
+      {activeTab === 2 && <NotificationSettings />}
     </S.PageContent>
   );
 };
