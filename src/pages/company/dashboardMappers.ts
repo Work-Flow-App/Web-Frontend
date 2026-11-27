@@ -1,6 +1,5 @@
 import type {
   JobLocationResponse,
-  JobResponse,
   RecentWorkflowActivityResponse,
   WorkflowEventJobResponse,
   WorkflowEventsResponse,
@@ -29,9 +28,35 @@ export function toRecentWorkflowActivity(activity: RecentWorkflowActivityRespons
 
 // ─── Job locations ────────────────────────────────────────────────────────────
 
+const hasCoordinates = (job: JobLocationResponse): job is JobLocationResponse & Location =>
+  job.lat != null && job.lng != null;
+
+// DATE fields arrive as ISO-8601 local date-time, e.g. 2026-11-16T10:00:00
+const ISO_LOCAL_DATE_TIME = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/;
+
+/**
+ * "16 Nov 2026, 10:00" for a date-time, or "16 Nov 2026" at midnight, since DATE
+ * fields are entered without a time. Values from other field types are shown as entered.
+ */
+function formatScheduledTime(value?: string | null): string | undefined {
+  if (!value?.trim()) return undefined;
+
+  const match = ISO_LOCAL_DATE_TIME.exec(value);
+  if (!match) return value;
+
+  const [year, month, day, hour, minute] = match.slice(1).map(Number);
+  const hasTime = hour !== 0 || minute !== 0;
+  return new Date(year, month - 1, day, hour, minute).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    ...(hasTime && { hour: '2-digit', minute: '2-digit' }),
+  });
+}
+
 export function toJobLocationMarkers(locations: JobLocationResponse[]): PlaceDetails[] {
   return locations.flatMap((job) => {
-    if (job.lat == null || job.lng == null) return [];
+    if (!hasCoordinates(job)) return [];
 
     const jobRef = job.jobRef ?? job.jobId ?? 0;
     return {
@@ -44,43 +69,30 @@ export function toJobLocationMarkers(locations: JobLocationResponse[]): PlaceDet
         clientName: job.clientName,
         customerName: job.customerName,
         workerName: job.workerNames?.join(', ') || undefined,
+        scheduledTime: formatScheduledTime(job.scheduledTime),
       },
     };
   });
 }
 
+/** Rows `job-locations` sends with null coordinates, which the map places from their address. */
+export const selectUnlocatedJobs = (locations: JobLocationResponse[]) =>
+  locations.filter((job) => !hasCoordinates(job) && job.address?.trim());
+
 /**
- * `job-locations` omits jobs with no stored coordinates, so place the ones that
- * have an address from that address. One at a time to stay within Google's rate limit.
+ * Places unlocated rows by geocoding their address, keeping everything else the row
+ * carries. One at a time to stay within Google's rate limit; addresses Google can't
+ * find are left off the map.
  */
-export async function geocodeJobsWithoutCoordinates(
-  jobs: JobResponse[],
+export async function geocodeUnlocatedJobs(
+  locations: JobLocationResponse[],
   geocode: (address: string) => Promise<Location | null>
 ): Promise<JobLocationResponse[]> {
   const located: JobLocationResponse[] = [];
 
-  for (const job of jobs) {
-    const stored = job.address;
-    if (!stored || (stored.latitude != null && stored.longitude != null)) continue;
-
-    const address = [stored.street, stored.city, stored.state, stored.postalCode, stored.country]
-      .filter(Boolean)
-      .join(', ');
-    if (!address) continue;
-
-    const location = await geocode(address);
-    if (!location) continue;
-
-    located.push({
-      jobId: job.id,
-      jobRef: job.jobRef,
-      status: job.status,
-      lat: location.lat,
-      lng: location.lng,
-      address,
-      clientName: job.clientName,
-      customerName: job.customerName,
-    });
+  for (const job of selectUnlocatedJobs(locations)) {
+    const location = await geocode(job.address!.trim());
+    if (location) located.push({ ...job, lat: location.lat, lng: location.lng });
   }
 
   return located;

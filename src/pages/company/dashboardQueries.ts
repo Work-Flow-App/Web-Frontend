@@ -3,11 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { GOOGLE_MAPS_CONFIG } from '../../config/googleMaps';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import { dashboardService, jobService } from '../../services/api';
+import { dashboardService } from '../../services/api';
 import type { DashboardPreferencesUpdateRequest, RecentWorkflowActivityResponse } from '../../services/api';
 import { queries } from '../../services/queries';
 import { geocodeAddress } from '../../utils/mapDataHelpers';
-import { geocodeJobsWithoutCoordinates, toJobLocationMarkers, toRecentWorkflowActivity } from './dashboardMappers';
+import {
+  geocodeUnlocatedJobs,
+  selectUnlocatedJobs,
+  toJobLocationMarkers,
+  toRecentWorkflowActivity,
+} from './dashboardMappers';
 import {
   clearLegacyPreferences,
   hasNoSavedChoices,
@@ -36,17 +41,17 @@ export function useJobLocationMarkers() {
     libraries: GOOGLE_MAPS_CONFIG.libraries,
   });
 
+  // Both read the one job-locations request
   const stored = useQuery({ ...queries.jobLocations(), select: toJobLocationMarkers });
+  const { data: unlocated = [] } = useQuery({ ...queries.jobLocations(), select: selectUnlocatedJobs });
 
-  // A separate query so slow geocoding never holds up the stored pins. It needs the
-  // full job list until the backend geocodes addresses itself (deferred in Backend#326).
+  // job-locations sends jobs whose address has no stored coordinates with null lat/lng,
+  // so place those from their address here. A separate query so slow geocoding never
+  // holds up the stored pins; keyed on the rows so it reruns when they change.
   const geocoded = useQuery({
-    queryKey: ['dashboard', 'geocoded-job-locations'],
-    queryFn: async () => {
-      const { data: jobs } = await jobService.getAllJobs();
-      return toJobLocationMarkers(await geocodeJobsWithoutCoordinates(jobs, geocodeAddress));
-    },
-    enabled: mapsApiLoaded,
+    queryKey: ['dashboard', 'geocoded-job-locations', unlocated],
+    queryFn: async () => toJobLocationMarkers(await geocodeUnlocatedJobs(unlocated, geocodeAddress)),
+    enabled: mapsApiLoaded && unlocated.length > 0,
   });
 
   const storedMarkers = stored.data;
