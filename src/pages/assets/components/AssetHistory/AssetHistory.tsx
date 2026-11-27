@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useFileViewer } from '../../../../components/UI/FileViewer';
+import { FilePreview } from '../../../../components/UI/FilePreview';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -14,6 +16,8 @@ import { assetHistoryColumns, type AssetHistoryRow } from './DataColumn';
 import { AssetArchiveTab } from './AssetArchiveTab';
 import * as S from './AssetHistory.styles';
 
+const NO_ATTACHMENTS: AssetAttachmentDto[] = [];
+
 export const AssetHistory: React.FC = () => {
   const { assetId } = useParams<{ assetId: string }>();
   const navigate = useNavigate();
@@ -21,6 +25,7 @@ export const AssetHistory: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [asset, setAsset] = useState<AssetResponse | null>(null);
+  const { openFile, viewer } = useFileViewer(asset?.attachments ?? NO_ATTACHMENTS);
   const [assetValue, setAssetValue] = useState<AssetValueResponse | null>(null);
   const [history, setHistory] = useState<AssetHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -384,6 +389,13 @@ export const AssetHistory: React.FC = () => {
                       <S.AttachmentsGrid>
                         {asset.attachments.map((att: AssetAttachmentDto, idx: number) => (
                           <S.AttachmentCard key={idx}>
+                            <FilePreview
+                              fileUrl={att.fileUrl}
+                              thumbnailUrl={att.thumbnailUrl}
+                              fileName={att.fileName}
+                              fileType={att.fileType}
+                              onOpen={() => openFile(idx)}
+                            />
                             <S.AttachmentName 
                               variant="body2" 
                               noWrap 
@@ -443,6 +455,7 @@ export const AssetHistory: React.FC = () => {
           </S.DetailsSection>
         </S.DetailsGrid>
       </S.ContentContainer>
+      {viewer}
     </PageWrapper>
   );
 };

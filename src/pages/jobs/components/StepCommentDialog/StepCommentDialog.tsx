@@ -6,6 +6,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SendIcon from '@mui/icons-material/Send';
 import type { JobWorkflowStepResponse, StepCommentResponse } from '../../../../services/api';
 import { stepActivityService } from '../../../../services/api';
+import { isStepComment } from '../../utils/jobStepUtils';
 import * as S from '../../JobDetailsPage.styles';
 
 interface StepCommentDialogProps {
@@ -50,7 +51,7 @@ export const StepCommentDialog: React.FC<StepCommentDialogProps> = ({ step, onCl
     try {
       setLoading(true);
       const response = await stepActivityService.getComments(step.id);
-      setComments(response.data || []);
+      setComments((response.data || []).filter(isStepComment));
     } catch (error) {
       console.error('Error fetching comments:', error);
       setComments([]);

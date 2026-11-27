@@ -3,6 +3,8 @@ import { test, expect, type Page } from '@playwright/test';
 const hasCredentials = !!(process.env.TEST_USER_USERNAME && process.env.TEST_USER_PASSWORD);
 
 async function loginAs(page: Page, username: string, password: string) {
+  // The login page's desktop-size notice covers the form at Playwright's 1280px "Desktop Chrome" width
+  await page.addInitScript(() => sessionStorage.setItem('desktop_alert_dismissed', 'true'));
   await page.goto('/login');
   await page.locator('[name="userName"]').fill(username);
   await page.locator('[name="password"]').fill(password);

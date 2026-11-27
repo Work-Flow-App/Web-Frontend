@@ -6,6 +6,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export const ContentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 2, 2, 2),
@@ -829,6 +830,13 @@ export const CollapsibleSectionActions = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+export const SectionExpandArrow = styled(ExpandMoreIcon, {
+  shouldForwardProp: (prop) => prop !== 'isExpanded',
+})<{ isExpanded?: boolean }>(({ isExpanded }) => ({
+  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+  transition: 'transform 0.2s ease',
+}));
+
 export const CollapsibleSectionContent = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
 }));
@@ -1078,6 +1086,44 @@ export const AttachmentList = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+export const AttachmentTileGrid = styled(Box)(({ theme }) => ({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+  gap: theme.spacing(1),
+}));
+
+export const AttachmentTile = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.75),
+  padding: theme.spacing(0.75),
+  borderRadius: theme.spacing(0.75),
+  border: `1px solid ${theme.palette.colors.grey_100}`,
+  minWidth: 0,
+}));
+
+/** Sits over the preview's top-right corner, so the file name gets the tile's full width. */
+export const AttachmentTileActions = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1.25),
+  right: theme.spacing(1.25),
+  display: 'flex',
+  gap: theme.spacing(0.5),
+  '& button': {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.15)',
+    '&:hover': { backgroundColor: '#fff' },
+  },
+}));
+
+export const AttachmentTileFooter = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  minWidth: 0,
+}));
+
 export const AttachmentItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -1099,6 +1145,13 @@ export const AttachmentFileName = styled(Box)(({ theme }) => ({
     fontSize: rem(12),
     fontWeight: theme.typography.fontWeightMedium,
     color: theme.palette.text.primary,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  '& .desc': {
+    fontSize: rem(11),
+    color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -1166,6 +1219,18 @@ export const CommentContentRow = styled(Box)(() => ({
   alignItems: 'flex-start',
 }));
 
+export const HiddenFileInput = styled('input')({
+  display: 'none',
+});
+
+export const AttachmentInfoWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: theme.spacing(1),
+  minWidth: 0,
+  flex: 1,
+}));
+
 export const CommentActionsRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: theme.spacing(1),
@@ -1187,6 +1252,32 @@ export const ButtonActionsRow = styled(Box)(({ theme }) => ({
 
 export const NewCommentBox = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(1),
+}));
+
+export const NewCommentTrigger = styled('button')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: theme.spacing(1),
+  padding: theme.spacing(1, 1.5),
+  fontSize: rem(12),
+  fontFamily: 'inherit',
+  textAlign: 'left',
+  color: theme.palette.text.secondary,
+  backgroundColor: theme.palette.colors.white,
+  border: `1px solid ${theme.palette.colors.grey_200}`,
+  borderRadius: theme.spacing(0.5),
+  cursor: 'pointer',
+  transition: 'border-color 0.2s ease',
+  '& svg': {
+    fontSize: rem(18),
+    color: theme.palette.primary.main,
+  },
+  '&:hover, &:focus-visible': {
+    borderColor: theme.palette.primary.main,
+    outline: 'none',
+  },
 }));
 
 export const StyledTextField = styled('textarea')(({ theme }) => ({
@@ -1304,6 +1395,10 @@ export const DocumentCard = styled(Box)(({ theme }) => ({
     borderColor: theme.palette.primary.main,
     boxShadow: `0 4px 12px ${floowColors.shadow.md}`,
   },
+}));
+
+export const DocumentPreview = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(1.5),
 }));
 
 export const DocumentCardHeader = styled(Box)(({ theme }) => ({

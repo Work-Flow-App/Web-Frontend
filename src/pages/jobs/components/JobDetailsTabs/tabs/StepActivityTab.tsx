@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
+import { extractErrorMessage } from '../../../../../utils/errorHandler';
+import DOMPurify from 'dompurify';
 import {
   Tooltip,
   CircularProgress,
@@ -23,18 +26,27 @@ import type {
 import {
   jobWorkflowService,
   stepActivityService,
-  UploadAttachmentTypeEnum,
 } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { getUserIdFromToken } from '../../../../../utils/jwt';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
 import { Button } from '../../../../../components/UI/Button';
+import { ImagePreview } from '../../../../../components/UI/ImagePreview';
+import { StandaloneRichTextEditor } from '../../../../../components/UI/Forms/RichTextEditor';
 import {
   useGlobalModalOuterContext,
   ModalSizes,
 } from '../../../../../components/UI/GlobalModal';
 import { rem } from '../../../../../components/UI/Typography/utility';
+import { isImageAttachment } from '../../../../../utils/attachmentHelpers';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../../../components/UI/AttachmentUploadDialog';
 
 import { FilterByTypeScreen } from './FilterByTypeScreen';
 import * as SS from './StepActivityTab.styles';
@@ -62,6 +74,11 @@ interface CombinedTimelineItem extends StepTimelineItemResponse {
   stepId: number;
   stepOrderIndex: number;
 }
+
+const isRichTextDiscussion = (discussionType?: string) => {
+  const t = discussionType?.toUpperCase();
+  return t === 'ADDITIONAL' || t === 'COMPLAINT';
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -92,9 +109,12 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
 
   // ── Edit / delete state ──────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<CombinedTimelineItem | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingAttachment, setEditingAttachment] = useState<CombinedTimelineItem | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
 
   // When viewFilter changes: if a specific step is selected, lock target step to viewFilter.
   // When 'all' is selected, use selectedPostToStepId (or default to first step).
@@ -108,6 +128,8 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   const [postType, setPostType] = useState<string>(StepCommentCreateRequestTypeEnum.General);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -194,6 +216,25 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   }, [visibleItems]);
 
   const lastReply = visibleItems.at(-1)?.createdAt;
+  // Attachments that show a preview in the timeline, in order, for the viewer
+  const previewItems = useMemo(
+    () =>
+      visibleItems.filter(
+        (item) =>
+          item.itemType === 'ATTACHMENT' &&
+          !!item.fileUrl &&
+          (!!item.thumbnailUrl || isImageAttachment(undefined, extractFileName(item.fileUrl)))
+      ),
+    [visibleItems]
+  );
+  const { openFile, viewer } = useFileViewer(
+    previewItems.map((item) => ({
+      fileUrl: item.fileUrl,
+      thumbnailUrl: item.thumbnailUrl,
+      // An attachment's content is its original name; the link's name is the stored file's id
+      fileName: item.content || extractFileName(item.fileUrl),
+    }))
+  );
 
   const countByStep = useMemo(() => {
     const map: Record<number, number> = {};
@@ -235,48 +276,58 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !postToStepId) return;
+
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
+    if (!postToStepId) return;
 
     try {
       setUploading(true);
       const failedUploads: string[] = [];
 
-      for (const file of files) {
+      for (const item of items) {
         try {
           await stepActivityService.uploadAttachment(
             postToStepId,
-            file,
-            postType as UploadAttachmentTypeEnum
+            item.file,
+            item.type,
+            item.description || undefined
           );
         } catch (error) {
-          console.error(`Error uploading attachment ${file.name}:`, error);
-          failedUploads.push(file.name);
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(`${item.file.name} (${extractErrorMessage(error, 'upload failed')})`);
         }
       }
 
       if (failedUploads.length === 0) {
-        if (files.length === 1) {
+        if (items.length === 1) {
           showSuccess('Attachment uploaded');
         } else {
           showSuccess('All attachments uploaded');
         }
-      } else if (failedUploads.length < files.length) {
-        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded.`);
+      } else if (failedUploads.length < items.length) {
+        showError(`Failed to upload ${failedUploads.join(', ')}. Other attachments uploaded.`);
       } else {
-        showError('Failed to upload attachments');
+        showError(`Failed to upload ${failedUploads.join(', ')}`);
       }
 
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
       fetchAllTimelines(steps);
     } catch (error) {
       console.error('Error during attachments upload:', error);
       showError('Failed to upload attachments');
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -298,11 +349,13 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
   // ── Edit / delete handlers ──────────────────────────────────────────────────
 
   const startEdit = (item: CombinedTimelineItem) => {
+    setEditingItem(item);
     setEditingId(item.id ?? null);
     setEditingContent(item.content || '');
   };
 
   const cancelEdit = () => {
+    setEditingItem(null);
     setEditingId(null);
     setEditingContent('');
   };
@@ -311,9 +364,10 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!editingId || !editingContent.trim()) return;
     setSavingEdit(true);
     try {
+      const commentType = (editingItem?.discussionType || postType || StepCommentCreateRequestTypeEnum.General) as StepCommentCreateRequestTypeEnum;
       await stepActivityService.updateComment(editingId, {
         content: editingContent.trim(),
-        type: postType as StepCommentCreateRequestTypeEnum,
+        type: commentType,
       });
       showSuccess('Message updated');
       cancelEdit();
@@ -329,13 +383,40 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
     if (!item.id) return;
     setDeletingId(item.id);
     try {
-      await stepActivityService.deleteComment(item.id);
-      showSuccess('Message deleted');
+      if (item.itemType === 'ATTACHMENT') {
+        await stepActivityService.deleteAttachment(item.id);
+        showSuccess('Attachment deleted');
+      } else {
+        await stepActivityService.deleteComment(item.id);
+        showSuccess('Message deleted');
+      }
       fetchAllTimelines(steps);
     } catch {
-      showError('Failed to delete message');
+      showError(item.itemType === 'ATTACHMENT' ? 'Failed to delete attachment' : 'Failed to delete message');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (
+    newDescription: string,
+    newType: UploadAttachmentTypeEnum
+  ) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+        type: newType as any,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchAllTimelines(steps);
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
@@ -381,6 +462,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
       const isAttachment = item.itemType === 'ATTACHMENT';
       const isComment = item.itemType === 'COMMENT' || !isAttachment;
       const isEditing = editingId === item.id;
+      const isRich = isRichTextDiscussion(item.discussionType);
       const isDeleting = deletingId === item.id;
       const fileName = extractFileName(item.fileUrl);
       const ts = getTypeStyle(item.discussionType as string);
@@ -391,7 +473,7 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             {getInitials(item.actorUsername)}
           </SS.MessageAvatarCircle>
 
-          <SS.MessageContentBox isMine={isMine}>
+          <SS.MessageContentBox isMine={isMine} isEditing={isEditing}>
             <SS.MessageMetaRow isMine={isMine}>
               <SS.MessageSenderName>{item.actorUsername || 'Unknown'}</SS.MessageSenderName>
               <SS.MessageTimeText>{fmtTime(item.createdAt)}</SS.MessageTimeText>
@@ -406,59 +488,120 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
             </SS.MessageMetaRow>
 
             {isEditing ? (
-              /* ── Inline edit mode ─────────────────────────────────── */
-              <SS.MessageEditInputRow>
-                <SS.MessageEditTextField
-                  size="small"
-                  value={editingContent}
-                  onChange={(e: any) => setEditingContent(e.target.value)}
-                  onKeyDown={(e: any) => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
-                    if (e.key === 'Escape') cancelEdit();
-                  }}
-                  multiline
-                  maxRows={4}
-                  autoFocus
-                  fullWidth
-                />
-                <SS.MessageEditActions>
-                  <Tooltip title="Save (Enter)">
-                    <SS.MessageEditIconBtn onClick={saveEdit} disabled={savingEdit}>
-                      {savingEdit
-                        ? <CircularProgress size={12} />
-                        : <SS.CheckIconStyled />}
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                  <Tooltip title="Cancel (Esc)">
-                    <SS.MessageEditIconBtn onClick={cancelEdit} disabled={savingEdit}>
-                      <SS.CloseIconStyled />
-                    </SS.MessageEditIconBtn>
-                  </Tooltip>
-                </SS.MessageEditActions>
-              </SS.MessageEditInputRow>
+              isRich ? (
+                /* ── Inline Rich Text Edit Mode for ADDITIONAL & COMPLAINT ── */
+                <SS.RichEditContainer>
+                  <StandaloneRichTextEditor
+                    value={editingContent}
+                    onChange={(val) => setEditingContent(val)}
+                    placeholder="Edit message..."
+                    minHeight={rem(120)}
+                  />
+                  <SS.RichEditActionsRow>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={cancelEdit}
+                      disabled={savingEdit}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={saveEdit}
+                      disabled={savingEdit || !editingContent.trim()}
+                      loading={savingEdit}
+                    >
+                      Save
+                    </Button>
+                  </SS.RichEditActionsRow>
+                </SS.RichEditContainer>
+              ) : (
+                /* ── Inline plain text edit mode for other comments ───── */
+                <SS.PlainEditContainer>
+                  <SS.PlainEditTextArea
+                    value={editingContent}
+                    onChange={(e: any) => setEditingContent(e.target.value)}
+                    onKeyDown={(e: any) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEdit();
+                      }
+                      if (e.key === 'Escape') cancelEdit();
+                    }}
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    autoFocus
+                    placeholder="Edit comment..."
+                    fullWidth
+                  />
+                  <SS.PlainEditActionsRow>
+                    <SS.PlainEditShortcutHint>
+                      Press <strong>Enter</strong> to save, <strong>Shift + Enter</strong> for new line, <strong>Esc</strong> to cancel
+                    </SS.PlainEditShortcutHint>
+                    <SS.PlainEditButtonsGroup>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={cancelEdit}
+                        disabled={savingEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={saveEdit}
+                        disabled={savingEdit || !editingContent.trim()}
+                        loading={savingEdit}
+                      >
+                        Save
+                      </Button>
+                    </SS.PlainEditButtonsGroup>
+                  </SS.PlainEditActionsRow>
+                </SS.PlainEditContainer>
+              )
             ) : (
               /* ── Normal display mode ──────────────────────────────── */
               <SS.MessageBubble isMine={isMine}>
                 {isAttachment ? (
-                  <SS.AttachmentRow>
-                    {getFileIcon(fileName)}
-                    <SS.AttachmentFileName isMine={isMine}>{fileName}</SS.AttachmentFileName>
-                    {item.fileUrl && (
-                      <Tooltip title="Download">
-                        <SS.DownloadIconButton
-                          size="small"
-                          onClick={() => window.open(item.fileUrl, '_blank')}
-                          isMine={isMine}
-                        >
-                          <DownloadIcon fontSize="small" />
-                        </SS.DownloadIconButton>
-                      </Tooltip>
+                  <SS.AttachmentContainer>
+                    {item.fileUrl && (item.thumbnailUrl || isImageAttachment(undefined, fileName)) && (
+                      <ImagePreview
+                        src={item.fileUrl}
+                        thumbnailSrc={item.thumbnailUrl}
+                        srcIsImage={isImageAttachment(undefined, fileName)}
+                        alt={item.description || fileName}
+                        onOpen={() => openFile(previewItems.indexOf(item))}
+                      />
                     )}
-                  </SS.AttachmentRow>
+                    <SS.AttachmentRow>
+                      <SS.AttachmentRowLeft>
+                        {getFileIcon(fileName)}
+                        <SS.AttachmentFileName isMine={isMine} title={fileName}>
+                          {fileName}
+                        </SS.AttachmentFileName>
+                      </SS.AttachmentRowLeft>
+                      {item.fileUrl && (
+                        <Tooltip title="Download">
+                          <SS.DownloadIconButton
+                            size="small"
+                            onClick={() => window.open(item.fileUrl, '_blank')}
+                            isMine={isMine}
+                          >
+                            <DownloadIcon fontSize="small" />
+                          </SS.DownloadIconButton>
+                        </Tooltip>
+                      )}
+                    </SS.AttachmentRow>
+                    <ExpandableDescription description={item.description} isMine={isMine} />
+                  </SS.AttachmentContainer>
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: item.content || item.description || '—',
+                      __html: DOMPurify.sanitize(item.content || item.description || '—'),
                     }}
                   />
                 )}
@@ -467,14 +610,16 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
           </SS.MessageContentBox>
 
           {/* ── Edit / Delete action buttons (visible on row hover) ── */}
-          {isComment && !isEditing && (
+          {!isEditing && (
             <SS.MessageActionGroup className="msg-action-group">
-              <Tooltip title="Edit message">
-                <SS.MessageEditIconBtn onClick={() => startEdit(item)}>
+              <Tooltip title={isAttachment ? 'Edit attachment' : 'Edit message'}>
+                <SS.MessageEditIconBtn
+                  onClick={() => (isAttachment ? setEditingAttachment(item) : startEdit(item))}
+                >
                   <SS.MessageEditIcon />
                 </SS.MessageEditIconBtn>
               </Tooltip>
-              <Tooltip title="Delete message">
+              <Tooltip title={isAttachment ? 'Delete attachment' : 'Delete message'}>
                 <SS.MessageDeleteIconBtn
                   onClick={() => handleDelete(item)}
                   disabled={isDeleting}
@@ -713,13 +858,41 @@ export const StepActivityTab: React.FC<StepActivityTabProps> = ({ job }) => {
         </SS.ChatPanel>
       </SS.StepActivityLayout>
 
-      <input
+      <SS.HiddenFileInput
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        style={{ display: 'none' }}
         multiple
       />
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={(postType as UploadAttachmentTypeEnum) || UploadAttachmentTypeEnum.General}
+        allowTypeChange={true}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={extractFileName(editingAttachment?.fileUrl)}
+        initialDescription={editingAttachment?.description || ''}
+        initialType={
+          (editingAttachment?.discussionType as UploadAttachmentTypeEnum) ||
+          UploadAttachmentTypeEnum.General
+        }
+        allowTypeChange={true}
+        isSaving={savingAttachment}
+        onSave={handleSaveAttachmentEdit}
+        onClose={() => setEditingAttachment(null)}
+      />
+      {viewer}
     </>
   );
 };

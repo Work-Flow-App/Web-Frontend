@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FileThumbnail } from '../../../../components/UI/FileThumbnail';
+import DOMPurify from 'dompurify';
 import { Box, IconButton as MuiIconButton, Collapse, Tooltip } from '@mui/material';
 import { useForm, FormProvider } from 'react-hook-form';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -10,18 +12,25 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
+import EditIcon from '@mui/icons-material/Edit';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import type { JobResponse, StepTimelineItemResponse } from '../../../../services/api';
 import {
   jobWorkflowService,
   stepActivityService,
-  UploadAttachmentTypeEnum,
 } from '../../../../services/api';
 import { useSnackbar } from '../../../../contexts/SnackbarContext';
 import { Button } from '../../../../components/UI/Button';
 import { IconButton } from '../../../../components/UI/Button/IconButton';
 import { RichTextEditor } from '../../../../components/UI/Forms/RichTextEditor';
 import { Loader } from '../../../../components/UI/Loader/Loader';
+import {
+  AttachmentUploadDialog,
+  UploadAttachmentTypeEnum,
+  ExpandableDescription,
+  EditAttachmentDialog,
+  type AttachmentUploadItem,
+} from '../../../../components/UI/AttachmentUploadDialog';
 import * as S from '../../JobDetailsPage.styles';
 
 interface ComplaintsSectionProps {
@@ -86,8 +95,12 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
   const [existingItems, setExistingItems] = useState<StepTimelineItemResponse[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [editingAttachment, setEditingAttachment] = useState<StepTimelineItemResponse | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const methods = useForm<ComplaintsFormValues>({
@@ -122,24 +135,18 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
 
   const toggleExpanded = () => setIsExpanded((prev) => !prev);
 
-  const addFiles = (files: File[]) => {
-    const newFiles: PendingFile[] = files.map((file) => ({
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      file,
-    }));
-    setPendingFiles((prev) => [...prev, ...newFiles]);
+  const openUploadDialog = (files: File[]) => {
+    if (!firstStepId) {
+      showError('No workfloow step found for this job');
+      return;
+    }
+    setSelectedFiles(files);
+    setIsUploadDialogOpen(true);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) addFiles(Array.from(event.target.files));
+    if (event.target.files) openUploadDialog(Array.from(event.target.files));
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleRemovePendingFile = (id: string) => {
-    setPendingFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -155,42 +162,77 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
-    if (event.dataTransfer.files) addFiles(Array.from(event.dataTransfer.files));
+    if (event.dataTransfer.files) openUploadDialog(Array.from(event.dataTransfer.files));
   };
 
   const handleUploadClick = () => fileInputRef.current?.click();
+
+  const handleConfirmUpload = async (items: AttachmentUploadItem[]) => {
+    if (!firstStepId) {
+      showError('No workfloow step found for this job');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const failedUploads: string[] = [];
+
+      for (const item of items) {
+        try {
+          await stepActivityService.uploadAttachment(
+            firstStepId,
+            item.file,
+            UploadAttachmentTypeEnum.Complaint,
+            item.description || undefined
+          );
+        } catch (error) {
+          console.error(`Error uploading attachment ${item.file.name}:`, error);
+          failedUploads.push(item.file.name);
+        }
+      }
+
+      if (failedUploads.length === 0) {
+        if (items.length === 1) {
+          showSuccess('Complaint attachment uploaded successfully');
+        } else {
+          showSuccess('All complaint attachments uploaded successfully');
+        }
+      } else if (failedUploads.length < items.length) {
+        showError(`Failed to upload: ${failedUploads.join(', ')}. Other attachments uploaded successfully.`);
+      } else {
+        showError('Failed to upload attachments');
+      }
+
+      setIsUploadDialogOpen(false);
+      setSelectedFiles([]);
+      fetchWorkflowAndItems();
+    } catch (error) {
+      console.error('Error saving complaint attachment:', error);
+      showError('Failed to upload attachments');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async (data: ComplaintsFormValues) => {
     if (!firstStepId) {
       showError('No workfloow step found for this job');
       return;
     }
-    if (!data.description.trim() && pendingFiles.length === 0) {
-      showError('Please add a complaint description or attachment');
+    if (!data.description.trim()) {
+      showError('Please add a complaint description');
       return;
     }
 
     try {
       setSaving(true);
-
-      if (data.description.trim()) {
-        await stepActivityService.addComment(firstStepId, {
-          content: data.description.trim(),
-          type: 'COMPLAINT',
-        });
-      }
-
-      for (const pending of pendingFiles) {
-        await stepActivityService.uploadAttachment(
-          firstStepId,
-          pending.file,
-          UploadAttachmentTypeEnum.Complaint
-        );
-      }
+      await stepActivityService.addComment(firstStepId, {
+        content: data.description.trim(),
+        type: 'COMPLAINT',
+      });
 
       showSuccess('Complaint saved successfully');
       methods.reset();
-      setPendingFiles([]);
       fetchWorkflowAndItems();
     } catch (error) {
       console.error('Error saving complaint:', error);
@@ -204,6 +246,24 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
     if (item.fileUrl) window.open(item.fileUrl, '_blank');
   };
 
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Attachment updated successfully');
+      setEditingAttachment(null);
+      fetchWorkflowAndItems();
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      showError('Failed to update attachment');
+    } finally {
+      setSavingAttachment(false);
+    }
+  };
+
   return (
     <S.CollapsibleSection>
       <S.CollapsibleSectionHeader onClick={toggleExpanded}>
@@ -212,12 +272,8 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
           <MuiIconButton
             size="small"
             aria-label={isExpanded ? 'Collapse section' : 'Expand section'}
-            sx={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
           >
-            <ExpandMoreIcon fontSize="small" />
+            <S.SectionExpandArrow isExpanded={isExpanded} fontSize="small" />
           </MuiIconButton>
         </S.CollapsibleSectionActions>
       </S.CollapsibleSectionHeader>
@@ -236,7 +292,7 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
                 <S.CommentItemBox key={`${item.itemType}-${item.id}`}>
                   {item.itemType === 'COMMENT' ? (
                     <>
-                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: item.content || '' }} />
+                      <S.EventNoteContent dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content || '') }} />
                       {item.createdAt && (
                         <S.CommentTimestamp>
                           {new Date(item.createdAt).toLocaleString()}
@@ -245,30 +301,46 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
                     </>
                   ) : (
                     <S.CommentContentRow>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getFileIconFromName(item.content || '')}
+                      <S.AttachmentInfoWrapper>
+                        <FileThumbnail src={item.thumbnailUrl} size={32} fallback={getFileIconFromName(item.content || item.description || '')} />
                         <S.AttachmentFileName>
-                          <div className="name">{item.content || 'Unnamed file'}</div>
+                          <div className="name">
+                            {item.content || 'Unnamed file'}
+                          </div>
                           {item.createdAt && (
                             <div className="date">
                               {new Date(item.createdAt).toLocaleDateString()}
                             </div>
                           )}
+                          <ExpandableDescription description={item.description} />
                         </S.AttachmentFileName>
-                      </Box>
-                      {item.fileUrl && (
-                        <Tooltip title="Download">
+                      </S.AttachmentInfoWrapper>
+                      <S.CommentActionsRow>
+                        <Tooltip title="Edit attachment">
                           <IconButton
                             size="small"
                             variant="text"
                             color="secondary"
-                            onClick={() => handleDownload(item)}
-                            aria-label="Download file"
+                            onClick={() => setEditingAttachment(item)}
+                            aria-label="Edit attachment"
                           >
-                            <DownloadIcon fontSize="small" />
+                            <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                      )}
+                        {item.fileUrl && (
+                          <Tooltip title="Download">
+                            <IconButton
+                              size="small"
+                              variant="text"
+                              color="secondary"
+                              onClick={() => handleDownload(item)}
+                              aria-label="Download file"
+                            >
+                              <DownloadIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </S.CommentActionsRow>
                     </S.CommentContentRow>
                   )}
                 </S.CommentItemBox>
@@ -288,60 +360,26 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
 
                 <div>
                   <S.FormLabel>Attachments</S.FormLabel>
-                  <input
+                  <S.HiddenFileInput
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileSelect}
                     multiple
-                    style={{ display: 'none' }}
                   />
 
-                  {pendingFiles.length === 0 ? (
-                    <S.UploadArea
-                      onClick={handleUploadClick}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      isDragging={isDragging}
-                    >
-                      <CloudUploadIcon sx={{ fontSize: 32, color: 'grey.400', mb: 1 }} />
-                      <S.UploadText>
-                        <S.UploadHighlight>Click to upload</S.UploadHighlight> or drag and drop
-                      </S.UploadText>
-                      <S.UploadSubtext>Any file type supported</S.UploadSubtext>
-                    </S.UploadArea>
-                  ) : (
-                    <>
-                      <S.AttachmentList>
-                        {pendingFiles.map((pending) => (
-                          <S.AttachmentItem key={pending.id}>
-                            {getFileIconFromType(pending.type)}
-                            <S.AttachmentFileName>
-                              <div className="name">{pending.name}</div>
-                              <div className="date">{formatFileSize(pending.size)}</div>
-                            </S.AttachmentFileName>
-                            <S.AttachmentActions>
-                              <Tooltip title="Remove">
-                                <IconButton
-                                  size="small"
-                                  variant="text"
-                                  color="error"
-                                  onClick={() => handleRemovePendingFile(pending.id)}
-                                  aria-label="Remove attachment"
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </S.AttachmentActions>
-                          </S.AttachmentItem>
-                        ))}
-                      </S.AttachmentList>
-                      <S.AddMoreButton onClick={handleUploadClick}>
-                        <AttachFileIcon sx={{ fontSize: 14 }} />
-                        Add more
-                      </S.AddMoreButton>
-                    </>
-                  )}
+                  <S.UploadArea
+                    onClick={handleUploadClick}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    isDragging={isDragging}
+                  >
+                    <CloudUploadIcon />
+                    <S.UploadText>
+                      <S.UploadHighlight>Click to upload</S.UploadHighlight> or drag and drop
+                    </S.UploadText>
+                    <S.UploadSubtext>Any file type supported</S.UploadSubtext>
+                  </S.UploadArea>
                 </div>
 
                 <S.ButtonActionsRow>
@@ -361,6 +399,31 @@ export const ComplaintsSection: React.FC<ComplaintsSectionProps> = ({
           </FormProvider>
         </S.CollapsibleSectionContent>
       </Collapse>
+
+      <AttachmentUploadDialog
+        open={isUploadDialogOpen}
+        files={selectedFiles}
+        defaultType={UploadAttachmentTypeEnum.Complaint}
+        allowTypeChange={false}
+        isUploading={uploading}
+        onConfirm={handleConfirmUpload}
+        onClose={() => {
+          if (!uploading) {
+            setIsUploadDialogOpen(false);
+            setSelectedFiles([]);
+          }
+        }}
+      />
+
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={editingAttachment?.content || 'Attachment'}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
     </S.CollapsibleSection>
   );
 };

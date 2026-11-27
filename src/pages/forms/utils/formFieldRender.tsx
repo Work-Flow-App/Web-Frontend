@@ -7,6 +7,7 @@ import ArrowDropDownCircleOutlinedIcon from '@mui/icons-material/ArrowDropDownCi
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ViewHeadlineOutlinedIcon from '@mui/icons-material/ViewHeadlineOutlined';
 import { Input } from '../../../components/UI/Forms/Input';
 import { TextArea } from '../../../components/UI/Forms/TextArea';
 import { Dropdown } from '../../../components/UI/Forms/Dropdown';
@@ -43,6 +44,7 @@ export const TYPE_ICON: Record<string, React.ElementType> = {
   [FormFieldDtoTypeEnum.MultiSelect]: PlaylistAddCheckIcon,
   [FormFieldDtoTypeEnum.Boolean]: ToggleOnOutlinedIcon,
   [FormFieldDtoTypeEnum.File]: UploadFileIcon,
+  [FormFieldDtoTypeEnum.Section]: ViewHeadlineOutlinedIcon,
 };
 
 export const TYPE_COLOR: Record<string, string> = {
@@ -54,6 +56,7 @@ export const TYPE_COLOR: Record<string, string> = {
   [FormFieldDtoTypeEnum.MultiSelect]: floowColors.chart.secondary,
   [FormFieldDtoTypeEnum.Boolean]: '#0EA5E9',
   [FormFieldDtoTypeEnum.File]: '#0D9488',
+  [FormFieldDtoTypeEnum.Section]: '#475569',
 };
 
 /** Distinct color per role - this theme's primary/secondary are both near-black navy/grey, so
@@ -106,7 +109,7 @@ const unwrapScalar = (raw: unknown): string => {
 export const buildFieldDefaultValues = (values: FormFieldValueResponse[]): Record<string, unknown> => {
   const defaults: Record<string, unknown> = {};
   values.forEach((v) => {
-    if (v.fieldId == null || v.fieldType === FormFieldDtoTypeEnum.File) return;
+    if (v.fieldId == null || v.fieldType === FormFieldDtoTypeEnum.File || v.fieldType === FormFieldDtoTypeEnum.Section) return;
     const name = fieldFormName(v.fieldId);
     switch (v.fieldType) {
       case FormFieldDtoTypeEnum.Checkbox:
@@ -181,6 +184,7 @@ export const renderEditableField = (value: FormFieldValueResponse): React.ReactN
 
 /** Plain-text rendering of a value for read-only display (fields owned by the other party). */
 export const formatFieldValueDisplay = (value: FormFieldValueResponse): string => {
+  if (value.fieldType === FormFieldDtoTypeEnum.Section) return '';
   if (value.fieldType === FormFieldDtoTypeEnum.File) {
     return value.fileName || 'No file uploaded';
   }
@@ -207,7 +211,7 @@ export const buildFieldValueDtos = (
 ): FormFieldValueDto[] => {
   const dtos: FormFieldValueDto[] = [];
   fields.forEach((field) => {
-    if (field.fieldId == null || field.fieldType === FormFieldDtoTypeEnum.File) return;
+    if (field.fieldId == null || field.fieldType === FormFieldDtoTypeEnum.File || field.fieldType === FormFieldDtoTypeEnum.Section) return;
     if (!editableFieldIds.has(field.fieldId)) return;
     const raw = data[fieldFormName(field.fieldId)];
 
@@ -254,7 +258,7 @@ export const getMissingRequiredFieldLabels = (
 ): string[] => {
   const missing: string[] = [];
   fields.forEach((field) => {
-    if (!field.required || field.fieldId == null || !editableFieldIds.has(field.fieldId)) return;
+    if (!field.required || field.fieldId == null || !editableFieldIds.has(field.fieldId) || field.fieldType === FormFieldDtoTypeEnum.Section) return;
     const label = field.fieldLabel || field.fieldName || 'This field';
 
     if (field.fieldType === FormFieldDtoTypeEnum.File) {

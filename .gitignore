@@ -45,3 +45,7 @@ nul
 
 # Superpowers SDD workspaces (scratch — not part of the repo)
 .superpowers/
+
+# Playwright
+playwright-report/
+test-results/

@@ -1,13 +1,20 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useFileViewer } from '../../../../../components/UI/FileViewer';
+import { FilePreview } from '../../../../../components/UI/FilePreview';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { JobResponse, StepAttachmentResponse, JobWorkflowStepResponse, InvoiceResponse } from '../../../../../services/api';
 import { jobWorkflowService, stepActivityService, estimateService } from '../../../../../services/api';
 import { useSnackbar } from '../../../../../contexts/SnackbarContext';
 import { Loader } from '../../../../../components/UI/Loader/Loader';
+import {
+  ExpandableDescription,
+  EditAttachmentDialog,
+} from '../../../../../components/UI/AttachmentUploadDialog';
 import * as S from '../../../JobDetailsPage.styles';
 
 type ActiveTab = 'all' | 'invoices' | 'attachments';
@@ -21,14 +28,6 @@ interface DocumentWithStep extends StepAttachmentResponse {
   stepId?: number;
 }
 
-const getFileIcon = (fileType?: string) => {
-  if (!fileType) return <S.DocFileIcon />;
-  if (fileType.startsWith('image/')) return <S.DocImageIcon />;
-  if (fileType === 'application/pdf') return <S.DocPdfIcon />;
-  if (fileType.includes('word') || fileType.includes('document')) return <S.DocDescIcon />;
-  return <S.DocFileIcon />;
-};
-
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('en-GB', {
@@ -41,9 +40,12 @@ const formatDate = (dateStr?: string) => {
 export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
   const { showSuccess, showError } = useSnackbar();
   const [documents, setDocuments] = useState<DocumentWithStep[]>([]);
+  const { openFile, viewer } = useFileViewer(documents);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
+  const [editingAttachment, setEditingAttachment] = useState<DocumentWithStep | null>(null);
+  const [savingAttachment, setSavingAttachment] = useState(false);
 
   const fetchAllDocuments = useCallback(async () => {
     if (!job.id) {
@@ -126,6 +128,24 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
       fetchAllDocuments();
     } catch {
       showError('Failed to delete document');
+    }
+  };
+
+  const handleSaveAttachmentEdit = async (newDescription: string) => {
+    if (!editingAttachment?.id) return;
+    try {
+      setSavingAttachment(true);
+      await stepActivityService.updateAttachment(editingAttachment.id, {
+        description: newDescription || undefined,
+      });
+      showSuccess('Document updated successfully');
+      setEditingAttachment(null);
+      fetchAllDocuments();
+    } catch (error) {
+      console.error('Error updating document:', error);
+      showError('Failed to update document');
+    } finally {
+      setSavingAttachment(false);
     }
   };
 
@@ -222,13 +242,24 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
               </S.DocumentsEmptyState>
             )}
 
-            {documents.map((document) => (
+            {documents.map((document, documentIndex) => (
               <S.DocumentCard key={document.id}>
+                <S.DocumentPreview>
+                  <FilePreview
+                    fileUrl={document.fileUrl}
+                    thumbnailUrl={document.thumbnailUrl}
+                    fileName={document.fileName}
+                    fileType={document.fileType}
+                    onOpen={() => openFile(documentIndex)}
+                  />
+                </S.DocumentPreview>
                 <S.DocumentCardHeader>
-                  <S.DocumentIcon>{getFileIcon(document.fileType)}</S.DocumentIcon>
                   <S.DocumentInfo>
-                    <S.DocumentName>{document.fileName || 'Unnamed file'}</S.DocumentName>
+                    <S.DocumentName>
+                      {document.fileName || 'Unnamed file'}
+                    </S.DocumentName>
                     <S.DocumentMeta>{formatDate(document.createdAt)}</S.DocumentMeta>
+                    <ExpandableDescription description={document.description} />
                   </S.DocumentInfo>
                 </S.DocumentCardHeader>
 
@@ -240,6 +271,10 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
                   <S.DocCardActionButton onClick={() => handleDownloadAttachment(document)}>
                     <DownloadIcon />
                     Download
+                  </S.DocCardActionButton>
+                  <S.DocCardActionButton onClick={() => setEditingAttachment(document)}>
+                    <EditIcon />
+                    Edit
                   </S.DocCardActionButton>
                   <S.DocCardActionButton
                     danger
@@ -254,6 +289,16 @@ export const JobDocumentsTab: React.FC<JobDocumentsTabProps> = ({ job }) => {
           </S.DocumentsGrid>
         </S.AttachmentsSection>
       )}
+      <EditAttachmentDialog
+        open={Boolean(editingAttachment)}
+        fileName={editingAttachment?.fileName || 'Attachment'}
+        initialDescription={editingAttachment?.description || ''}
+        allowTypeChange={false}
+        isSaving={savingAttachment}
+        onSave={(newDesc) => handleSaveAttachmentEdit(newDesc)}
+        onClose={() => setEditingAttachment(null)}
+      />
+      {viewer}
     </S.DocumentsTabContainer>
   );
 };

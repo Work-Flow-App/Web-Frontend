@@ -49,9 +49,74 @@ export const PostDate = styled(Typography)(({ theme }) => ({
   color: theme.palette.colors?.grey_500 || theme.palette.text.secondary,
 }));
 
-export const PostContent = styled(Typography)(({ theme }) => ({
+export const PostContent = styled(Box)(({ theme }) => ({
   fontSize: rem(14),
-  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
-  whiteSpace: 'pre-wrap',
   lineHeight: 1.6,
+  color: theme.palette.colors?.grey_900 || theme.palette.text.primary,
+  wordBreak: 'break-word',
+  overflowWrap: 'anywhere',
+  '& a': {
+    color: theme.palette.primary.main,
+    textDecoration: 'underline',
+    wordBreak: 'break-all',
+  },
+  '& p': {
+    margin: 0,
+    '& + p': {
+      marginTop: rem(6),
+    },
+  },
+  '& em, & i': {
+    fontStyle: 'italic !important',
+  },
+  '& u': {
+    textDecoration: 'underline',
+  },
+  '& h1': {
+    fontSize: rem(20),
+    fontWeight: 700,
+    lineHeight: rem(26),
+    margin: `${rem(10)} 0 ${rem(6)} 0`,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: rem(17),
+      lineHeight: rem(22),
+    },
+  },
+  '& h2': {
+    fontSize: rem(17),
+    fontWeight: 600,
+    lineHeight: rem(23),
+    margin: `${rem(8)} 0 ${rem(4)} 0`,
+    [theme.breakpoints.down('sm')]: {
+      fontSize: rem(15),
+    },
+  },
+  '& h3': {
+    fontSize: rem(15),
+    fontWeight: 600,
+    lineHeight: rem(21),
+    margin: `${rem(6)} 0 ${rem(4)} 0`,
+  },
+  '& ul, & ol': {
+    paddingLeft: rem(20),
+    margin: `${rem(6)} 0`,
+    '& li': {
+      marginBottom: rem(3),
+    },
+  },
+  '& blockquote': {
+    borderLeft: `${rem(3)} solid ${theme.palette.colors?.grey_300 || theme.palette.grey[300]}`,
+    paddingLeft: rem(12),
+    marginLeft: 0,
+    marginRight: 0,
+    marginTop: rem(6),
+    marginBottom: rem(6),
+    fontStyle: 'italic',
+    color: theme.palette.colors?.grey_600 || theme.palette.text.secondary,
+  },
+  '& mark': {
+    backgroundColor: '#fef08a',
+    borderRadius: rem(2),
+    padding: `${rem(1)} ${rem(3)}`,
+  },
 }));

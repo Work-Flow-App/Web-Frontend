@@ -21,6 +21,7 @@ interface EditFieldsFormData {
 const toRowData = (template: FormTemplateRequest): FieldRowData[] =>
   (template.fields || []).map((f) => ({
     label: f.label || '',
+    description: f.description || '',
     type: f.type || null,
     roleTarget: f.roleTarget || null,
     required: f.required || false,
@@ -55,7 +56,10 @@ export const EditFormTemplateFieldsForm: React.FC<EditFormTemplateFieldsFormProp
     onConfirmRef.current = () => {
       handleSubmit(async (data) => {
         const fieldPayload = buildFieldPayload(data.fields, setError);
-        if (fieldPayload === null) return;
+        if (fieldPayload === null) {
+          showError('Please fill in all required fields before saving');
+          return;
+        }
         if (!template.id) return;
 
         updateGlobalModalInnerConfig({ isConfirmDisabled: true });

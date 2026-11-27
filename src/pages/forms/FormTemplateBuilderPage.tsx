@@ -72,6 +72,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({ field, index, onE
   const fieldColor = S.STEP_COLORS[index % S.STEP_COLORS.length];
   const TypeIcon = TYPE_ICON[field.type || ''] || ShortTextIcon;
   const typeColor = TYPE_COLOR[field.type || ''] || floowColors.slate.main;
+  const isSection = field.type === FormFieldDtoTypeEnum.Section;
   const roleColor = ROLE_COLOR[field.roleTarget || FormFieldDtoRoleTargetEnum.Both] || floowColors.slate.main;
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
@@ -108,13 +109,18 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({ field, index, onE
         <S.FieldTitleRow>
           <S.FieldLabel>{field.label}</S.FieldLabel>
         </S.FieldTitleRow>
+        {field.description && (
+          <S.FieldDescription>{field.description}</S.FieldDescription>
+        )}
         <S.FieldMetaRow>
           <S.ColorTag tint={typeColor}>
             <TypeIcon />
             {typeLabel(field.type)}
           </S.ColorTag>
-          <S.ColorTag tint={roleColor}>{roleLabel(field.roleTarget)}</S.ColorTag>
-          {field.required && (
+          {!isSection && (
+            <S.ColorTag tint={roleColor}>{roleLabel(field.roleTarget)}</S.ColorTag>
+          )}
+          {!isSection && field.required && (
             <Badge variant="warning" size="small">
               Required
             </Badge>
@@ -296,6 +302,7 @@ export const FormTemplateBuilderPage: React.FC = () => {
       id: f.id,
       name: f.name,
       label: f.label,
+      description: f.description,
       type: f.type,
       roleTarget: f.roleTarget,
       required: f.required,
@@ -428,6 +435,9 @@ export const FormTemplateBuilderPage: React.FC = () => {
                 <S.FieldTitleRow>
                   <S.FieldLabel>{activeField.label}</S.FieldLabel>
                 </S.FieldTitleRow>
+                {activeField.description && (
+                  <S.FieldDescription>{activeField.description}</S.FieldDescription>
+                )}
                 <S.FieldMetaRow>
                   {(() => {
                     const ActiveTypeIcon = TYPE_ICON[activeField.type || ''] || ShortTextIcon;
@@ -438,10 +448,12 @@ export const FormTemplateBuilderPage: React.FC = () => {
                       </S.ColorTag>
                     );
                   })()}
-                  <S.ColorTag tint={ROLE_COLOR[activeField.roleTarget || FormFieldDtoRoleTargetEnum.Both] || floowColors.slate.main}>
-                    {roleLabel(activeField.roleTarget)}
-                  </S.ColorTag>
-                  {activeField.required && (
+                  {activeField.type !== FormFieldDtoTypeEnum.Section && (
+                    <S.ColorTag tint={ROLE_COLOR[activeField.roleTarget || FormFieldDtoRoleTargetEnum.Both] || floowColors.slate.main}>
+                      {roleLabel(activeField.roleTarget)}
+                    </S.ColorTag>
+                  )}
+                  {activeField.type !== FormFieldDtoTypeEnum.Section && activeField.required && (
                     <Badge variant="warning" size="small">
                       Required
                     </Badge>
