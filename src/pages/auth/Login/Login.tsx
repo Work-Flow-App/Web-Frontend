@@ -135,26 +135,37 @@ export const Login: React.FC = () => {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const onSubmit = async (data: LoginFormData) => {
-    if (mode === 'signup') {
-      if (!signupName.trim()) {
-        setErrorMsg('Add your name so we know what to call you.');
-        return;
-      }
-      if (!data.userName.trim()) {
-        setErrorMsg('Add your email or mobile number.');
-        return;
-      }
-      if (!data.password.trim() || data.password.length < 8) {
-        setErrorMsg('Make a password to keep your account safe.');
-        return;
-      }
-      navigate('/signup', {
-        state: { name: signupName.trim(), email: data.userName.trim() },
-      });
+  // Sign-up checks one field at a time, so the first thing missing is what the user sees
+  const continueSignup = ({ userName = '', password = '' }: Partial<LoginFormData>) => {
+    if (!signupName.trim()) {
+      setErrorMsg('Add your name so we know what to call you.');
       return;
     }
+    if (!userName.trim()) {
+      setErrorMsg('Add your email or mobile number.');
+      return;
+    }
+    if (!password.trim() || password.length < 8) {
+      setErrorMsg('Make a password to keep your account safe.');
+      return;
+    }
+    navigate('/signup', {
+      state: { name: signupName.trim(), email: userName.trim() },
+    });
+  };
 
+  const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (mode === 'signup') {
+      // Not through handleSubmit: the login schema would reject the empty fields
+      // first, and the user would see login errors instead of the sign-up steps.
+      event.preventDefault();
+      continueSignup(methods.getValues());
+      return;
+    }
+    void handleSubmit(onSubmit)(event);
+  };
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setErrorMsg(null);
     setShowResendLink(false);
@@ -275,15 +286,13 @@ export const Login: React.FC = () => {
     </Box>
   );
 
-  const hasError = !!(errorMsg || errors.userName || errors.password);
-  const errorText =
-    errorMsg ??
-    errors.userName?.message ??
-    errors.password?.message ??
-    null;
+  // The login schema's errors don't apply to sign-up, e.g. after a failed login and a tab switch
+  const loginErrors: typeof errors = mode === 'login' ? errors : {};
+  const errorText = errorMsg ?? loginErrors.userName?.message ?? loginErrors.password?.message ?? null;
+  const hasError = !!errorText;
 
   const FormBody = (
-    <RLForm onSubmit={handleSubmit(onSubmit)} noValidate>
+    <RLForm onSubmit={onFormSubmit} noValidate>
       <Box sx={styles.formStack}>
         {/* Name field (signup mode only) */}
         {mode === 'signup' && (
@@ -315,7 +324,7 @@ export const Login: React.FC = () => {
             type="text"
             autoComplete="username"
             placeholder={mode === 'signup' ? 'sam@taylorplumbing.com' : 'Enter your username'}
-            aria-invalid={!!errors.userName}
+            aria-invalid={!!loginErrors.userName}
             {...methods.register('userName')}
           />
         </Box>
@@ -331,7 +340,7 @@ export const Login: React.FC = () => {
               type={showPass ? 'text' : 'password'}
               autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
               placeholder={mode === 'signup' ? 'At least 8 letters or numbers' : 'Enter your password'}
-              aria-invalid={!!errors.password}
+              aria-invalid={!!loginErrors.password}
               {...methods.register('password')}
             />
             <Box
