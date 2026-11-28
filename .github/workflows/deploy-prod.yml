@@ -49,8 +49,10 @@ jobs:
           VITE_PADDLE_ENV: ${{ secrets.PROD_VITE_PADDLE_ENV }}
 
       # ── Integration tests (BLOCKING) ──────────────────────────────────────
-      # Tests run against the currently live prod environment before we
-      # overwrite it. A failure here STOPS the deployment.
+      # Tests run against the build we're about to deploy, served on the runner
+      # and talking to the prod API. (Testing the live site instead meant a fix
+      # for a bug on the live site could never pass and never be deployed.)
+      # A failure here STOPS the deployment.
 
       - name: Fetch OpenAPI spec from prod API
         run: |
@@ -73,9 +75,17 @@ jobs:
 
       - name: Run integration tests (prod — deployment blocked on failure)
         timeout-minutes: 10
-        run: npm run test:e2e
+        # Port 5173 because it's the local origin the API allows (CORS)
+        run: |
+          npx vite preview --port 5173 --strictPort > vite-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:5173/login && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://localhost:5173/login || { cat vite-preview.log; exit 1; }
+          npm run test:e2e
         env:
-          PLAYWRIGHT_BASE_URL: 'https://app.workfloow.app'
+          PLAYWRIGHT_BASE_URL: 'http://localhost:5173'
           API_BASE_URL: ${{ secrets.PROD_VITE_API_BASE_URL }}
           TEST_USER_USERNAME: ${{ secrets.PROD_TEST_USERNAME }}
           TEST_USER_PASSWORD: ${{ secrets.PROD_TEST_PASSWORD }}
