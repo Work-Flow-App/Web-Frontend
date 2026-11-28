@@ -262,11 +262,9 @@ export const JobDetailsSection: React.FC<JobDetailsSectionProps> = ({
   };
 
   useEffect(() => {
-    assetService.getAllAssets(0, 200, false, true)
-      .then((res) => {
-        const content = res.data.content ?? (res.data as unknown as AssetResponse[]);
-        setAllAssets(Array.isArray(content) ? content : []);
-      })
+    assetService
+      .getAllAssetPages({ available: true })
+      .then((res) => setAllAssets(res.data))
       .catch(() => setAllAssets([]));
   }, []);
 

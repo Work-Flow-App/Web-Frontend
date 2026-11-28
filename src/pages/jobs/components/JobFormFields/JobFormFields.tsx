@@ -102,9 +102,7 @@ export const JobFormFields: React.FC<JobFormFieldsProps> = ({ isEditMode = false
       try {
         setLoadingAssets(true);
         // Fetch all non-archived assets so currently assigned ones also appear in edit mode
-        const response = await assetService.getAllAssets(0, 200, false);
-        const assetsData = response.data.content || [];
-        const nonArchivedAssets = assetsData.filter((asset: AssetResponse) => asset.archived !== true);
+        const { data: nonArchivedAssets } = await assetService.getAllAssetPages();
         setAssets(nonArchivedAssets);
       } catch (error) {
         console.error('Error fetching assets:', error);

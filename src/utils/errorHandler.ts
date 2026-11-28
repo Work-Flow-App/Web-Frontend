@@ -6,11 +6,15 @@ interface ApiErrorResponse {
   response?: {
     data?: {
       message?: string;
+      code?: string;
       validationErrors?: Record<string, string> | string[];
     };
   };
   message?: string;
 }
+
+// Matches the upgrade prompt; the backend's text names the plan enum ("PROFESSIONAL")
+export const PRO_FEATURE_MESSAGE = 'This is a Pro feature. Upgrade to the Professional plan to use it.';
 
 /**
  * Extracts a user-friendly error message from various error types.
@@ -31,7 +35,8 @@ export const extractErrorMessage = (
       apiError.response.data &&
       typeof apiError.response.data === 'object'
     ) {
-      const { message, validationErrors } = apiError.response.data;
+      const { message, code, validationErrors } = apiError.response.data;
+      if (code === 'PLAN_UPGRADE_REQUIRED') return PRO_FEATURE_MESSAGE;
       const baseMessage = message || defaultMessage;
 
       if (validationErrors) {

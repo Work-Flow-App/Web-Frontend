@@ -179,6 +179,9 @@ export type {
   NotificationResponse,
   NotificationListParams,
   CursorPagedResponseNotificationResponse,
+  NotificationPreferenceResponse,
+  NotificationPreferenceUpdateRequest,
+  NotificationPreferencesUpdateRequest,
 } from './notification';
 
 export { leaveService, LeaveType, LEAVE_TYPE_OPTIONS, LeaveStatus, LEAVE_STATUS_OPTIONS } from './leave';

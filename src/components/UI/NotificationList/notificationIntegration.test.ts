@@ -25,10 +25,18 @@ const EXPECTED_CATEGORY: Record<string, string> = {
   STEP_COMMENT_UPDATED: 'jobs',
   STEP_ATTACHMENT_UPDATED: 'jobs',
   WORKER_ASSIGNED: 'workforce',
+  WORKER_UNASSIGNED: 'workforce',
   ASSET_SLA_BREACHED: 'assets',
   STEP_SLA_BREACHED: 'jobs',
   USER_MENTIONED: 'mentions',
   MENTION_SENT: 'mentions',
+  FORM_ASSIGNED: 'documents',
+  FORM_UNASSIGNED: 'documents',
+  FORM_SUBMITTED: 'documents',
+  ASSET_ASSIGNED: 'assets',
+  ASSET_RETURNED: 'assets',
+  ASSET_ASSIGNMENT_UPDATED: 'assets',
+  ASSET_LOCATION_UPDATED: 'assets',
 };
 
 const ALL_TYPES = Object.values(NotificationResponseTypeEnum);
@@ -130,6 +138,24 @@ describe('resolveNotificationTargetUrl', () => {
       resolveNotificationTargetUrl({ targetUrl: '/company/jobs/1/details', metadata: { jobWorkflowId: 49 } }, true)
     ).toEqual({ url: '/worker/job-workflows/49' });
     expect(resolveNotificationTargetUrl({ targetUrl: '/company/jobs/1/details' }, true)).toEqual({ unresolved: true });
+  });
+
+  it.each([
+    ['FORM_SUBMITTED', '/company/forms/31', false, '/company/forms/submissions/31'],
+    ['ASSET_LOCATION_UPDATED', '/company/assets/7', false, '/company/assets/7/history'],
+    ['ASSET_ASSIGNED', '/worker/assets/7', true, '/worker/assets'],
+    ['FORM_ASSIGNED', '/worker/forms/31', true, '/worker/forms/31'],
+    ['FORM_UNASSIGNED', '/worker/forms', true, '/worker/forms'],
+    ['ASSET_RETURNED', '/worker/assets', true, '/worker/assets'],
+    ['WORKER_UNASSIGNED', '/worker/job-workflows', true, '/worker/job-workflows'],
+  ])('opens a %s link (%s) on its frontend route', (_type, targetUrl, isWorker, url) => {
+    expect(resolveNotificationTargetUrl({ targetUrl }, isWorker)).toEqual({ url });
+  });
+
+  it('leaves the other asset pages alone', () => {
+    expect(resolveNotificationTargetUrl({ targetUrl: '/company/assets/groups' }, false)).toEqual({
+      url: '/company/assets/groups',
+    });
   });
 
   it('returns nothing when there is no target URL', () => {

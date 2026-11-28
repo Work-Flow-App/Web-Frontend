@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  geocodeJobsWithoutCoordinates,
+  geocodeUnlocatedJobs,
+  selectUnlocatedJobs,
   toJobLocationMarkers,
   toRecentWorkflowActivity,
   toStepEventGroups,
@@ -42,13 +43,36 @@ describe('toStepEventGroups', () => {
   });
 });
 
-describe('geocodeJobsWithoutCoordinates', () => {
-  const address = { street: '1 High St', city: 'London', postalCode: 'E1' };
+describe('selectUnlocatedJobs', () => {
+  it('keeps rows with an address and a missing coordinate', () => {
+    const unlocated = selectUnlocatedJobs([
+      { jobId: 1, lat: 1, lng: 2, address: 'Located' },
+      { jobId: 2, address: 'No coordinates' },
+      { jobId: 3, lat: 5, address: 'One coordinate' },
+      { jobId: 4 },
+      { jobId: 5, address: '   ' },
+    ]);
 
-  it('geocodes a job with an address but no stored coordinates', async () => {
+    expect(unlocated.map((job) => job.jobId)).toEqual([2, 3]);
+  });
+});
+
+describe('geocodeUnlocatedJobs', () => {
+  it('geocodes a row with null coordinates by its address, keeping the rest of the row', async () => {
     const geocode = vi.fn().mockResolvedValue({ lat: 1, lng: 2 });
-    const [located] = await geocodeJobsWithoutCoordinates(
-      [{ id: 12, jobRef: 3, status: 'NEW', clientName: 'Acme', customerName: 'Sam', address }],
+    const [located] = await geocodeUnlocatedJobs(
+      [
+        {
+          jobId: 12,
+          jobRef: 3,
+          status: 'NEW',
+          address: '1 High St, London, E1',
+          clientName: 'Acme',
+          customerName: 'Sam',
+          workerNames: ['Ana'],
+          scheduledTime: '2026-11-16T10:00:00',
+        },
+      ],
       geocode
     );
 
@@ -62,28 +86,14 @@ describe('geocodeJobsWithoutCoordinates', () => {
       address: '1 High St, London, E1',
       clientName: 'Acme',
       customerName: 'Sam',
+      workerNames: ['Ana'],
+      scheduledTime: '2026-11-16T10:00:00',
     });
   });
 
-  it('skips jobs job-locations already returns, without geocoding them', async () => {
+  it('leaves rows that already have coordinates to the stored pins, without geocoding them', async () => {
     const geocode = vi.fn();
-    const located = await geocodeJobsWithoutCoordinates([{ id: 1, address: { ...address, latitude: 0, longitude: 0 } }], geocode);
-
-    expect(geocode).not.toHaveBeenCalled();
-    expect(located).toEqual([]);
-  });
-
-  it('geocodes a job with only one stored coordinate, which job-locations omits', async () => {
-    const geocode = vi.fn().mockResolvedValue({ lat: 1, lng: 2 });
-
-    await geocodeJobsWithoutCoordinates([{ id: 1, address: { ...address, latitude: 5 } }], geocode);
-
-    expect(geocode).toHaveBeenCalledTimes(1);
-  });
-
-  it('skips jobs with no address, or one with nothing to look up', async () => {
-    const geocode = vi.fn();
-    const located = await geocodeJobsWithoutCoordinates([{ id: 1 }, { id: 2, address: { additionalInfo: 'Gate 2' } }], geocode);
+    const located = await geocodeUnlocatedJobs([{ jobId: 1, lat: 0, lng: 0, address: '1 High St' }], geocode);
 
     expect(geocode).not.toHaveBeenCalled();
     expect(located).toEqual([]);
@@ -91,21 +101,27 @@ describe('geocodeJobsWithoutCoordinates', () => {
 
   it('skips an address that cannot be geocoded and carries on', async () => {
     const geocode = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({ lat: 1, lng: 2 });
-    const located = await geocodeJobsWithoutCoordinates([{ id: 1, address }, { id: 2, address }], geocode);
+    const located = await geocodeUnlocatedJobs(
+      [
+        { jobId: 1, address: 'Nowhere' },
+        { jobId: 2, address: '1 High St' },
+      ],
+      geocode
+    );
 
     expect(located.map((job) => job.jobId)).toEqual([2]);
   });
 
-  it('produces locations that become ordinary map pins', async () => {
-    const located = await geocodeJobsWithoutCoordinates(
-      [{ id: 12, jobRef: 3, customerName: 'Sam', address }],
+  it('produces locations that become ordinary map pins, with worker names', async () => {
+    const located = await geocodeUnlocatedJobs(
+      [{ jobId: 12, jobRef: 3, address: '1 High St', workerNames: ['Ana', 'Bo'] }],
       vi.fn().mockResolvedValue({ lat: 1, lng: 2 })
     );
     const [marker] = toJobLocationMarkers(located);
 
     expect(marker.name).toBe('Job #3');
     expect(marker.location).toEqual({ lat: 1, lng: 2 });
-    expect(marker.jobLocationData?.customerName).toBe('Sam');
+    expect(marker.jobLocationData?.workerName).toBe('Ana, Bo');
   });
 });
 
@@ -134,6 +150,29 @@ describe('toJobLocationMarkers', () => {
     const [marker] = toJobLocationMarkers([{ jobId: 1, lat: 1, lng: 1, workerNames: [] }]);
 
     expect(marker.jobLocationData?.workerName).toBeUndefined();
+  });
+
+  describe('scheduledTime', () => {
+    const scheduledTimeOf = (scheduledTime?: string | null) =>
+      toJobLocationMarkers([{ jobId: 1, lat: 1, lng: 1, scheduledTime: scheduledTime as string | undefined }])[0]
+        .jobLocationData?.scheduledTime;
+
+    it('formats a DATE field value with its time', () => {
+      expect(scheduledTimeOf('2026-11-16T10:00:00')).toBe('16 Nov 2026, 10:00');
+    });
+
+    it('shows only the date at midnight, since DATE fields are entered without a time', () => {
+      expect(scheduledTimeOf('2026-11-16T00:00:00')).toBe('16 Nov 2026');
+    });
+
+    it('shows other field types as entered', () => {
+      expect(scheduledTimeOf('Tuesday 9am')).toBe('Tuesday 9am');
+    });
+
+    it('is unset when the job has no scheduled time', () => {
+      expect(scheduledTimeOf(null)).toBeUndefined();
+      expect(scheduledTimeOf(undefined)).toBeUndefined();
+    });
   });
 });
 

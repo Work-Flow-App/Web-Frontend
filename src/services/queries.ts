@@ -3,6 +3,7 @@ import {
   companyService,
   dashboardService,
   jobService,
+  notificationService,
   workerJobWorkflowService,
   workflowService,
 } from './api';
@@ -60,6 +61,12 @@ export const queries = {
     queryOptions({
       queryKey: ['dashboard', 'preferences'],
       queryFn: async () => (await dashboardService.getPreferences()).data,
+    }),
+
+  notificationPreferences: () =>
+    queryOptions({
+      queryKey: ['notifications', 'preferences'],
+      queryFn: async () => (await notificationService.getPreferences()).data ?? [],
     }),
 
   recentlyUpdatedJobs: (size: number) =>

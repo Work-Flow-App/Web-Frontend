@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { SyntheticEvent } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { FieldError, Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { CircularProgress, FormControlLabel, Switch } from '@mui/material';
+import { Alert, Button as MuiButton, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
 import CheckIcon from '@mui/icons-material/Check';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
@@ -20,6 +20,7 @@ import { copyToClipboard } from '../../../utils/clipboard';
 import { slugify } from '../../../utils/slugify';
 import { useSnackbar } from '../../../contexts/SnackbarContext';
 import { useCompanyRole } from '../../../contexts/CompanyRoleContext';
+import { useSubscription } from '../../../contexts/SubscriptionContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { useFormSubmit } from '../../../hooks/useFormSubmit';
 import { CompanyProfileFormSchema } from './CompanyProfileSchema';
@@ -84,7 +85,9 @@ const BANK_FIELDS = SCHEMA_ENTRIES.filter(([, field]) => field.section === 'bank
 export const CompanyProfile: React.FC = () => {
   const { refreshCurrency } = useCurrency();
   const { showSuccess, showError } = useSnackbar();
-  const { canEdit, canManagePublicProfile } = useCompanyRole();
+  const { canEdit, canManagePublicProfile, canManageSubscription } = useCompanyRole();
+  const planType = useSubscription().status?.planType;
+  const navigate = useNavigate();
   const { fieldRules, defaultValues } = useSchema(CompanyProfileFormSchema);
 
   const methods = useForm<CompanyProfileFormData>({
@@ -216,6 +219,9 @@ export const CompanyProfile: React.FC = () => {
   const [savedPublicPageEnabled, setSavedPublicPageEnabled] = useState<boolean | null>(null);
   const [updatingPublicPage, setUpdatingPublicPage] = useState(false);
   const publicPageEnabled = savedPublicPageEnabled ?? profile?.publicProfileEnabled ?? false;
+  // Public pages are served only for Professional; planType is missing on backends before #363
+  const publicPageHiddenByPlan =
+    canManagePublicProfile && publicPageEnabled && !!planType && planType !== 'PROFESSIONAL';
 
   const handleTogglePublicPage = async (enabled: boolean) => {
     setUpdatingPublicPage(true);
@@ -384,6 +390,23 @@ export const CompanyProfile: React.FC = () => {
             </StyledTabs>
           </TabsWrapper>
         </ProfileHeaderCard>
+
+        {publicPageHiddenByPlan && (
+          <TabContent>
+            <Alert
+              severity="warning"
+              action={
+                canManageSubscription ? (
+                  <MuiButton color="inherit" size="small" onClick={() => navigate('/subscribe')}>
+                    Upgrade
+                  </MuiButton>
+                ) : undefined
+              }
+            >
+              Your public page is on, but visitors can't see it until you upgrade to the Professional plan.
+            </Alert>
+          </TabContent>
+        )}
 
         {activeTab === TABS.indexOf('documents') && (
           <TabContent>

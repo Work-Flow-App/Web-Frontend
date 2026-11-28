@@ -1,6 +1,6 @@
 import { env } from '../../config/env';
 import { decodeJWT } from '../../utils/jwt';
-import { classifySubscriptionError, isOnSubscriptionPage } from '../../utils/subscriptionErrors';
+import { handlePaymentRequired } from '../../utils/subscriptionErrors';
 import { TokenSync, type SessionTokens } from './tokenSync';
 
 /**
@@ -406,14 +406,9 @@ export class ApiClient {
         return this.handle401Error(error, retryRequest);
       }
 
-      // Handle 402 Payment Required - redirect only on a lapsed subscription;
-      // cap-reached / unclassified errors fall through to the caller's own
-      // error handling (inline upsell messaging).
-      if (response.status === 402 && typeof window !== 'undefined') {
-        const shimError = { response: { status: 402, data: { message: error.message } } };
-        if (classifySubscriptionError(shimError) === 'lapsed' && !isOnSubscriptionPage()) {
-          window.location.href = '/subscribe';
-        }
+      // 402: same handling as the axios client (see handlePaymentRequired)
+      if (response.status === 402) {
+        handlePaymentRequired({ response: { status: 402, data: { message: error.message, code: error.code } } });
       }
 
       throw error;

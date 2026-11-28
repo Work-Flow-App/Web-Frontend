@@ -27,6 +27,7 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import { Loader } from '../components/UI/Loader';
 import { loginPathFor } from '../utils/authFlow';
 import { SubscriptionBanner } from '../components/UI/SubscriptionBanner';
+import { UpgradePrompt } from '../components/UI/UpgradePrompt';
 import { NotificationDropdown, resolveNotificationTargetUrl } from '../components/UI/NotificationList';
 import type { INotification } from '../components/UI/NotificationList';
 import { mapNotificationToItem } from '../components/UI/NotificationList/mapNotification';
@@ -430,6 +431,7 @@ export const Layout: React.FC = () => {
 
         {/* Subscription status banner — visible for non-active company accounts */}
         <SubscriptionBanner />
+        <UpgradePrompt />
 
         {/* Dynamic Content Area - Changes based on route */}
         <S.MainContent>
